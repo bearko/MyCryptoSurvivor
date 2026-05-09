@@ -10,7 +10,7 @@
 // pauseFlags のチェックは呼出側 (= _loop) が行う。 ここでは tick 内で random / 状態変更は許容。
 
 import { state } from "../state.js";
-import { spawnGem } from "./gems.js";
+import { hitEnemy } from "./damage.js";
 import { PROJECTILE_RADIUS, PROJECTILE_LIFE_MS } from "../constants.js";
 
 const ORBIT_HIT_COOLDOWN_MS = 250;   // 同じ敵を 0.25 sec ごとにしか damage しない
@@ -353,7 +353,7 @@ export function tickOrbits(dt, nowMs) {
     const ox = player.x + Math.cos(o.angle) * o.r;
     const oy = player.y + Math.sin(o.angle) * o.r;
     o.x = ox; o.y = oy;
-    // 衝突
+    // 衝突 (= SPEC-016: hitEnemy 経由で 数字 + freeze)
     for (let j = enemies.length - 1; j >= 0; j--) {
       const e = enemies[j];
       const dx = e.x - ox, dy = e.y - oy;
@@ -362,12 +362,7 @@ export function tickOrbits(dt, nowMs) {
       const last = o.hitMap[e.id] ?? 0;
       if (nowMs - last < ORBIT_HIT_COOLDOWN_MS) continue;
       o.hitMap[e.id] = nowMs;
-      e.hp -= o.dmg;
-      if (e.hp <= 0) {
-        spawnGem(e.x, e.y);
-        enemies.splice(j, 1);
-        state.killCount++;
-      }
+      hitEnemy(j, o.dmg);
     }
   }
 }
@@ -401,12 +396,7 @@ export function tickBeams(dt) {
       const dx = ex - px, dy = ey - py;
       const dist = Math.hypot(dx, dy);
       if (dist > halfThick + e.r) continue;
-      e.hp -= dmg;
-      if (e.hp <= 0) {
-        spawnGem(e.x, e.y);
-        enemies.splice(j, 1);
-        state.killCount++;
-      }
+      hitEnemy(j, dmg);   // SPEC-016
     }
   }
 }
@@ -423,18 +413,13 @@ export function tickBombs(dt) {
     const b = bombs[i];
     b.age += dms;
     if (b.age < b.fuseMs) continue;
-    // 爆発: AoE
+    // 爆発: AoE (= SPEC-016: hitEnemy 経由)
     const r2 = b.radius * b.radius;
     for (let j = enemies.length - 1; j >= 0; j--) {
       const e = enemies[j];
       const dx = e.x - b.x, dy = e.y - b.y;
       if (dx * dx + dy * dy > r2) continue;
-      e.hp -= b.dmg;
-      if (e.hp <= 0) {
-        spawnGem(e.x, e.y);
-        enemies.splice(j, 1);
-        state.killCount++;
-      }
+      hitEnemy(j, b.dmg);
     }
     bombs.splice(i, 1);
   }
@@ -462,12 +447,7 @@ export function tickShockwaves(dt) {
       const dx = e.x - s.x, dy = e.y - s.y;
       if (dx * dx + dy * dy > r2) continue;
       s.hitSet.add(e.id);
-      e.hp -= s.dmg;
-      if (e.hp <= 0) {
-        spawnGem(e.x, e.y);
-        enemies.splice(j, 1);
-        state.killCount++;
-      }
+      hitEnemy(j, s.dmg);   // SPEC-016
     }
   }
 }
