@@ -153,3 +153,11 @@ export const HERO_STARTING_WEAPON = {
   2013:  3,   // 許褚           → Panjandrum (= 怪力 / 突進輪)
 };
 export const HERO_STARTING_WEAPON_DEFAULT = 1;   // 不明 hero は Revolver fallback
+
+// ============================================================
+// SPEC-014: Hero stats → battle ステータス派生
+// ============================================================
+export const HERO_HP_BASE        = 80;     // 基礎 HP (= 全 hero 共通)
+export const HERO_HP_PER_STAT    = 0.20;   // hero.stats.hp の何 % を加算するか
+export const HERO_SPEED_BASE     = 140;    // 基礎移動速度 (px/sec)
+export const HERO_SPEED_PER_AGI  = 0.6;    // hero.stats.agi に乗じる係数

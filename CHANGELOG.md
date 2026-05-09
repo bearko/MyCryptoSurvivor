@@ -4,6 +4,18 @@
 
 ## [Unreleased]
 
+### Added — SPEC-014 Phase 0 (= Hero Selection Detail Panel + Per-Hero HP/Speed spec)
+- `docs/specs/SPEC-014-hero-detail-panel.md` 新規 (= ヒーロー選択モーダル上部に詳細パネル / hero.stats から HP 上限・移動速度を派生 / 担当 extension のアイコン+効果説明を表示)
+- `docs/specs/SPEC-INDEX.md`: SPEC-013 を `#15 (open)`、 SPEC-014 を Implementing 登録
+
+### Planned — SPEC-014 Phase 1 (= 実装)
+- `js/constants.js`: `HERO_HP_BASE` / `HERO_HP_PER_STAT` / `HERO_SPEED_BASE` / `HERO_SPEED_PER_AGI`
+- `js/battle/index.js` `startBattle`: hero.stats から maxHp / speed を派生
+- `index.html`: `<div id="heroDetail">` を hero modal 内 grid 直前に追加
+- `js/main.js`: `renderHeroDetail(heroId)` を pickHero / openHeroSelectModal / onLangChange から呼出
+- `data/i18n/ui.json`: `hero.detail.placeholder` / `hp` / `speed` / `starterWeapon`
+- `css/components.css`: `.hero-detail*` 一式
+
 ### Added — SPEC-013 Phase 0 (= Hero Starter Weapon + Picker Rules spec)
 - `docs/specs/SPEC-013-hero-starter-weapon-and-picker-rules.md` 新規 (= 各ヒーローに固定の starter 武器を Lv.1 で装備 / starter pick モーダル撤去 / Level up picker で同系列重複禁止 / Level up picker に最低 1 weapon 枠を保証)
 - `docs/specs/SPEC-INDEX.md`: SPEC-012 を `#13 (open, also bundled in re-stack PR #14)` に、 SPEC-013 を Implementing 登録
