@@ -6,8 +6,9 @@
 | ID | タイトル | Status | Phase | 実装 PR |
 |---|---|---|---|---|
 | SPEC-001 | Phase 1 Bootstrap (= Charter / 識別子 / Day 1 ヒーロー選択 mock) | Done | Phase 0 / Phase 1 | #1 (merged) |
-| SPEC-002 | Hero Roster (= heroes.json + 10 体実データ + state.ownedHero) | Implementing | Phase 0 / Phase 1 | feat/spec-002-hero-roster |
-| SPEC-003 | MCH IP Data Sources (= bearko/mycryptoheroes 由来の heroes/extensions/enemies 先行整備) | Implementing | Phase 0 / Phase 1 | feat/spec-003-mch-data-sources (stacked on SPEC-002) |
+| SPEC-002 | Hero Roster (= heroes.json + 10 体実データ + state.ownedHero) | Done | Phase 0 / Phase 1 | #2 (merged) |
+| SPEC-003 | MCH IP Data Sources (= bearko/mycryptoheroes 由来の heroes/extensions/enemies 先行整備) | Done | Phase 0 / Phase 1 | #4 (merged、 #3 は spec-002 枝に取り残されたため再 PR) |
+| SPEC-004 | Survival HUD (= Day N + HP / 体温 / 食料 + tick decay) | Implementing | Phase 0 / Phase 1 | feat/spec-004-survival-hud |
 
 ## 命名規則
 
