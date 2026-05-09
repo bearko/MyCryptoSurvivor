@@ -11,11 +11,18 @@
   --muted:    #8c7fb0;
   --accent:   #c4a35a;
 
-  /* 元素 / レアリティカラー (= プロジェクトに合わせて調整) */
+  /* 元素 / レアリティカラー (= テンプレート由来、 他派生で利用) */
   --garuda:    #5ecf8a;
   --ifrit:     #e76060;
   --leviathan: #56ccf2;
   --tiamat:    #bb86fc;
+
+  /* MCH 5 派閥 (= SPEC-003、 MyCryptoSurvivor 本体はこちらを使う) */
+  --seiryu:    #5ecf8a;   /* 青龍 / 東 / 木 */
+  --suzaku:    #e76060;   /* 朱雀 / 南 / 火 */
+  --byakko:    #d4d4dc;   /* 白虎 / 西 / 金 */
+  --genbu:     #56ccf2;   /* 玄武 / 北 / 水 */
+  --kouryu:    #f0c14b;   /* 黄龍 / 中央 / 土 */
 
   --rarity-n:  #aaa;
   --rarity-r:  #56ccf2;
