@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "source":  "bearko/mycryptoheroes",
+  "enemies": [
+    {
+      "enemyId": 101,
+      "name":    { "ja": "クリーパー ショート",  "en": "Creeper-short" },
+      "stats":   { "hp": 8,  "phy": 4,  "int": 4,  "agi": 4 }
+    },
+    {
+      "enemyId": 104,
+      "name":    { "ja": "クリーパー ヴェンティ", "en": "Creeper-venti" },
+      "stats":   { "hp": 10, "phy": 6,  "int": 6,  "agi": 6 }
+    },
+    {
+      "enemyId": 111,
+      "name":    { "ja": "エルククローナ ショート", "en": "Elk Cloner-short" },
+      "stats":   { "hp": 5,  "phy": 7,  "int": 4,  "agi": 4 }
+    },
+    {
+      "enemyId": 124,
+      "name":    { "ja": "ハートブリード ヴェンティ", "en": "Heartbleed-venti" },
+      "stats":   { "hp": 7,  "phy": 6,  "int": 9,  "agi": 6 }
+    },
+    {
+      "enemyId": 134,
+      "name":    { "ja": "メリッサ ヴェンティ", "en": "Melissa-venti" },
+      "stats":   { "hp": 8,  "phy": 6,  "int": 8,  "agi": 6 }
+    },
+    {
+      "enemyId": 136,
+      "name":    { "ja": "メリッサ フラペチーノ", "en": "Melissa-frappuccino" },
+      "stats":   { "hp": 14, "phy": 12, "int": 14, "agi": 12 }
+    },
+    {
+      "enemyId": 145,
+      "name":    { "ja": "クリーパー ヴェンティ ドッピオ", "en": "Creeper-venti doppio" },
+      "stats":   { "hp": 10, "phy": 6,  "int": 6,  "agi": 6 }
+    },
+    {
+      "enemyId": 164,
+      "name":    { "ja": "バイトバンディット ヴェンティ", "en": "Byte Bandit-venti" },
+      "stats":   { "hp": 16, "phy": 10, "int": 3,  "agi": 7 }
+    },
+    {
+      "enemyId": 166,
+      "name":    { "ja": "バイトバンディット フラペチーノ", "en": "Byte Bandit-frappuccino" },
+      "stats":   { "hp": 19, "phy": 19, "int": 5,  "agi": 13 }
+    },
+    {
+      "enemyId": 182,
+      "name":    { "ja": "ベーグル トール", "en": "Bagle-tall" },
+      "stats":   { "hp": 21, "phy": 4,  "int": 6,  "agi": 3 }
+    }
+  ]
+}
