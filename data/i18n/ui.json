@@ -12,6 +12,11 @@
   "hero.select.empty":       { "ja": "ヒーローを選択してください", "en": "Select a hero to continue" },
   "hero.select.imgAlt":      { "ja": "{name} のポートレート",      "en": "Portrait of {name}" },
 
+  "hero.detail.placeholder":   { "ja": "ヒーローを選んでください",       "en": "Pick a hero" },
+  "hero.detail.hp":            { "ja": "HP {n}",                          "en": "HP {n}" },
+  "hero.detail.speed":         { "ja": "速度 {n}",                        "en": "Speed {n}" },
+  "hero.detail.starterWeapon": { "ja": "開始武器",                        "en": "Starter Weapon" },
+
   "hero.faction.SEIRYU":     { "ja": "青龍",                       "en": "Seiryu" },
   "hero.faction.SUZAKU":     { "ja": "朱雀",                       "en": "Suzaku" },
   "hero.faction.BYAKKO":     { "ja": "白虎",                       "en": "Byakko" },
