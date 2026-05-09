@@ -4,6 +4,113 @@
 
 ## [Unreleased]
 
+### Added — SPEC-012 Phase 0 (= 10 Weapon Archetype Behaviors spec)
+- `docs/specs/SPEC-012-weapon-archetypes.md` 新規 (= 武器 10 系列の固有挙動を archetype.js で実装、 新 entity orbits/beams/bombs を追加、 Oriflamme bulletCountBonus を全 archetype に反映)
+- `docs/specs/SPEC-INDEX.md`: SPEC-011 を `#12 (open)`、 SPEC-012 を Implementing 登録
+
+### Planned — SPEC-012 Phase 1 (= 実装)
+- `js/state.js`: `state.battle.orbits` / `beams` / `bombs` を追加、 startBattle で reset
+- `js/battle/archetypes.js` 新規 (= fireRadial / fireBigHoming / fireDropTarget / fireStack / fireBeam / fireDiagonal / fireRandomRadial / firePlaceBomb / fireHoming + ensureOrbits + tickOrbits + tickBeams + tickBombs + tickHomingProjectiles)
+- `js/battle/weapons.js`: archetype dispatcher 化
+- `js/battle/projectiles.js`: targetId フィールド対応 (= bigHoming の追従)
+- `js/battle/index.js` _loop: tickHomingProjectiles → tickProjectiles → tickOrbits → tickBeams → tickBombs の順で配線
+- `js/battle/render.js`: orbits / beams / bombs の描画追加
+
+### Added — SPEC-011 Phase 0 (= Extension Schema Overhaul 17×5 + Buff Archetype spec)
+- `docs/specs/SPEC-011-extension-tiers-and-buffs.md` 新規 (= 武器 10 系列 + 強化 7 系列 × 5 段階レアリティ。 ピックで tier 昇格 = 名前/スキル名/効果説明が変化。 Buff 7 種が即時効果。 武器固有挙動は SPEC-012 で扱う)
+- `docs/specs/SPEC-INDEX.md`: SPEC-010 を `#11 (open)`、 SPEC-011 を Implementing 登録
+
+### Planned — SPEC-011 Phase 1 (= 実装)
+- `data/extensions.json` v2: 17 系列 × tierNames[5] / skillName / skillDescTpl / tierParams[5] / archetype / category
+- `js/extensions.js`: ローダ更新、 `getTierName(ext, level, lang)` / `getSkillDesc(ext, level, lang)` / `getCategory(ext)` 追加
+- `js/state.js`: `state.buffs = {hpMaxBonus, regenPerSec, speedMul, cdMul, dmgTakenMul, dmgMul, bulletCountBonus}`、 startBattle で reset
+- `js/battle/buffs.js` 新規 (= applyBuff(extId, level) / tickRegen(dt))
+- `js/battle/extensions-as-weapons.js`: weaponFromExt を tier params 駆動に
+- `js/battle/levelup.js`: applyPick で weapon vs buff 分岐、 カード DOM に tier name / skill name / skill desc / icon を表示
+- `js/battle/index.js`: RAF ループに tickRegen 追加、 startBattle で state.buffs reset
+- `js/battle/player.js`: speedMul 適用
+- `js/battle/weapons.js`: cdMul / dmgMul 適用
+- `js/battle/enemies.js`: dmgTakenMul 適用
+
+### Added — SPEC-010 Phase 0 (= Mobile Viewport Fit + Hero/Enemy Sprites + Ext Icon/Effect spec)
+- `docs/specs/SPEC-010-mobile-viewport-and-sprites.md` 新規 (= モバイル full-screen 化 / プレイヤー & 敵を MCH 画像で円形クリップ描画 / Level up カードに extension アイコン + 効果テキスト追加)
+- `docs/specs/SPEC-INDEX.md`: SPEC-009 を `#10 (open)` に、 SPEC-010 を Implementing 登録
+- 17 系列 × 5 段階の本格再設計 (= SPEC-011) の前段の **視覚 / レイアウト 改修のみ** に絞る
+
+### Planned — SPEC-010 Phase 1 (= 実装)
+- `css/base.css` / `css/layout.css` / `css/components.css`: `html/body { height:100% }`, `.app { height:100dvh; overflow:hidden }`, `.battle-canvas { position:absolute; inset:0 }` で mobile full-screen
+- `js/battle/sprites.js` 新規 (= preload 画像キャッシュ + `drawSpriteCircular`)
+- `js/state.js`: `state.battle.playerSprite` / `defaultEnemySprite` 追加
+- `js/battle/index.js`: startBattle で sprite preload を仕込む
+- `js/battle/render.js`: プレイヤー / 敵を sprite 円形クリップで描画、 fallback で従来円
+- `js/battle/levelup.js`: カード DOM を icon-wrap + main の 2 列に再構成、 効果テキスト (`DMG / CD / range`) を追加
+- `data/i18n/ui.json`: `levelup.weaponEffect` 追加
+- `css/components.css`: `.levelup-card` を grid + icon + effect 表示用に再設計
+
+### Added — SPEC-009 Phase 0 (= Game Over + Retry + Ranking Submit spec)
+- `docs/specs/SPEC-009-game-over.md` 新規 (= HP 0 で Game Over モーダル + 経過時間 / Lv / 撃破数 表示 + プレイヤー名入力 + 既存 submitScore() 経由でランキング送信 + リトライボタン)
+- `docs/specs/SPEC-INDEX.md`: SPEC-008 を `#9 (open)` に、 SPEC-009 を Implementing 登録
+- これにより VS-like MVP 完了 (= 「死んだら終わる」 + 「もう 1 回」)
+
+### Planned — SPEC-009 Phase 1 (= 実装)
+- `js/state.js`: `state.killCount` / `state.battle.gameOver` / `state.lastRunStats` 追加
+- `js/battle/projectiles.js`: 敵撃破時 `state.killCount++`
+- `js/battle/enemies.js`: 接触ダメージ後 HP <= 0 で `triggerGameOver()`
+- `js/battle/gameover.js` 新規 (= triggerGameOver / applyRetry / モーダル制御 / submit / lang change)
+- `js/battle/index.js`: startBattle で killCount / gameOver / lastRunStats を reset
+- `index.html`: `#gameOverModal` 追加
+- `data/i18n/ui.json`: `gameover.*` 11 キー追加
+- `css/components.css`: `.gameover-modal*` / `.gameover-form*` / `.gameover-stat`
+
+### Added — SPEC-008 Phase 0 (= Extensions as Weapons + Level-Up Picker Modal spec)
+- `docs/specs/SPEC-008-extensions-as-weapons.md` 新規 (= 仮 shockwave 撤去 + EXT_ROSTER を投射体武器化 + Level up モーダル + 3 択ピック + starter pick + ext.stats 由来の dmg/cd/range/projSpeed)
+- `docs/specs/SPEC-INDEX.md`: SPEC-007 を `#8 (open)` に、 SPEC-008 を Implementing 登録
+
+### Planned — SPEC-008 Phase 1 (= 実装)
+- `js/constants.js`: `EXT_MAX_LEVEL=5` / `PROJECTILE_LIFE_MS=1500` / `PROJECTILE_RADIUS=5` / `PICK_OPTIONS_COUNT=3` / `SERIES_COLOR` map 追加、 `SHOCKWAVE_*` 撤去
+- `js/state.js`: `state.ownedExtensions=[]` / `state.pendingPickOptions=[]` / `state.pendingPickIsStarter=false` / `state.battle.projectiles=[]` 追加、 `state.battle.shockwaveAnims` 撤去
+- `js/battle/extensions-as-weapons.js` 新規 (= weaponFromExt + rebuildWeaponsFromOwned)
+- `js/battle/weapons.js` 全面改修 (= shockwave 撤去、 nearest enemy ホーミング投射体 spawn)
+- `js/battle/projectiles.js` 新規 (= tickProjectiles で移動 + 衝突 + 寿命)
+- `js/battle/levelup.js` 新規 (= triggerLevelUpPick / triggerStarterPick / sample / applyPick / open/close modal)
+- `js/battle/gems.js`: tickGems の level up loop で triggerLevelUpPick(n) 呼出
+- `js/battle/index.js`: startBattle 末尾で triggerStarterPick、 RAF ループに tickProjectiles 追加、 tickShockwaveAnims 撤去
+- `js/battle/render.js`: projectiles 描画追加、 shockwaveAnims 描画撤去
+- `index.html`: `#levelUpModal` + `#levelUpGrid` 追加
+- `data/i18n/ui.json`: `levelup.title` / `levelup.sub` / `levelup.starter` / `ext.new` 追加
+- `css/components.css`: `.levelup-modal*` / `.levelup-card*` 追加
+
+### Added — SPEC-007 Phase 0 (= Enemies + Hardcoded Weapon + XP Gems + Level Trigger spec)
+- `docs/specs/SPEC-007-enemies-and-xp.md` 新規 (= 敵スポーン waves + 追跡 AI + 接触ダメージ + 仮 hardcoded shockwave 武器 + 撃破時 XP gem ドロップ + 拾う + level up trigger、 VS core loop の完成形)
+- `docs/specs/SPEC-INDEX.md`: SPEC-006 を `#7 (open)` に、 SPEC-007 を Implementing 登録
+- 武器を Extension に置き換える次段は SPEC-008 (= level up モーダル + extension picker)、 Game Over は SPEC-009
+
+### Planned — SPEC-007 Phase 1 (= 実装)
+- `js/constants.js`: `ENEMY_*` / `CONTACT_COOLDOWN_MS` / `GEM_*` / `SHOCKWAVE_VISUAL_*` / `XP_TO_NEXT_GROWTH` / `MAX_ENEMIES` 追加
+- `js/state.js`: `state.battle` に `enemies` / `gems` / `shockwaveAnims` / `weapons` / `nextEntityId` / `lastEnemySpawnMs` / `contactCooldownMs` 追加
+- `js/battle/enemies.js` 新規 (= tickEnemies + spawnEnemyAtRing + 接触ダメージ throttle)
+- `js/battle/weapons.js` 新規 (= shockwave 自動発射 + 範囲ダメージ + アニメ tick)
+- `js/battle/gems.js` 新規 (= spawnGem + tickGems + level up loop)
+- `js/battle/index.js` 改修 (= startBattle で各 entity reset + RAF ループに新規 tick 追加)
+- `js/battle/render.js` 改修 (= shockwave / gem / enemy 描画追加、 viewport カリング)
+
+### Added — SPEC-006 Phase 0 (= Battle Stage Scaffold spec)
+- `docs/specs/SPEC-006-battle-scaffold.md` 新規 (= canvas + プレイヤー移動 WASD/矢印/仮想ジョイスティック + カメラ追従 + 背景グリッド + DPR 対応 + RAF ループ + pauseFlags 連動)
+- `docs/specs/SPEC-INDEX.md`: SPEC-006 を Implementing 登録 (= SPEC-005 にスタック)
+
+### Planned — SPEC-006 Phase 1 (= 実装)
+- `js/constants.js`: `BATTLE_GRID_SIZE` / `PLAYER_RADIUS` / `PLAYER_SPEED_PX_S` / `JOYSTICK_RADIUS` / `JOYSTICK_DEADZONE` 追加
+- `js/state.js`: `state.battle = { active, player, camera, viewport }` 追加
+- `js/battle/index.js` 新規 (= startBattle / stopBattle / RAF ループ / resize)
+- `js/battle/input.js` 新規 (= keyboard + 仮想ジョイスティック → unit vector)
+- `js/battle/player.js` 新規 (= tickPlayer)
+- `js/battle/render.js` 新規 (= clear / グリッド / プレイヤー描画)
+- `index.html`: `<canvas id="battleCanvas">` + `<div id="joystick">` を `.stage` 内に追加、 `stage.placeholder` 撤去
+- `data/i18n/ui.json`: `stage.placeholder` 削除
+- `css/layout.css`: `.stage` flex 配置 + canvas full-fill
+- `css/components.css`: `.battle-canvas` / `.joystick` / `.joystick__base` / `.joystick__stick`
+- `js/main.js`: `applyHeroPick` 末尾で `startBattle(state.ownedHero)`
+
 ### Added — SPEC-005 Phase 0 (= VS HUD slim spec)
 - `docs/specs/SPEC-005-vs-hud-slim.md` 新規 (= 体温/食料 を撤去し HP のみ + XP バー + Lv 表示 + 経過時間 mm:ss、 ヴァンパイアサバイバーライクへの方向転換 prep)
 - `docs/specs/SPEC-INDEX.md`: SPEC-004 を Done (#5) に flip、 SPEC-005 を Implementing として登録

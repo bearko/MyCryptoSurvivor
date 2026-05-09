@@ -91,9 +91,47 @@
     </section>
 
     <section class="stage">
-      <p data-i18n="stage.placeholder">ここにサバイバル本編が描画される</p>
+      <canvas id="battleCanvas" class="battle-canvas" aria-label="battle stage"></canvas>
+      <div id="joystick" class="joystick hidden" aria-hidden="true">
+        <div class="joystick__base"  id="joystickBase"></div>
+        <div class="joystick__stick" id="joystickStick"></div>
+      </div>
     </section>
   </main>
+
+  <!-- ============================================================ -->
+  <!-- Game Over modal (= SPEC-009)                                   -->
+  <!-- ============================================================ -->
+  <div id="gameOverModal" class="gameover-modal hidden" role="dialog" aria-modal="true"
+       aria-labelledby="gameOverTitle">
+    <div class="gameover-modal__card">
+      <h2 class="gameover-modal__title" id="gameOverTitle" data-i18n="gameover.title">ゲームオーバー</h2>
+      <div class="gameover-modal__stats">
+        <div class="gameover-stat" id="gameOverElapsed"></div>
+        <div class="gameover-stat" id="gameOverLevel"></div>
+        <div class="gameover-stat" id="gameOverKills"></div>
+      </div>
+      <div class="gameover-modal__form">
+        <label class="gameover-form__label" for="gameOverName" data-i18n="gameover.namelabel">プレイヤー名</label>
+        <input class="gameover-form__input" id="gameOverName" type="text" maxlength="30" autocomplete="off" />
+        <button class="btn btn--secondary" id="gameOverSubmit" data-i18n="gameover.submit">ランキングに送信</button>
+        <p class="gameover-form__msg" id="gameOverMsg" aria-live="polite"></p>
+      </div>
+      <button class="btn gameover-modal__retry" id="gameOverRetry" data-i18n="gameover.retry">リトライ</button>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- Level-up modal (= SPEC-008、 starter pick + LV up)              -->
+  <!-- ============================================================ -->
+  <div id="levelUpModal" class="levelup-modal hidden" role="dialog" aria-modal="true"
+       aria-labelledby="levelUpTitle">
+    <div class="levelup-modal__card">
+      <h2 class="levelup-modal__title" id="levelUpTitle" data-i18n="levelup.title">レベルアップ!</h2>
+      <p class="levelup-modal__sub"   id="levelUpSub"   data-i18n="levelup.sub">強化を 1 つ選ぼう</p>
+      <div class="levelup-modal__grid" id="levelUpGrid" role="listbox"></div>
+    </div>
+  </div>
 
   <!-- ============================================================ -->
   <!-- 4. Hero select modal (= SPEC-001 Phase 1 mock)                 -->

@@ -22,6 +22,7 @@ import {
 import { loadExtensions } from "./extensions.js";
 import { loadEnemies } from "./enemies.js";
 import { tickStatsDecay, renderHud } from "./survival.js";
+import { startBattle } from "./battle/index.js";
 
 // ============================================================
 // DOM helpers
@@ -261,6 +262,7 @@ function applyHeroPick() {
   state.ownedHero = { ...hero };
   renderOwnedHeroBadge();
   closeHeroSelectModal();
+  startBattle(state.ownedHero);   // SPEC-006: 戦闘ステージ開始
 }
 
 function renderOwnedHeroBadge() {

@@ -390,3 +390,268 @@
   font-variant-numeric: tabular-nums;
   flex-shrink: 0;
 }
+
+/* ============================================================
+   Battle stage canvas + virtual joystick (= SPEC-006)
+   ============================================================ */
+.battle-canvas {
+  /* SPEC-010: position absolute で親 .stage の resolved size に確実に追従 (= flex 競合回避) */
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #0e0c14;
+  touch-action: none;       /* スクロール / ズーム抑止 */
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.joystick {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+}
+.joystick.hidden { display: none; }
+
+.joystick__base {
+  position: absolute;
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.joystick__stick {
+  position: absolute;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(196, 163, 90, 0.45);
+  border: 2px solid var(--accent);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+/* ============================================================
+   Level-up modal (= SPEC-008、 starter pick + LV up)
+   ============================================================ */
+.levelup-modal {
+  position: fixed; inset: 0; z-index: 320;
+  background: rgba(15, 12, 22, 0.92);
+  display: flex; align-items: center; justify-content: center;
+  padding: 1rem;
+  animation: modal-fade-in 0.18s ease;
+}
+.levelup-modal.hidden { display: none !important; }
+
+.levelup-modal__card {
+  width: 100%; max-width: 560px;
+  background: linear-gradient(180deg, #2c2440 0%, var(--panel) 100%);
+  border: 2px solid var(--accent);
+  border-radius: 14px;
+  padding: 1rem 1.1rem 1.1rem;
+  display: flex; flex-direction: column;
+  gap: 0.8rem;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+  animation: modal-pop-in 0.22s cubic-bezier(.2, .8, .4, 1);
+}
+
+.levelup-modal__title {
+  margin: 0;
+  text-align: center;
+  color: var(--accent);
+  font-size: 1.3rem;
+  letter-spacing: 0.08em;
+}
+.levelup-modal__sub {
+  margin: 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.levelup-modal__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+/* SPEC-010: アイコン + メインの 2 列 grid に再設計 */
+.levelup-card {
+  appearance: none;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.4rem;
+  background: var(--panel-2);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 0.55rem;
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.1s, background 0.15s;
+  min-height: 156px;
+  text-align: center;
+}
+.levelup-card:hover  { border-color: var(--accent); }
+.levelup-card:active { transform: translateY(1px); }
+
+.levelup-card__icon-wrap {
+  width: 100%;
+  aspect-ratio: 1;
+  background: linear-gradient(135deg, var(--panel-2), var(--panel));
+  border: 1.5px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.levelup-card__icon {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.levelup-card__icon--missing {
+  background: linear-gradient(135deg, var(--panel), var(--panel-2));
+}
+
+.levelup-card__main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  min-width: 0;
+  flex: 1;
+}
+.levelup-card__series {
+  width: 100%;
+  height: 5px;
+  border-radius: 3px;
+}
+.levelup-card__name {
+  font-weight: 800;
+  font-size: 0.86rem;
+  line-height: 1.15;
+  margin-top: 0.15rem;
+  word-break: break-word;
+}
+.levelup-card__series-label {
+  font-size: 0.66rem;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+}
+.levelup-card__skill {
+  font-size: 0.78rem;
+  color: var(--accent);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.levelup-card__effect {
+  font-size: 0.68rem;
+  color: var(--text);
+  opacity: 0.85;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+  text-align: center;
+}
+.levelup-card[data-category="buff"] {
+  border-color: rgba(94, 207, 138, 0.5);
+}
+.levelup-card__lv {
+  font-size: 0.74rem;
+  color: var(--accent);
+  font-weight: 700;
+  margin-top: auto;
+}
+
+@media (max-width: 480px) {
+  .levelup-modal__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.35rem; }
+  .levelup-card { padding: 0.4rem; min-height: 132px; gap: 0.3rem; }
+  .levelup-card__name { font-size: 0.74rem; }
+  .levelup-card__series-label { font-size: 0.6rem; }
+  .levelup-card__effect { font-size: 0.62rem; }
+  .levelup-card__lv { font-size: 0.66rem; }
+}
+
+/* ============================================================
+   Game Over modal (= SPEC-009)
+   ============================================================ */
+.gameover-modal {
+  position: fixed; inset: 0; z-index: 330;
+  background: rgba(15, 12, 22, 0.95);
+  display: flex; align-items: center; justify-content: center;
+  padding: 1rem;
+  animation: modal-fade-in 0.2s ease;
+}
+.gameover-modal.hidden { display: none !important; }
+
+.gameover-modal__card {
+  width: 100%; max-width: 400px;
+  background: linear-gradient(180deg, #2c2440 0%, var(--panel) 100%);
+  border: 2px solid var(--ifrit, #e76060);
+  border-radius: 14px;
+  padding: 1.2rem 1.1rem;
+  display: flex; flex-direction: column;
+  gap: 1rem;
+  text-align: center;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+  animation: modal-pop-in 0.22s cubic-bezier(.2, .8, .4, 1);
+}
+
+.gameover-modal__title {
+  margin: 0;
+  color: var(--ifrit, #e76060);
+  font-size: 1.4rem;
+  letter-spacing: 0.1em;
+}
+
+.gameover-modal__stats {
+  display: flex; flex-direction: column;
+  gap: 0.25rem;
+  color: var(--text);
+  font-size: 0.95rem;
+  font-variant-numeric: tabular-nums;
+}
+.gameover-stat { line-height: 1.4; }
+
+.gameover-modal__form {
+  display: flex; flex-direction: column;
+  gap: 0.5rem;
+}
+.gameover-form__label {
+  color: var(--muted);
+  font-size: 0.78rem;
+  text-align: left;
+  letter-spacing: 0.04em;
+}
+.gameover-form__input {
+  appearance: none;
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.55rem 0.7rem;
+  font-size: 0.95rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+.gameover-form__input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 0;
+}
+.gameover-form__msg {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  min-height: 1em;
+}
+.gameover-modal__retry {
+  margin-top: 0.3rem;
+}

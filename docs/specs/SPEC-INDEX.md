@@ -9,7 +9,14 @@
 | SPEC-002 | Hero Roster (= heroes.json + 10 体実データ + state.ownedHero) | Done | Phase 0 / Phase 1 | #2 (merged) |
 | SPEC-003 | MCH IP Data Sources (= bearko/mycryptoheroes 由来の heroes/extensions/enemies 先行整備) | Done | Phase 0 / Phase 1 | #4 (merged、 #3 は spec-002 枝に取り残されたため再 PR) |
 | SPEC-004 | Survival HUD (= Day N + HP / 体温 / 食料 + tick decay) | Done | Phase 0 / Phase 1 | #5 (merged) |
-| SPEC-005 | VS HUD slim (= HP のみ + XP + Lv、 体温/食料 撤去、 ヴァンパイアサバイバー方向に転換) | Implementing | Phase 0 / Phase 1 | feat/spec-005-vs-hud-slim |
+| SPEC-005 | VS HUD slim (= HP のみ + XP + Lv、 体温/食料 撤去、 ヴァンパイアサバイバー方向に転換) | Implementing | Phase 0 / Phase 1 | #6 (open) |
+| SPEC-006 | Battle Stage Scaffold (= canvas + プレイヤー移動 WASD/joystick + カメラ追従) | Implementing | Phase 0 / Phase 1 | #7 (open, stacked on SPEC-005) |
+| SPEC-007 | Enemies + Hardcoded Weapon + XP Gems + Level Trigger (= VS core loop 完成) | Implementing | Phase 0 / Phase 1 | #8 (open, stacked on SPEC-006) |
+| SPEC-008 | Extensions as Weapons + Level-Up Picker Modal (= スキル = extension、 投射体武器化) | Implementing | Phase 0 / Phase 1 | #9 (open, stacked on SPEC-007) |
+| SPEC-009 | Game Over + Retry + Ranking Submit (= MVP 完了、 死んだら終わる + もう 1 回) | Implementing | Phase 0 / Phase 1 | #10 (open, stacked on SPEC-008) |
+| SPEC-010 | Mobile Viewport Fit + Hero/Enemy Sprites + Ext Icon/Effect in Level-up Card | Implementing | Phase 0 / Phase 1 | #11 (open, stacked on SPEC-009) |
+| SPEC-011 | Extension Schema Overhaul (17 系列 × 5 段階) + Buff Archetype | Implementing | Phase 0 / Phase 1 | #12 (open, stacked on SPEC-010) |
+| SPEC-012 | 10 Weapon Archetype Behaviors (= radial / orbit / beam / placement / etc) | Implementing | Phase 0 / Phase 1 | feat/spec-012-weapon-archetypes (stacked on SPEC-011) |
 
 ## 命名規則
 
