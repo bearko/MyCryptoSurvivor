@@ -198,10 +198,11 @@
   box-shadow: 0 0 0 2px rgba(196, 163, 90, 0.45);
 }
 
-.hero-tile[data-element="garuda"]    { border-top-color: var(--garuda); }
-.hero-tile[data-element="ifrit"]     { border-top-color: var(--ifrit); }
-.hero-tile[data-element="leviathan"] { border-top-color: var(--leviathan); }
-.hero-tile[data-element="tiamat"]    { border-top-color: var(--tiamat); }
+.hero-tile[data-faction="SEIRYU"] { border-top-color: var(--seiryu); }
+.hero-tile[data-faction="SUZAKU"] { border-top-color: var(--suzaku); }
+.hero-tile[data-faction="BYAKKO"] { border-top-color: var(--byakko); }
+.hero-tile[data-faction="GENBU"]  { border-top-color: var(--genbu); }
+.hero-tile[data-faction="KOURYU"] { border-top-color: var(--kouryu); }
 
 .hero-tile__portrait {
   width: 100%;
@@ -242,7 +243,7 @@
   color: var(--muted);
   letter-spacing: 0.02em;
 }
-.hero-tile__element { font-size: 0.85rem; line-height: 1; }
+.hero-tile__faction { font-size: 0.85rem; line-height: 1; }
 .hero-tile__rarity[data-rarity="Common"]    { color: var(--muted); }
 .hero-tile__rarity[data-rarity="Uncommon"]  { color: var(--garuda); }
 .hero-tile__rarity[data-rarity="Rare"]      { color: var(--leviathan); }
@@ -269,10 +270,11 @@
   background: rgba(196, 163, 90, 0.08);
   letter-spacing: 0.04em;
 }
-.header__hero-badge[data-element="garuda"]    { border-color: var(--garuda); }
-.header__hero-badge[data-element="ifrit"]     { border-color: var(--ifrit); }
-.header__hero-badge[data-element="leviathan"] { border-color: var(--leviathan); }
-.header__hero-badge[data-element="tiamat"]    { border-color: var(--tiamat); }
+.header__hero-badge[data-faction="SEIRYU"] { border-color: var(--seiryu); }
+.header__hero-badge[data-faction="SUZAKU"] { border-color: var(--suzaku); }
+.header__hero-badge[data-faction="BYAKKO"] { border-color: var(--byakko); }
+.header__hero-badge[data-faction="GENBU"]  { border-color: var(--genbu); }
+.header__hero-badge[data-faction="KOURYU"] { border-color: var(--kouryu); }
 
 /* ---------- Help overlay ---------- */
 .help-overlay {
