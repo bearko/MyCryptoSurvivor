@@ -13,7 +13,8 @@
 | SPEC-006 | Battle Stage Scaffold (= canvas + プレイヤー移動 WASD/joystick + カメラ追従) | Implementing | Phase 0 / Phase 1 | #7 (open, stacked on SPEC-005) |
 | SPEC-007 | Enemies + Hardcoded Weapon + XP Gems + Level Trigger (= VS core loop 完成) | Implementing | Phase 0 / Phase 1 | #8 (open, stacked on SPEC-006) |
 | SPEC-008 | Extensions as Weapons + Level-Up Picker Modal (= スキル = extension、 投射体武器化) | Implementing | Phase 0 / Phase 1 | #9 (open, stacked on SPEC-007) |
-| SPEC-009 | Game Over + Retry + Ranking Submit (= MVP 完了、 死んだら終わる + もう 1 回) | Implementing | Phase 0 / Phase 1 | feat/spec-009-game-over (stacked on SPEC-008) |
+| SPEC-009 | Game Over + Retry + Ranking Submit (= MVP 完了、 死んだら終わる + もう 1 回) | Implementing | Phase 0 / Phase 1 | #10 (open, stacked on SPEC-008) |
+| SPEC-010 | Mobile Viewport Fit + Hero/Enemy Sprites + Ext Icon/Effect in Level-up Card | Implementing | Phase 0 / Phase 1 | feat/spec-010-mobile-viewport-and-sprites (stacked on SPEC-009) |
 
 ## 命名規則
 
