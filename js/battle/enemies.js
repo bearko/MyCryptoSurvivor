@@ -9,6 +9,7 @@ import {
   ENEMY_RADIUS, ENEMY_COLOR, MAX_ENEMIES,
   CONTACT_COOLDOWN_MS,
 } from "../constants.js";
+import { triggerGameOver } from "./gameover.js";
 
 /**
  * 1 frame 分: 必要ならスポーン → 全敵がプレイヤーに 1 step 接近 → 接触判定
@@ -38,6 +39,10 @@ export function tickEnemies(dt, nowMs) {
       state.stats.hp -= e.dmg;
       if (state.stats.hp < 0) state.stats.hp = 0;
       b.contactCooldownMs = CONTACT_COOLDOWN_MS;
+      // SPEC-009: HP 0 で Game Over (= 多重 trigger 防止は gameover.js 側で gate)
+      if (state.stats.hp <= 0 && !b.gameOver) {
+        triggerGameOver();
+      }
     }
   }
 }

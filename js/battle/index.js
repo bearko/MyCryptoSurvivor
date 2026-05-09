@@ -53,7 +53,7 @@ export function startBattle(hero) {
   b.camera.x = 0;
   b.camera.y = 0;
 
-  // SPEC-007 / SPEC-008: 戦闘世界をクリーンに reset
+  // SPEC-007 / SPEC-008 / SPEC-009: 戦闘世界をクリーンに reset
   b.enemies.length     = 0;
   b.gems.length        = 0;
   b.projectiles.length = 0;
@@ -61,7 +61,10 @@ export function startBattle(hero) {
   b.nextEntityId       = 1;
   b.lastEnemySpawnMs   = performance.now();
   b.contactCooldownMs  = 0;
+  b.gameOver           = false;                 // SPEC-009: 多重 trigger 防止 flag
   state.ownedExtensions = [];                   // SPEC-008: 装備リセット
+  state.killCount       = 0;                    // SPEC-009: 撃破カウンタ
+  state.lastRunStats    = null;                 // SPEC-009: snapshot
 
   // SPEC-007: HP / XP / Lv / 経過 tick を初期化 (= リトライ運用も兼ねる)
   state.stats.hp     = STATS_INITIAL.hp;
