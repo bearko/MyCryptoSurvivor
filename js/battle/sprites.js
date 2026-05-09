@@ -7,6 +7,7 @@
 
 import { heroImg } from "../heroes.js";
 import { enemyImg, ENEMY_ROSTER } from "../enemies.js";
+import { extImg } from "../extensions.js";
 
 const _imageCache = new Map();   // url -> {img, ready, failed}
 
@@ -52,6 +53,33 @@ export function drawSpriteCircular(ctx, entry, cx, cy, r) {
   ctx.arc(cx, cy, r, 0, Math.PI * 2);
   ctx.clip();
   ctx.drawImage(entry.img, cx - r, cy - r, r * 2, r * 2);
+  ctx.restore();
+  return true;
+}
+
+/**
+ * SPEC-015: extension entry / id から sprite entry を取得 (= preload + cache)。
+ */
+export function getExtSprite(extOrId) {
+  if (extOrId == null) return null;
+  const id = (typeof extOrId === "object")
+    ? (extOrId.iconId ?? extOrId.extId)
+    : extOrId;
+  if (id == null) return null;
+  return _loadImage(extImg(id));
+}
+
+/**
+ * SPEC-015: 中心 (cx, cy) を軸に angle 回転させて size × size で描画。
+ * ready で無いか failed なら false を返し、 呼出側に fallback (= 円) を任せる。
+ */
+export function drawSpriteRotated(ctx, entry, cx, cy, size, angle) {
+  if (!entry || !entry.ready || entry.failed) return false;
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(angle);
+  const half = size / 2;
+  ctx.drawImage(entry.img, -half, -half, size, size);
   ctx.restore();
   return true;
 }

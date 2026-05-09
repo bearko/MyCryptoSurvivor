@@ -5,13 +5,13 @@
 
 import { state } from "../state.js";
 import { BATTLE_GRID_SIZE } from "../constants.js";
-import { drawSpriteCircular } from "./sprites.js";
+import { drawSpriteCircular, drawSpriteRotated, getExtSprite } from "./sprites.js";
 
 /**
  * 1 frame 描画。 ctx は dpr 反映済の transform で渡される前提。
  */
 export function renderBattle(ctx) {
-  const { player, camera, viewport, enemies, gems, projectiles, orbits, beams, bombs } = state.battle;
+  const { player, camera, viewport, enemies, gems, projectiles, orbits, beams, bombs, shockwaves } = state.battle;
   const w = viewport.w, h = viewport.h;
   if (w <= 0 || h <= 0) return;
 
@@ -22,19 +22,25 @@ export function renderBattle(ctx) {
   // グリッド
   _drawGrid(ctx, camera, w, h);
 
-  // SPEC-012: bombs (= 円 + fuseMs 残り少なくなったら点滅)
+  // SPEC-012 / SPEC-015: bombs (= icon 描画 + 残時間 70% 超で点滅、 AoE 範囲を線で示唆)
   for (const b of bombs) {
     const sx = b.x - camera.x;
     const sy = b.y - camera.y;
     const R = b.radius;
     if (sx + R < 0 || sx - R > w || sy + R < 0 || sy - R > h) continue;
     const t = b.age / b.fuseMs;
-    const blink = t > 0.7 ? 0.4 + 0.6 * Math.abs(Math.sin(b.age / 60)) : 0.6;
+    const blink = t > 0.7 ? 0.4 + 0.6 * Math.abs(Math.sin(b.age / 60)) : 0.85;
     ctx.globalAlpha = blink;
-    ctx.fillStyle = b.color;
-    ctx.beginPath();
-    ctx.arc(sx, sy, 8, 0, Math.PI * 2);
-    ctx.fill();
+    let drew = false;
+    if (b.iconId != null) {
+      drew = drawSpriteRotated(ctx, getExtSprite(b.iconId), sx, sy, 26, 0);
+    }
+    if (!drew) {
+      ctx.fillStyle = b.color;
+      ctx.beginPath();
+      ctx.arc(sx, sy, 8, 0, Math.PI * 2);
+      ctx.fill();
+    }
     ctx.globalAlpha = 0.18;
     ctx.strokeStyle = b.color;
     ctx.lineWidth = 2;
@@ -88,21 +94,52 @@ export function renderBattle(ctx) {
     ctx.stroke();
   }
 
-  // projectiles (= 投射体、 enemy/player の前に描く)
+  // SPEC-015: projectiles を extension icon で描画 (= 進行方向に rotate、 系列ごと iconRotOffset)
   for (const p of projectiles) {
     const sx = p.x - camera.x;
     const sy = p.y - camera.y;
-    if (sx + p.r < 0 || sx - p.r > w || sy + p.r < 0 || sy - p.r > h) continue;
-    ctx.fillStyle = p.color;
-    ctx.beginPath();
-    ctx.arc(sx, sy, p.r, 0, Math.PI * 2);
-    ctx.fill();
-    if (p.r >= 10) {
-      // 大型弾は外周線で見やすく
-      ctx.strokeStyle = "rgba(0, 0, 0, 0.45)";
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
+    const halfSize = (p.iconSize ?? 18) / 2;
+    if (sx + halfSize < 0 || sx - halfSize > w || sy + halfSize < 0 || sy - halfSize > h) continue;
+    let drew = false;
+    if (p.iconId != null) {
+      const sp = getExtSprite(p.iconId);
+      const angle = Math.atan2(p.vy, p.vx) + (p.iconRotOffset ?? 0);
+      drew = drawSpriteRotated(ctx, sp, sx, sy, p.iconSize ?? 18, angle);
     }
+    if (!drew) {
+      // fallback: 単色円
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(sx, sy, p.r, 0, Math.PI * 2);
+      ctx.fill();
+      if (p.r >= 10) {
+        ctx.strokeStyle = "rgba(0, 0, 0, 0.45)";
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      }
+    }
+  }
+
+  // SPEC-015: shockwaves (= Moai 着弾の AoE ring、 r0 → r1 に成長、 alpha fade)
+  for (const s of shockwaves) {
+    const sx = s.x - camera.x;
+    const sy = s.y - camera.y;
+    const t = s.age / s.life;
+    const r = s.r0 + (s.r1 - s.r0) * t;
+    if (sx + r < 0 || sx - r > w || sy + r < 0 || sy - r > h) continue;
+    ctx.globalAlpha = Math.max(0, 1 - t);
+    ctx.strokeStyle = s.color;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(sx, sy, r, 0, Math.PI * 2);
+    ctx.stroke();
+    // 内側のソフトリング
+    ctx.globalAlpha = Math.max(0, 0.5 - t * 0.5);
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.arc(sx, sy, r * 0.85, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
   }
 
   // SPEC-010: enemies (sprite で円形クリップ、 fallback は単色円)
@@ -125,32 +162,40 @@ export function renderBattle(ctx) {
     ctx.stroke();
   }
 
-  // SPEC-012: orbits (= Book 系は円、 Blade 系は短い長方形を angle で回転)
+  // SPEC-012 / SPEC-015: orbits (= Book / Blade、 icon を公転接線方向に回転して描画)
   for (const o of orbits) {
     const sx = (o.x ?? player.x + Math.cos(o.angle) * o.r) - camera.x;
     const sy = (o.y ?? player.y + Math.sin(o.angle) * o.r) - camera.y;
-    const rad = o.radius ?? 10;
-    if (sx + rad < 0 || sx - rad > w || sy + rad < 0 || sy - rad > h) continue;
-    if (o.kind === "orbitClose") {
-      // Blade: 細い長方形を angle 方向に
-      ctx.save();
-      ctx.translate(sx, sy);
-      ctx.rotate(o.angle);
-      ctx.fillStyle = o.color;
-      ctx.fillRect(-rad, -2, rad * 2, 4);
-      ctx.strokeStyle = "rgba(0,0,0,0.5)";
-      ctx.lineWidth = 1;
-      ctx.strokeRect(-rad, -2, rad * 2, 4);
-      ctx.restore();
-    } else {
-      // Book: 円
-      ctx.fillStyle = o.color;
-      ctx.beginPath();
-      ctx.arc(sx, sy, rad, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = "rgba(0, 0, 0, 0.5)";
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
+    const sz = o.iconSize ?? 22;
+    if (sx + sz < 0 || sx - sz > w || sy + sz < 0 || sy - sz > h) continue;
+    let drew = false;
+    if (o.iconId != null) {
+      // 公転接線方向 = angle + π/2 (= 進行方向を向く)
+      const angle = o.angle + Math.PI / 2;
+      drew = drawSpriteRotated(ctx, getExtSprite(o.iconId), sx, sy, sz, angle);
+    }
+    if (!drew) {
+      // fallback (= 既存の単色円 / 棒)
+      const rad = o.radius ?? 10;
+      if (o.kind === "orbitClose") {
+        ctx.save();
+        ctx.translate(sx, sy);
+        ctx.rotate(o.angle);
+        ctx.fillStyle = o.color;
+        ctx.fillRect(-rad, -2, rad * 2, 4);
+        ctx.strokeStyle = "rgba(0,0,0,0.5)";
+        ctx.lineWidth = 1;
+        ctx.strokeRect(-rad, -2, rad * 2, 4);
+        ctx.restore();
+      } else {
+        ctx.fillStyle = o.color;
+        ctx.beginPath();
+        ctx.arc(sx, sy, rad, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "rgba(0, 0, 0, 0.5)";
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      }
     }
   }
 

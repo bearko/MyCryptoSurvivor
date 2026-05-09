@@ -33,6 +33,8 @@ export function weaponFromExt(extId, level) {
     speedPx:    params.speedPx ?? 280,
     bullets:    params.bullets ?? 1,
     color,
+    iconId:     ext.iconId ?? null,           // SPEC-015: render が描画用に使う
+    series:     ext.series ?? null,           // SPEC-015: rotation offset 判定用
     lastFireMs: 0,
     // SPEC-012 が読む可能性のある archetype 別パラメータをそのまま渡す
     params,
