@@ -161,3 +161,14 @@ export const HERO_HP_BASE        = 80;     // 基礎 HP (= 全 hero 共通)
 export const HERO_HP_PER_STAT    = 0.20;   // hero.stats.hp の何 % を加算するか
 export const HERO_SPEED_BASE     = 140;    // 基礎移動速度 (px/sec)
 export const HERO_SPEED_PER_AGI  = 0.6;    // hero.stats.agi に乗じる係数
+
+// ============================================================
+// SPEC-016: 戦闘フィードバック (= HP バー / ダメージ数字 / hit freeze)
+// ============================================================
+export const HIT_FREEZE_MS          = 100;     // 被弾敵を 100ms 静止させる
+export const DAMAGE_NUMBER_LIFE_MS  = 800;     // ダメージ数字の表示寿命
+export const DAMAGE_NUMBER_RISE_PX_S = 36;     // ダメージ数字の上昇速度
+export const HP_BAR_WIDTH           = 24;      // HP バー幅 (= 敵)
+export const HP_BAR_HEIGHT          = 3;       // HP バー高さ (= 敵)
+export const HP_BAR_PLAYER_WIDTH    = 32;      // HP バー幅 (= プレイヤー、 やや大きめ)
+export const HP_BAR_PLAYER_HEIGHT   = 4;

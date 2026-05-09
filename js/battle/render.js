@@ -4,14 +4,19 @@
 // ============================================================
 
 import { state } from "../state.js";
-import { BATTLE_GRID_SIZE } from "../constants.js";
+import {
+  BATTLE_GRID_SIZE,
+  HP_BAR_WIDTH, HP_BAR_HEIGHT,
+  HP_BAR_PLAYER_WIDTH, HP_BAR_PLAYER_HEIGHT,
+  DAMAGE_NUMBER_LIFE_MS,
+} from "../constants.js";
 import { drawSpriteCircular, drawSpriteRotated, getExtSprite } from "./sprites.js";
 
 /**
  * 1 frame 描画。 ctx は dpr 反映済の transform で渡される前提。
  */
 export function renderBattle(ctx) {
-  const { player, camera, viewport, enemies, gems, projectiles, orbits, beams, bombs, shockwaves } = state.battle;
+  const { player, camera, viewport, enemies, gems, projectiles, orbits, beams, bombs, shockwaves, damageNumbers } = state.battle;
   const w = viewport.w, h = viewport.h;
   if (w <= 0 || h <= 0) return;
 
@@ -143,6 +148,7 @@ export function renderBattle(ctx) {
   }
 
   // SPEC-010: enemies (sprite で円形クリップ、 fallback は単色円)
+  // SPEC-016: アイコン下に HP バー (= 満タン非表示)
   const enemySprite = state.battle.defaultEnemySprite;
   for (const e of enemies) {
     const sx = e.x - camera.x;
@@ -160,6 +166,10 @@ export function renderBattle(ctx) {
     ctx.beginPath();
     ctx.arc(sx, sy, e.r, 0, Math.PI * 2);
     ctx.stroke();
+    // HP バー (= 満タン以外で表示)
+    if (e.hp < e.hpMax) {
+      _drawHpBar(ctx, sx, sy + e.r + 4, HP_BAR_WIDTH, HP_BAR_HEIGHT, e.hp / e.hpMax);
+    }
   }
 
   // SPEC-012 / SPEC-015: orbits (= Book / Blade、 icon を公転接線方向に回転して描画)
@@ -214,6 +224,49 @@ export function renderBattle(ctx) {
   ctx.beginPath();
   ctx.arc(px, py, player.r, 0, Math.PI * 2);
   ctx.stroke();
+  // SPEC-016: プレイヤー HP バー (= 満タン以外)
+  if (state.stats.hp < state.statsMax.hp) {
+    _drawHpBar(ctx, px, py + player.r + 5,
+               HP_BAR_PLAYER_WIDTH, HP_BAR_PLAYER_HEIGHT,
+               state.stats.hp / state.statsMax.hp);
+  }
+
+  // SPEC-016: ダメージ数字 floater (= 一番上の layer)
+  ctx.font = "700 14px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "alphabetic";
+  for (const d of damageNumbers) {
+    const dx = d.x - camera.x;
+    const dy = d.y - camera.y;
+    if (dx < -40 || dx > w + 40 || dy < -40 || dy > h + 40) continue;
+    const t = d.age / d.life;
+    const a = Math.max(0, 1 - t);
+    ctx.globalAlpha = a;
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = "rgba(0, 0, 0, 0.85)";
+    ctx.strokeText(d.value, dx, dy);
+    ctx.fillStyle = d.color;
+    ctx.fillText(d.value, dx, dy);
+  }
+  ctx.globalAlpha = 1;
+}
+
+/**
+ * SPEC-016: HP バー描画 (= ratio 0..1)。 cx は中央 x、 cy は上端 y。
+ * 緑 / 黄 / 赤の 3 段階で 「あと何発で倒せるか」 を直感的に。
+ */
+function _drawHpBar(ctx, cx, cy, w, h, ratio) {
+  const r = Math.max(0, Math.min(1, ratio));
+  const x = cx - w / 2;
+  // 背景
+  ctx.fillStyle = "rgba(0, 0, 0, 0.55)";
+  ctx.fillRect(x - 1, cy - 1, w + 2, h + 2);
+  // 残量
+  let color = "#5ecf8a";    // 緑 (60% 超)
+  if (r < 0.6) color = "#f0c14b";   // 黄 (60% 以下)
+  if (r < 0.3) color = "#e76060";   // 赤 (30% 以下)
+  ctx.fillStyle = color;
+  ctx.fillRect(x, cy, w * r, h);
 }
 
 function _drawGrid(ctx, camera, w, h) {
