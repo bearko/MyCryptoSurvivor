@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "source":  "bearko/mycryptoheroes",
+  "extensions": [
+    {
+      "extId":  1001,
+      "name":   { "ja": "ノービスブレード", "en": "Novice Blade" },
+      "rarity": "Common",
+      "series": "Blade",
+      "stats":  { "hp": 60, "phy": 59, "int": 0, "agi": 0 }
+    },
+    {
+      "extId":  1002,
+      "name":   { "ja": "ノービスマスケット", "en": "Novice Musket" },
+      "rarity": "Common",
+      "series": "Musket",
+      "stats":  { "hp": 0, "phy": 0, "int": 59, "agi": 20 }
+    },
+    {
+      "extId":  1003,
+      "name":   { "ja": "ノービスペン", "en": "Novice Quill" },
+      "rarity": "Common",
+      "series": "Quill",
+      "stats":  { "hp": 0, "phy": 0, "int": 40, "agi": 39 }
+    },
+    {
+      "extId":  1004,
+      "name":   { "ja": "ノービスアーマー", "en": "Novice Armor" },
+      "rarity": "Common",
+      "series": "Armor",
+      "stats":  { "hp": 177, "phy": 20, "int": 0, "agi": 0 }
+    },
+    {
+      "extId":  1005,
+      "name":   { "ja": "ノービスホース", "en": "Novice Horse" },
+      "rarity": "Common",
+      "series": "Horse",
+      "stats":  { "hp": 135, "phy": 0, "int": 0, "agi": 44 }
+    },
+    {
+      "extId":  1011,
+      "name":   { "ja": "アックス", "en": "Axe" },
+      "rarity": "Common",
+      "series": "Axe",
+      "stats":  { "hp": 39, "phy": 64, "int": 0, "agi": 0 }
+    },
+    {
+      "extId":  1022,
+      "name":   { "ja": "ドラゴン", "en": "Dragon" },
+      "rarity": "Common",
+      "series": "Dragon",
+      "stats":  { "hp": 120, "phy": 0, "int": 39, "agi": 0 }
+    },
+    {
+      "extId":  1023,
+      "name":   { "ja": "ブル", "en": "Bull" },
+      "rarity": "Common",
+      "series": "Bull",
+      "stats":  { "hp": 117, "phy": 20, "int": 0, "agi": 20 }
+    },
+    {
+      "extId":  1025,
+      "name":   { "ja": "モンキー", "en": "Monkey" },
+      "rarity": "Common",
+      "series": "Monkey",
+      "stats":  { "hp": 0, "phy": 20, "int": 59, "agi": 0 }
+    },
+    {
+      "extId":  1030,
+      "name":   { "ja": "ゴブレット", "en": "Goblet" },
+      "rarity": "Common",
+      "series": "Goblet",
+      "stats":  { "hp": 120, "phy": 0, "int": 39, "agi": 0 }
+    }
+  ]
+}
