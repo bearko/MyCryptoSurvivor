@@ -45,6 +45,9 @@
 html, body {
   margin: 0;
   padding: 0;
+  /* SPEC-010: モバイル battle 描画範囲 fix。 viewport を厳密にロックするため html/body の高さを揃え、 overflow を抑止。 */
+  height: 100%;
+  overflow: hidden;
   background: var(--bg);
   color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,

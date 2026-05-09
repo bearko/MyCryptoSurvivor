@@ -1,10 +1,11 @@
 // ============================================================
 // battle/render.js — clear + grid + projectiles + gems + enemies + player
-// (= SPEC-006 / SPEC-007 / SPEC-008)
+// (= SPEC-006 / SPEC-007 / SPEC-008 / SPEC-010)
 // ============================================================
 
 import { state } from "../state.js";
 import { BATTLE_GRID_SIZE } from "../constants.js";
+import { drawSpriteCircular } from "./sprites.js";
 
 /**
  * 1 frame 描画。 ctx は dpr 反映済の transform で渡される前提。
@@ -50,29 +51,40 @@ export function renderBattle(ctx) {
     ctx.fill();
   }
 
-  // enemies
+  // SPEC-010: enemies (sprite で円形クリップ、 fallback は単色円)
+  const enemySprite = state.battle.defaultEnemySprite;
   for (const e of enemies) {
     const sx = e.x - camera.x;
     const sy = e.y - camera.y;
     if (sx + e.r < 0 || sx - e.r > w || sy + e.r < 0 || sy - e.r > h) continue;
-    ctx.fillStyle = e.color;
-    ctx.beginPath();
-    ctx.arc(sx, sy, e.r, 0, Math.PI * 2);
-    ctx.fill();
+    const drew = drawSpriteCircular(ctx, enemySprite, sx, sy, e.r);
+    if (!drew) {
+      ctx.fillStyle = e.color;
+      ctx.beginPath();
+      ctx.arc(sx, sy, e.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
     ctx.strokeStyle = "rgba(0, 0, 0, 0.45)";
     ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(sx, sy, e.r, 0, Math.PI * 2);
     ctx.stroke();
   }
 
-  // player
+  // SPEC-010: player (sprite で円形クリップ、 fallback は単色円)
   const px = player.x - camera.x;
   const py = player.y - camera.y;
-  ctx.fillStyle = player.color;
+  const drewPlayer = drawSpriteCircular(ctx, state.battle.playerSprite, px, py, player.r);
+  if (!drewPlayer) {
+    ctx.fillStyle = player.color;
+    ctx.beginPath();
+    ctx.arc(px, py, player.r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.strokeStyle = "rgba(0, 0, 0, 0.55)";
+  ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.arc(px, py, player.r, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.strokeStyle = "rgba(0, 0, 0, 0.45)";
-  ctx.lineWidth = 2;
   ctx.stroke();
 }
 
