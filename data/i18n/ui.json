@@ -6,9 +6,6 @@
   "title.subtitle":      { "ja": "サバイバルがチェーンを駆ける。", "en": "Survive the chain." },
   "title.press":         { "ja": "Press to Start",                "en": "Press to Start" },
 
-  "stage.placeholder":   { "ja": "ここにサバイバル本編が描画される",
-                           "en": "Survival gameplay will render here" },
-
   "hero.select.title":       { "ja": "ヒーローを選ぶ",             "en": "Choose Your Hero" },
   "hero.select.placeholder": { "ja": "Hero {n}",                  "en": "Hero {n}" },
   "hero.select.cta":         { "ja": "冒険を始める",               "en": "Begin Survival" },
