@@ -1,120 +1,83 @@
-# mycryptogame-template
+# MyCryptoSurvivor
 
-**vanilla JS / 静的 HTML で動く web ゲーム** を Claude Code で開発するためのテンプレート。
+MCH 経済圏をモチーフにした **「カイロソフト風 + 雪山サバイバル」** のシングルプレイ web ゲーム。
+プレイヤーは 10 名のヒーローから 1 名を選び、 限られた日数の中で資源収集 / クラフト / クエスト を回しながら脱出を目指す。
 
-MyCryptoTactics (PvP 戦術カード) と MyCryptoFactory (経営シム) の 2 作品で蓄積した
-設計判断・実装パターン・運用作法を集約しています。
+> **ベース**: `bearko/mycryptotemplate` (= vanilla JS / 静的 host テンプレート)
+> **想定範囲**: モバイル / PC 両対応の 2D web ゲーム (= ビルドステップなし)
+> **ジャンル**: サバイバル + リソース管理 + ランキング
 
-> **想定読者**: bearko 本人 + Claude Code エージェント
-> **想定範囲**: モバイル/PC 両対応の 2D web ゲーム (= ビルドステップなし、 静的 host)
-> **継承ジャンル**: パズル / カード / シム / RPG / アドベンチャー など (= 戦闘描写は簡易、 経済圏とランキングを軸に)
+## クイックリファレンス
 
-## このテンプレートを使うと得られるもの
+| 項目 | 値 |
+|---|---|
+| localStorage prefix | `mcs.*` |
+| ASSET_BASE | `https://raw.githubusercontent.com/bearko/MyCryptoSurvivor-assets/main/` |
+| 多言語 | ja / en |
+| 静的ホスティング | Vercel / GitHub Pages 等 (= `build:` 不要) |
 
-- **動作環境**: PC + スマホ両対応 (= viewport / clamp / overflow 設計済み)
-- **多言語**: ja / en の i18n 基盤 (= `t(key)` + `data-i18n` 属性で DOM 自動更新)
-- **タイトル画面**: ロゴ + 版数バッジ + 言語トグル + ランキングボタン
-- **ヘッダー**: バッジ + 通貨 + ヘルプ + ランキング + アクティブ効果ボタン
-- **モーダル**: 共通 z-index 階層 + 背景クリック / Esc で閉じる + 多段階チェーン
-- **時間制御**: `pauseFlags` カウンタ式 + `maiSays` の二重 pause 防止
-- **エフェクト**: Confetti + sprite float + CSS @keyframes 実装例
-- **音響**: BGM (= タイトル dismiss で unlock) + SE 関数群 + throttle
-- **ランキング**: GAS web app 連携 (= base64 URL + localStorage 上書き) + デプロイ手順
-- **テスト**: シード乱数シミュレータ + 手動 QA チェックリストひな型
-- **開発フロー**: SPEC 駆動 + Conventional Commits + PR テンプレ + ブランチ戦略
+## 必読 (= Claude Code セッション開始時)
 
-## クイックスタート
-
-### 1. このテンプレートからプロジェクトを作る
-
-```bash
-# Use this template ボタンから新リポジトリを作成 (GitHub UI)
-# またはローカルで:
-gh repo create my-new-game --template bearko/mycryptotemplate --public
-git clone https://github.com/<you>/my-new-game
-cd my-new-game
-```
-
-### 2. 識別子をリネーム
-
-`docs/setup/new-project.md` の手順に従って以下をプロジェクト名に置換:
-- `localStorage` キー prefix (`mct.*` → `<your-prefix>.*`)
-- `<title>` / og:title / footer
-- `data-i18n` の値は基本そのまま再利用可
-
-### 3. Claude Code で開発開始
-
-```bash
-claude
-> このプロジェクトの CLAUDE.md と docs/charters/PROJECT_CHARTER.md を読んで、
-> 最初の SPEC (= docs/specs/SPEC-001-...) を一緒に書いて。
-```
-
-Claude が CLAUDE.md → AGENTS.md → docs/charters → docs/patterns の順に読み込み、
-本テンプレートが規定する設計規則の中で実装を進めます。
+1. `CLAUDE.md` — 全体観
+2. `docs/charters/PROJECT_CHARTER.md` — プロジェクトの目的・スコープ
+3. `docs/charters/DEVELOPMENT_CHARTER.md` — 開発の作法
+4. `docs/charters/DESIGN_CHARTER.md` — UI/UX 規範
+5. `docs/process/SPEC_DRIVEN_DEVELOPMENT.md` — 仕様駆動の流れ
+6. `docs/process/GIT_WORKFLOW.md` — コミット / ブランチ / PR
+7. `docs/specs/SPEC-INDEX.md` — 各機能の SPEC 一覧
+8. `docs/patterns/*.md` — 個別実装パターン (= 該当する作業のときに参照)
 
 ## ディレクトリ構造
 
 ```
-README.md                       本ファイル
-CLAUDE.md                       Claude Code 開発ガイド (= 最初に読むファイル)
-AGENTS.md                       AI エージェント運用規約
-.gitignore
-.github/
-  PULL_REQUEST_TEMPLATE.md
-.claude/
-  settings.json                 permission allowlist + hooks
-  skills/                       カスタムスキル (任意)
+README.md / CLAUDE.md / AGENTS.md / CHANGELOG.md
+.github/PULL_REQUEST_TEMPLATE.md
+.claude/settings.json
 docs/
   charters/
-    PROJECT_CHARTER.md          プロジェクトの目的・スコープ・成功基準
-    DEVELOPMENT_CHARTER.md      開発の暗黙の作法 (= 必読)
-    DESIGN_CHARTER.md           UI/UX 規範
-  patterns/
-    01-environment-and-assets.md
-    02-screen-structure.md
-    03-i18n-and-help.md
-    04-time-and-modals.md
-    05-effects-audio-ui.md
-    06-state-and-data.md
-    07-ranking-integration.md
-    08-dev-conventions.md
-  process/
-    SPEC_DRIVEN_DEVELOPMENT.md
-    GIT_WORKFLOW.md
-  testing/
-    TESTING_STRATEGY.md
-    TEST_CASES.md
-  setup/
-    new-project.md              新規プロジェクト初期化手順
-    google-apps-script.md       ランキング GAS デプロイ手順
+    PROJECT_CHARTER.md       MyCryptoSurvivor のゴールと制約
+    DEVELOPMENT_CHARTER.md   開発作法 (= テンプレート継承)
+    DESIGN_CHARTER.md        UI/UX 規範 (= テンプレート継承)
+  patterns/                  実装パターン 8 章 (= テンプレート継承)
+  process/                   SPEC 駆動 + Git workflow
   specs/
-    SPEC-INDEX.md               (新規追加: SPEC を 1 行ずつ並べる)
-index.html                      エントリポイント (タイトル/ヘッダー/views 雛形)
+    SPEC-INDEX.md            SPEC 一覧
+    SPEC-001-phase-1-bootstrap.md
+  setup/                     新規プロジェクト初期化 / GAS デプロイ
+  testing/                   テスト戦略とケース
+  lessons-learned/           MCT/MCF 振り返り
+index.html                   エントリポイント
 js/
-  main.js                       state + onTick + 画面 routing 雛形
-  constants.js                  ASSET_BASE + img()/audioUrl()
-  i18n.js                       multi-locale 基盤
-  ranking-client.js             GAS 連携クライアント
-  effects.js                    confetti + sprite float
-  data-loader.js                JSON loader (heroes 等の汎用パターン)
+  main.js / state.js / constants.js / i18n.js
+  effects.js / audio.js / data-loader.js / ranking-client.js
+css/
+  base.css / layout.css / components.css / effects.css / responsive.css
 data/
-  i18n/
-    ui.json                     UI 文字列 (ja/en object 形式)
+  i18n/ui.json
   sample-entities.json
-tools/
-  sim/
-    README.md                   シミュレータ実装ガイド
-og-image.png                    OG 画像 placeholder
+tools/sim/                   バランス調整シミュレータ
+```
+
+## 開発の流れ
+
+```bash
+# 1. main から feature ブランチを切る
+git checkout main && git pull
+git checkout -b feat/spec-NNN-<topic>
+
+# 2. SPEC を docs/specs/ に書く (= Phase 0)
+# 3. 実装 (= Phase 1+)
+# 4. 各フェーズを 1 commit にまとめて push
+git push -u origin feat/spec-NNN-<topic>
 ```
 
 ## ライセンス
 
-bearko 個人テンプレート。 派生作品の license は各プロジェクトで指定してください。
-本テンプレート自体に依存する外部素材 (= MCH 公式 CDN 等) は、 各プロジェクトの規約に従って参照すること。
+bearko 個人プロジェクト。 ヒーロー画像 / 名称は MCH (MyCryptoHeroes) 公式 IP に依存し、
+本リポジトリは非公式 fan project として CDN 経由で参照する。
 
 ## 関連リポジトリ
 
-- `bearko/mycryptotactics` — 戦術カードゲーム (本テンプレートの源流 1)
-- `bearko/mycryptofactory` — 経営シム (本テンプレートの源流 2)
-- `bearko/aidev_template` — bearko の AI 開発全プロジェクト共通の運用ベース
+- `bearko/mycryptotemplate` — 派生元テンプレート
+- `bearko/MyCryptoSurvivor-assets` — 画像 / 音声 CDN (= ASSET_BASE が指す先)
+- `bearko/mycryptotactics` / `bearko/mycryptofactory` — 兄弟プロジェクト
