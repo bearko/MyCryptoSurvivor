@@ -56,10 +56,11 @@ export const state = {
     projectiles:    [],   // {id, x, y, vx, vy, r, dmg, color, life, age, targetId?, kind?}
     weapons:        [],   // {extId, level, archetype, dmg, cdMs, range, speedPx, bullets, color, params, lastFireMs}
 
-    // SPEC-012: 武器 archetype 別の追加 entity
-    orbits:         [],   // {id, weaponExtId, angle, r, dmg, color, hitMap, kind}  - Book / Blade
+    // SPEC-012 / SPEC-015: 武器 archetype 別の追加 entity
+    orbits:         [],   // {id, weaponExtId, angle, r, dmg, color, hitMap, kind, iconId}  - Book / Blade
     beams:          [],   // {id, x, y, dirX, dirY, len, thick, age, life, dmgPerSec, color, weaponExtId} - LaserGun
-    bombs:          [],   // {id, x, y, fuseMs, age, radius, dmg, color}  - Pierrot
+    bombs:          [],   // {id, x, y, fuseMs, age, radius, dmg, color, iconId}  - Pierrot
+    shockwaves:     [],   // {id, x, y, r0, r1, age, life, dmg, color, hitSet}  - Moai 着弾 (SPEC-015)
     nextEntityId:    1,
     lastEnemySpawnMs: 0,
     contactCooldownMs: 0, // > 0 のあいだ被弾しない

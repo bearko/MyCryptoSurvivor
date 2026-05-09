@@ -34,6 +34,14 @@ function _spawnProjectile(opts) {
     age: 0,
     targetId: opts.targetId ?? null,
     kind: opts.kind ?? null,
+    // SPEC-015: render 用 icon 情報
+    iconId:        opts.iconId        ?? null,
+    iconRotOffset: opts.iconRotOffset ?? 0,
+    iconSize:      opts.iconSize      ?? 18,
+    // SPEC-015: Moai 専用フィールド (= 着弾衝撃波)
+    moaiTargetId: opts.moaiTargetId ?? null,
+    moaiAoeR:     opts.moaiAoeR     ?? 0,
+    moaiAoeDmg:   opts.moaiAoeDmg   ?? 0,
   });
 }
 
@@ -79,6 +87,7 @@ export function fireRadial(w, dmgMul, bulletBonus) {
       x: px, y: py,
       vx: Math.cos(a) * speed, vy: Math.sin(a) * speed,
       dmg: w.dmg * dmgMul, color: w.color,
+      iconId: w.iconId, iconSize: 22,
     });
   }
 }
@@ -111,12 +120,13 @@ export function fireBigHoming(w, dmgMul, bulletBonus) {
       x: px, y: py, vx, vy,
       dmg: w.dmg * dmgMul, color: w.color,
       r: size, life: 4000, targetId, kind: "homing",
+      iconId: w.iconId, iconSize: Math.max(28, size * 1.6),
     });
   }
 }
 
 // ============================================================
-// fireDropTarget (Moai) - ランダム敵頭上から落下
+// fireDropTarget (Moai) - 最初に狙った敵を追従して頭上から落下、 着弾で衝撃波
 // ============================================================
 
 export function fireDropTarget(w, dmgMul, bulletBonus) {
@@ -125,6 +135,9 @@ export function fireDropTarget(w, dmgMul, bulletBonus) {
   const total = (w.bullets ?? 1) + bulletBonus;
   const fallH = w.params?.fallH ?? 220;
   const speed = w.speedPx;
+  const aoeR  = w.params?.aoeR    ?? 60;
+  const aoeDmgRatio = w.params?.aoeDmgRatio ?? 0.7;
+  // 候補敵が total より少ないと同じ敵に重なるので、 random 抽出 + 重複は許容 (= 同 frame で複数発が同じ敵)
   for (let i = 0; i < total; i++) {
     const t = enemies[Math.floor(Math.random() * enemies.length)];
     if (!t) continue;
@@ -132,7 +145,12 @@ export function fireDropTarget(w, dmgMul, bulletBonus) {
       x: t.x, y: t.y - fallH,
       vx: 0, vy: speed,
       dmg: w.dmg * dmgMul, color: w.color,
-      r: 8, life: 1500,
+      r: 10, life: 1500,
+      kind: "moaiDrop",
+      moaiTargetId: t.id,
+      moaiAoeR: aoeR,
+      moaiAoeDmg: w.dmg * dmgMul * aoeDmgRatio,
+      iconId: w.iconId, iconSize: 28,
     });
   }
 }
@@ -162,6 +180,7 @@ export function fireStack(w, dmgMul, bulletBonus) {
         y: py - uy * stackGap * s,
         vx: ux * speed, vy: uy * speed,
         dmg: w.dmg * dmgMul, color: w.color,
+        iconId: w.iconId, iconSize: 22,
       });
     }
   }
@@ -213,6 +232,8 @@ export function fireDiagonal(w, dmgMul, bulletBonus) {
       x: px, y: py,
       vx: Math.cos(a) * speed, vy: Math.sin(a) * speed,
       dmg: w.dmg * dmgMul, color: w.color,
+      iconId: w.iconId, iconSize: 24,
+      iconRotOffset: Math.PI / 4,   // SPEC-015: ナイフ icon は 「右上」 が自然向き
     });
   }
 }
@@ -232,6 +253,7 @@ export function fireRandomRadial(w, dmgMul, bulletBonus) {
       x: px, y: py,
       vx: Math.cos(a) * speed, vy: Math.sin(a) * speed,
       dmg: w.dmg * dmgMul, color: w.color,
+      iconId: w.iconId, iconSize: 24,
     });
   }
 }
@@ -256,6 +278,7 @@ export function firePlaceBomb(w, dmgMul, bulletBonus) {
       fuseMs, age: 0,
       radius, dmg: Math.max(1, Math.round(w.dmg * dmgMul)),
       color: w.color,
+      iconId: w.iconId,   // SPEC-015: render が icon 描画
     });
   }
 }
@@ -274,6 +297,7 @@ export function fireHoming(w, dmgMul) {
     vx: dir.x * w.speedPx, vy: dir.y * w.speedPx,
     dmg: w.dmg * dmgMul, color: w.color,
     targetId: dir.target?.id ?? null, kind: "homing",
+    iconId: w.iconId, iconSize: 22,
   });
 }
 
@@ -299,6 +323,8 @@ export function ensureOrbits(w, dmgMul, bulletBonus) {
         hitMap: {},
         kind: w.archetype,   // "orbit" or "orbitClose"
         radius: (w.archetype === "orbitClose") ? 9 : 11,
+        iconId: w.iconId,    // SPEC-015: render が icon 描画
+        iconSize: (w.archetype === "orbitClose") ? 22 : 26,
       });
     }
   } else {
@@ -411,6 +437,38 @@ export function tickBombs(dt) {
       }
     }
     bombs.splice(i, 1);
+  }
+}
+
+// ============================================================
+// SPEC-015: tickShockwaves - Moai 着弾の AoE ring (= 拡張円)
+// 半径が r0→r1 に成長、 範囲内の敵に 1 回だけ damage、 hitSet で per-enemy 重複防止
+// ============================================================
+
+export function tickShockwaves(dt) {
+  const dms = dt * 1000;
+  const sw  = state.battle.shockwaves;
+  const enemies = state.battle.enemies;
+  for (let i = sw.length - 1; i >= 0; i--) {
+    const s = sw[i];
+    s.age += dms;
+    if (s.age >= s.life) { sw.splice(i, 1); continue; }
+    const t = s.age / s.life;
+    const r = s.r0 + (s.r1 - s.r0) * t;
+    const r2 = r * r;
+    for (let j = enemies.length - 1; j >= 0; j--) {
+      const e = enemies[j];
+      if (s.hitSet.has(e.id)) continue;
+      const dx = e.x - s.x, dy = e.y - s.y;
+      if (dx * dx + dy * dy > r2) continue;
+      s.hitSet.add(e.id);
+      e.hp -= s.dmg;
+      if (e.hp <= 0) {
+        spawnGem(e.x, e.y);
+        enemies.splice(j, 1);
+        state.killCount++;
+      }
+    }
   }
 }
 
