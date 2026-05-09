@@ -13,6 +13,7 @@ import {
   XP_INITIAL, XP_TO_NEXT_INITIAL, LEVEL_INITIAL,
   STATS_INITIAL, STATS_MAX,
   HERO_STARTING_WEAPON, HERO_STARTING_WEAPON_DEFAULT,
+  HERO_HP_BASE, HERO_HP_PER_STAT, HERO_SPEED_BASE, HERO_SPEED_PER_AGI,
 } from "../constants.js";
 import { getExt, getCategory } from "../extensions.js";
 import { installInput, getInputVector } from "./input.js";
@@ -81,9 +82,14 @@ export function startBattle(hero) {
   state.lastRunStats    = null;                 // SPEC-009: snapshot
   resetBuffs();                                 // SPEC-011: 強化系列の効果リセット
 
-  // SPEC-007 / SPEC-011: HP / XP / Lv / 経過 tick を初期化 (= statsMax は buffs.hpMaxBonus 反映後の値)
-  state.statsMax.hp  = STATS_MAX.hp;
-  state.stats.hp     = STATS_INITIAL.hp;
+  // SPEC-014: hero.stats.hp / agi から HP 上限と移動速度を派生 (= hero ごとに性能差)
+  const heroHpStat   = hero?.stats?.hp  ?? 0;
+  const heroAgiStat  = hero?.stats?.agi ?? 0;
+  const heroMaxHp    = HERO_HP_BASE    + Math.round(heroHpStat  * HERO_HP_PER_STAT);
+  const heroSpeed    = HERO_SPEED_BASE + Math.round(heroAgiStat * HERO_SPEED_PER_AGI);
+  state.statsMax.hp  = heroMaxHp;
+  state.stats.hp     = heroMaxHp;
+  b.player.speed     = heroSpeed;
   state.xp           = XP_INITIAL;
   state.xpToNext     = XP_TO_NEXT_INITIAL;
   state.level        = LEVEL_INITIAL;

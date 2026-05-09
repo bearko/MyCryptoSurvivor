@@ -9,7 +9,14 @@ import {
   SECONDS_PER_WEEK,
   WEEKS_PER_MONTH,
   MONTHS_PER_YEAR,
+  HERO_HP_BASE, HERO_HP_PER_STAT,
+  HERO_SPEED_BASE, HERO_SPEED_PER_AGI,
+  HERO_STARTING_WEAPON, HERO_STARTING_WEAPON_DEFAULT,
 } from "./constants.js";
+import {
+  getExt, extImg,
+  getTierName, getSkillName, getSkillDesc,
+} from "./extensions.js";
 import {
   HERO_ROSTER,
   loadHeroes,
@@ -161,7 +168,10 @@ function setupHeroSelectModal() {
 
   // 言語切替時、 開いているならタイル / hint を再レンダし、 ヘッダー badge も追従
   onLangChange(() => {
-    if (!modal.classList.contains("hidden")) renderHeroSelectModal();
+    if (!modal.classList.contains("hidden")) {
+      renderHeroSelectModal();
+      renderHeroDetail(state.pendingHeroPick);   // SPEC-014: 詳細パネルも追従
+    }
     renderOwnedHeroBadge();
     renderHud();   // SPEC-004: `Day {n}` テンプレ再展開
   });
@@ -173,6 +183,7 @@ function openHeroSelectModal() {
   pauseTime();
   state.pendingHeroPick = null;
   renderHeroSelectModal();
+  renderHeroDetail(null);   // SPEC-014: 詳細パネルを placeholder 状態にリセット
   modal.classList.remove("hidden");
 }
 
@@ -236,6 +247,72 @@ function pickHero(heroId) {
   if (!getHero(heroId)) return;
   state.pendingHeroPick = heroId;
   renderHeroSelectModal();
+  renderHeroDetail(heroId);   // SPEC-014: 詳細パネルに反映
+}
+
+// ============================================================
+// SPEC-014: ヒーロー詳細パネル (= portrait + 名前 + 派閥 + ステータス + 担当 ext)
+// ============================================================
+function renderHeroDetail(heroId) {
+  const placeholder = $("#heroDetailPlaceholder");
+  const content     = $("#heroDetailContent");
+  const hero        = getHero(heroId);
+  if (!hero) {
+    placeholder?.classList.remove("hidden");
+    content?.classList.add("hidden");
+    return;
+  }
+  placeholder?.classList.add("hidden");
+  content?.classList.remove("hidden");
+
+  const lang        = getLang();
+  const name        = localizedHeroName(hero, lang);
+  const factionLab  = t(`hero.faction.${hero.faction}`, hero.faction);
+  const rarityLab   = t(`hero.rarity.${hero.rarity}`,   hero.rarity);
+
+  const portrait = $("#heroDetailPortrait");
+  if (portrait) {
+    portrait.classList.remove("hero-detail__portrait--missing");
+    portrait.src = heroImg(hero.heroId);
+    portrait.alt = name;
+  }
+
+  const nameEl = $("#heroDetailName");
+  if (nameEl) nameEl.textContent = name;
+  const subEl = $("#heroDetailSub");
+  if (subEl) subEl.textContent = `${factionEmoji(hero.faction)} ${factionLab} · ${rarityLab}`;
+
+  const heroHpStat  = hero.stats?.hp  ?? 0;
+  const heroAgiStat = hero.stats?.agi ?? 0;
+  const maxHp = HERO_HP_BASE    + Math.round(heroHpStat  * HERO_HP_PER_STAT);
+  const speed = HERO_SPEED_BASE + Math.round(heroAgiStat * HERO_SPEED_PER_AGI);
+  const hpEl  = $("#heroDetailHp");
+  const spdEl = $("#heroDetailSpeed");
+  if (hpEl)  hpEl.textContent  = tpl(t("hero.detail.hp",    "HP {n}"),    { n: String(maxHp) });
+  if (spdEl) spdEl.textContent = tpl(t("hero.detail.speed", "Speed {n}"), { n: String(speed) });
+
+  // 担当 starter weapon
+  const wId = HERO_STARTING_WEAPON[hero.heroId] ?? HERO_STARTING_WEAPON_DEFAULT;
+  const ext = getExt(wId);
+  const wIcon  = $("#heroDetailWeaponIcon");
+  const wName  = $("#heroDetailWeaponName");
+  const wSkill = $("#heroDetailWeaponSkill");
+  const wDesc  = $("#heroDetailWeaponDesc");
+  if (ext) {
+    if (wIcon) {
+      wIcon.classList.remove("hero-detail__weapon-icon--missing");
+      wIcon.src = extImg(ext);
+      wIcon.alt = getTierName(ext, 1, lang);
+    }
+    if (wName)  wName.textContent  = getTierName(ext, 1, lang);
+    if (wSkill) wSkill.textContent = getSkillName(ext, lang);
+    if (wDesc)  wDesc.textContent  = getSkillDesc(ext, 1, lang);
+  } else {
+    if (wIcon)  wIcon.removeAttribute("src");
+    if (wName)  wName.textContent  = "";
+    if (wSkill) wSkill.textContent = "";
+    if (wDesc)  wDesc.textContent  = "";
+  }
 }
 
 function refreshHeroSelectCta() {
