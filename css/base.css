@@ -24,6 +24,11 @@
   --genbu:     #56ccf2;   /* 玄武 / 北 / 水 */
   --kouryu:    #f0c14b;   /* 黄龍 / 中央 / 土 */
 
+  /* サバイバル HUD スタッツ (= SPEC-004) */
+  --hp:        #e76060;   /* 体力 = 赤 */
+  --temp:      #56ccf2;   /* 体温 = 青 */
+  --food:      #5ecf8a;   /* 食料 = 緑 */
+
   --rarity-n:  #aaa;
   --rarity-r:  #56ccf2;
   --rarity-sr: #bb86fc;

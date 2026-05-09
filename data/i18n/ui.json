@@ -27,6 +27,11 @@
   "hero.rarity.Epic":        { "ja": "エピック",                   "en": "Epic" },
   "hero.rarity.Legendary":   { "ja": "レジェンダリー",             "en": "Legendary" },
 
+  "hud.day":             { "ja": "{n} 日目",                       "en": "Day {n}" },
+  "hud.stats.hp":        { "ja": "HP",                             "en": "HP" },
+  "hud.stats.temp":      { "ja": "体温",                           "en": "Temp" },
+  "hud.stats.food":      { "ja": "食料",                           "en": "Food" },
+
   "btn.close":           { "ja": "閉じる",                         "en": "Close" },
   "btn.confirm":         { "ja": "確認",                           "en": "Confirm" },
   "btn.cancel":          { "ja": "キャンセル",                     "en": "Cancel" },
