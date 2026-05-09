@@ -97,6 +97,123 @@
   to   { opacity: 1; transform: scale(1) translateY(0); }
 }
 
+/* ---------- Hero select modal (= SPEC-001 Phase 1 mock) ---------- */
+.hero-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 320;
+  background: rgba(15, 12, 22, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: modal-fade-in 0.18s ease;
+}
+.hero-modal.hidden { display: none !important; }
+
+.hero-modal__card {
+  width: 100%;
+  max-width: 560px;
+  max-height: 90vh;
+  background: linear-gradient(180deg, #2c2440 0%, var(--panel) 100%);
+  border: 2px solid var(--accent);
+  border-radius: 14px;
+  padding: 1rem 1.1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  overflow-y: auto;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+  animation: modal-pop-in 0.22s cubic-bezier(.2, .8, .4, 1);
+}
+
+.hero-modal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.hero-modal__title {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--accent);
+  letter-spacing: 0.04em;
+}
+.hero-modal__close-x {
+  appearance: none;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 1.4rem;
+  line-height: 1;
+  width: 2rem;
+  height: 2rem;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.hero-modal__close-x:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+
+.hero-modal__grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.hero-modal__hint {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+  text-align: center;
+  min-height: 1.1em;
+}
+
+.hero-modal__cta {
+  align-self: stretch;
+}
+
+/* ---------- Hero tile (= placeholder) ---------- */
+.hero-tile {
+  appearance: none;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  aspect-ratio: 4 / 5;
+  padding: 0.4rem 0.3rem;
+  background: var(--panel-2);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.1s, background 0.15s;
+}
+.hero-tile:hover { border-color: var(--accent); }
+.hero-tile:active { transform: translateY(1px); }
+.hero-tile[aria-selected="true"] {
+  border-color: var(--accent);
+  background: linear-gradient(180deg, rgba(196,163,90,0.18) 0%, var(--panel-2) 70%);
+  box-shadow: 0 0 0 2px rgba(196, 163, 90, 0.35);
+}
+.hero-tile__num {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+.hero-tile__label {
+  font-size: 0.7rem;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+
+@media (max-width: 480px) {
+  .hero-modal__grid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0.35rem; }
+  .hero-tile__num { font-size: 1.15rem; }
+  .hero-tile__label { font-size: 0.65rem; }
+}
+
 /* ---------- Help overlay ---------- */
 .help-overlay {
   position: fixed;

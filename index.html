@@ -4,16 +4,16 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#121018" />
-  <title>ProjectName</title>
+  <title>MyCryptoSurvivor</title>
 
   <!-- OGP -->
-  <meta property="og:title" content="ProjectName" />
-  <meta property="og:description" content="ProjectName — a vanilla JS game project from the mycryptotemplate base." />
+  <meta property="og:title" content="MyCryptoSurvivor" />
+  <meta property="og:description" content="MyCryptoSurvivor — choose a hero and survive the chain. A vanilla JS web game." />
   <meta property="og:type" content="website" />
   <meta property="og:image" content="og-image.png" />
   <meta name="twitter:card" content="summary_large_image" />
 
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><text y=%2250%22 font-size=%2256%22>🎮</text></svg>" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><text y=%2250%22 font-size=%2256%22>🏔️</text></svg>" />
 
   <link rel="stylesheet" href="css/base.css" />
   <link rel="stylesheet" href="css/layout.css" />
@@ -27,16 +27,20 @@
   <!-- 1. Splash (= boot 中)                                          -->
   <!-- ============================================================ -->
   <div id="splash" class="splash">
-    <div class="splash__logo">ProjectName</div>
+    <div class="splash__logo">MyCryptoSurvivor</div>
     <div class="splash__loading" data-i18n="splash.loading">読み込み中…</div>
   </div>
 
   <!-- ============================================================ -->
-  <!-- 2. Title screen                                               -->
+  <!-- 2. Title screen (= テキストロゴのみ)                            -->
   <!-- ============================================================ -->
   <section id="titleScreen" class="title-screen hidden">
-    <h1 class="title-screen__title">ProjectName</h1>
-    <p class="title-screen__sub" data-i18n="title.subtitle">サブタイトル</p>
+    <h1 class="title-screen__title">MyCryptoSurvivor</h1>
+    <p class="title-screen__sub" data-i18n="title.subtitle">サバイバルがチェーンを駆ける。</p>
+
+    <button id="btnPressStart" class="title-screen__press" data-i18n="title.press">
+      Press to Start
+    </button>
 
     <div class="lang-toggle" id="langToggle">
       <span class="lang-toggle-label" data-i18n="lang.toggle.label">Language / 言語</span>
@@ -45,10 +49,6 @@
         <button class="lang-btn" data-lang="en">EN：English</button>
       </div>
     </div>
-
-    <button id="btnPressStart" class="title-screen__press" data-i18n="title.press">
-      Press to Start
-    </button>
   </section>
 
   <!-- ============================================================ -->
@@ -57,7 +57,7 @@
   <main id="app" class="app hidden">
     <header class="header">
       <div class="header__left">
-        <span class="header__title">ProjectName</span>
+        <span class="header__title">MyCryptoSurvivor</span>
       </div>
       <div class="header__center">
         <span id="dateLabel">2018 年 1 月 1 週</span>
@@ -69,13 +69,36 @@
     </header>
 
     <section class="stage">
-      <!-- ゲーム本体の描画領域 -->
-      <p data-i18n="stage.placeholder">ここにゲーム本体を描画する</p>
+      <p data-i18n="stage.placeholder">ここにサバイバル本編が描画される</p>
     </section>
   </main>
 
   <!-- ============================================================ -->
-  <!-- 4. Help overlay                                               -->
+  <!-- 4. Hero select modal (= SPEC-001 Phase 1 mock)                 -->
+  <!-- ============================================================ -->
+  <div id="heroSelectModal" class="hero-modal hidden" role="dialog" aria-modal="true"
+       aria-labelledby="heroSelectTitle">
+    <div class="hero-modal__card">
+      <header class="hero-modal__head">
+        <h2 class="hero-modal__title" id="heroSelectTitle" data-i18n="hero.select.title">
+          ヒーローを選ぶ
+        </h2>
+        <button class="hero-modal__close-x" id="heroSelectClose" aria-label="Close">×</button>
+      </header>
+      <div class="hero-modal__grid" id="heroSelectGrid"
+           role="listbox" aria-label="Hero choices"></div>
+      <p class="hero-modal__hint" id="heroSelectHint" data-i18n="hero.select.empty">
+        ヒーローを選択してください
+      </p>
+      <button class="btn hero-modal__cta" id="heroSelectCta"
+              data-i18n="hero.select.cta" disabled>
+        冒険を始める
+      </button>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- 5. Help overlay                                               -->
   <!-- ============================================================ -->
   <div id="helpOverlay" class="help-overlay hidden">
     <div class="help-card">
@@ -87,14 +110,14 @@
   </div>
 
   <!-- ============================================================ -->
-  <!-- 5. Effect layers                                               -->
+  <!-- 6. Effect layers                                               -->
   <!-- ============================================================ -->
   <div id="confettiLayer" class="confetti-layer hidden"></div>
   <div id="floatLayer"    class="float-layer hidden"></div>
   <div id="notifLayer"    class="notif-layer"></div>
 
   <!-- ============================================================ -->
-  <!-- 6. Boot                                                        -->
+  <!-- 7. Boot                                                        -->
   <!-- ============================================================ -->
   <script type="module" src="js/main.js"></script>
 </body>

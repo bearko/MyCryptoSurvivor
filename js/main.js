@@ -3,12 +3,13 @@
 // ============================================================
 
 import { state, pauseTime, resumeTime } from "./state.js";
-import { initI18n, setLang, getLang, applyDataI18n } from "./i18n.js";
+import { initI18n, setLang, getLang, applyDataI18n, t, tpl, onLangChange } from "./i18n.js";
 import {
   TICK_INTERVAL_MS,
   SECONDS_PER_WEEK,
   WEEKS_PER_MONTH,
   MONTHS_PER_YEAR,
+  HERO_SELECT_PLACEHOLDER_COUNT,
 } from "./constants.js";
 
 // ============================================================
@@ -34,6 +35,7 @@ async function init() {
   setupTitleScreen();
   setupHelpOverlay();
   setupLangToggle();
+  setupHeroSelectModal();
 
   // タイトル画面表示中は時間が進むが、 onTick は state.activeXxx が無いので何も起きない
   startTimeLoop();
@@ -51,6 +53,9 @@ function dismissTitle() {
   $("#app")?.classList.remove("hidden");
   // BGM 開始は audio.js の startBgm をここで呼ぶ
   // import("./audio.js").then(({ startBgm }) => startBgm("Audio/bgm_home.mp3"));
+
+  // Day 1: ヒーロー選択モーダルを開く (= SPEC-001 Phase 1 mock)
+  openHeroSelectModal();
 }
 
 // ============================================================
@@ -111,6 +116,98 @@ function closeHelp() {
   $("#helpOverlay")?.classList.add("hidden");
   document.body.style.overflow = "";
   resumeTime();
+}
+
+// ============================================================
+// Hero select modal (= SPEC-001 Phase 1 mock)
+// ============================================================
+function setupHeroSelectModal() {
+  const modal = $("#heroSelectModal");
+  if (!modal) return;
+
+  $("#heroSelectClose")?.addEventListener("click", closeHeroSelectModal);
+  $("#heroSelectCta")?.addEventListener("click", applyHeroPick);
+
+  // 背景クリックで閉じる
+  modal.addEventListener("click", (e) => {
+    if (e.target.id === "heroSelectModal") closeHeroSelectModal();
+  });
+
+  // Esc で閉じる
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !modal.classList.contains("hidden")) {
+      closeHeroSelectModal();
+    }
+  });
+
+  // 言語切替時、 開いているなら placeholder ラベルを再レンダ
+  onLangChange(() => {
+    if (!modal.classList.contains("hidden")) renderHeroSelectModal();
+  });
+}
+
+function openHeroSelectModal() {
+  const modal = $("#heroSelectModal");
+  if (!modal) return;
+  pauseTime();
+  state.pendingHeroPick = null;
+  renderHeroSelectModal();
+  modal.classList.remove("hidden");
+}
+
+function closeHeroSelectModal() {
+  const modal = $("#heroSelectModal");
+  if (!modal || modal.classList.contains("hidden")) return;
+  modal.classList.add("hidden");
+  state.pendingHeroPick = null;
+  resumeTime();
+}
+
+function renderHeroSelectModal() {
+  const grid = $("#heroSelectGrid");
+  if (!grid) return;
+
+  const tplLabel = t("hero.select.placeholder", "Hero {n}");
+
+  grid.innerHTML = "";
+  for (let i = 1; i <= HERO_SELECT_PLACEHOLDER_COUNT; i++) {
+    const isSelected = state.pendingHeroPick === i;
+    const tile = document.createElement("button");
+    tile.type = "button";
+    tile.className = "hero-tile";
+    tile.dataset.heroSlot = String(i);
+    tile.setAttribute("role", "option");
+    tile.setAttribute("aria-selected", isSelected ? "true" : "false");
+    tile.innerHTML = `
+      <span class="hero-tile__num">${i}</span>
+      <span class="hero-tile__label">${tpl(tplLabel, { n: i })}</span>
+    `;
+    tile.addEventListener("click", () => pickHero(i));
+    grid.appendChild(tile);
+  }
+
+  refreshHeroSelectCta();
+}
+
+function pickHero(slotIdx) {
+  if (slotIdx < 1 || slotIdx > HERO_SELECT_PLACEHOLDER_COUNT) return;
+  state.pendingHeroPick = slotIdx;
+  renderHeroSelectModal();
+}
+
+function refreshHeroSelectCta() {
+  const cta = $("#heroSelectCta");
+  const hint = $("#heroSelectHint");
+  if (!cta) return;
+  const hasPick = state.pendingHeroPick != null;
+  cta.disabled = !hasPick;
+  if (hint) hint.style.visibility = hasPick ? "hidden" : "visible";
+}
+
+function applyHeroPick() {
+  if (state.pendingHeroPick == null) return;
+  // Phase 2 で state.ownedHero を確定する想定。 Phase 1 ではモーダルを閉じるだけ。
+  closeHeroSelectModal();
 }
 
 // ============================================================
