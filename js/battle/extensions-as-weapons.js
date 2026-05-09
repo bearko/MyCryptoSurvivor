@@ -1,47 +1,57 @@
 // ============================================================
-// battle/extensions-as-weapons.js — extension → weapon spec (= SPEC-008)
+// battle/extensions-as-weapons.js — extension → weapon spec
+// (= SPEC-008 / SPEC-011)
 // ============================================================
 //
-// EXT_ROSTER の各要素を 「自動発射ホーミング投射体」 武器として扱う。
-// 性能 (= dmg / cdMs / speedPx) は ext.stats から導出。
+// schema v2 では entry.tierParams[level-1] が weapon の数値を持つ。
+// archetype フィールドはここに保持しておき、 SPEC-012 の per-archetype tick が利用する。
+// SPEC-011 段階では archetype に関わらず単一の homing projectile (= SPEC-008 と同形) で発射、
+// dmg / cdMs / range / speedPx だけ tier params から読む。
 
 import { state } from "../state.js";
-import { getExt } from "../extensions.js";
-import {
-  EXT_MAX_LEVEL,
-  SERIES_COLOR, SERIES_COLOR_DEFAULT,
-} from "../constants.js";
+import { getExt, getCategory } from "../extensions.js";
+import { EXT_MAX_LEVEL, SERIES_COLOR_DEFAULT } from "../constants.js";
 
 /**
  * @param {number|string} extId
- * @param {number} level
- * @returns {object|null} weapon spec (= state.battle.weapons の要素形)
+ * @param {number} level - 1..EXT_MAX_LEVEL
+ * @returns {object|null} weapon spec or null (= weapon カテゴリ以外 / 該当 ext なし)
  */
 export function weaponFromExt(extId, level) {
   const ext = getExt(extId);
-  if (!ext) return null;
-  const lv    = Math.max(1, Math.min(EXT_MAX_LEVEL, level));
-  const stats = ext.stats || {};
-  const baseDmg = 8 + (stats.phy ?? 0) * 0.15 + (stats.int ?? 0) * 0.15;
-  const dmg     = Math.round(baseDmg * (1 + (lv - 1) * 0.20));
-  const cdMs    = Math.max(300, 1500 - (stats.agi ?? 0) * 5 - (lv - 1) * 100);
-  const speedPx = 260 + (stats.agi ?? 0) * 1.5;
-  const range   = 320;
-  const color   = SERIES_COLOR[ext.series] ?? SERIES_COLOR_DEFAULT;
-  return { extId, level: lv, dmg, cdMs, speedPx, range, color, lastFireMs: 0 };
+  if (!ext || getCategory(ext) !== "weapon") return null;
+  const lv     = Math.max(1, Math.min(EXT_MAX_LEVEL, level | 0));
+  const params = ext.tierParams?.[lv - 1] ?? {};
+  const color  = ext.seriesColor ?? SERIES_COLOR_DEFAULT;
+  return {
+    extId,
+    level:      lv,
+    archetype:  ext.archetype ?? "homing",
+    dmg:        params.dmg     ?? 8,
+    cdMs:       params.cdMs    ?? 1500,
+    range:      params.range   ?? 320,
+    speedPx:    params.speedPx ?? 280,
+    bullets:    params.bullets ?? 1,
+    color,
+    lastFireMs: 0,
+    // SPEC-012 が読む可能性のある archetype 別パラメータをそのまま渡す
+    params,
+  };
 }
 
 /**
- * state.ownedExtensions → state.battle.weapons を再生成。
- * 既存 weapon の lastFireMs を保持して、 picks 直後の即発射 = level up 後ボーナス。
+ * state.ownedExtensions のうち category=weapon のものから state.battle.weapons を再生成。
+ * buff entry は対象外 (= 別途 buffs.js で適用)。 lastFireMs は維持できる範囲で維持。
  */
 export function rebuildWeaponsFromOwned() {
-  const oldByExtId = new Map(state.battle.weapons.map(w => [w.extId, w]));
+  const oldByExtId = new Map(state.battle.weapons.map(w => [String(w.extId), w]));
   const next = [];
   for (const o of state.ownedExtensions) {
+    const ext = getExt(o.extId);
+    if (!ext || getCategory(ext) !== "weapon") continue;
     const w = weaponFromExt(o.extId, o.level);
     if (!w) continue;
-    const old = oldByExtId.get(o.extId);
+    const old = oldByExtId.get(String(o.extId));
     if (old) w.lastFireMs = old.lastFireMs;
     next.push(w);
   }
