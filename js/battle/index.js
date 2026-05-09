@@ -7,9 +7,17 @@
 // RAF ループは pauseFlags を見て update を skip するが、 描画は続ける。
 
 import { state } from "../state.js";
-import { FACTION_COLOR, FACTION_COLOR_DEFAULT, PLAYER_RADIUS, PLAYER_SPEED_PX_S } from "../constants.js";
+import {
+  FACTION_COLOR, FACTION_COLOR_DEFAULT,
+  PLAYER_RADIUS, PLAYER_SPEED_PX_S,
+  XP_INITIAL, XP_TO_NEXT_INITIAL, LEVEL_INITIAL,
+  STATS_INITIAL, STATS_MAX,
+} from "../constants.js";
 import { installInput, getInputVector } from "./input.js";
 import { tickPlayer, centerCameraOnPlayer } from "./player.js";
+import { tickEnemies } from "./enemies.js";
+import { tickWeapons, tickShockwaveAnims } from "./weapons.js";
+import { tickGems } from "./gems.js";
 import { renderBattle } from "./render.js";
 
 let _canvas = null;
@@ -42,8 +50,27 @@ export function startBattle(hero) {
   b.player.color = FACTION_COLOR[hero?.faction] ?? FACTION_COLOR_DEFAULT;
   b.camera.x = 0;
   b.camera.y = 0;
-  b.active = true;
 
+  // SPEC-007: 戦闘世界をクリーンに reset
+  b.enemies.length = 0;
+  b.gems.length = 0;
+  b.shockwaveAnims.length = 0;
+  b.weapons = [
+    { kind: "shockwave", radius: 80, dmg: 10, cooldownMs: 1000, lastFireMs: 0 },
+  ];
+  b.nextEntityId = 1;
+  b.lastEnemySpawnMs = performance.now();
+  b.contactCooldownMs = 0;
+
+  // SPEC-007: HP / XP / Lv / 経過 tick を初期化 (= リトライ運用も兼ねる)
+  state.stats.hp     = STATS_INITIAL.hp;
+  state.statsMax.hp  = STATS_MAX.hp;
+  state.xp           = XP_INITIAL;
+  state.xpToNext     = XP_TO_NEXT_INITIAL;
+  state.level        = LEVEL_INITIAL;
+  state.elapsedTicks = 0;
+
+  b.active = true;
   resizeCanvas();
   _lastMs = performance.now();
   if (!_raf) _raf = requestAnimationFrame(_loop);
@@ -86,6 +113,13 @@ function _loop(now) {
     const v = getInputVector();
     tickPlayer(dt, v);
     centerCameraOnPlayer();
+    tickEnemies(dt, now);          // SPEC-007: スポーン + 追跡 + 接触ダメージ
+    tickWeapons(dt, now);          // SPEC-007: shockwave 発射 + 範囲ダメージ + gem ドロップ
+    tickGems(dt);                  // SPEC-007: 拾う + level up
+    tickShockwaveAnims(dt);        // SPEC-007: 視覚アニメ寿命管理
+    if (state.battle.contactCooldownMs > 0) {
+      state.battle.contactCooldownMs -= dt * 1000;
+    }
   }
 
   if (_ctx) renderBattle(_ctx);

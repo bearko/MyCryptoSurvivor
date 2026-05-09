@@ -66,6 +66,30 @@ export const FACTION_COLOR = {
 export const FACTION_COLOR_DEFAULT = "#c4a35a";
 
 // ============================================================
+// 敵 / XP gem / 仮 hardcoded 武器 (= SPEC-007)
+// ============================================================
+export const ENEMY_SPAWN_INTERVAL_MS = 800;     // 0.8 sec ごとに 1 体
+export const ENEMY_SPAWN_MARGIN_PX   = 80;      // viewport 外周にこの分余白を取った位置で湧く
+export const ENEMY_SPEED_PX_S        = 80;
+export const ENEMY_HP_INITIAL        = 30;
+export const ENEMY_DMG               = 10;
+export const ENEMY_RADIUS            = 12;
+export const ENEMY_COLOR             = "#e76060";
+export const MAX_ENEMIES             = 200;
+
+export const CONTACT_COOLDOWN_MS     = 500;     // 被弾 throttle (= 0.5 sec 無敵)
+
+export const GEM_VALUE               = 1;
+export const GEM_RADIUS              = 6;
+export const GEM_COLOR               = "#f0c14b";
+export const GEM_PICKUP_RADIUS       = 28;
+
+export const SHOCKWAVE_VISUAL_LIFE_MS = 220;
+export const SHOCKWAVE_VISUAL_COLOR   = "rgba(255, 255, 255, 0.85)";
+
+export const XP_TO_NEXT_GROWTH       = 1.5;     // 閾値 = ceil(prev * 1.5)
+
+// ============================================================
 // localStorage キー (= prefix を統一)
 // ============================================================
 export const LS_PREFIX = "mcs";   // MyCryptoSurvivor
