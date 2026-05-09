@@ -4,6 +4,18 @@
 
 ## [Unreleased]
 
+### Added — SPEC-016 Phase 0 (= HP Bars + Damage Numbers + Hit Freeze spec)
+- `docs/specs/SPEC-016-hp-bars-and-damage-feedback.md` 新規 (= player + enemy アイコン下に HP バー、 満タン非表示、 数値なし、 ダメージ数字 floater、 hit freeze 100ms)
+
+### Planned — SPEC-016 Phase 1 (= 実装)
+- `js/constants.js`: `DAMAGE_NUMBER_*` / `HIT_FREEZE_MS` / `HP_BAR_*`
+- `js/battle/damage.js` 新規 (= `hitEnemy(enemy, dmg)` / `pushDamageNumber` / `tickDamageNumbers`)
+- `js/state.js`: `state.battle.damageNumbers` 追加、 enemy entity に `hitFreezeMs`
+- 全 damage path (= projectiles.js / archetypes.js orbits/bombs/shockwaves) を `hitEnemy` 経由に
+- `js/battle/enemies.js`: `hitFreezeMs > 0` で移動停止、 spawn で 0 初期化、 player 被ダメ時に pushDamageNumber
+- `js/battle/index.js` _loop: `tickDamageNumbers` 配線、 startBattle で reset
+- `js/battle/render.js`: `_drawHpBar` (= 満タン非表示 + 緑/黄/赤 ratio 色)、 ダメージ数字を fillText + strokeText で描画
+
 ### Added — SPEC-015 Phase 0 (= Extension Visual Icons + Weapon Balance + Moai Homing/Shockwave spec)
 - `docs/specs/SPEC-015-ext-visuals-balance-moai.md` 新規 (= 投射体/周回/爆弾を icon 描画 + Knife 45° offset + 武器威力底上げ + Moai 追従 + 着弾衝撃波)
 
