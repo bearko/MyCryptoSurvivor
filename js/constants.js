@@ -34,6 +34,14 @@ export const WEEKS_PER_MONTH = 4;
 export const MONTHS_PER_YEAR = 12;
 
 // ============================================================
+// サバイバル HUD スタッツ (= SPEC-004、 Phase 1 暫定値)
+// ============================================================
+export const STATS_INITIAL        = { hp: 100, temp: 50,  food: 100 };
+export const STATS_MAX            = { hp: 100, temp: 100, food: 100 };
+// 1 tick = 1 sec。 食料 1000 tick (≈17 min) で 0、 体温 1000 tick で 0、 HP 5000 tick (≈83 min) で 0。
+export const STATS_DECAY_PER_TICK = { hp: 0.02, temp: 0.05, food: 0.10 };
+
+// ============================================================
 // localStorage キー (= prefix を統一)
 // ============================================================
 export const LS_PREFIX = "mcs";   // MyCryptoSurvivor

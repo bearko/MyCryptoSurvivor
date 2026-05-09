@@ -70,6 +70,31 @@
       </div>
     </header>
 
+    <!-- ============================================================ -->
+    <!-- HUD: Day カウンタ + 3 スタッツ (= SPEC-004)                     -->
+    <!-- ============================================================ -->
+    <section class="hud" id="hud" aria-live="polite">
+      <span class="hud__day" id="hudDay">Day 1</span>
+      <div class="hud__bar" id="hudHp" data-stat="hp" role="meter"
+           aria-valuemin="0" aria-valuemax="100" aria-valuenow="100">
+        <span class="hud__bar-label" data-i18n="hud.stats.hp">HP</span>
+        <span class="hud__bar-track"><span class="hud__bar-fill"></span></span>
+        <span class="hud__bar-value">100</span>
+      </div>
+      <div class="hud__bar" id="hudTemp" data-stat="temp" role="meter"
+           aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
+        <span class="hud__bar-label" data-i18n="hud.stats.temp">体温</span>
+        <span class="hud__bar-track"><span class="hud__bar-fill"></span></span>
+        <span class="hud__bar-value">50</span>
+      </div>
+      <div class="hud__bar" id="hudFood" data-stat="food" role="meter"
+           aria-valuemin="0" aria-valuemax="100" aria-valuenow="100">
+        <span class="hud__bar-label" data-i18n="hud.stats.food">食料</span>
+        <span class="hud__bar-track"><span class="hud__bar-fill"></span></span>
+        <span class="hud__bar-value">100</span>
+      </div>
+    </section>
+
     <section class="stage">
       <p data-i18n="stage.placeholder">ここにサバイバル本編が描画される</p>
     </section>

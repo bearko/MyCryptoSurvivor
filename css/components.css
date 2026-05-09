@@ -327,3 +327,57 @@
   from { opacity: 0; transform: translateX(20px); }
   to   { opacity: 1; transform: translateX(0); }
 }
+
+/* ============================================================
+   HUD (= SPEC-004 Survival HUD: Day + 3 stat bars)
+   ============================================================ */
+.hud {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 12px;
+  background: rgba(0, 0, 0, 0.4);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.85rem;
+  color: var(--text);
+}
+.hud__day {
+  font-weight: 600;
+  min-width: 60px;
+  white-space: nowrap;
+}
+.hud__bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1 1 0;
+  min-width: 0;
+}
+.hud__bar-label {
+  width: 32px;
+  opacity: 0.9;
+  flex-shrink: 0;
+}
+.hud__bar-track {
+  flex: 1 1 0;
+  height: 8px;
+  min-width: 40px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.hud__bar-fill {
+  display: block;
+  height: 100%;
+  width: 100%;
+  transition: width 0.4s linear;
+}
+.hud__bar[data-stat="hp"]   .hud__bar-fill { background: var(--hp); }
+.hud__bar[data-stat="temp"] .hud__bar-fill { background: var(--temp); }
+.hud__bar[data-stat="food"] .hud__bar-fill { background: var(--food); }
+.hud__bar-value {
+  width: 32px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}

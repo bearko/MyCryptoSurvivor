@@ -47,3 +47,9 @@
     padding-bottom: max(1rem, env(safe-area-inset-bottom));
   }
 }
+
+/* ---------- HUD (= SPEC-004): mobile では 2 行に折り返す ---------- */
+@media (max-width: 640px) {
+  .hud { flex-wrap: wrap; gap: 6px 12px; }
+  .hud__day { flex-basis: 100%; min-width: 0; }
+}
