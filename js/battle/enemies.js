@@ -36,7 +36,9 @@ export function tickEnemies(dt, nowMs) {
 
     // 接触判定: 1 体でも触れたら 1 回被弾、 throttle 中はスキップ
     if (b.contactCooldownMs <= 0 && d < e.r + b.player.r) {
-      state.stats.hp -= e.dmg;
+      // SPEC-011: state.buffs.dmgTakenMul (= Shield 系列) で被ダメ軽減
+      const taken = e.dmg * (state.buffs?.dmgTakenMul ?? 1);
+      state.stats.hp -= taken;
       if (state.stats.hp < 0) state.stats.hp = 0;
       b.contactCooldownMs = CONTACT_COOLDOWN_MS;
       // SPEC-009: HP 0 で Game Over (= 多重 trigger 防止は gameover.js 側で gate)
