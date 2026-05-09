@@ -84,10 +84,37 @@ export const GEM_RADIUS              = 6;
 export const GEM_COLOR               = "#f0c14b";
 export const GEM_PICKUP_RADIUS       = 28;
 
-export const SHOCKWAVE_VISUAL_LIFE_MS = 220;
-export const SHOCKWAVE_VISUAL_COLOR   = "rgba(255, 255, 255, 0.85)";
-
 export const XP_TO_NEXT_GROWTH       = 1.5;     // 閾値 = ceil(prev * 1.5)
+
+// ============================================================
+// Extensions as weapons + Level-up pick (= SPEC-008)
+// ============================================================
+export const EXT_MAX_LEVEL          = 5;
+export const PROJECTILE_LIFE_MS     = 1500;
+export const PROJECTILE_RADIUS      = 5;
+export const PROJECTILE_DEFAULT_COLOR = "#ffffff";
+export const PICK_OPTIONS_COUNT     = 3;
+
+// extension 系列 → 投射体カラー
+export const SERIES_COLOR = {
+  Blade:  "#d4d4dc",
+  Musket: "#56ccf2",
+  Quill:  "#bb86fc",
+  Armor:  "#aaaaaa",
+  Horse:  "#f0c14b",
+  Axe:    "#e76060",
+  Dragon: "#ff7a59",
+  Bull:   "#5ecf8a",
+  Monkey: "#fdcb6e",
+  Goblet: "#9be7c4",
+};
+export const SERIES_COLOR_DEFAULT = "#c4a35a";
+
+// 候補 0 のときに付与する fallback 武器
+export const FALLBACK_WEAPON = {
+  extId: 0, level: 1, dmg: 8, cdMs: 1500, speedPx: 280, range: 320,
+  color: SERIES_COLOR_DEFAULT, lastFireMs: 0,
+};
 
 // ============================================================
 // localStorage キー (= prefix を統一)

@@ -432,3 +432,97 @@
   transform: translate(-50%, -50%);
   pointer-events: none;
 }
+
+/* ============================================================
+   Level-up modal (= SPEC-008、 starter pick + LV up)
+   ============================================================ */
+.levelup-modal {
+  position: fixed; inset: 0; z-index: 320;
+  background: rgba(15, 12, 22, 0.92);
+  display: flex; align-items: center; justify-content: center;
+  padding: 1rem;
+  animation: modal-fade-in 0.18s ease;
+}
+.levelup-modal.hidden { display: none !important; }
+
+.levelup-modal__card {
+  width: 100%; max-width: 560px;
+  background: linear-gradient(180deg, #2c2440 0%, var(--panel) 100%);
+  border: 2px solid var(--accent);
+  border-radius: 14px;
+  padding: 1rem 1.1rem 1.1rem;
+  display: flex; flex-direction: column;
+  gap: 0.8rem;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+  animation: modal-pop-in 0.22s cubic-bezier(.2, .8, .4, 1);
+}
+
+.levelup-modal__title {
+  margin: 0;
+  text-align: center;
+  color: var(--accent);
+  font-size: 1.3rem;
+  letter-spacing: 0.08em;
+}
+.levelup-modal__sub {
+  margin: 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.levelup-modal__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.levelup-card {
+  appearance: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.35rem;
+  background: var(--panel-2);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 0.8rem 0.4rem;
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.1s, background 0.15s;
+  min-height: 130px;
+  text-align: center;
+}
+.levelup-card:hover  { border-color: var(--accent); }
+.levelup-card:active { transform: translateY(1px); }
+.levelup-card__series {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+}
+.levelup-card__name {
+  font-weight: 800;
+  font-size: 0.92rem;
+  line-height: 1.15;
+  margin-top: 0.2rem;
+}
+.levelup-card__series-label {
+  font-size: 0.7rem;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+}
+.levelup-card__lv {
+  font-size: 0.78rem;
+  color: var(--accent);
+  font-weight: 700;
+  margin-top: auto;
+}
+
+@media (max-width: 480px) {
+  .levelup-modal__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.4rem; }
+  .levelup-card { padding: 0.55rem 0.25rem; min-height: 110px; }
+  .levelup-card__name { font-size: 0.78rem; }
+  .levelup-card__series-label { font-size: 0.62rem; }
+  .levelup-card__lv { font-size: 0.7rem; }
+}
