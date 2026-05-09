@@ -547,12 +547,22 @@
   color: var(--muted);
   letter-spacing: 0.04em;
 }
-.levelup-card__effect {
-  font-size: 0.7rem;
-  color: var(--text);
-  opacity: 0.8;
+.levelup-card__skill {
+  font-size: 0.78rem;
+  color: var(--accent);
+  font-weight: 700;
   letter-spacing: 0.02em;
-  font-variant-numeric: tabular-nums;
+}
+.levelup-card__effect {
+  font-size: 0.68rem;
+  color: var(--text);
+  opacity: 0.85;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+  text-align: center;
+}
+.levelup-card[data-category="buff"] {
+  border-color: rgba(94, 207, 138, 0.5);
 }
 .levelup-card__lv {
   font-size: 0.74rem;

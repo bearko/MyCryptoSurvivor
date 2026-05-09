@@ -70,6 +70,17 @@ export const state = {
   killCount:    0,
   lastRunStats: null,   // {elapsed, level, kills}
 
+  // SPEC-011: 強化系列の効果スロット (= series ごと現在の絶対値)
+  buffs: {
+    hpMaxBonus:        0,    // Armor: 最大 HP に加算 (= 累積値ではなく現 tier の絶対加算量)
+    regenPerSec:       0,    // Ramen: HP 毎秒回復
+    speedMul:          1,    // Boots: 移動速度倍率
+    cdMul:             1,    // Horse: 武器 cd 倍率 (< 1 で短縮)
+    dmgTakenMul:       1,    // Shield: 被ダメ倍率 (< 1 で軽減)
+    dmgMul:            1,    // Apple: 武器 dmg 倍率 (> 1 で強化)
+    bulletCountBonus:  0,    // Oriflamme: 弾数ボーナス (= SPEC-012 の archetype が利用)
+  },
+
   // ゲーム固有 (= 後続 SPEC で追加)
   // gum: 1000,
   // materials: {},
