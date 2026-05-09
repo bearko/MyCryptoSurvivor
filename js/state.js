@@ -54,12 +54,17 @@ export const state = {
     nextEntityId:    1,
     lastEnemySpawnMs: 0,
     contactCooldownMs: 0, // > 0 のあいだ被弾しない
+    gameOver:       false, // SPEC-009: HP 0 検出後 true、 多重 trigger 防止
   },
 
   // SPEC-008: 装備 extension + Level-up pick モーダル状態
   ownedExtensions:       [],   // [{extId, level}]
   pendingPickOptions:    [],   // [{extId, ext, currentLevel, nextLevel, isNew}]
   pendingPickIsStarter:  false,
+
+  // SPEC-009: 撃破数 + リトライ用 last run snapshot
+  killCount:    0,
+  lastRunStats: null,   // {elapsed, level, kills}
 
   // ゲーム固有 (= 後続 SPEC で追加)
   // gum: 1000,
