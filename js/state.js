@@ -53,8 +53,13 @@ export const state = {
     // SPEC-007 / SPEC-008: 敵 / gem / 投射体 / 武器
     enemies:        [],   // {id, x, y, r, hp, hpMax, dmg, speed, color}
     gems:           [],   // {id, x, y, r, value, color}
-    projectiles:    [],   // {id, x, y, vx, vy, r, dmg, color, life, age}
-    weapons:        [],   // {extId, level, dmg, cdMs, range, speedPx, color, lastFireMs}
+    projectiles:    [],   // {id, x, y, vx, vy, r, dmg, color, life, age, targetId?, kind?}
+    weapons:        [],   // {extId, level, archetype, dmg, cdMs, range, speedPx, bullets, color, params, lastFireMs}
+
+    // SPEC-012: 武器 archetype 別の追加 entity
+    orbits:         [],   // {id, weaponExtId, angle, r, dmg, color, hitMap, kind}  - Book / Blade
+    beams:          [],   // {id, x, y, dirX, dirY, len, thick, age, life, dmgPerSec, color, weaponExtId} - LaserGun
+    bombs:          [],   // {id, x, y, fuseMs, age, radius, dmg, color}  - Pierrot
     nextEntityId:    1,
     lastEnemySpawnMs: 0,
     contactCooldownMs: 0, // > 0 のあいだ被弾しない
