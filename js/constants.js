@@ -34,12 +34,17 @@ export const WEEKS_PER_MONTH = 4;
 export const MONTHS_PER_YEAR = 12;
 
 // ============================================================
-// サバイバル HUD スタッツ (= SPEC-004、 Phase 1 暫定値)
+// VS HUD スタッツ (= SPEC-005、 SPEC-004 から HP only に圧縮)
 // ============================================================
-export const STATS_INITIAL        = { hp: 100, temp: 50,  food: 100 };
-export const STATS_MAX            = { hp: 100, temp: 100, food: 100 };
-// 1 tick = 1 sec。 食料 1000 tick (≈17 min) で 0、 体温 1000 tick で 0、 HP 5000 tick (≈83 min) で 0。
-export const STATS_DECAY_PER_TICK = { hp: 0.02, temp: 0.05, food: 0.10 };
+export const STATS_INITIAL        = { hp: 100 };
+export const STATS_MAX            = { hp: 100 };
+// VS は idle decay 無し。 HP は戦闘ダメージでのみ減らす (= SPEC-007)。
+export const STATS_DECAY_PER_TICK = { hp: 0 };
+
+// XP / Level 初期値 (= SPEC-005)
+export const XP_INITIAL          = 0;
+export const XP_TO_NEXT_INITIAL  = 5;
+export const LEVEL_INITIAL       = 1;
 
 // ============================================================
 // localStorage キー (= prefix を統一)

@@ -31,10 +31,13 @@ export const state = {
   // 選択確定後のヒーロー (= SPEC-002)
   ownedHero: null,         // heroes.json の 1 要素 / null
 
-  // サバイバル HUD (= SPEC-004)
-  day: 1,                                        // Day カウンタ (= advanceWeek と同期、 7 tick で +1)
-  stats:    { hp: 100, temp: 50,  food: 100 },   // 現在値 (= 浮動小数で内部保持)
-  statsMax: { hp: 100, temp: 100, food: 100 },   // 上限値 (= Phase 1 では固定、 後続で hero stats 由来に)
+  // VS HUD (= SPEC-005、 SPEC-004 から temp/food/day を撤去)
+  stats:    { hp: 100 },        // 現在値 (= 浮動小数で内部保持)
+  statsMax: { hp: 100 },        // 上限値 (= Phase 1 固定、 後続で hero stats 由来に)
+  level: 1,                     // VS のレベル
+  xp: 0,                        // 現在 XP
+  xpToNext: 5,                  // 次レベルまでの閾値 (= 仮 5、 SPEC-008 で曲線化)
+  elapsedTicks: 0,              // ステージ経過 tick (= 1 tick = 1 sec、 mm:ss 表示)
 
   // ゲーム固有 (= 後続 SPEC で追加)
   // gum: 1000,
