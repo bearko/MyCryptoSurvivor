@@ -25,10 +25,13 @@ export const state = {
   // 通知タイル
   notifications: [],
 
-  // ゲーム固有 (= プロジェクトごとに足す)
+  // ヒーロー選択モーダル (= SPEC-001 Phase 1 mock)
+  pendingHeroPick: null,   // 選択中の placeholder index (1〜N) / null
+
+  // ゲーム固有 (= 後続 SPEC で追加)
   // gum: 1000,
   // materials: {},
-  // ownedHeroes: [],
+  // ownedHero: null,
   // activeCraft: null,
   // pendingSalaryReport: null,
 };

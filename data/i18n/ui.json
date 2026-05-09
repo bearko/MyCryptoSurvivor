@@ -1,23 +1,28 @@
 {
-  "splash.loading":      { "ja": "読み込み中…",       "en": "Loading…" },
+  "splash.loading":      { "ja": "読み込み中…",                   "en": "Loading…" },
 
-  "lang.toggle.label":   { "ja": "言語 / Language",   "en": "Language / 言語" },
+  "lang.toggle.label":   { "ja": "言語 / Language",               "en": "Language / 言語" },
 
-  "title.subtitle":      { "ja": "サブタイトル",      "en": "Subtitle" },
-  "title.press":         { "ja": "Press to Start",   "en": "Press to Start" },
+  "title.subtitle":      { "ja": "サバイバルがチェーンを駆ける。", "en": "Survive the chain." },
+  "title.press":         { "ja": "Press to Start",                "en": "Press to Start" },
 
-  "stage.placeholder":   { "ja": "ここにゲーム本体を描画する",
-                           "en": "Game stage goes here" },
+  "stage.placeholder":   { "ja": "ここにサバイバル本編が描画される",
+                           "en": "Survival gameplay will render here" },
 
-  "btn.close":           { "ja": "閉じる",            "en": "Close" },
-  "btn.confirm":         { "ja": "確認",              "en": "Confirm" },
-  "btn.cancel":          { "ja": "キャンセル",        "en": "Cancel" },
-  "btn.proceed":         { "ja": "進む",              "en": "Proceed" },
-  "btn.back":            { "ja": "戻る",              "en": "Back" },
+  "hero.select.title":       { "ja": "ヒーローを選ぶ",             "en": "Choose Your Hero" },
+  "hero.select.placeholder": { "ja": "Hero {n}",                  "en": "Hero {n}" },
+  "hero.select.cta":         { "ja": "冒険を始める",               "en": "Begin Survival" },
+  "hero.select.empty":       { "ja": "ヒーローを選択してください", "en": "Select a hero to continue" },
 
-  "help.title":          { "ja": "ヘルプ",            "en": "Help" },
-  "help.body":           { "ja": "このゲームの遊び方は…",
-                           "en": "How to play this game…" },
+  "btn.close":           { "ja": "閉じる",                         "en": "Close" },
+  "btn.confirm":         { "ja": "確認",                           "en": "Confirm" },
+  "btn.cancel":          { "ja": "キャンセル",                     "en": "Cancel" },
+  "btn.proceed":         { "ja": "進む",                           "en": "Proceed" },
+  "btn.back":            { "ja": "戻る",                           "en": "Back" },
+
+  "help.title":          { "ja": "ヘルプ",                         "en": "Help" },
+  "help.body":           { "ja": "雪山サバイバル + リソース管理のシングルプレイ。 Day 1 でヒーローを 1 名選んで始めます。",
+                           "en": "A solo survival game with resource management. Pick a hero on Day 1 to begin." },
   "help.timeNote":       { "ja": "ホーム画面で待機している間のみ時間が進行します。",
                            "en": "Time advances only while you wait on the home screen." }
 }
