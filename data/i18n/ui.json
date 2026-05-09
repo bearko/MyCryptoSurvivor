@@ -15,10 +15,11 @@
   "hero.select.empty":       { "ja": "ヒーローを選択してください", "en": "Select a hero to continue" },
   "hero.select.imgAlt":      { "ja": "{name} のポートレート",      "en": "Portrait of {name}" },
 
-  "hero.element.garuda":     { "ja": "風",                         "en": "Wind" },
-  "hero.element.ifrit":      { "ja": "火",                         "en": "Fire" },
-  "hero.element.leviathan":  { "ja": "水",                         "en": "Water" },
-  "hero.element.tiamat":     { "ja": "土",                         "en": "Earth" },
+  "hero.faction.SEIRYU":     { "ja": "青龍",                       "en": "Seiryu" },
+  "hero.faction.SUZAKU":     { "ja": "朱雀",                       "en": "Suzaku" },
+  "hero.faction.BYAKKO":     { "ja": "白虎",                       "en": "Byakko" },
+  "hero.faction.GENBU":      { "ja": "玄武",                       "en": "Genbu" },
+  "hero.faction.KOURYU":     { "ja": "黄龍",                       "en": "Kouryu" },
 
   "hero.rarity.Common":      { "ja": "コモン",                     "en": "Common" },
   "hero.rarity.Uncommon":    { "ja": "アンコモン",                 "en": "Uncommon" },
