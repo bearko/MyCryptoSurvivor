@@ -71,27 +71,22 @@
     </header>
 
     <!-- ============================================================ -->
-    <!-- HUD: Day カウンタ + 3 スタッツ (= SPEC-004)                     -->
+    <!-- HUD: Level + Elapsed + HP + XP (= SPEC-005 VS slim)            -->
     <!-- ============================================================ -->
     <section class="hud" id="hud" aria-live="polite">
-      <span class="hud__day" id="hudDay">Day 1</span>
+      <span class="hud__level"   id="hudLevel">Lv.1</span>
+      <span class="hud__elapsed" id="hudElapsed" aria-label="elapsed time">00:00</span>
       <div class="hud__bar" id="hudHp" data-stat="hp" role="meter"
            aria-valuemin="0" aria-valuemax="100" aria-valuenow="100">
         <span class="hud__bar-label" data-i18n="hud.stats.hp">HP</span>
         <span class="hud__bar-track"><span class="hud__bar-fill"></span></span>
         <span class="hud__bar-value">100</span>
       </div>
-      <div class="hud__bar" id="hudTemp" data-stat="temp" role="meter"
-           aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
-        <span class="hud__bar-label" data-i18n="hud.stats.temp">体温</span>
+      <div class="hud__bar" id="hudXp" data-stat="xp" role="meter"
+           aria-valuemin="0" aria-valuemax="5" aria-valuenow="0">
+        <span class="hud__bar-label" data-i18n="hud.stats.xp">XP</span>
         <span class="hud__bar-track"><span class="hud__bar-fill"></span></span>
-        <span class="hud__bar-value">50</span>
-      </div>
-      <div class="hud__bar" id="hudFood" data-stat="food" role="meter"
-           aria-valuemin="0" aria-valuemax="100" aria-valuenow="100">
-        <span class="hud__bar-label" data-i18n="hud.stats.food">食料</span>
-        <span class="hud__bar-track"><span class="hud__bar-fill"></span></span>
-        <span class="hud__bar-value">100</span>
+        <span class="hud__bar-value">0/5</span>
       </div>
     </section>
 
