@@ -22,6 +22,7 @@ import { tickGems } from "./gems.js";
 import { triggerStarterPick } from "./levelup.js";
 import { renderBattle } from "./render.js";
 import { getHeroSprite, getDefaultEnemySprite } from "./sprites.js";
+import { tickRegen, resetBuffs } from "./buffs.js";
 
 let _canvas = null;
 let _ctx = null;
@@ -70,10 +71,11 @@ export function startBattle(hero) {
   state.ownedExtensions = [];                   // SPEC-008: 装備リセット
   state.killCount       = 0;                    // SPEC-009: 撃破カウンタ
   state.lastRunStats    = null;                 // SPEC-009: snapshot
+  resetBuffs();                                 // SPEC-011: 強化系列の効果リセット
 
-  // SPEC-007: HP / XP / Lv / 経過 tick を初期化 (= リトライ運用も兼ねる)
-  state.stats.hp     = STATS_INITIAL.hp;
+  // SPEC-007 / SPEC-011: HP / XP / Lv / 経過 tick を初期化 (= statsMax は buffs.hpMaxBonus 反映後の値)
   state.statsMax.hp  = STATS_MAX.hp;
+  state.stats.hp     = STATS_INITIAL.hp;
   state.xp           = XP_INITIAL;
   state.xpToNext     = XP_TO_NEXT_INITIAL;
   state.level        = LEVEL_INITIAL;
@@ -129,6 +131,7 @@ function _loop(now) {
     tickWeapons(dt, now);          // SPEC-008: extension 武器が投射体を spawn
     tickProjectiles(dt);           // SPEC-008: 投射体の移動 + 衝突 + 寿命
     tickGems(dt);                  // SPEC-007: 拾う + level up trigger
+    tickRegen(dt);                 // SPEC-011: Ramen 系列の HP regen
     if (state.battle.contactCooldownMs > 0) {
       state.battle.contactCooldownMs -= dt * 1000;
     }
