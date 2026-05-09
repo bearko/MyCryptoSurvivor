@@ -31,6 +31,7 @@ export function tickProjectiles(dt) {
         if (e.hp <= 0) {
           spawnGem(e.x, e.y);
           b.enemies.splice(j, 1);
+          state.killCount++;          // SPEC-009: 撃破カウント
         }
         hit = true;
         break;
