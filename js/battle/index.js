@@ -23,6 +23,9 @@ import { triggerStarterPick } from "./levelup.js";
 import { renderBattle } from "./render.js";
 import { getHeroSprite, getDefaultEnemySprite } from "./sprites.js";
 import { tickRegen, resetBuffs } from "./buffs.js";
+import {
+  tickOrbits, tickBeams, tickBombs, tickHomingProjectiles,
+} from "./archetypes.js";
 
 let _canvas = null;
 let _ctx = null;
@@ -59,10 +62,13 @@ export function startBattle(hero) {
   b.playerSprite       = getHeroSprite(hero);
   b.defaultEnemySprite = getDefaultEnemySprite();
 
-  // SPEC-007 / SPEC-008 / SPEC-009: 戦闘世界をクリーンに reset
+  // SPEC-007 / SPEC-008 / SPEC-009 / SPEC-012: 戦闘世界をクリーンに reset
   b.enemies.length     = 0;
   b.gems.length        = 0;
   b.projectiles.length = 0;
+  b.orbits.length      = 0;     // SPEC-012
+  b.beams.length       = 0;     // SPEC-012
+  b.bombs.length       = 0;     // SPEC-012
   b.weapons            = [];                    // SPEC-008: starter pick で最初の武器が入る
   b.nextEntityId       = 1;
   b.lastEnemySpawnMs   = performance.now();
@@ -128,8 +134,12 @@ function _loop(now) {
     tickPlayer(dt, v);
     centerCameraOnPlayer();
     tickEnemies(dt, now);          // SPEC-007: スポーン + 追跡 + 接触ダメージ
-    tickWeapons(dt, now);          // SPEC-008: extension 武器が投射体を spawn
+    tickWeapons(dt, now);          // SPEC-008/012: archetype dispatcher
+    tickHomingProjectiles(dt);     // SPEC-012: bigHoming の弾道補正
     tickProjectiles(dt);           // SPEC-008: 投射体の移動 + 衝突 + 寿命
+    tickOrbits(dt, now);           // SPEC-012: Book / Blade の周回 + 衝突
+    tickBeams(dt);                 // SPEC-012: LaserGun の持続レーザー
+    tickBombs(dt);                 // SPEC-012: Pierrot の遅延爆発
     tickGems(dt);                  // SPEC-007: 拾う + level up trigger
     tickRegen(dt);                 // SPEC-011: Ramen 系列の HP regen
     if (state.battle.contactCooldownMs > 0) {
