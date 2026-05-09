@@ -341,10 +341,20 @@
   font-size: 0.85rem;
   color: var(--text);
 }
-.hud__day {
-  font-weight: 600;
-  min-width: 60px;
+.hud__level {
+  font-weight: 700;
+  min-width: 48px;
   white-space: nowrap;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+}
+.hud__elapsed {
+  font-weight: 600;
+  min-width: 56px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  opacity: 0.85;
 }
 .hud__bar {
   display: flex;
@@ -372,11 +382,10 @@
   width: 100%;
   transition: width 0.4s linear;
 }
-.hud__bar[data-stat="hp"]   .hud__bar-fill { background: var(--hp); }
-.hud__bar[data-stat="temp"] .hud__bar-fill { background: var(--temp); }
-.hud__bar[data-stat="food"] .hud__bar-fill { background: var(--food); }
+.hud__bar[data-stat="hp"] .hud__bar-fill { background: var(--hp); }
+.hud__bar[data-stat="xp"] .hud__bar-fill { background: var(--xp); }
 .hud__bar-value {
-  width: 32px;
+  min-width: 44px;
   text-align: right;
   font-variant-numeric: tabular-nums;
   flex-shrink: 0;

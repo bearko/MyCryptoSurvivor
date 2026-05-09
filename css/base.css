@@ -24,10 +24,12 @@
   --genbu:     #56ccf2;   /* 玄武 / 北 / 水 */
   --kouryu:    #f0c14b;   /* 黄龍 / 中央 / 土 */
 
-  /* サバイバル HUD スタッツ (= SPEC-004) */
+  /* VS HUD (= SPEC-005、 SPEC-004 から HP のみに圧縮) */
   --hp:        #e76060;   /* 体力 = 赤 */
-  --temp:      #56ccf2;   /* 体温 = 青 */
-  --food:      #5ecf8a;   /* 食料 = 緑 */
+  --xp:        #f0c14b;   /* 経験値 = 黄 */
+  /* legacy: SPEC-004 由来、 後続 SPEC で再利用候補のため残置 */
+  --temp:      #56ccf2;
+  --food:      #5ecf8a;
 
   --rarity-n:  #aaa;
   --rarity-r:  #56ccf2;
