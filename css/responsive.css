@@ -48,8 +48,9 @@
   }
 }
 
-/* ---------- HUD (= SPEC-004): mobile では 2 行に折り返す ---------- */
+/* ---------- HUD (= SPEC-005): mobile では bar を下段に折り返す ---------- */
 @media (max-width: 640px) {
   .hud { flex-wrap: wrap; gap: 6px 12px; }
-  .hud__day { flex-basis: 100%; min-width: 0; }
+  .hud__level, .hud__elapsed { min-width: 0; }
+  .hud__bar { flex-basis: calc(50% - 6px); }
 }

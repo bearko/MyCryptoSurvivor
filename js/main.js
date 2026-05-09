@@ -315,23 +315,24 @@ function currentTickInterval() {
 function onTick() {
   if (state.pauseFlags > 0) return;
   state.tickCount++;
+  state.elapsedTicks++;   // SPEC-005: ステージ経過 tick (= mm:ss 表示)
   state.weekProgress++;
   if (state.weekProgress >= SECONDS_PER_WEEK) advanceWeek();
 
-  tickStatsDecay();   // SPEC-004: 1 tick の decay を stats に適用
+  tickStatsDecay();   // SPEC-005: VS は idle decay 無しだが構造は残置
 
   // ... 各 feature の tick はここから呼ぶ ...
   // tickActiveCraft();
   // tickActiveQuest();
 
   renderHeader();
-  renderHud();        // SPEC-004: Day + 3 bar の DOM 更新
+  renderHud();        // SPEC-005: Lv / Elapsed / HP / XP の DOM 更新
 }
 
 function advanceWeek() {
+  // SPEC-005: state.day は撤去。 year/month/week は legacy として残置 (= 副作用ゼロ)。
   state.weekProgress = 0;
   state.week++;
-  state.day++;        // SPEC-004: サバイバル Day カウンタ (= 週カスケードと同期)
   if (state.week > WEEKS_PER_MONTH) {
     state.week = 1;
     state.month++;
