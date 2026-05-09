@@ -6,12 +6,12 @@
 // pending count を持っているので、 1 フレーム複数 LV up でも連鎖して開く。
 
 import { state, pauseTime, resumeTime } from "../state.js";
-import { EXT_ROSTER } from "../extensions.js";
+import { EXT_ROSTER, extImg } from "../extensions.js";
 import {
   EXT_MAX_LEVEL, PICK_OPTIONS_COUNT,
   SERIES_COLOR, SERIES_COLOR_DEFAULT, FALLBACK_WEAPON,
 } from "../constants.js";
-import { rebuildWeaponsFromOwned } from "./extensions-as-weapons.js";
+import { rebuildWeaponsFromOwned, weaponFromExt } from "./extensions-as-weapons.js";
 import { localizedExtName } from "../extensions.js";
 import { t, tpl, getLang, onLangChange } from "../i18n.js";
 
@@ -156,6 +156,24 @@ export function renderLevelUpModal() {
       ? newLabel
       : tpl(lvUpTpl, { cur: String(opt.currentLevel), next: String(opt.nextLevel) });
 
+    // SPEC-010: アイコン (= 左カラム、 onerror で fallback gradient)
+    const iconWrap = document.createElement("div");
+    iconWrap.className = "levelup-card__icon-wrap";
+    iconWrap.style.borderColor = seriesColor;
+    const iconImg = document.createElement("img");
+    iconImg.className = "levelup-card__icon";
+    iconImg.alt = name;
+    iconImg.src = extImg(opt.extId);
+    iconImg.loading = "lazy";
+    iconImg.onerror = () => {
+      iconImg.classList.add("levelup-card__icon--missing");
+      iconImg.removeAttribute("src");
+    };
+    iconWrap.appendChild(iconImg);
+
+    // SPEC-010: 右カラム (= 系列バー + 名前 + 系列ラベル + 効果テキスト + Lv)
+    const main = document.createElement("div");
+    main.className = "levelup-card__main";
     const bar = document.createElement("div");
     bar.className = "levelup-card__series";
     bar.style.background = seriesColor;
@@ -165,12 +183,28 @@ export function renderLevelUpModal() {
     const seriesEl = document.createElement("div");
     seriesEl.className = "levelup-card__series-label";
     seriesEl.textContent = series;
+    const effEl = document.createElement("div");
+    effEl.className = "levelup-card__effect";
+    effEl.textContent = _formatWeaponEffect(opt.ext, opt.nextLevel);
     const lvEl = document.createElement("div");
     lvEl.className = "levelup-card__lv";
     lvEl.textContent = lvLabel;
+    main.append(bar, nameEl, seriesEl, effEl, lvEl);
 
-    card.append(bar, nameEl, seriesEl, lvEl);
+    card.append(iconWrap, main);
     card.addEventListener("click", () => applyPick(opt.extId));
     grid.appendChild(card);
   }
+}
+
+/**
+ * SPEC-010: 効果テキストを weaponFromExt から派生して 1 行にまとめる。
+ * SPEC-011 で武器系列ごとの description に置き換える予定。
+ */
+function _formatWeaponEffect(ext, level) {
+  const w = weaponFromExt(ext.extId, level);
+  if (!w) return "";
+  const cdSec = (w.cdMs / 1000).toFixed(1);
+  return tpl(t("levelup.weaponEffect", "DMG {dmg} · CD {cd}s · {range}px"),
+             { dmg: String(w.dmg), cd: cdSec, range: String(w.range) });
 }
