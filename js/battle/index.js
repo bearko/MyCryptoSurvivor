@@ -12,14 +12,16 @@ import {
   PLAYER_RADIUS, PLAYER_SPEED_PX_S,
   XP_INITIAL, XP_TO_NEXT_INITIAL, LEVEL_INITIAL,
   STATS_INITIAL, STATS_MAX,
+  HERO_STARTING_WEAPON, HERO_STARTING_WEAPON_DEFAULT,
 } from "../constants.js";
+import { getExt, getCategory } from "../extensions.js";
 import { installInput, getInputVector } from "./input.js";
 import { tickPlayer, centerCameraOnPlayer } from "./player.js";
 import { tickEnemies } from "./enemies.js";
 import { tickWeapons } from "./weapons.js";
 import { tickProjectiles } from "./projectiles.js";
 import { tickGems } from "./gems.js";
-import { triggerStarterPick } from "./levelup.js";
+import { rebuildWeaponsFromOwned } from "./extensions-as-weapons.js";
 import { renderBattle } from "./render.js";
 import { getHeroSprite, getDefaultEnemySprite } from "./sprites.js";
 import { tickRegen, resetBuffs } from "./buffs.js";
@@ -87,13 +89,21 @@ export function startBattle(hero) {
   state.level        = LEVEL_INITIAL;
   state.elapsedTicks = 0;
 
+  // SPEC-013: ヒーローに固定の starter weapon を Lv.1 で装備 (= starter pick モーダルは廃止)
+  const starterId  = HERO_STARTING_WEAPON[hero?.heroId] ?? HERO_STARTING_WEAPON_DEFAULT;
+  const starterExt = getExt(starterId);
+  if (starterExt && getCategory(starterExt) === "weapon") {
+    state.ownedExtensions.push({ extId: starterId, level: 1 });
+    rebuildWeaponsFromOwned();
+  } else {
+    console.warn("[battle] starter weapon not found for hero",
+                 hero?.heroId, "→ extId", starterId);
+  }
+
   b.active = true;
   resizeCanvas();
   _lastMs = performance.now();
   if (!_raf) _raf = requestAnimationFrame(_loop);
-
-  // SPEC-008: 戦闘開始直後に starter pick (= 最初の武器を選ばせる)
-  triggerStarterPick();
 }
 
 export function stopBattle() {
