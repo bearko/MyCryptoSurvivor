@@ -39,6 +39,53 @@ export const state = {
   xpToNext: 5,                  // 次レベルまでの閾値 (= 仮 5、 SPEC-008 で曲線化)
   elapsedTicks: 0,              // ステージ経過 tick (= 1 tick = 1 sec、 mm:ss 表示)
 
+  // 戦闘ステージ (= SPEC-006 + SPEC-007 + SPEC-010、 RAF ループで更新される)
+  battle: {
+    active:   false,
+    player:   { x: 0, y: 0, r: 14, speed: 180, color: "#c4a35a" },
+    camera:   { x: 0, y: 0 },
+    viewport: { w: 0, h: 0 },
+
+    // SPEC-010: 画像 sprite preload entry (= {img, ready, failed})
+    playerSprite:        null,
+    defaultEnemySprite:  null,
+
+    // SPEC-007 / SPEC-008: 敵 / gem / 投射体 / 武器
+    enemies:        [],   // {id, x, y, r, hp, hpMax, dmg, speed, color}
+    gems:           [],   // {id, x, y, r, value, color}
+    projectiles:    [],   // {id, x, y, vx, vy, r, dmg, color, life, age, targetId?, kind?}
+    weapons:        [],   // {extId, level, archetype, dmg, cdMs, range, speedPx, bullets, color, params, lastFireMs}
+
+    // SPEC-012: 武器 archetype 別の追加 entity
+    orbits:         [],   // {id, weaponExtId, angle, r, dmg, color, hitMap, kind}  - Book / Blade
+    beams:          [],   // {id, x, y, dirX, dirY, len, thick, age, life, dmgPerSec, color, weaponExtId} - LaserGun
+    bombs:          [],   // {id, x, y, fuseMs, age, radius, dmg, color}  - Pierrot
+    nextEntityId:    1,
+    lastEnemySpawnMs: 0,
+    contactCooldownMs: 0, // > 0 のあいだ被弾しない
+    gameOver:       false, // SPEC-009: HP 0 検出後 true、 多重 trigger 防止
+  },
+
+  // SPEC-008: 装備 extension + Level-up pick モーダル状態
+  ownedExtensions:       [],   // [{extId, level}]
+  pendingPickOptions:    [],   // [{extId, ext, currentLevel, nextLevel, isNew}]
+  pendingPickIsStarter:  false,
+
+  // SPEC-009: 撃破数 + リトライ用 last run snapshot
+  killCount:    0,
+  lastRunStats: null,   // {elapsed, level, kills}
+
+  // SPEC-011: 強化系列の効果スロット (= series ごと現在の絶対値)
+  buffs: {
+    hpMaxBonus:        0,    // Armor: 最大 HP に加算 (= 累積値ではなく現 tier の絶対加算量)
+    regenPerSec:       0,    // Ramen: HP 毎秒回復
+    speedMul:          1,    // Boots: 移動速度倍率
+    cdMul:             1,    // Horse: 武器 cd 倍率 (< 1 で短縮)
+    dmgTakenMul:       1,    // Shield: 被ダメ倍率 (< 1 で軽減)
+    dmgMul:            1,    // Apple: 武器 dmg 倍率 (> 1 で強化)
+    bulletCountBonus:  0,    // Oriflamme: 弾数ボーナス (= SPEC-012 の archetype が利用)
+  },
+
   // ゲーム固有 (= 後続 SPEC で追加)
   // gum: 1000,
   // materials: {},

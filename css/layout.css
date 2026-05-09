@@ -107,8 +107,11 @@
 .app {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
-  min-height: 100dvh;   /* iOS Safari 100% 対策 */
+  /* SPEC-010: viewport 厳密ロック。 min-height だと HUD 折り返し時に app が伸びて
+     canvas の取得 height が壊れる。 height で固定し overflow を抑える。 */
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
 }
 
 .header {
@@ -119,10 +122,12 @@
   padding: 0.6rem 1rem;
   background: var(--panel);
   border-bottom: 1px solid var(--border);
-  position: sticky;
-  top: 0;
+  /* SPEC-010: .app が overflow:hidden になったので sticky → 静的 (= flex 子要素として配置) */
+  position: relative;
   z-index: 50;
+  flex: 0 0 auto;
 }
+.hud { flex: 0 0 auto; }
 .header__left  { justify-self: start; }
 .header__center { justify-self: center; }
 .header__right { justify-self: end; display: flex; gap: 0.4rem; }
@@ -133,9 +138,13 @@
 }
 
 .stage {
-  flex: 1;
-  padding: 1rem;
-  max-width: 1280px;
-  margin: 0 auto;
+  position: relative;
+  /* SPEC-010: 親 .app が height:100dvh、 .header / .hud が flex:0 で頭打ちなので、
+     .stage は残りの縦領域を確実に埋める。 flex-basis 0 + min-height 0 が肝。 */
+  flex: 1 1 0;
+  min-height: 0;
   width: 100%;
+  padding: 0;
+  overflow: hidden;
+  background: #0e0c14;
 }

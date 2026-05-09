@@ -6,9 +6,6 @@
   "title.subtitle":      { "ja": "サバイバルがチェーンを駆ける。", "en": "Survive the chain." },
   "title.press":         { "ja": "Press to Start",                "en": "Press to Start" },
 
-  "stage.placeholder":   { "ja": "ここにサバイバル本編が描画される",
-                           "en": "Survival gameplay will render here" },
-
   "hero.select.title":       { "ja": "ヒーローを選ぶ",             "en": "Choose Your Hero" },
   "hero.select.placeholder": { "ja": "Hero {n}",                  "en": "Hero {n}" },
   "hero.select.cta":         { "ja": "冒険を始める",               "en": "Begin Survival" },
@@ -30,6 +27,25 @@
   "hud.level":           { "ja": "Lv.{n}",                         "en": "Lv.{n}" },
   "hud.stats.hp":        { "ja": "HP",                             "en": "HP" },
   "hud.stats.xp":        { "ja": "XP",                             "en": "XP" },
+
+  "levelup.title":       { "ja": "レベルアップ!",                  "en": "Level Up!" },
+  "levelup.sub":         { "ja": "強化を 1 つ選ぼう",               "en": "Choose one upgrade" },
+  "levelup.starter":     { "ja": "最初の武器を選ぼう",              "en": "Choose your starting weapon" },
+  "levelup.delta":       { "ja": "Lv.{cur} → Lv.{next}",            "en": "Lv.{cur} → Lv.{next}" },
+  "levelup.weaponEffect":{ "ja": "DMG {dmg} · CD {cd}s · {range}px", "en": "DMG {dmg} · CD {cd}s · {range}px" },
+  "ext.new":             { "ja": "NEW",                             "en": "NEW" },
+
+  "gameover.title":      { "ja": "ゲームオーバー",                  "en": "Game Over" },
+  "gameover.elapsed":    { "ja": "経過時間: {time}",                "en": "Time: {time}" },
+  "gameover.level":      { "ja": "Lv.: {n}",                        "en": "Lv.: {n}" },
+  "gameover.kills":      { "ja": "撃破数: {n}",                     "en": "Kills: {n}" },
+  "gameover.namelabel":  { "ja": "プレイヤー名",                    "en": "Player Name" },
+  "gameover.submit":     { "ja": "ランキングに送信",                "en": "Submit Score" },
+  "gameover.submitting": { "ja": "送信中…",                          "en": "Submitting…" },
+  "gameover.submitOk":   { "ja": "送信完了",                        "en": "Submitted!" },
+  "gameover.submitFail": { "ja": "送信失敗: {err}",                  "en": "Submit failed: {err}" },
+  "gameover.retry":      { "ja": "リトライ",                        "en": "Retry" },
+  "gameover.noApi":      { "ja": "ランキング API 未設定",             "en": "Ranking API not configured" },
 
   "btn.close":           { "ja": "閉じる",                         "en": "Close" },
   "btn.confirm":         { "ja": "確認",                           "en": "Confirm" },

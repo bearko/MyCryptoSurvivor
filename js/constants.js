@@ -47,6 +47,76 @@ export const XP_TO_NEXT_INITIAL  = 5;
 export const LEVEL_INITIAL       = 1;
 
 // ============================================================
+// 戦闘ステージ (= SPEC-006)
+// ============================================================
+export const BATTLE_GRID_SIZE   = 64;       // 背景グリッドの 1 マス px
+export const PLAYER_RADIUS      = 14;       // プレイヤー描画半径 px
+export const PLAYER_SPEED_PX_S  = 180;      // 移動速度 px/sec
+export const JOYSTICK_RADIUS    = 56;       // 仮想スティック最大偏倚 px
+export const JOYSTICK_DEADZONE  = 8;        // 中央デッドゾーン px
+
+// MCH 5 派閥 → CSS 色文字列 (= 戦闘描画用、 css 変数とほぼ同値)
+export const FACTION_COLOR = {
+  SEIRYU: "#5ecf8a",
+  SUZAKU: "#e76060",
+  BYAKKO: "#d4d4dc",
+  GENBU:  "#56ccf2",
+  KOURYU: "#f0c14b",
+};
+export const FACTION_COLOR_DEFAULT = "#c4a35a";
+
+// ============================================================
+// 敵 / XP gem / 仮 hardcoded 武器 (= SPEC-007)
+// ============================================================
+export const ENEMY_SPAWN_INTERVAL_MS = 800;     // 0.8 sec ごとに 1 体
+export const ENEMY_SPAWN_MARGIN_PX   = 80;      // viewport 外周にこの分余白を取った位置で湧く
+export const ENEMY_SPEED_PX_S        = 80;
+export const ENEMY_HP_INITIAL        = 30;
+export const ENEMY_DMG               = 10;
+export const ENEMY_RADIUS            = 12;
+export const ENEMY_COLOR             = "#e76060";
+export const MAX_ENEMIES             = 200;
+
+export const CONTACT_COOLDOWN_MS     = 500;     // 被弾 throttle (= 0.5 sec 無敵)
+
+export const GEM_VALUE               = 1;
+export const GEM_RADIUS              = 6;
+export const GEM_COLOR               = "#f0c14b";
+export const GEM_PICKUP_RADIUS       = 28;
+
+export const XP_TO_NEXT_GROWTH       = 1.5;     // 閾値 = ceil(prev * 1.5)
+
+// ============================================================
+// Extensions as weapons + Level-up pick (= SPEC-008)
+// ============================================================
+export const EXT_MAX_LEVEL          = 5;
+export const PROJECTILE_LIFE_MS     = 1500;
+export const PROJECTILE_RADIUS      = 5;
+export const PROJECTILE_DEFAULT_COLOR = "#ffffff";
+export const PICK_OPTIONS_COUNT     = 3;
+
+// extension 系列 → 投射体カラー
+export const SERIES_COLOR = {
+  Blade:  "#d4d4dc",
+  Musket: "#56ccf2",
+  Quill:  "#bb86fc",
+  Armor:  "#aaaaaa",
+  Horse:  "#f0c14b",
+  Axe:    "#e76060",
+  Dragon: "#ff7a59",
+  Bull:   "#5ecf8a",
+  Monkey: "#fdcb6e",
+  Goblet: "#9be7c4",
+};
+export const SERIES_COLOR_DEFAULT = "#c4a35a";
+
+// 候補 0 のときに付与する fallback 武器
+export const FALLBACK_WEAPON = {
+  extId: 0, level: 1, dmg: 8, cdMs: 1500, speedPx: 280, range: 320,
+  color: SERIES_COLOR_DEFAULT, lastFireMs: 0,
+};
+
+// ============================================================
 // localStorage キー (= prefix を統一)
 // ============================================================
 export const LS_PREFIX = "mcs";   // MyCryptoSurvivor
