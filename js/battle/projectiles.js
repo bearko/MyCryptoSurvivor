@@ -1,5 +1,5 @@
 // ============================================================
-// battle/projectiles.js — 投射体の移動 + 衝突 + 寿命 (= SPEC-008)
+// battle/projectiles.js — 投射体の移動 + 衝突 + 寿命 (= SPEC-008 / SPEC-015)
 // ============================================================
 
 import { state } from "../state.js";
@@ -11,11 +11,26 @@ export function tickProjectiles(dt) {
 
   for (let i = b.projectiles.length - 1; i >= 0; i--) {
     const p = b.projectiles[i];
+
+    // SPEC-015: Moai 弾は target enemy の x に追従しながら落下
+    if (p.kind === "moaiDrop" && p.moaiTargetId != null) {
+      const t = b.enemies.find(e => e.id === p.moaiTargetId);
+      if (t) {
+        p.x = t.x;   // 水平追従 (= y は通常落下)
+      } else {
+        p.moaiTargetId = null;   // target 消失 → 追従解除、 直進落下継続
+      }
+    }
+
     p.x += p.vx * dt;
     p.y += p.vy * dt;
     p.age += dms;
 
     if (p.age >= p.life) {
+      // SPEC-015: Moai 弾は寿命切れ時にも衝撃波を出す (= 着弾失敗の救済)
+      if (p.kind === "moaiDrop" && p.moaiAoeR > 0) {
+        _spawnMoaiShockwave(p);
+      }
       b.projectiles.splice(i, 1);
       continue;
     }
@@ -37,6 +52,24 @@ export function tickProjectiles(dt) {
         break;
       }
     }
-    if (hit) b.projectiles.splice(i, 1);
+    if (hit) {
+      // SPEC-015: Moai 弾の着弾で衝撃波 spawn
+      if (p.kind === "moaiDrop" && p.moaiAoeR > 0) {
+        _spawnMoaiShockwave(p);
+      }
+      b.projectiles.splice(i, 1);
+    }
   }
+}
+
+function _spawnMoaiShockwave(p) {
+  state.battle.shockwaves.push({
+    id: state.battle.nextEntityId++,
+    x: p.x, y: p.y,
+    r0: 0, r1: p.moaiAoeR,
+    age: 0, life: 350,
+    dmg: Math.max(1, Math.round(p.moaiAoeDmg ?? p.dmg)),
+    color: "#ffffff",
+    hitSet: new Set(),
+  });
 }

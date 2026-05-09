@@ -28,6 +28,7 @@ import { getHeroSprite, getDefaultEnemySprite } from "./sprites.js";
 import { tickRegen, resetBuffs } from "./buffs.js";
 import {
   tickOrbits, tickBeams, tickBombs, tickHomingProjectiles,
+  tickShockwaves,
 } from "./archetypes.js";
 
 let _canvas = null;
@@ -72,6 +73,7 @@ export function startBattle(hero) {
   b.orbits.length      = 0;     // SPEC-012
   b.beams.length       = 0;     // SPEC-012
   b.bombs.length       = 0;     // SPEC-012
+  b.shockwaves.length  = 0;     // SPEC-015
   b.weapons            = [];                    // SPEC-008: starter pick で最初の武器が入る
   b.nextEntityId       = 1;
   b.lastEnemySpawnMs   = performance.now();
@@ -156,6 +158,7 @@ function _loop(now) {
     tickOrbits(dt, now);           // SPEC-012: Book / Blade の周回 + 衝突
     tickBeams(dt);                 // SPEC-012: LaserGun の持続レーザー
     tickBombs(dt);                 // SPEC-012: Pierrot の遅延爆発
+    tickShockwaves(dt);            // SPEC-015: Moai 着弾の AoE 衝撃波
     tickGems(dt);                  // SPEC-007: 拾う + level up trigger
     tickRegen(dt);                 // SPEC-011: Ramen 系列の HP regen
     if (state.battle.contactCooldownMs > 0) {
