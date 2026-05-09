@@ -21,6 +21,7 @@ import {
 } from "./heroes.js";
 import { loadExtensions } from "./extensions.js";
 import { loadEnemies } from "./enemies.js";
+import { tickStatsDecay, renderHud } from "./survival.js";
 
 // ============================================================
 // DOM helpers
@@ -51,6 +52,8 @@ async function init() {
   setupHelpOverlay();
   setupLangToggle();
   setupHeroSelectModal();
+
+  renderHud();   // SPEC-004: 初期描画 (= Day 1 / 100 / 50 / 100)
 
   // タイトル画面表示中は時間が進むが、 onTick は state.activeXxx が無いので何も起きない
   startTimeLoop();
@@ -159,6 +162,7 @@ function setupHeroSelectModal() {
   onLangChange(() => {
     if (!modal.classList.contains("hidden")) renderHeroSelectModal();
     renderOwnedHeroBadge();
+    renderHud();   // SPEC-004: `Day {n}` テンプレ再展開
   });
 }
 
@@ -314,16 +318,20 @@ function onTick() {
   state.weekProgress++;
   if (state.weekProgress >= SECONDS_PER_WEEK) advanceWeek();
 
+  tickStatsDecay();   // SPEC-004: 1 tick の decay を stats に適用
+
   // ... 各 feature の tick はここから呼ぶ ...
   // tickActiveCraft();
   // tickActiveQuest();
 
   renderHeader();
+  renderHud();        // SPEC-004: Day + 3 bar の DOM 更新
 }
 
 function advanceWeek() {
   state.weekProgress = 0;
   state.week++;
+  state.day++;        // SPEC-004: サバイバル Day カウンタ (= 週カスケードと同期)
   if (state.week > WEEKS_PER_MONTH) {
     state.week = 1;
     state.month++;
