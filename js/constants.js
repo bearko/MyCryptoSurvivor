@@ -135,3 +135,21 @@ export const APP_VERSION = "0.1.0";
 // ============================================================
 export const DEBUG_PAUSE = false;       // pauseTime / resumeTime ログ
 export const DEBUG_TICK = false;        // onTick ログ
+
+// ============================================================
+// SPEC-013: Hero ↔ Starter Weapon の固定 1:1 mapping
+// ============================================================
+// heroId (= heroes.json) → weapon extId (= extensions.json category=weapon)
+export const HERO_STARTING_WEAPON = {
+  1001:  1,   // コナン・ドイル → Revolver (= 探偵 / 銃)
+  1002: 10,   // 甲斐姫         → Blade    (= 戦国姫 / 剣)
+  1004:  4,   // シートン       → Moai     (= 自然 / 落石)
+  1006:  2,   // ピタゴラス     → Book     (= 哲学 / 守護書)
+  2001:  6,   // ライト兄弟     → LaserGun (= 発明 / 高速光線)
+  2002:  8,   // スパルタクス   → Axe      (= 剣闘士 / 投擲斧)
+  2005:  9,   // グリム兄弟     → Pierrot  (= 童話 / トリックスター)
+  2011:  5,   // 孫子           → Shuriken (= 兵法 / 暗器)
+  2012:  7,   // 石田三成       → Knife    (= 武将 / 短刀)
+  2013:  3,   // 許褚           → Panjandrum (= 怪力 / 突進輪)
+};
+export const HERO_STARTING_WEAPON_DEFAULT = 1;   // 不明 hero は Revolver fallback

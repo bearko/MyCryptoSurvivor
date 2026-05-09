@@ -69,12 +69,39 @@ function _samplePicks(n) {
     const o = ownedById.get(String(e.extId));
     return !o || o.level < EXT_MAX_LEVEL;
   });
-  const arr = eligible.slice();
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
+
+  // SPEC-013: 重複防止 (= Set)、 最低 1 weapon (= weapon eligible が 0 件のときは buff のみ)
+  const used   = new Set();
+  const result = [];
+
+  // 1) weapon を 1 枠優先確保
+  const weaponPool = eligible.filter(e => e.category === "weapon");
+  if (weaponPool.length > 0 && n > 0) {
+    const w = weaponPool[Math.floor(Math.random() * weaponPool.length)];
+    result.push(w);
+    used.add(String(w.extId));
   }
-  return arr.slice(0, Math.min(n, arr.length)).map(e => {
+
+  // 2) 残り枠を eligible 全体から重複なく fill
+  const restPool = eligible.filter(e => !used.has(String(e.extId)));
+  for (let i = restPool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [restPool[i], restPool[j]] = [restPool[j], restPool[i]];
+  }
+  for (const e of restPool) {
+    if (result.length >= n) break;
+    if (used.has(String(e.extId))) continue;   // 防御 (= eligible が同 extId 重複しない前提だが念のため)
+    result.push(e);
+    used.add(String(e.extId));
+  }
+
+  // 3) 表示順をランダム化 (= weapon が常に先頭にならないよう)
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+
+  return result.map(e => {
     const o   = ownedById.get(String(e.extId));
     const cur = o?.level ?? 0;
     return {
