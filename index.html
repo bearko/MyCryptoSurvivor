@@ -145,6 +145,35 @@
         </h2>
         <button class="hero-modal__close-x" id="heroSelectClose" aria-label="Close">×</button>
       </header>
+
+      <!-- SPEC-014: 詳細パネル (= 上部、 選択中ヒーローの情報 + 担当 extension) -->
+      <div class="hero-detail" id="heroDetail">
+        <div class="hero-detail__placeholder" id="heroDetailPlaceholder"
+             data-i18n="hero.detail.placeholder">ヒーローを選んでください</div>
+        <div class="hero-detail__content hidden" id="heroDetailContent">
+          <img class="hero-detail__portrait" id="heroDetailPortrait" alt=""
+               onerror="this.classList.add('hero-detail__portrait--missing'); this.removeAttribute('src');" />
+          <div class="hero-detail__info">
+            <div class="hero-detail__name" id="heroDetailName"></div>
+            <div class="hero-detail__sub"  id="heroDetailSub"></div>
+            <div class="hero-detail__stats">
+              <span class="hero-detail__stat" id="heroDetailHp"></span>
+              <span class="hero-detail__stat" id="heroDetailSpeed"></span>
+            </div>
+          </div>
+          <div class="hero-detail__weapon">
+            <img class="hero-detail__weapon-icon" id="heroDetailWeaponIcon" alt=""
+                 onerror="this.classList.add('hero-detail__weapon-icon--missing'); this.removeAttribute('src');" />
+            <div class="hero-detail__weapon-info">
+              <div class="hero-detail__weapon-label" data-i18n="hero.detail.starterWeapon">開始武器</div>
+              <div class="hero-detail__weapon-name"  id="heroDetailWeaponName"></div>
+              <div class="hero-detail__weapon-skill" id="heroDetailWeaponSkill"></div>
+              <div class="hero-detail__weapon-desc"  id="heroDetailWeaponDesc"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="hero-modal__grid" id="heroSelectGrid"
            role="listbox" aria-label="Hero choices"></div>
       <p class="hero-modal__hint" id="heroSelectHint">
