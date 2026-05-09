@@ -1,6 +1,6 @@
 // ============================================================
-// battle/render.js — clear + grid + shockwave + gems + enemies + player
-// (= SPEC-006 / SPEC-007)
+// battle/render.js — clear + grid + projectiles + gems + enemies + player
+// (= SPEC-006 / SPEC-007 / SPEC-008)
 // ============================================================
 
 import { state } from "../state.js";
@@ -10,7 +10,7 @@ import { BATTLE_GRID_SIZE } from "../constants.js";
  * 1 frame 描画。 ctx は dpr 反映済の transform で渡される前提。
  */
 export function renderBattle(ctx) {
-  const { player, camera, viewport, enemies, gems, shockwaveAnims } = state.battle;
+  const { player, camera, viewport, enemies, gems, projectiles } = state.battle;
   const w = viewport.w, h = viewport.h;
   if (w <= 0 || h <= 0) return;
 
@@ -20,22 +20,6 @@ export function renderBattle(ctx) {
 
   // グリッド
   _drawGrid(ctx, camera, w, h);
-
-  // shockwave (= 後ろから順に: anim → gem → enemy → player)
-  for (const a of shockwaveAnims) {
-    const t  = Math.min(1, a.age / a.life);
-    const r  = a.r0 + (a.r1 - a.r0) * t;
-    const sx = a.x - camera.x;
-    const sy = a.y - camera.y;
-    if (sx + r < 0 || sx - r > w || sy + r < 0 || sy - r > h) continue;
-    ctx.globalAlpha = 1 - t;
-    ctx.strokeStyle = a.color;
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.arc(sx, sy, r, 0, Math.PI * 2);
-    ctx.stroke();
-  }
-  ctx.globalAlpha = 1;
 
   // gems (= 黄ダイヤ = 45 度回転正方形)
   for (const g of gems) {
@@ -53,6 +37,17 @@ export function renderBattle(ctx) {
     ctx.strokeStyle = "rgba(0, 0, 0, 0.4)";
     ctx.lineWidth = 1;
     ctx.stroke();
+  }
+
+  // projectiles (= 投射体、 SPEC-008、 enemy/player の前に描く)
+  for (const p of projectiles) {
+    const sx = p.x - camera.x;
+    const sy = p.y - camera.y;
+    if (sx + p.r < 0 || sx - p.r > w || sy + p.r < 0 || sy - p.r > h) continue;
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.arc(sx, sy, p.r, 0, Math.PI * 2);
+    ctx.fill();
   }
 
   // enemies

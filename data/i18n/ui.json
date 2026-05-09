@@ -28,6 +28,12 @@
   "hud.stats.hp":        { "ja": "HP",                             "en": "HP" },
   "hud.stats.xp":        { "ja": "XP",                             "en": "XP" },
 
+  "levelup.title":       { "ja": "レベルアップ!",                  "en": "Level Up!" },
+  "levelup.sub":         { "ja": "強化を 1 つ選ぼう",               "en": "Choose one upgrade" },
+  "levelup.starter":     { "ja": "最初の武器を選ぼう",              "en": "Choose your starting weapon" },
+  "levelup.delta":       { "ja": "Lv.{cur} → Lv.{next}",            "en": "Lv.{cur} → Lv.{next}" },
+  "ext.new":             { "ja": "NEW",                             "en": "NEW" },
+
   "btn.close":           { "ja": "閉じる",                         "en": "Close" },
   "btn.confirm":         { "ja": "確認",                           "en": "Confirm" },
   "btn.cancel":          { "ja": "キャンセル",                     "en": "Cancel" },

@@ -16,8 +16,10 @@ import {
 import { installInput, getInputVector } from "./input.js";
 import { tickPlayer, centerCameraOnPlayer } from "./player.js";
 import { tickEnemies } from "./enemies.js";
-import { tickWeapons, tickShockwaveAnims } from "./weapons.js";
+import { tickWeapons } from "./weapons.js";
+import { tickProjectiles } from "./projectiles.js";
 import { tickGems } from "./gems.js";
+import { triggerStarterPick } from "./levelup.js";
 import { renderBattle } from "./render.js";
 
 let _canvas = null;
@@ -51,16 +53,15 @@ export function startBattle(hero) {
   b.camera.x = 0;
   b.camera.y = 0;
 
-  // SPEC-007: 戦闘世界をクリーンに reset
-  b.enemies.length = 0;
-  b.gems.length = 0;
-  b.shockwaveAnims.length = 0;
-  b.weapons = [
-    { kind: "shockwave", radius: 80, dmg: 10, cooldownMs: 1000, lastFireMs: 0 },
-  ];
-  b.nextEntityId = 1;
-  b.lastEnemySpawnMs = performance.now();
-  b.contactCooldownMs = 0;
+  // SPEC-007 / SPEC-008: 戦闘世界をクリーンに reset
+  b.enemies.length     = 0;
+  b.gems.length        = 0;
+  b.projectiles.length = 0;
+  b.weapons            = [];                    // SPEC-008: starter pick で最初の武器が入る
+  b.nextEntityId       = 1;
+  b.lastEnemySpawnMs   = performance.now();
+  b.contactCooldownMs  = 0;
+  state.ownedExtensions = [];                   // SPEC-008: 装備リセット
 
   // SPEC-007: HP / XP / Lv / 経過 tick を初期化 (= リトライ運用も兼ねる)
   state.stats.hp     = STATS_INITIAL.hp;
@@ -74,6 +75,9 @@ export function startBattle(hero) {
   resizeCanvas();
   _lastMs = performance.now();
   if (!_raf) _raf = requestAnimationFrame(_loop);
+
+  // SPEC-008: 戦闘開始直後に starter pick (= 最初の武器を選ばせる)
+  triggerStarterPick();
 }
 
 export function stopBattle() {
@@ -114,9 +118,9 @@ function _loop(now) {
     tickPlayer(dt, v);
     centerCameraOnPlayer();
     tickEnemies(dt, now);          // SPEC-007: スポーン + 追跡 + 接触ダメージ
-    tickWeapons(dt, now);          // SPEC-007: shockwave 発射 + 範囲ダメージ + gem ドロップ
-    tickGems(dt);                  // SPEC-007: 拾う + level up
-    tickShockwaveAnims(dt);        // SPEC-007: 視覚アニメ寿命管理
+    tickWeapons(dt, now);          // SPEC-008: extension 武器が投射体を spawn
+    tickProjectiles(dt);           // SPEC-008: 投射体の移動 + 衝突 + 寿命
+    tickGems(dt);                  // SPEC-007: 拾う + level up trigger
     if (state.battle.contactCooldownMs > 0) {
       state.battle.contactCooldownMs -= dt * 1000;
     }

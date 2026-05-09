@@ -7,6 +7,7 @@ import {
   GEM_VALUE, GEM_RADIUS, GEM_COLOR, GEM_PICKUP_RADIUS,
   XP_TO_NEXT_GROWTH,
 } from "../constants.js";
+import { triggerLevelUpPick } from "./levelup.js";
 
 export function spawnGem(x, y, value = GEM_VALUE) {
   const b = state.battle;
@@ -35,10 +36,13 @@ export function tickGems(_dt) {
     }
   }
 
-  // level up loop (= 1 frame で複数 LV 上がる可能性あり)
+  // level up loop (= 1 frame で複数 LV 上がる可能性あり、 まとめて pick を queue)
+  let levelUps = 0;
   while (state.xp >= state.xpToNext) {
     state.xp -= state.xpToNext;
     state.level += 1;
     state.xpToNext = Math.ceil(state.xpToNext * XP_TO_NEXT_GROWTH);
+    levelUps += 1;
   }
+  if (levelUps > 0) triggerLevelUpPick(levelUps);   // SPEC-008: モーダル trigger
 }
