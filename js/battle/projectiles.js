@@ -3,7 +3,7 @@
 // ============================================================
 
 import { state } from "../state.js";
-import { spawnGem } from "./gems.js";
+import { hitEnemy } from "./damage.js";
 
 export function tickProjectiles(dt) {
   const b = state.battle;
@@ -35,19 +35,14 @@ export function tickProjectiles(dt) {
       continue;
     }
 
-    // 敵衝突 (= 単発命中で消滅、 pierce なし)
+    // 敵衝突 (= 単発命中で消滅、 pierce なし)、 SPEC-016: hitEnemy 経由で 数字 + freeze
     let hit = false;
     for (let j = b.enemies.length - 1; j >= 0; j--) {
       const e = b.enemies[j];
       const dx = e.x - p.x, dy = e.y - p.y;
       const sumR = e.r + p.r;
       if (dx * dx + dy * dy <= sumR * sumR) {
-        e.hp -= p.dmg;
-        if (e.hp <= 0) {
-          spawnGem(e.x, e.y);
-          b.enemies.splice(j, 1);
-          state.killCount++;          // SPEC-009: 撃破カウント
-        }
+        hitEnemy(j, p.dmg);
         hit = true;
         break;
       }

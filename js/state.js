@@ -61,6 +61,7 @@ export const state = {
     beams:          [],   // {id, x, y, dirX, dirY, len, thick, age, life, dmgPerSec, color, weaponExtId} - LaserGun
     bombs:          [],   // {id, x, y, fuseMs, age, radius, dmg, color, iconId}  - Pierrot
     shockwaves:     [],   // {id, x, y, r0, r1, age, life, dmg, color, hitSet}  - Moai 着弾 (SPEC-015)
+    damageNumbers:  [],   // {id, x, y, value, age, life, vy, color}  - SPEC-016 ダメージ数字
     nextEntityId:    1,
     lastEnemySpawnMs: 0,
     contactCooldownMs: 0, // > 0 のあいだ被弾しない
