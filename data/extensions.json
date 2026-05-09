@@ -1,393 +1,1210 @@
 {
   "version": 2,
-  "source":  "MyCryptoSurvivor SPEC-011 (17 series × 5 tiers)",
+  "source": "MyCryptoSurvivor SPEC-011 (17 series × 5 tiers)",
   "extensions": [
     {
-      "extId": 1, "category": "weapon", "series": "Revolver",
+      "extId": 1,
+      "category": "weapon",
+      "series": "Revolver",
       "archetype": "radial",
-      "iconId": 1002, "seriesColor": "#56ccf2",
+      "iconId": 1002,
+      "seriesColor": "#56ccf2",
       "tierNames": [
-        { "ja": "リボルバー",         "en": "Revolver" },
-        { "ja": "ガンスリンガー",     "en": "Gunslinger" },
-        { "ja": "デュアルリボルバー", "en": "Dual Revolver" },
-        { "ja": "サイキックリボルバー","en": "Psyche Revolver" },
-        { "ja": "ガトリングガン",     "en": "Gatling Gun" }
+        {
+          "ja": "リボルバー",
+          "en": "Revolver"
+        },
+        {
+          "ja": "ガンスリンガー",
+          "en": "Gunslinger"
+        },
+        {
+          "ja": "デュアルリボルバー",
+          "en": "Dual Revolver"
+        },
+        {
+          "ja": "サイキックリボルバー",
+          "en": "Psyche Revolver"
+        },
+        {
+          "ja": "ガトリングガン",
+          "en": "Gatling Gun"
+        }
       ],
-      "skillName":     { "ja": "弾幕",                                        "en": "Barrage" },
-      "skillDescTpl":  {
+      "skillName": {
+        "ja": "弾幕",
+        "en": "Barrage"
+      },
+      "skillDescTpl": {
         "ja": "敵がいる方向に放射状に弾を放つ。 弾数 {bullets} / DMG {dmg} / CD {cd}秒",
         "en": "Radial spray toward enemies. Bullets {bullets} / DMG {dmg} / CD {cd}s"
       },
       "tierParams": [
-        { "bullets": 3, "dmg": 8,  "cdMs": 1300, "range": 320, "speedPx": 280, "spreadDeg": 30 },
-        { "bullets": 4, "dmg": 11, "cdMs": 1200, "range": 340, "speedPx": 300, "spreadDeg": 35 },
-        { "bullets": 5, "dmg": 14, "cdMs": 1100, "range": 360, "speedPx": 320, "spreadDeg": 40 },
-        { "bullets": 6, "dmg": 18, "cdMs": 1000, "range": 380, "speedPx": 340, "spreadDeg": 45 },
-        { "bullets": 8, "dmg": 23, "cdMs":  900, "range": 400, "speedPx": 360, "spreadDeg": 50 }
+        {
+          "bullets": 3,
+          "dmg": 30,
+          "cdMs": 1300,
+          "range": 320,
+          "speedPx": 280,
+          "spreadDeg": 30
+        },
+        {
+          "bullets": 4,
+          "dmg": 38,
+          "cdMs": 1200,
+          "range": 340,
+          "speedPx": 300,
+          "spreadDeg": 35
+        },
+        {
+          "bullets": 5,
+          "dmg": 48,
+          "cdMs": 1100,
+          "range": 360,
+          "speedPx": 320,
+          "spreadDeg": 40
+        },
+        {
+          "bullets": 6,
+          "dmg": 60,
+          "cdMs": 1000,
+          "range": 380,
+          "speedPx": 340,
+          "spreadDeg": 45
+        },
+        {
+          "bullets": 8,
+          "dmg": 75,
+          "cdMs": 900,
+          "range": 400,
+          "speedPx": 360,
+          "spreadDeg": 50
+        }
       ]
     },
     {
-      "extId": 2, "category": "weapon", "series": "Book",
+      "extId": 2,
+      "category": "weapon",
+      "series": "Book",
       "archetype": "orbit",
-      "iconId": 1003, "seriesColor": "#bb86fc",
+      "iconId": 1003,
+      "seriesColor": "#bb86fc",
       "tierNames": [
-        { "ja": "ブック",       "en": "Book" },
-        { "ja": "グリモア",     "en": "Grimoire" },
-        { "ja": "コーデックス", "en": "Codex" },
-        { "ja": "アーカイブ",   "en": "Archive" },
-        { "ja": "アカシック",   "en": "Akashic" }
+        {
+          "ja": "ブック",
+          "en": "Book"
+        },
+        {
+          "ja": "グリモア",
+          "en": "Grimoire"
+        },
+        {
+          "ja": "コーデックス",
+          "en": "Codex"
+        },
+        {
+          "ja": "アーカイブ",
+          "en": "Archive"
+        },
+        {
+          "ja": "アカシック",
+          "en": "Akashic"
+        }
       ],
-      "skillName":     { "ja": "守護書",                                              "en": "Wardbook" },
-      "skillDescTpl":  {
+      "skillName": {
+        "ja": "守護書",
+        "en": "Wardbook"
+      },
+      "skillDescTpl": {
         "ja": "自分を周回する。 数 {bullets} / DMG {dmg} / 半径 {orbitR}px",
         "en": "Orbits the player. Count {bullets} / DMG {dmg} / Radius {orbitR}px"
       },
       "tierParams": [
-        { "bullets": 1, "dmg": 6,  "cdMs": 600, "range": 0, "speedPx": 0, "orbitR": 70 },
-        { "bullets": 2, "dmg": 8,  "cdMs": 600, "range": 0, "speedPx": 0, "orbitR": 75 },
-        { "bullets": 3, "dmg": 11, "cdMs": 600, "range": 0, "speedPx": 0, "orbitR": 80 },
-        { "bullets": 4, "dmg": 14, "cdMs": 600, "range": 0, "speedPx": 0, "orbitR": 85 },
-        { "bullets": 5, "dmg": 18, "cdMs": 600, "range": 0, "speedPx": 0, "orbitR": 90 }
+        {
+          "bullets": 1,
+          "dmg": 18,
+          "cdMs": 600,
+          "range": 0,
+          "speedPx": 0,
+          "orbitR": 70
+        },
+        {
+          "bullets": 2,
+          "dmg": 24,
+          "cdMs": 600,
+          "range": 0,
+          "speedPx": 0,
+          "orbitR": 75
+        },
+        {
+          "bullets": 3,
+          "dmg": 32,
+          "cdMs": 600,
+          "range": 0,
+          "speedPx": 0,
+          "orbitR": 80
+        },
+        {
+          "bullets": 4,
+          "dmg": 42,
+          "cdMs": 600,
+          "range": 0,
+          "speedPx": 0,
+          "orbitR": 85
+        },
+        {
+          "bullets": 5,
+          "dmg": 54,
+          "cdMs": 600,
+          "range": 0,
+          "speedPx": 0,
+          "orbitR": 90
+        }
       ]
     },
     {
-      "extId": 3, "category": "weapon", "series": "Panjandrum",
+      "extId": 3,
+      "category": "weapon",
+      "series": "Panjandrum",
       "archetype": "bigHoming",
-      "iconId": 1022, "seriesColor": "#ff7a59",
+      "iconId": 1022,
+      "seriesColor": "#ff7a59",
       "tierNames": [
-        { "ja": "パンジャンドラム",       "en": "Panjandrum" },
-        { "ja": "ヘビーパンジャンドラム", "en": "Heavy Panjandrum" },
-        { "ja": "タイタンパンジャンドラム","en": "Titan Panjandrum" },
-        { "ja": "デモリッシャー",         "en": "Demolisher" },
-        { "ja": "アポカリプス",           "en": "Apocalypse" }
+        {
+          "ja": "パンジャンドラム",
+          "en": "Panjandrum"
+        },
+        {
+          "ja": "ヘビーパンジャンドラム",
+          "en": "Heavy Panjandrum"
+        },
+        {
+          "ja": "タイタンパンジャンドラム",
+          "en": "Titan Panjandrum"
+        },
+        {
+          "ja": "デモリッシャー",
+          "en": "Demolisher"
+        },
+        {
+          "ja": "アポカリプス",
+          "en": "Apocalypse"
+        }
       ],
-      "skillName":     { "ja": "突進輪",                                            "en": "Charge Wheel" },
-      "skillDescTpl":  {
+      "skillName": {
+        "ja": "突進輪",
+        "en": "Charge Wheel"
+      },
+      "skillDescTpl": {
         "ja": "ゆっくり追尾する大型弾。 数 {bullets} / DMG {dmg} / CD {cd}秒",
         "en": "Slow homing heavy. Count {bullets} / DMG {dmg} / CD {cd}s"
       },
       "tierParams": [
-        { "bullets": 1, "dmg": 30, "cdMs": 2400, "range": 600, "speedPx": 90,  "size": 14 },
-        { "bullets": 1, "dmg": 42, "cdMs": 2300, "range": 620, "speedPx": 100, "size": 17 },
-        { "bullets": 2, "dmg": 56, "cdMs": 2200, "range": 640, "speedPx": 110, "size": 20 },
-        { "bullets": 2, "dmg": 75, "cdMs": 2100, "range": 660, "speedPx": 120, "size": 23 },
-        { "bullets": 3, "dmg": 100,"cdMs": 2000, "range": 680, "speedPx": 130, "size": 26 }
+        {
+          "bullets": 1,
+          "dmg": 60,
+          "cdMs": 2400,
+          "range": 600,
+          "speedPx": 90,
+          "size": 14
+        },
+        {
+          "bullets": 1,
+          "dmg": 80,
+          "cdMs": 2300,
+          "range": 620,
+          "speedPx": 100,
+          "size": 17
+        },
+        {
+          "bullets": 2,
+          "dmg": 105,
+          "cdMs": 2200,
+          "range": 640,
+          "speedPx": 110,
+          "size": 20
+        },
+        {
+          "bullets": 2,
+          "dmg": 140,
+          "cdMs": 2100,
+          "range": 660,
+          "speedPx": 120,
+          "size": 23
+        },
+        {
+          "bullets": 3,
+          "dmg": 185,
+          "cdMs": 2000,
+          "range": 680,
+          "speedPx": 130,
+          "size": 26
+        }
       ]
     },
     {
-      "extId": 4, "category": "weapon", "series": "Moai",
+      "extId": 4,
+      "category": "weapon",
+      "series": "Moai",
       "archetype": "dropTarget",
-      "iconId": 1023, "seriesColor": "#d4d4dc",
+      "iconId": 1023,
+      "seriesColor": "#d4d4dc",
       "tierNames": [
-        { "ja": "モアイ",         "en": "Moai" },
-        { "ja": "エルダーモアイ", "en": "Elder Moai" },
-        { "ja": "ガーディアン",   "en": "Guardian" },
-        { "ja": "アンセスタル",   "en": "Ancestral" },
-        { "ja": "モアイ・ハンマー","en": "Moai Hammer" }
+        {
+          "ja": "モアイ",
+          "en": "Moai"
+        },
+        {
+          "ja": "エルダーモアイ",
+          "en": "Elder Moai"
+        },
+        {
+          "ja": "ガーディアン",
+          "en": "Guardian"
+        },
+        {
+          "ja": "アンセスタル",
+          "en": "Ancestral"
+        },
+        {
+          "ja": "モアイ・ハンマー",
+          "en": "Moai Hammer"
+        }
       ],
-      "skillName":     { "ja": "落石",                                                          "en": "Rockfall" },
-      "skillDescTpl":  {
+      "skillName": {
+        "ja": "落石",
+        "en": "Rockfall"
+      },
+      "skillDescTpl": {
         "ja": "ランダムな敵の頭上から落下。 数 {bullets} / DMG {dmg} / CD {cd}秒",
         "en": "Drops from above random enemies. Count {bullets} / DMG {dmg} / CD {cd}s"
       },
       "tierParams": [
-        { "bullets": 1, "dmg": 18, "cdMs": 1500, "range": 600, "speedPx": 360, "fallH": 220 },
-        { "bullets": 2, "dmg": 22, "cdMs": 1400, "range": 600, "speedPx": 380, "fallH": 220 },
-        { "bullets": 3, "dmg": 28, "cdMs": 1300, "range": 600, "speedPx": 400, "fallH": 220 },
-        { "bullets": 4, "dmg": 36, "cdMs": 1200, "range": 600, "speedPx": 420, "fallH": 220 },
-        { "bullets": 5, "dmg": 46, "cdMs": 1100, "range": 600, "speedPx": 440, "fallH": 220 }
+        {
+          "bullets": 1,
+          "dmg": 25,
+          "cdMs": 1500,
+          "range": 600,
+          "speedPx": 360,
+          "fallH": 220,
+          "aoeR": 60,
+          "aoeDmgRatio": 0.7
+        },
+        {
+          "bullets": 2,
+          "dmg": 32,
+          "cdMs": 1400,
+          "range": 600,
+          "speedPx": 380,
+          "fallH": 220,
+          "aoeR": 65,
+          "aoeDmgRatio": 0.7
+        },
+        {
+          "bullets": 3,
+          "dmg": 40,
+          "cdMs": 1300,
+          "range": 600,
+          "speedPx": 400,
+          "fallH": 220,
+          "aoeR": 70,
+          "aoeDmgRatio": 0.75
+        },
+        {
+          "bullets": 4,
+          "dmg": 50,
+          "cdMs": 1200,
+          "range": 600,
+          "speedPx": 420,
+          "fallH": 220,
+          "aoeR": 75,
+          "aoeDmgRatio": 0.75
+        },
+        {
+          "bullets": 5,
+          "dmg": 65,
+          "cdMs": 1100,
+          "range": 600,
+          "speedPx": 440,
+          "fallH": 220,
+          "aoeR": 85,
+          "aoeDmgRatio": 0.8
+        }
       ]
     },
     {
-      "extId": 5, "category": "weapon", "series": "Shuriken",
+      "extId": 5,
+      "category": "weapon",
+      "series": "Shuriken",
       "archetype": "stack",
-      "iconId": 1011, "seriesColor": "#5ecf8a",
+      "iconId": 1011,
+      "seriesColor": "#5ecf8a",
       "tierNames": [
-        { "ja": "手裏剣",     "en": "Shuriken" },
-        { "ja": "双手裏剣",   "en": "Twin Shuriken" },
-        { "ja": "三手裏剣",   "en": "Triple Shuriken" },
-        { "ja": "八方手裏剣", "en": "Octa Shuriken" },
-        { "ja": "風魔手裏剣", "en": "Fuma Shuriken" }
+        {
+          "ja": "手裏剣",
+          "en": "Shuriken"
+        },
+        {
+          "ja": "双手裏剣",
+          "en": "Twin Shuriken"
+        },
+        {
+          "ja": "三手裏剣",
+          "en": "Triple Shuriken"
+        },
+        {
+          "ja": "八方手裏剣",
+          "en": "Octa Shuriken"
+        },
+        {
+          "ja": "風魔手裏剣",
+          "en": "Fuma Shuriken"
+        }
       ],
-      "skillName":     { "ja": "連手裏剣",                                                  "en": "Stacked Shuriken" },
-      "skillDescTpl":  {
+      "skillName": {
+        "ja": "連手裏剣",
+        "en": "Stacked Shuriken"
+      },
+      "skillDescTpl": {
         "ja": "最寄り敵方向に 3 連 ×{dirs} 方向。 DMG {dmg} / CD {cd}秒",
         "en": "3-stack toward nearest × {dirs} dirs. DMG {dmg} / CD {cd}s"
       },
       "tierParams": [
-        { "bullets": 3, "dirs": 1, "dmg": 9,  "cdMs": 1100, "range": 360, "speedPx": 380, "stackGap": 18 },
-        { "bullets": 3, "dirs": 2, "dmg": 11, "cdMs": 1050, "range": 380, "speedPx": 400, "stackGap": 18 },
-        { "bullets": 3, "dirs": 3, "dmg": 14, "cdMs": 1000, "range": 400, "speedPx": 420, "stackGap": 20 },
-        { "bullets": 3, "dirs": 4, "dmg": 18, "cdMs":  950, "range": 420, "speedPx": 440, "stackGap": 20 },
-        { "bullets": 3, "dirs": 8, "dmg": 22, "cdMs":  900, "range": 440, "speedPx": 460, "stackGap": 22 }
+        {
+          "bullets": 3,
+          "dirs": 1,
+          "dmg": 15,
+          "cdMs": 1100,
+          "range": 360,
+          "speedPx": 380,
+          "stackGap": 18
+        },
+        {
+          "bullets": 3,
+          "dirs": 2,
+          "dmg": 19,
+          "cdMs": 1050,
+          "range": 380,
+          "speedPx": 400,
+          "stackGap": 18
+        },
+        {
+          "bullets": 3,
+          "dirs": 3,
+          "dmg": 24,
+          "cdMs": 1000,
+          "range": 400,
+          "speedPx": 420,
+          "stackGap": 20
+        },
+        {
+          "bullets": 3,
+          "dirs": 4,
+          "dmg": 32,
+          "cdMs": 950,
+          "range": 420,
+          "speedPx": 440,
+          "stackGap": 20
+        },
+        {
+          "bullets": 3,
+          "dirs": 8,
+          "dmg": 40,
+          "cdMs": 900,
+          "range": 440,
+          "speedPx": 460,
+          "stackGap": 22
+        }
       ]
     },
     {
-      "extId": 6, "category": "weapon", "series": "LaserGun",
+      "extId": 6,
+      "category": "weapon",
+      "series": "LaserGun",
       "archetype": "beam",
-      "iconId": 1003, "seriesColor": "#f0c14b",
+      "iconId": 1003,
+      "seriesColor": "#f0c14b",
       "tierNames": [
-        { "ja": "レーザーガン",   "en": "Laser Gun" },
-        { "ja": "デュアルレーザー","en": "Dual Laser" },
-        { "ja": "プリズム",       "en": "Prism" },
-        { "ja": "スターブレイカー","en": "Starbreaker" },
-        { "ja": "コスミックビーム","en": "Cosmic Beam" }
+        {
+          "ja": "レーザーガン",
+          "en": "Laser Gun"
+        },
+        {
+          "ja": "デュアルレーザー",
+          "en": "Dual Laser"
+        },
+        {
+          "ja": "プリズム",
+          "en": "Prism"
+        },
+        {
+          "ja": "スターブレイカー",
+          "en": "Starbreaker"
+        },
+        {
+          "ja": "コスミックビーム",
+          "en": "Cosmic Beam"
+        }
       ],
-      "skillName":     { "ja": "レーザー",                                                   "en": "Laser" },
-      "skillDescTpl":  {
+      "skillName": {
+        "ja": "レーザー",
+        "en": "Laser"
+      },
+      "skillDescTpl": {
         "ja": "発射時の最寄り敵方向に貫通レーザー。 持続 {durMs}ms / DMG {dmg}/秒 / CD {cd}秒",
         "en": "Piercing laser toward nearest. Duration {durMs}ms / DMG {dmg}/s / CD {cd}s"
       },
       "tierParams": [
-        { "bullets": 1, "dmg": 16, "cdMs": 2000, "range": 600, "speedPx": 0, "durMs": 600, "len": 600, "thick": 6 },
-        { "bullets": 1, "dmg": 22, "cdMs": 1900, "range": 620, "speedPx": 0, "durMs": 700, "len": 640, "thick": 7 },
-        { "bullets": 2, "dmg": 28, "cdMs": 1800, "range": 640, "speedPx": 0, "durMs": 800, "len": 680, "thick": 8 },
-        { "bullets": 2, "dmg": 38, "cdMs": 1700, "range": 660, "speedPx": 0, "durMs": 900, "len": 720, "thick": 9 },
-        { "bullets": 3, "dmg": 50, "cdMs": 1600, "range": 700, "speedPx": 0, "durMs": 1000,"len": 780, "thick":10 }
+        {
+          "bullets": 1,
+          "dmg": 35,
+          "cdMs": 2000,
+          "range": 600,
+          "speedPx": 0,
+          "durMs": 600,
+          "len": 600,
+          "thick": 6
+        },
+        {
+          "bullets": 1,
+          "dmg": 48,
+          "cdMs": 1900,
+          "range": 620,
+          "speedPx": 0,
+          "durMs": 700,
+          "len": 640,
+          "thick": 7
+        },
+        {
+          "bullets": 2,
+          "dmg": 60,
+          "cdMs": 1800,
+          "range": 640,
+          "speedPx": 0,
+          "durMs": 800,
+          "len": 680,
+          "thick": 8
+        },
+        {
+          "bullets": 2,
+          "dmg": 80,
+          "cdMs": 1700,
+          "range": 660,
+          "speedPx": 0,
+          "durMs": 900,
+          "len": 720,
+          "thick": 9
+        },
+        {
+          "bullets": 3,
+          "dmg": 105,
+          "cdMs": 1600,
+          "range": 700,
+          "speedPx": 0,
+          "durMs": 1000,
+          "len": 780,
+          "thick": 10
+        }
       ]
     },
     {
-      "extId": 7, "category": "weapon", "series": "Knife",
+      "extId": 7,
+      "category": "weapon",
+      "series": "Knife",
       "archetype": "diagonal",
-      "iconId": 1001, "seriesColor": "#d4d4dc",
+      "iconId": 1001,
+      "seriesColor": "#d4d4dc",
       "tierNames": [
-        { "ja": "ナイフ",       "en": "Knife" },
-        { "ja": "ダブルナイフ", "en": "Double Knife" },
-        { "ja": "クロスナイフ", "en": "Cross Knife" },
-        { "ja": "エイトナイフ", "en": "Eight Knife" },
-        { "ja": "ストームナイフ","en": "Storm Knife" }
+        {
+          "ja": "ナイフ",
+          "en": "Knife"
+        },
+        {
+          "ja": "ダブルナイフ",
+          "en": "Double Knife"
+        },
+        {
+          "ja": "クロスナイフ",
+          "en": "Cross Knife"
+        },
+        {
+          "ja": "エイトナイフ",
+          "en": "Eight Knife"
+        },
+        {
+          "ja": "ストームナイフ",
+          "en": "Storm Knife"
+        }
       ],
-      "skillName":     { "ja": "四方刃",                                       "en": "Quad Blade" },
-      "skillDescTpl":  {
+      "skillName": {
+        "ja": "四方刃",
+        "en": "Quad Blade"
+      },
+      "skillDescTpl": {
         "ja": "対角 4 方向にナイフ。 数 {bullets} / DMG {dmg} / CD {cd}秒",
         "en": "Diagonal 4 directions. Count {bullets} / DMG {dmg} / CD {cd}s"
       },
       "tierParams": [
-        { "bullets": 4, "dmg": 7,  "cdMs": 900, "range": 320, "speedPx": 360 },
-        { "bullets": 6, "dmg": 9,  "cdMs": 880, "range": 340, "speedPx": 380 },
-        { "bullets": 8, "dmg": 12, "cdMs": 860, "range": 360, "speedPx": 400 },
-        { "bullets":10, "dmg": 16, "cdMs": 840, "range": 380, "speedPx": 420 },
-        { "bullets":12, "dmg": 21, "cdMs": 820, "range": 400, "speedPx": 440 }
+        {
+          "bullets": 4,
+          "dmg": 30,
+          "cdMs": 900,
+          "range": 320,
+          "speedPx": 360
+        },
+        {
+          "bullets": 6,
+          "dmg": 40,
+          "cdMs": 880,
+          "range": 340,
+          "speedPx": 380
+        },
+        {
+          "bullets": 8,
+          "dmg": 52,
+          "cdMs": 860,
+          "range": 360,
+          "speedPx": 400
+        },
+        {
+          "bullets": 10,
+          "dmg": 68,
+          "cdMs": 840,
+          "range": 380,
+          "speedPx": 420
+        },
+        {
+          "bullets": 12,
+          "dmg": 90,
+          "cdMs": 820,
+          "range": 400,
+          "speedPx": 440
+        }
       ]
     },
     {
-      "extId": 8, "category": "weapon", "series": "Axe",
+      "extId": 8,
+      "category": "weapon",
+      "series": "Axe",
       "archetype": "randomRadial",
-      "iconId": 1011, "seriesColor": "#e76060",
+      "iconId": 1011,
+      "seriesColor": "#e76060",
       "tierNames": [
-        { "ja": "アックス",          "en": "Axe" },
-        { "ja": "グレートアックス",  "en": "Great Axe" },
-        { "ja": "ダブルアックス",    "en": "Twin Axe" },
-        { "ja": "エクスキューショナー","en": "Executioner" },
-        { "ja": "ストームアックス",  "en": "Storm Axe" }
+        {
+          "ja": "アックス",
+          "en": "Axe"
+        },
+        {
+          "ja": "グレートアックス",
+          "en": "Great Axe"
+        },
+        {
+          "ja": "ダブルアックス",
+          "en": "Twin Axe"
+        },
+        {
+          "ja": "エクスキューショナー",
+          "en": "Executioner"
+        },
+        {
+          "ja": "ストームアックス",
+          "en": "Storm Axe"
+        }
       ],
-      "skillName":     { "ja": "投擲",                                              "en": "Throw" },
-      "skillDescTpl":  {
+      "skillName": {
+        "ja": "投擲",
+        "en": "Throw"
+      },
+      "skillDescTpl": {
         "ja": "ランダム方向に放射。 弾数 {bullets} / DMG {dmg} / CD {cd}秒",
         "en": "Random radial throws. Bullets {bullets} / DMG {dmg} / CD {cd}s"
       },
       "tierParams": [
-        { "bullets": 2, "dmg": 12, "cdMs": 1200, "range": 360, "speedPx": 320 },
-        { "bullets": 3, "dmg": 16, "cdMs": 1150, "range": 380, "speedPx": 340 },
-        { "bullets": 4, "dmg": 21, "cdMs": 1100, "range": 400, "speedPx": 360 },
-        { "bullets": 5, "dmg": 27, "cdMs": 1050, "range": 420, "speedPx": 380 },
-        { "bullets": 7, "dmg": 35, "cdMs": 1000, "range": 440, "speedPx": 400 }
+        {
+          "bullets": 2,
+          "dmg": 30,
+          "cdMs": 1200,
+          "range": 360,
+          "speedPx": 320
+        },
+        {
+          "bullets": 3,
+          "dmg": 40,
+          "cdMs": 1150,
+          "range": 380,
+          "speedPx": 340
+        },
+        {
+          "bullets": 4,
+          "dmg": 52,
+          "cdMs": 1100,
+          "range": 400,
+          "speedPx": 360
+        },
+        {
+          "bullets": 5,
+          "dmg": 68,
+          "cdMs": 1050,
+          "range": 420,
+          "speedPx": 380
+        },
+        {
+          "bullets": 7,
+          "dmg": 90,
+          "cdMs": 1000,
+          "range": 440,
+          "speedPx": 400
+        }
       ]
     },
     {
-      "extId": 9, "category": "weapon", "series": "Pierrot",
+      "extId": 9,
+      "category": "weapon",
+      "series": "Pierrot",
       "archetype": "placeBomb",
-      "iconId": 1025, "seriesColor": "#fdcb6e",
+      "iconId": 1025,
+      "seriesColor": "#fdcb6e",
       "tierNames": [
-        { "ja": "ピエロ",       "en": "Pierrot" },
-        { "ja": "ハーレクイン", "en": "Harlequin" },
-        { "ja": "ジョーカー",   "en": "Joker" },
-        { "ja": "トリックスター","en": "Trickster" },
-        { "ja": "カオスメーカー","en": "Chaos Maker" }
+        {
+          "ja": "ピエロ",
+          "en": "Pierrot"
+        },
+        {
+          "ja": "ハーレクイン",
+          "en": "Harlequin"
+        },
+        {
+          "ja": "ジョーカー",
+          "en": "Joker"
+        },
+        {
+          "ja": "トリックスター",
+          "en": "Trickster"
+        },
+        {
+          "ja": "カオスメーカー",
+          "en": "Chaos Maker"
+        }
       ],
-      "skillName":     { "ja": "爆弾配置",                                                          "en": "Place Bomb" },
-      "skillDescTpl":  {
+      "skillName": {
+        "ja": "爆弾配置",
+        "en": "Place Bomb"
+      },
+      "skillDescTpl": {
         "ja": "現在地に置き、 遅延爆発。 数 {bullets} / DMG {dmg} / CD {cd}秒 / 爆発半径 {radius}px",
         "en": "Place + delayed boom. Count {bullets} / DMG {dmg} / CD {cd}s / Radius {radius}px"
       },
       "tierParams": [
-        { "bullets": 1, "dmg": 18, "cdMs": 1800, "range": 0, "speedPx": 0, "fuseMs": 1000, "radius": 60 },
-        { "bullets": 2, "dmg": 22, "cdMs": 1700, "range": 0, "speedPx": 0, "fuseMs": 1000, "radius": 65 },
-        { "bullets": 3, "dmg": 28, "cdMs": 1600, "range": 0, "speedPx": 0, "fuseMs": 1000, "radius": 70 },
-        { "bullets": 4, "dmg": 36, "cdMs": 1500, "range": 0, "speedPx": 0, "fuseMs": 1000, "radius": 75 },
-        { "bullets": 5, "dmg": 46, "cdMs": 1400, "range": 0, "speedPx": 0, "fuseMs": 1000, "radius": 80 }
+        {
+          "bullets": 1,
+          "dmg": 35,
+          "cdMs": 1800,
+          "range": 0,
+          "speedPx": 0,
+          "fuseMs": 1000,
+          "radius": 60
+        },
+        {
+          "bullets": 2,
+          "dmg": 45,
+          "cdMs": 1700,
+          "range": 0,
+          "speedPx": 0,
+          "fuseMs": 1000,
+          "radius": 65
+        },
+        {
+          "bullets": 3,
+          "dmg": 58,
+          "cdMs": 1600,
+          "range": 0,
+          "speedPx": 0,
+          "fuseMs": 1000,
+          "radius": 70
+        },
+        {
+          "bullets": 4,
+          "dmg": 75,
+          "cdMs": 1500,
+          "range": 0,
+          "speedPx": 0,
+          "fuseMs": 1000,
+          "radius": 75
+        },
+        {
+          "bullets": 5,
+          "dmg": 95,
+          "cdMs": 1400,
+          "range": 0,
+          "speedPx": 0,
+          "fuseMs": 1000,
+          "radius": 80
+        }
       ]
     },
     {
-      "extId": 10, "category": "weapon", "series": "Blade",
+      "extId": 10,
+      "category": "weapon",
+      "series": "Blade",
       "archetype": "orbitClose",
-      "iconId": 1001, "seriesColor": "#c4a35a",
+      "iconId": 1001,
+      "seriesColor": "#c4a35a",
       "tierNames": [
-        { "ja": "ブレード",       "en": "Blade" },
-        { "ja": "デュアルブレード","en": "Dual Blade" },
-        { "ja": "ホーリーブレード","en": "Holy Blade" },
-        { "ja": "エクスカリバー", "en": "Excalibur" },
-        { "ja": "ヴォーパルブレード","en": "Vorpal Blade" }
+        {
+          "ja": "ブレード",
+          "en": "Blade"
+        },
+        {
+          "ja": "デュアルブレード",
+          "en": "Dual Blade"
+        },
+        {
+          "ja": "ホーリーブレード",
+          "en": "Holy Blade"
+        },
+        {
+          "ja": "エクスカリバー",
+          "en": "Excalibur"
+        },
+        {
+          "ja": "ヴォーパルブレード",
+          "en": "Vorpal Blade"
+        }
       ],
-      "skillName":     { "ja": "高速回転刃",                                            "en": "Spin Blade" },
-      "skillDescTpl":  {
+      "skillName": {
+        "ja": "高速回転刃",
+        "en": "Spin Blade"
+      },
+      "skillDescTpl": {
         "ja": "近距離を高速周回。 数 {bullets} / DMG {dmg} / 半径 {orbitR}px",
         "en": "Fast inner orbit. Count {bullets} / DMG {dmg} / Radius {orbitR}px"
       },
       "tierParams": [
-        { "bullets": 2, "dmg": 12, "cdMs": 600, "range": 0, "speedPx": 0, "orbitR": 50 },
-        { "bullets": 3, "dmg": 16, "cdMs": 600, "range": 0, "speedPx": 0, "orbitR": 52 },
-        { "bullets": 4, "dmg": 22, "cdMs": 600, "range": 0, "speedPx": 0, "orbitR": 54 },
-        { "bullets": 5, "dmg": 30, "cdMs": 600, "range": 0, "speedPx": 0, "orbitR": 56 },
-        { "bullets": 6, "dmg": 40, "cdMs": 600, "range": 0, "speedPx": 0, "orbitR": 58 }
+        {
+          "bullets": 2,
+          "dmg": 25,
+          "cdMs": 600,
+          "range": 0,
+          "speedPx": 0,
+          "orbitR": 50
+        },
+        {
+          "bullets": 3,
+          "dmg": 32,
+          "cdMs": 600,
+          "range": 0,
+          "speedPx": 0,
+          "orbitR": 52
+        },
+        {
+          "bullets": 4,
+          "dmg": 42,
+          "cdMs": 600,
+          "range": 0,
+          "speedPx": 0,
+          "orbitR": 54
+        },
+        {
+          "bullets": 5,
+          "dmg": 55,
+          "cdMs": 600,
+          "range": 0,
+          "speedPx": 0,
+          "orbitR": 56
+        },
+        {
+          "bullets": 6,
+          "dmg": 72,
+          "cdMs": 600,
+          "range": 0,
+          "speedPx": 0,
+          "orbitR": 58
+        }
       ]
     },
-
     {
-      "extId": 11, "category": "buff", "series": "Armor",
+      "extId": 11,
+      "category": "buff",
+      "series": "Armor",
       "archetype": "hpMaxUp",
-      "iconId": 1004, "seriesColor": "#aaaaaa",
+      "iconId": 1004,
+      "seriesColor": "#aaaaaa",
       "tierNames": [
-        { "ja": "アーマー",       "en": "Armor" },
-        { "ja": "プレートアーマー","en": "Plate Armor" },
-        { "ja": "ナイトアーマー", "en": "Knight Armor" },
-        { "ja": "ホーリーアーマー","en": "Holy Armor" },
-        { "ja": "ドラゴンアーマー","en": "Dragon Armor" }
+        {
+          "ja": "アーマー",
+          "en": "Armor"
+        },
+        {
+          "ja": "プレートアーマー",
+          "en": "Plate Armor"
+        },
+        {
+          "ja": "ナイトアーマー",
+          "en": "Knight Armor"
+        },
+        {
+          "ja": "ホーリーアーマー",
+          "en": "Holy Armor"
+        },
+        {
+          "ja": "ドラゴンアーマー",
+          "en": "Dragon Armor"
+        }
       ],
-      "skillName":    { "ja": "鋼の体",         "en": "Iron Body" },
-      "skillDescTpl": { "ja": "最大 HP +{magnitude}", "en": "Max HP +{magnitude}" },
+      "skillName": {
+        "ja": "鋼の体",
+        "en": "Iron Body"
+      },
+      "skillDescTpl": {
+        "ja": "最大 HP +{magnitude}",
+        "en": "Max HP +{magnitude}"
+      },
       "tierParams": [
-        { "magnitude": 20  },
-        { "magnitude": 40  },
-        { "magnitude": 70  },
-        { "magnitude": 110 },
-        { "magnitude": 160 }
+        {
+          "magnitude": 20
+        },
+        {
+          "magnitude": 40
+        },
+        {
+          "magnitude": 70
+        },
+        {
+          "magnitude": 110
+        },
+        {
+          "magnitude": 160
+        }
       ]
     },
     {
-      "extId": 12, "category": "buff", "series": "Ramen",
+      "extId": 12,
+      "category": "buff",
+      "series": "Ramen",
       "archetype": "regen",
-      "iconId": 1030, "seriesColor": "#9be7c4",
+      "iconId": 1030,
+      "seriesColor": "#9be7c4",
       "tierNames": [
-        { "ja": "ラーメン",       "en": "Ramen" },
-        { "ja": "味噌ラーメン",   "en": "Miso Ramen" },
-        { "ja": "醤油ラーメン",   "en": "Shoyu Ramen" },
-        { "ja": "豚骨ラーメン",   "en": "Tonkotsu Ramen" },
-        { "ja": "神龍ラーメン",   "en": "Shenlong Ramen" }
+        {
+          "ja": "ラーメン",
+          "en": "Ramen"
+        },
+        {
+          "ja": "味噌ラーメン",
+          "en": "Miso Ramen"
+        },
+        {
+          "ja": "醤油ラーメン",
+          "en": "Shoyu Ramen"
+        },
+        {
+          "ja": "豚骨ラーメン",
+          "en": "Tonkotsu Ramen"
+        },
+        {
+          "ja": "神龍ラーメン",
+          "en": "Shenlong Ramen"
+        }
       ],
-      "skillName":    { "ja": "滋養",                  "en": "Nourish" },
-      "skillDescTpl": { "ja": "HP 毎秒 +{magnitude}", "en": "+{magnitude} HP/s" },
+      "skillName": {
+        "ja": "滋養",
+        "en": "Nourish"
+      },
+      "skillDescTpl": {
+        "ja": "HP 毎秒 +{magnitude}",
+        "en": "+{magnitude} HP/s"
+      },
       "tierParams": [
-        { "magnitude": 0.3 },
-        { "magnitude": 0.6 },
-        { "magnitude": 1.0 },
-        { "magnitude": 1.5 },
-        { "magnitude": 2.0 }
+        {
+          "magnitude": 0.3
+        },
+        {
+          "magnitude": 0.6
+        },
+        {
+          "magnitude": 1
+        },
+        {
+          "magnitude": 1.5
+        },
+        {
+          "magnitude": 2
+        }
       ]
     },
     {
-      "extId": 13, "category": "buff", "series": "Boots",
+      "extId": 13,
+      "category": "buff",
+      "series": "Boots",
       "archetype": "speedUp",
-      "iconId": 1005, "seriesColor": "#5ecf8a",
+      "iconId": 1005,
+      "seriesColor": "#5ecf8a",
       "tierNames": [
-        { "ja": "ブーツ",         "en": "Boots" },
-        { "ja": "ハイブーツ",     "en": "High Boots" },
-        { "ja": "ウィングブーツ", "en": "Wing Boots" },
-        { "ja": "ヘルメスブーツ", "en": "Hermes Boots" },
-        { "ja": "ライトニングブーツ","en": "Lightning Boots" }
+        {
+          "ja": "ブーツ",
+          "en": "Boots"
+        },
+        {
+          "ja": "ハイブーツ",
+          "en": "High Boots"
+        },
+        {
+          "ja": "ウィングブーツ",
+          "en": "Wing Boots"
+        },
+        {
+          "ja": "ヘルメスブーツ",
+          "en": "Hermes Boots"
+        },
+        {
+          "ja": "ライトニングブーツ",
+          "en": "Lightning Boots"
+        }
       ],
-      "skillName":    { "ja": "韋駄天",                "en": "Swift" },
-      "skillDescTpl": { "ja": "移動速度 ×{magnitude}", "en": "Move speed ×{magnitude}" },
+      "skillName": {
+        "ja": "韋駄天",
+        "en": "Swift"
+      },
+      "skillDescTpl": {
+        "ja": "移動速度 ×{magnitude}",
+        "en": "Move speed ×{magnitude}"
+      },
       "tierParams": [
-        { "magnitude": 1.05 },
-        { "magnitude": 1.10 },
-        { "magnitude": 1.16 },
-        { "magnitude": 1.23 },
-        { "magnitude": 1.32 }
+        {
+          "magnitude": 1.05
+        },
+        {
+          "magnitude": 1.1
+        },
+        {
+          "magnitude": 1.16
+        },
+        {
+          "magnitude": 1.23
+        },
+        {
+          "magnitude": 1.32
+        }
       ]
     },
     {
-      "extId": 14, "category": "buff", "series": "Horse",
+      "extId": 14,
+      "category": "buff",
+      "series": "Horse",
       "archetype": "cdDown",
-      "iconId": 1005, "seriesColor": "#f0c14b",
+      "iconId": 1005,
+      "seriesColor": "#f0c14b",
       "tierNames": [
-        { "ja": "ホース",       "en": "Horse" },
-        { "ja": "サラブレッド", "en": "Thoroughbred" },
-        { "ja": "ペガサス",     "en": "Pegasus" },
-        { "ja": "ユニコーン",   "en": "Unicorn" },
-        { "ja": "スレイプニル", "en": "Sleipnir" }
+        {
+          "ja": "ホース",
+          "en": "Horse"
+        },
+        {
+          "ja": "サラブレッド",
+          "en": "Thoroughbred"
+        },
+        {
+          "ja": "ペガサス",
+          "en": "Pegasus"
+        },
+        {
+          "ja": "ユニコーン",
+          "en": "Unicorn"
+        },
+        {
+          "ja": "スレイプニル",
+          "en": "Sleipnir"
+        }
       ],
-      "skillName":    { "ja": "加速",                  "en": "Tempo" },
-      "skillDescTpl": { "ja": "攻撃間隔 ×{magnitude}", "en": "Attack interval ×{magnitude}" },
+      "skillName": {
+        "ja": "加速",
+        "en": "Tempo"
+      },
+      "skillDescTpl": {
+        "ja": "攻撃間隔 ×{magnitude}",
+        "en": "Attack interval ×{magnitude}"
+      },
       "tierParams": [
-        { "magnitude": 0.95 },
-        { "magnitude": 0.90 },
-        { "magnitude": 0.84 },
-        { "magnitude": 0.78 },
-        { "magnitude": 0.72 }
+        {
+          "magnitude": 0.95
+        },
+        {
+          "magnitude": 0.9
+        },
+        {
+          "magnitude": 0.84
+        },
+        {
+          "magnitude": 0.78
+        },
+        {
+          "magnitude": 0.72
+        }
       ]
     },
     {
-      "extId": 15, "category": "buff", "series": "Shield",
+      "extId": 15,
+      "category": "buff",
+      "series": "Shield",
       "archetype": "dmgTakenDown",
-      "iconId": 1004, "seriesColor": "#56ccf2",
+      "iconId": 1004,
+      "seriesColor": "#56ccf2",
       "tierNames": [
-        { "ja": "シールド",       "en": "Shield" },
-        { "ja": "タワーシールド", "en": "Tower Shield" },
-        { "ja": "ナイトシールド", "en": "Knight Shield" },
-        { "ja": "ホーリーシールド","en": "Holy Shield" },
-        { "ja": "ミラーシールド", "en": "Mirror Shield" }
+        {
+          "ja": "シールド",
+          "en": "Shield"
+        },
+        {
+          "ja": "タワーシールド",
+          "en": "Tower Shield"
+        },
+        {
+          "ja": "ナイトシールド",
+          "en": "Knight Shield"
+        },
+        {
+          "ja": "ホーリーシールド",
+          "en": "Holy Shield"
+        },
+        {
+          "ja": "ミラーシールド",
+          "en": "Mirror Shield"
+        }
       ],
-      "skillName":    { "ja": "鉄壁",                  "en": "Bulwark" },
-      "skillDescTpl": { "ja": "被ダメ ×{magnitude}",   "en": "Damage taken ×{magnitude}" },
+      "skillName": {
+        "ja": "鉄壁",
+        "en": "Bulwark"
+      },
+      "skillDescTpl": {
+        "ja": "被ダメ ×{magnitude}",
+        "en": "Damage taken ×{magnitude}"
+      },
       "tierParams": [
-        { "magnitude": 0.92 },
-        { "magnitude": 0.85 },
-        { "magnitude": 0.78 },
-        { "magnitude": 0.70 },
-        { "magnitude": 0.60 }
+        {
+          "magnitude": 0.92
+        },
+        {
+          "magnitude": 0.85
+        },
+        {
+          "magnitude": 0.78
+        },
+        {
+          "magnitude": 0.7
+        },
+        {
+          "magnitude": 0.6
+        }
       ]
     },
     {
-      "extId": 16, "category": "buff", "series": "Apple",
+      "extId": 16,
+      "category": "buff",
+      "series": "Apple",
       "archetype": "dmgUp",
-      "iconId": 1030, "seriesColor": "#e76060",
+      "iconId": 1030,
+      "seriesColor": "#e76060",
       "tierNames": [
-        { "ja": "りんご",         "en": "Apple" },
-        { "ja": "金のりんご",     "en": "Golden Apple" },
-        { "ja": "知恵のりんご",   "en": "Wisdom Apple" },
-        { "ja": "不死のりんご",   "en": "Immortal Apple" },
-        { "ja": "黄金の杏",       "en": "Aurum Apricot" }
+        {
+          "ja": "りんご",
+          "en": "Apple"
+        },
+        {
+          "ja": "金のりんご",
+          "en": "Golden Apple"
+        },
+        {
+          "ja": "知恵のりんご",
+          "en": "Wisdom Apple"
+        },
+        {
+          "ja": "不死のりんご",
+          "en": "Immortal Apple"
+        },
+        {
+          "ja": "黄金の杏",
+          "en": "Aurum Apricot"
+        }
       ],
-      "skillName":    { "ja": "力の杏",                "en": "Might" },
-      "skillDescTpl": { "ja": "威力 ×{magnitude}",     "en": "Damage ×{magnitude}" },
+      "skillName": {
+        "ja": "力の杏",
+        "en": "Might"
+      },
+      "skillDescTpl": {
+        "ja": "威力 ×{magnitude}",
+        "en": "Damage ×{magnitude}"
+      },
       "tierParams": [
-        { "magnitude": 1.10 },
-        { "magnitude": 1.20 },
-        { "magnitude": 1.32 },
-        { "magnitude": 1.46 },
-        { "magnitude": 1.60 }
+        {
+          "magnitude": 1.1
+        },
+        {
+          "magnitude": 1.2
+        },
+        {
+          "magnitude": 1.32
+        },
+        {
+          "magnitude": 1.46
+        },
+        {
+          "magnitude": 1.6
+        }
       ]
     },
     {
-      "extId": 17, "category": "buff", "series": "Oriflamme",
+      "extId": 17,
+      "category": "buff",
+      "series": "Oriflamme",
       "archetype": "bulletCount",
-      "iconId": 1022, "seriesColor": "#bb86fc",
+      "iconId": 1022,
+      "seriesColor": "#bb86fc",
       "tierNames": [
-        { "ja": "オリフラム",       "en": "Oriflamme" },
-        { "ja": "ロイヤルオリフラム","en": "Royal Oriflamme" },
-        { "ja": "ホーリーオリフラム","en": "Holy Oriflamme" },
-        { "ja": "エンペラーズフラッグ","en": "Emperor's Flag" },
-        { "ja": "アークエンジェル", "en": "Archangel" }
+        {
+          "ja": "オリフラム",
+          "en": "Oriflamme"
+        },
+        {
+          "ja": "ロイヤルオリフラム",
+          "en": "Royal Oriflamme"
+        },
+        {
+          "ja": "ホーリーオリフラム",
+          "en": "Holy Oriflamme"
+        },
+        {
+          "ja": "エンペラーズフラッグ",
+          "en": "Emperor's Flag"
+        },
+        {
+          "ja": "アークエンジェル",
+          "en": "Archangel"
+        }
       ],
-      "skillName":    { "ja": "旗印",                  "en": "Banner" },
-      "skillDescTpl": { "ja": "弾数 +{magnitude}",     "en": "Bullets +{magnitude}" },
+      "skillName": {
+        "ja": "旗印",
+        "en": "Banner"
+      },
+      "skillDescTpl": {
+        "ja": "弾数 +{magnitude}",
+        "en": "Bullets +{magnitude}"
+      },
       "tierParams": [
-        { "magnitude": 0 },
-        { "magnitude": 1 },
-        { "magnitude": 1 },
-        { "magnitude": 2 },
-        { "magnitude": 3 }
+        {
+          "magnitude": 0
+        },
+        {
+          "magnitude": 1
+        },
+        {
+          "magnitude": 1
+        },
+        {
+          "magnitude": 2
+        },
+        {
+          "magnitude": 3
+        }
       ]
     }
   ]
