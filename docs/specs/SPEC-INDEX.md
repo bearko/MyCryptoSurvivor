@@ -7,6 +7,7 @@
 |---|---|---|---|---|
 | SPEC-001 | Phase 1 Bootstrap (= Charter / 識別子 / Day 1 ヒーロー選択 mock) | Done | Phase 0 / Phase 1 | #1 (merged) |
 | SPEC-002 | Hero Roster (= heroes.json + 10 体実データ + state.ownedHero) | Implementing | Phase 0 / Phase 1 | feat/spec-002-hero-roster |
+| SPEC-003 | MCH IP Data Sources (= bearko/mycryptoheroes 由来の heroes/extensions/enemies 先行整備) | Implementing | Phase 0 / Phase 1 | feat/spec-003-mch-data-sources (stacked on SPEC-002) |
 
 ## 命名規則
 
