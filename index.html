@@ -58,6 +58,8 @@
     <header class="header">
       <div class="header__left">
         <span class="header__title">MyCryptoSurvivor</span>
+        <span class="header__hero-badge hidden" id="ownedHeroBadge"
+              aria-live="polite"></span>
       </div>
       <div class="header__center">
         <span id="dateLabel">2018 年 1 月 1 週</span>
@@ -87,8 +89,10 @@
       </header>
       <div class="hero-modal__grid" id="heroSelectGrid"
            role="listbox" aria-label="Hero choices"></div>
-      <p class="hero-modal__hint" id="heroSelectHint" data-i18n="hero.select.empty">
-        ヒーローを選択してください
+      <p class="hero-modal__hint" id="heroSelectHint">
+        <span id="heroSelectHintText" data-i18n="hero.select.empty">
+          ヒーローを選択してください
+        </span>
       </p>
       <button class="btn hero-modal__cta" id="heroSelectCta"
               data-i18n="hero.select.cta" disabled>

@@ -1,0 +1,95 @@
+{
+  "version": 1,
+  "heroes": [
+    {
+      "heroId": 1,
+      "name":    { "ja": "雪",   "en": "Yuki" },
+      "element": "leviathan",
+      "rarity":  "Rare",
+      "stats":   { "hp": 36, "phy": 22, "int": 28, "agi": 30 },
+      "blurb":   { "ja": "雪原を駆ける斥候。 食料の在処を素早く見つける。",
+                   "en": "A snowfield scout who finds food fast." }
+    },
+    {
+      "heroId": 2,
+      "name":    { "ja": "炎",   "en": "Honoo" },
+      "element": "ifrit",
+      "rarity":  "Rare",
+      "stats":   { "hp": 40, "phy": 34, "int": 22, "agi": 18 },
+      "blurb":   { "ja": "炎を纏う近接戦士。 寒さに強く、 体温を保ちやすい。",
+                   "en": "A flame-clad melee fighter who keeps warm in the cold." }
+    },
+    {
+      "heroId": 3,
+      "name":    { "ja": "森",   "en": "Mori" },
+      "element": "garuda",
+      "rarity":  "Common",
+      "stats":   { "hp": 32, "phy": 24, "int": 26, "agi": 26 },
+      "blurb":   { "ja": "森と歩む薬師。 薬草を集めるのが得意。",
+                   "en": "A herbalist of the woods, skilled at gathering plants." }
+    },
+    {
+      "heroId": 4,
+      "name":    { "ja": "岩",   "en": "Iwa" },
+      "element": "tiamat",
+      "rarity":  "Uncommon",
+      "stats":   { "hp": 50, "phy": 38, "int": 14, "agi": 14 },
+      "blurb":   { "ja": "岩のように頑強な大盾。 防御クラフトに長ける。",
+                   "en": "Stone-tough shield bearer, master of defensive crafts." }
+    },
+    {
+      "heroId": 5,
+      "name":    { "ja": "風",   "en": "Kaze" },
+      "element": "garuda",
+      "rarity":  "Common",
+      "stats":   { "hp": 28, "phy": 20, "int": 26, "agi": 40 },
+      "blurb":   { "ja": "風読みの追跡者。 移動コストが軽く、 距離を稼げる。",
+                   "en": "A wind-reading tracker who covers distance with little cost." }
+    },
+    {
+      "heroId": 6,
+      "name":    { "ja": "月",   "en": "Tsuki" },
+      "element": "leviathan",
+      "rarity":  "Epic",
+      "stats":   { "hp": 30, "phy": 16, "int": 44, "agi": 26 },
+      "blurb":   { "ja": "月光の魔術師。 夜間の探索と知略に強い。",
+                   "en": "A moonlight mage strong in night exploration and lore." }
+    },
+    {
+      "heroId": 7,
+      "name":    { "ja": "牙",   "en": "Kiba" },
+      "element": "garuda",
+      "rarity":  "Uncommon",
+      "stats":   { "hp": 34, "phy": 32, "int": 16, "agi": 30 },
+      "blurb":   { "ja": "山犬を率いる狩人。 獣との遭遇に有利。",
+                   "en": "A hunter who leads wolves, favored against beasts." }
+    },
+    {
+      "heroId": 8,
+      "name":    { "ja": "鉄",   "en": "Tetsu" },
+      "element": "tiamat",
+      "rarity":  "Rare",
+      "stats":   { "hp": 44, "phy": 30, "int": 22, "agi": 16 },
+      "blurb":   { "ja": "鋼鉄の鍛冶師。 高品質な装備を打てる。",
+                   "en": "An iron smith who forges high-quality gear." }
+    },
+    {
+      "heroId": 9,
+      "name":    { "ja": "陽",   "en": "Hi" },
+      "element": "ifrit",
+      "rarity":  "Common",
+      "stats":   { "hp": 30, "phy": 22, "int": 30, "agi": 24 },
+      "blurb":   { "ja": "陽光の聖職者。 体力の回復が速い。",
+                   "en": "A sunlit cleric whose stamina recovers quickly." }
+    },
+    {
+      "heroId": 10,
+      "name":    { "ja": "灰",   "en": "Hai" },
+      "element": "ifrit",
+      "rarity":  "Uncommon",
+      "stats":   { "hp": 32, "phy": 26, "int": 24, "agi": 26 },
+      "blurb":   { "ja": "灰被りの旅人。 瓦礫からの収集が得意。",
+                   "en": "An ash-cloaked wanderer skilled at salvaging from rubble." }
+    }
+  ]
+}
