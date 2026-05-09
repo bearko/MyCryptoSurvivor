@@ -39,13 +39,21 @@ export const state = {
   xpToNext: 5,                  // 次レベルまでの閾値 (= 仮 5、 SPEC-008 で曲線化)
   elapsedTicks: 0,              // ステージ経過 tick (= 1 tick = 1 sec、 mm:ss 表示)
 
-  // 戦闘ステージ (= SPEC-006、 RAF ループで更新される)
+  // 戦闘ステージ (= SPEC-006 + SPEC-007、 RAF ループで更新される)
   battle: {
     active:   false,
     player:   { x: 0, y: 0, r: 14, speed: 180, color: "#c4a35a" },
     camera:   { x: 0, y: 0 },
     viewport: { w: 0, h: 0 },
-    // 後続 SPEC で追加: enemies, projectiles, gems, weapons
+
+    // SPEC-007: 敵 / gem / 武器 / 視覚アニメ
+    enemies:        [],   // {id, x, y, r, hp, hpMax, dmg, speed, color}
+    gems:           [],   // {id, x, y, r, value, color}
+    shockwaveAnims: [],   // {x, y, r0, r1, age, life, color}
+    weapons:        [],   // {kind, radius, dmg, cooldownMs, lastFireMs}  ← startBattle で初期化
+    nextEntityId:    1,
+    lastEnemySpawnMs: 0,
+    contactCooldownMs: 0, // > 0 のあいだ被弾しない
   },
 
   // ゲーム固有 (= 後続 SPEC で追加)
