@@ -3,14 +3,22 @@
 // ============================================================
 
 import { state, pauseTime, resumeTime } from "./state.js";
-import { initI18n, setLang, getLang, applyDataI18n, t, tpl, onLangChange } from "./i18n.js";
+import { initI18n, setLang, getLang, t, tpl, onLangChange } from "./i18n.js";
 import {
   TICK_INTERVAL_MS,
   SECONDS_PER_WEEK,
   WEEKS_PER_MONTH,
   MONTHS_PER_YEAR,
-  HERO_SELECT_PLACEHOLDER_COUNT,
 } from "./constants.js";
+import {
+  HERO_ROSTER,
+  loadHeroes,
+  getHero,
+  heroImg,
+  elementEmoji,
+  localizedHeroName,
+  localizedHeroBlurb,
+} from "./heroes.js";
 
 // ============================================================
 // DOM helpers
@@ -24,7 +32,10 @@ const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 async function init() {
   pauseTime();   // ← 起動 splash 中は時間停止
 
-  await initI18n();
+  await Promise.all([
+    initI18n(),
+    loadHeroes().catch((e) => console.error("loadHeroes failed", e)),
+  ]);
 
   // ロード完了 → splash dismiss
   $("#splash")?.classList.add("hidden");
@@ -140,9 +151,10 @@ function setupHeroSelectModal() {
     }
   });
 
-  // 言語切替時、 開いているなら placeholder ラベルを再レンダ
+  // 言語切替時、 開いているならタイル / hint を再レンダし、 ヘッダー badge も追従
   onLangChange(() => {
     if (!modal.classList.contains("hidden")) renderHeroSelectModal();
+    renderOwnedHeroBadge();
   });
 }
 
@@ -167,47 +179,105 @@ function renderHeroSelectModal() {
   const grid = $("#heroSelectGrid");
   if (!grid) return;
 
-  const tplLabel = t("hero.select.placeholder", "Hero {n}");
+  const lang = getLang();
+  const altTpl = t("hero.select.imgAlt", "Portrait of {name}");
 
   grid.innerHTML = "";
-  for (let i = 1; i <= HERO_SELECT_PLACEHOLDER_COUNT; i++) {
-    const isSelected = state.pendingHeroPick === i;
+  if (HERO_ROSTER.length === 0) {
+    // データロード失敗時のフォールバック (= 空 grid + hint)
+    refreshHeroSelectCta();
+    return;
+  }
+
+  for (const hero of HERO_ROSTER) {
+    const isSelected = state.pendingHeroPick === hero.heroId;
+    const name = localizedHeroName(hero, lang);
+    const rarityLabel = t(`hero.rarity.${hero.rarity}`, hero.rarity);
+    const elementLabel = t(`hero.element.${hero.element}`, hero.element);
+
     const tile = document.createElement("button");
     tile.type = "button";
     tile.className = "hero-tile";
-    tile.dataset.heroSlot = String(i);
+    tile.dataset.heroId = String(hero.heroId);
+    tile.dataset.element = hero.element;
     tile.setAttribute("role", "option");
     tile.setAttribute("aria-selected", isSelected ? "true" : "false");
+    tile.title = `${name} — ${elementLabel} / ${rarityLabel}`;
     tile.innerHTML = `
-      <span class="hero-tile__num">${i}</span>
-      <span class="hero-tile__label">${tpl(tplLabel, { n: i })}</span>
+      <img class="hero-tile__portrait"
+           src="${heroImg(hero.heroId)}"
+           alt="${escapeAttr(tpl(altTpl, { name }))}"
+           onerror="this.classList.add('hero-tile__portrait--missing'); this.removeAttribute('src');" />
+      <div class="hero-tile__meta">
+        <span class="hero-tile__name">${escapeText(name)}</span>
+        <span class="hero-tile__sub">
+          <span class="hero-tile__element" aria-label="${escapeAttr(elementLabel)}">${elementEmoji(hero.element)}</span>
+          <span class="hero-tile__rarity" data-rarity="${escapeAttr(hero.rarity)}">${escapeText(rarityLabel)}</span>
+        </span>
+      </div>
     `;
-    tile.addEventListener("click", () => pickHero(i));
+    tile.addEventListener("click", () => pickHero(hero.heroId));
     grid.appendChild(tile);
   }
 
   refreshHeroSelectCta();
 }
 
-function pickHero(slotIdx) {
-  if (slotIdx < 1 || slotIdx > HERO_SELECT_PLACEHOLDER_COUNT) return;
-  state.pendingHeroPick = slotIdx;
+function pickHero(heroId) {
+  if (!getHero(heroId)) return;
+  state.pendingHeroPick = heroId;
   renderHeroSelectModal();
 }
 
 function refreshHeroSelectCta() {
   const cta = $("#heroSelectCta");
-  const hint = $("#heroSelectHint");
+  const hintText = $("#heroSelectHintText");
   if (!cta) return;
-  const hasPick = state.pendingHeroPick != null;
-  cta.disabled = !hasPick;
-  if (hint) hint.style.visibility = hasPick ? "hidden" : "visible";
+  const hero = getHero(state.pendingHeroPick);
+  cta.disabled = !hero;
+
+  if (hintText) {
+    if (hero) {
+      hintText.textContent = localizedHeroBlurb(hero, getLang());
+      hintText.removeAttribute("data-i18n");
+    } else {
+      hintText.setAttribute("data-i18n", "hero.select.empty");
+      hintText.textContent = t("hero.select.empty", "Select a hero to continue");
+    }
+  }
 }
 
 function applyHeroPick() {
-  if (state.pendingHeroPick == null) return;
-  // Phase 2 で state.ownedHero を確定する想定。 Phase 1 ではモーダルを閉じるだけ。
+  const hero = getHero(state.pendingHeroPick);
+  if (!hero) return;
+  state.ownedHero = { ...hero };
+  renderOwnedHeroBadge();
   closeHeroSelectModal();
+}
+
+function renderOwnedHeroBadge() {
+  const badge = $("#ownedHeroBadge");
+  if (!badge) return;
+  const hero = state.ownedHero;
+  if (!hero) {
+    badge.classList.add("hidden");
+    badge.textContent = "";
+    return;
+  }
+  const name = localizedHeroName(hero, getLang());
+  badge.classList.remove("hidden");
+  badge.dataset.element = hero.element;
+  badge.textContent = `${elementEmoji(hero.element)} ${name}`;
+}
+
+function escapeText(s) {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+function escapeAttr(s) {
+  return escapeText(s).replace(/"/g, "&quot;");
 }
 
 // ============================================================

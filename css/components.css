@@ -171,48 +171,108 @@
   align-self: stretch;
 }
 
-/* ---------- Hero tile (= placeholder) ---------- */
+/* ---------- Hero tile (= SPEC-002 data-driven) ---------- */
 .hero-tile {
   appearance: none;
   position: relative;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.25rem;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 0;
   aspect-ratio: 4 / 5;
-  padding: 0.4rem 0.3rem;
+  padding: 0;
   background: var(--panel-2);
   border: 1.5px solid var(--border);
+  border-top: 3px solid var(--border);   /* element accent はここに上書き */
   border-radius: 8px;
   color: var(--text);
   cursor: pointer;
-  transition: border-color 0.15s, transform 0.1s, background 0.15s;
+  overflow: hidden;
+  transition: border-color 0.15s, transform 0.1s, background 0.15s, box-shadow 0.15s;
 }
 .hero-tile:hover { border-color: var(--accent); }
 .hero-tile:active { transform: translateY(1px); }
 .hero-tile[aria-selected="true"] {
-  border-color: var(--accent);
   background: linear-gradient(180deg, rgba(196,163,90,0.18) 0%, var(--panel-2) 70%);
-  box-shadow: 0 0 0 2px rgba(196, 163, 90, 0.35);
+  box-shadow: 0 0 0 2px rgba(196, 163, 90, 0.45);
 }
-.hero-tile__num {
-  font-size: 1.4rem;
+
+.hero-tile[data-element="garuda"]    { border-top-color: var(--garuda); }
+.hero-tile[data-element="ifrit"]     { border-top-color: var(--ifrit); }
+.hero-tile[data-element="leviathan"] { border-top-color: var(--leviathan); }
+.hero-tile[data-element="tiamat"]    { border-top-color: var(--tiamat); }
+
+.hero-tile__portrait {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  background:
+    radial-gradient(circle at 50% 35%, rgba(196,163,90,0.12), transparent 70%),
+    var(--panel);
+  display: block;
+}
+.hero-tile__portrait--missing {
+  /* CDN 画像 404 時、 src を外して silhouette gradient のみ残す */
+  opacity: 0.6;
+}
+
+.hero-tile__meta {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  padding: 0.3rem 0.3rem 0.4rem;
+  text-align: center;
+}
+.hero-tile__name {
+  font-size: 0.95rem;
   font-weight: 800;
-  color: var(--accent);
-  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  letter-spacing: 0.04em;
+  line-height: 1.1;
 }
-.hero-tile__label {
+.hero-tile__sub {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
   font-size: 0.7rem;
   color: var(--muted);
   letter-spacing: 0.02em;
 }
+.hero-tile__element { font-size: 0.85rem; line-height: 1; }
+.hero-tile__rarity[data-rarity="Common"]    { color: var(--muted); }
+.hero-tile__rarity[data-rarity="Uncommon"]  { color: var(--garuda); }
+.hero-tile__rarity[data-rarity="Rare"]      { color: var(--leviathan); }
+.hero-tile__rarity[data-rarity="Epic"]      { color: var(--rarity-sr); }
+.hero-tile__rarity[data-rarity="Legendary"] { color: var(--rarity-ssr); }
 
 @media (max-width: 480px) {
   .hero-modal__grid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0.35rem; }
-  .hero-tile__num { font-size: 1.15rem; }
-  .hero-tile__label { font-size: 0.65rem; }
+  .hero-tile__name { font-size: 0.78rem; }
+  .hero-tile__sub  { font-size: 0.62rem; }
 }
+
+/* ---------- Header owned-hero badge ---------- */
+.header__hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-left: 0.6rem;
+  padding: 0.18rem 0.55rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  color: var(--text);
+  background: rgba(196, 163, 90, 0.08);
+  letter-spacing: 0.04em;
+}
+.header__hero-badge[data-element="garuda"]    { border-color: var(--garuda); }
+.header__hero-badge[data-element="ifrit"]     { border-color: var(--ifrit); }
+.header__hero-badge[data-element="leviathan"] { border-color: var(--leviathan); }
+.header__hero-badge[data-element="tiamat"]    { border-color: var(--tiamat); }
 
 /* ---------- Help overlay ---------- */
 .help-overlay {

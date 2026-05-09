@@ -46,11 +46,6 @@ export const LS_SAVE = `${LS_PREFIX}.save.v1`;
 export const APP_VERSION = "0.1.0";
 
 // ============================================================
-// Day 1 ヒーロー選択 (= Phase 1 mock。 実データは後続 SPEC で差し替え)
-// ============================================================
-export const HERO_SELECT_PLACEHOLDER_COUNT = 10;
-
-// ============================================================
 // デバッグフラグ
 // ============================================================
 export const DEBUG_PAUSE = false;       // pauseTime / resumeTime ログ
