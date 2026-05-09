@@ -46,15 +46,20 @@ export const state = {
     camera:   { x: 0, y: 0 },
     viewport: { w: 0, h: 0 },
 
-    // SPEC-007: 敵 / gem / 武器 / 視覚アニメ
+    // SPEC-007 / SPEC-008: 敵 / gem / 投射体 / 武器
     enemies:        [],   // {id, x, y, r, hp, hpMax, dmg, speed, color}
     gems:           [],   // {id, x, y, r, value, color}
-    shockwaveAnims: [],   // {x, y, r0, r1, age, life, color}
-    weapons:        [],   // {kind, radius, dmg, cooldownMs, lastFireMs}  ← startBattle で初期化
+    projectiles:    [],   // {id, x, y, vx, vy, r, dmg, color, life, age}
+    weapons:        [],   // {extId, level, dmg, cdMs, range, speedPx, color, lastFireMs}
     nextEntityId:    1,
     lastEnemySpawnMs: 0,
     contactCooldownMs: 0, // > 0 のあいだ被弾しない
   },
+
+  // SPEC-008: 装備 extension + Level-up pick モーダル状態
+  ownedExtensions:       [],   // [{extId, level}]
+  pendingPickOptions:    [],   // [{extId, ext, currentLevel, nextLevel, isNew}]
+  pendingPickIsStarter:  false,
 
   // ゲーム固有 (= 後続 SPEC で追加)
   // gum: 1000,
