@@ -2,8 +2,10 @@
 // constants.js — 共通定数 / アセット URL ヘルパ
 // ============================================================
 
-// MyCryptoSurvivor の画像 / 音声は専用 assets リポジトリで管理する。
-export const ASSET_BASE = "https://raw.githubusercontent.com/bearko/MyCryptoSurvivor-assets/main/";
+// MyCryptoSurvivor は MCH 経済圏の fan project として
+// `bearko/mycryptoheroes` の curated 図鑑 (= heroes / extensions / enemies / images)
+// を直接参照する (= SPEC-003)。
+export const ASSET_BASE = "https://raw.githubusercontent.com/bearko/mycryptoheroes/main/";
 
 /**
  * 画像 URL を組み立てる

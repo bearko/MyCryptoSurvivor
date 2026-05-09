@@ -1,23 +1,23 @@
 // ============================================================
-// heroes.js — ヒーローロスター読み込み + 参照ヘルパ
+// heroes.js — ヒーローロスター読み込み + 参照ヘルパ (= SPEC-003 MCH 図鑑連携)
 // ============================================================
 //
-// `data/heroes.json` を一度だけ fetch し、 以降は HERO_ROSTER / HERO_DEFS から参照する。
-// 画像 URL は `ASSET_BASE/Image/Heroes/{heroId}.png`。 onerror フォールバックは描画側で行う。
-//
-// SPEC-002 — Hero Roster
+// `data/heroes.json` (v2) を一度だけ fetch し、 以降は HERO_ROSTER / HERO_DEFS から参照する。
+// 画像 URL は `ASSET_BASE/Image/Heroes/{heroId}.png` (= bearko/mycryptoheroes 図鑑直結)。
+// onerror フォールバックは描画側で行う。
 
 import { img } from "./constants.js";
 import { loadJson } from "./data-loader.js";
 
-export const HERO_ROSTER = [];      // [{heroId, name, element, rarity, stats, blurb}, ...]
+export const HERO_ROSTER = [];      // [{heroId, name, faction, rarity, attributes, stats}, ...]
 export const HERO_DEFS   = {};      // heroId(string) → hero
 
-const ELEMENT_EMOJI = {
-  garuda:    "🌿",
-  ifrit:     "🔥",
-  leviathan: "💧",
-  tiamat:    "⛰",
+const FACTION_EMOJI = {
+  SEIRYU:  "🐉",   // 青龍 / 東 / 木
+  SUZAKU:  "🔥",   // 朱雀 / 南 / 火
+  BYAKKO:  "🐅",   // 白虎 / 西 / 金
+  GENBU:   "🐢",   // 玄武 / 北 / 水
+  KOURYU:  "🐲",   // 黄龍 / 中央 / 土
 };
 
 /**
@@ -28,8 +28,8 @@ const ELEMENT_EMOJI = {
 export function loadHeroes() {
   return loadJson("heroes", "./data/heroes.json", (raw) => {
     const arr = Array.isArray(raw?.heroes) ? raw.heroes : [];
-    if (raw?.version !== 1) {
-      console.warn("heroes.json version mismatch:", raw?.version);
+    if (raw?.version !== 2) {
+      console.warn("heroes.json version mismatch (expected 2):", raw?.version);
     }
     HERO_ROSTER.length = 0;
     for (const k of Object.keys(HERO_DEFS)) delete HERO_DEFS[k];
@@ -58,11 +58,11 @@ export function heroImg(heroId) {
 }
 
 /**
- * @param {string} element
+ * @param {string} faction - GENBU / SUZAKU / BYAKKO / SEIRYU / KOURYU
  * @returns {string}
  */
-export function elementEmoji(element) {
-  return ELEMENT_EMOJI[element] || "✦";
+export function factionEmoji(faction) {
+  return FACTION_EMOJI[faction] || "✦";
 }
 
 /**
@@ -78,13 +78,12 @@ export function localizedHeroName(hero, lang) {
 }
 
 /**
+ * attributes 配列を hint 行向けの 1 行に整形する。
+ * MCH 図鑑由来の attributes は英語固定 (= 言語非依存)。
  * @param {object} hero
- * @param {string} lang - "ja" | "en"
  * @returns {string}
  */
-export function localizedHeroBlurb(hero, lang) {
-  if (!hero) return "";
-  const b = hero.blurb;
-  if (typeof b === "string") return b;
-  return b?.[lang] ?? b?.ja ?? b?.en ?? "";
+export function heroAttributesLine(hero) {
+  if (!hero || !Array.isArray(hero.attributes)) return "";
+  return hero.attributes.join(" / ");
 }

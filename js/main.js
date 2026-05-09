@@ -15,10 +15,12 @@ import {
   loadHeroes,
   getHero,
   heroImg,
-  elementEmoji,
+  factionEmoji,
   localizedHeroName,
-  localizedHeroBlurb,
+  heroAttributesLine,
 } from "./heroes.js";
+import { loadExtensions } from "./extensions.js";
+import { loadEnemies } from "./enemies.js";
 
 // ============================================================
 // DOM helpers
@@ -35,6 +37,8 @@ async function init() {
   await Promise.all([
     initI18n(),
     loadHeroes().catch((e) => console.error("loadHeroes failed", e)),
+    loadExtensions().catch((e) => console.error("loadExtensions failed", e)),
+    loadEnemies().catch((e) => console.error("loadEnemies failed", e)),
   ]);
 
   // ロード完了 → splash dismiss
@@ -193,16 +197,16 @@ function renderHeroSelectModal() {
     const isSelected = state.pendingHeroPick === hero.heroId;
     const name = localizedHeroName(hero, lang);
     const rarityLabel = t(`hero.rarity.${hero.rarity}`, hero.rarity);
-    const elementLabel = t(`hero.element.${hero.element}`, hero.element);
+    const factionLabel = t(`hero.faction.${hero.faction}`, hero.faction);
 
     const tile = document.createElement("button");
     tile.type = "button";
     tile.className = "hero-tile";
     tile.dataset.heroId = String(hero.heroId);
-    tile.dataset.element = hero.element;
+    tile.dataset.faction = hero.faction;
     tile.setAttribute("role", "option");
     tile.setAttribute("aria-selected", isSelected ? "true" : "false");
-    tile.title = `${name} — ${elementLabel} / ${rarityLabel}`;
+    tile.title = `${name} — ${factionLabel} / ${rarityLabel}`;
     tile.innerHTML = `
       <img class="hero-tile__portrait"
            src="${heroImg(hero.heroId)}"
@@ -211,7 +215,7 @@ function renderHeroSelectModal() {
       <div class="hero-tile__meta">
         <span class="hero-tile__name">${escapeText(name)}</span>
         <span class="hero-tile__sub">
-          <span class="hero-tile__element" aria-label="${escapeAttr(elementLabel)}">${elementEmoji(hero.element)}</span>
+          <span class="hero-tile__faction" aria-label="${escapeAttr(factionLabel)}">${factionEmoji(hero.faction)}</span>
           <span class="hero-tile__rarity" data-rarity="${escapeAttr(hero.rarity)}">${escapeText(rarityLabel)}</span>
         </span>
       </div>
@@ -238,7 +242,7 @@ function refreshHeroSelectCta() {
 
   if (hintText) {
     if (hero) {
-      hintText.textContent = localizedHeroBlurb(hero, getLang());
+      hintText.textContent = heroAttributesLine(hero);
       hintText.removeAttribute("data-i18n");
     } else {
       hintText.setAttribute("data-i18n", "hero.select.empty");
@@ -262,12 +266,13 @@ function renderOwnedHeroBadge() {
   if (!hero) {
     badge.classList.add("hidden");
     badge.textContent = "";
+    delete badge.dataset.faction;
     return;
   }
   const name = localizedHeroName(hero, getLang());
   badge.classList.remove("hidden");
-  badge.dataset.element = hero.element;
-  badge.textContent = `${elementEmoji(hero.element)} ${name}`;
+  badge.dataset.faction = hero.faction;
+  badge.textContent = `${factionEmoji(hero.faction)} ${name}`;
 }
 
 function escapeText(s) {
