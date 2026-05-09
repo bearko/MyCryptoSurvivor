@@ -100,6 +100,18 @@
   </main>
 
   <!-- ============================================================ -->
+  <!-- Level-up modal (= SPEC-008、 starter pick + LV up)              -->
+  <!-- ============================================================ -->
+  <div id="levelUpModal" class="levelup-modal hidden" role="dialog" aria-modal="true"
+       aria-labelledby="levelUpTitle">
+    <div class="levelup-modal__card">
+      <h2 class="levelup-modal__title" id="levelUpTitle" data-i18n="levelup.title">レベルアップ!</h2>
+      <p class="levelup-modal__sub"   id="levelUpSub"   data-i18n="levelup.sub">強化を 1 つ選ぼう</p>
+      <div class="levelup-modal__grid" id="levelUpGrid" role="listbox"></div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
   <!-- 4. Hero select modal (= SPEC-001 Phase 1 mock)                 -->
   <!-- ============================================================ -->
   <div id="heroSelectModal" class="hero-modal hidden" role="dialog" aria-modal="true"

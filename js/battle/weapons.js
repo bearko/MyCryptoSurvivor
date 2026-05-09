@@ -1,61 +1,50 @@
 // ============================================================
-// battle/weapons.js — 仮 hardcoded shockwave 武器 (= SPEC-007)
+// battle/weapons.js — extension 由来の自動発射ホーミング投射体 (= SPEC-008)
 // ============================================================
 //
-// SPEC-008 で extension 駆動に置き換える前提の placeholder。
-// 1.0 sec ごとに player 周囲半径 80px に 10 dmg。
+// SPEC-007 の hardcoded shockwave は SPEC-008 で完全撤去。
+// 各 weapon は cdMs ごとに range 内の最寄り敵を狙って 1 発 spawn。
 
 import { state } from "../state.js";
-import { SHOCKWAVE_VISUAL_LIFE_MS, SHOCKWAVE_VISUAL_COLOR } from "../constants.js";
-import { spawnGem } from "./gems.js";
+import { PROJECTILE_RADIUS, PROJECTILE_LIFE_MS } from "../constants.js";
 
 export function tickWeapons(_dt, nowMs) {
   const b = state.battle;
+  const px = b.player.x, py = b.player.y;
   for (const w of b.weapons) {
-    if (w.kind !== "shockwave") continue;
-    if (nowMs - w.lastFireMs < w.cooldownMs) continue;
+    if (nowMs - w.lastFireMs < w.cdMs) continue;
+    const target = _findNearestEnemy(px, py, w.range);
+    if (!target) continue;
     w.lastFireMs = nowMs;
-    fireShockwave(w);
+    _spawnProjectile(px, py, target, w);
   }
 }
 
-function fireShockwave(w) {
-  const b = state.battle;
-  const px = b.player.x;
-  const py = b.player.y;
+function _findNearestEnemy(px, py, range) {
+  const arr = state.battle.enemies;
+  let best = null;
+  let bestD2 = range * range;
+  for (const e of arr) {
+    const dx = e.x - px, dy = e.y - py;
+    const d2 = dx * dx + dy * dy;
+    if (d2 < bestD2) { bestD2 = d2; best = e; }
+  }
+  return best;
+}
 
-  // visual
-  b.shockwaveAnims.push({
-    x: px, y: py,
-    r0: 0, r1: w.radius,
-    age: 0, life: SHOCKWAVE_VISUAL_LIFE_MS,
-    color: SHOCKWAVE_VISUAL_COLOR,
+function _spawnProjectile(x, y, target, w) {
+  const dx = target.x - x, dy = target.y - y;
+  const d  = Math.hypot(dx, dy) || 1;
+  const speed = w.speedPx;
+  state.battle.projectiles.push({
+    id: state.battle.nextEntityId++,
+    x, y,
+    vx: (dx / d) * speed,
+    vy: (dy / d) * speed,
+    r: PROJECTILE_RADIUS,
+    dmg: w.dmg,
+    color: w.color,
+    life: PROJECTILE_LIFE_MS,
+    age: 0,
   });
-
-  // damage (= 反復中 splice するので逆順走査)
-  const r2 = w.radius * w.radius;
-  for (let i = b.enemies.length - 1; i >= 0; i--) {
-    const e  = b.enemies[i];
-    const dx = e.x - px;
-    const dy = e.y - py;
-    if (dx * dx + dy * dy <= r2) {
-      e.hp -= w.dmg;
-      if (e.hp <= 0) {
-        spawnGem(e.x, e.y);
-        b.enemies.splice(i, 1);
-      }
-    }
-  }
-}
-
-/**
- * shockwave の視覚アニメ寿命管理。 age >= life で除去。
- */
-export function tickShockwaveAnims(dt) {
-  const arr = state.battle.shockwaveAnims;
-  const dms = dt * 1000;
-  for (let i = arr.length - 1; i >= 0; i--) {
-    arr[i].age += dms;
-    if (arr[i].age >= arr[i].life) arr.splice(i, 1);
-  }
 }
