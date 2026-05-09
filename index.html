@@ -91,7 +91,11 @@
     </section>
 
     <section class="stage">
-      <p data-i18n="stage.placeholder">ここにサバイバル本編が描画される</p>
+      <canvas id="battleCanvas" class="battle-canvas" aria-label="battle stage"></canvas>
+      <div id="joystick" class="joystick hidden" aria-hidden="true">
+        <div class="joystick__base"  id="joystickBase"></div>
+        <div class="joystick__stick" id="joystickStick"></div>
+      </div>
     </section>
   </main>
 

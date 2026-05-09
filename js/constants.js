@@ -47,6 +47,25 @@ export const XP_TO_NEXT_INITIAL  = 5;
 export const LEVEL_INITIAL       = 1;
 
 // ============================================================
+// 戦闘ステージ (= SPEC-006)
+// ============================================================
+export const BATTLE_GRID_SIZE   = 64;       // 背景グリッドの 1 マス px
+export const PLAYER_RADIUS      = 14;       // プレイヤー描画半径 px
+export const PLAYER_SPEED_PX_S  = 180;      // 移動速度 px/sec
+export const JOYSTICK_RADIUS    = 56;       // 仮想スティック最大偏倚 px
+export const JOYSTICK_DEADZONE  = 8;        // 中央デッドゾーン px
+
+// MCH 5 派閥 → CSS 色文字列 (= 戦闘描画用、 css 変数とほぼ同値)
+export const FACTION_COLOR = {
+  SEIRYU: "#5ecf8a",
+  SUZAKU: "#e76060",
+  BYAKKO: "#d4d4dc",
+  GENBU:  "#56ccf2",
+  KOURYU: "#f0c14b",
+};
+export const FACTION_COLOR_DEFAULT = "#c4a35a";
+
+// ============================================================
 // localStorage キー (= prefix を統一)
 // ============================================================
 export const LS_PREFIX = "mcs";   // MyCryptoSurvivor
