@@ -526,3 +526,79 @@
   .levelup-card__series-label { font-size: 0.62rem; }
   .levelup-card__lv { font-size: 0.7rem; }
 }
+
+/* ============================================================
+   Game Over modal (= SPEC-009)
+   ============================================================ */
+.gameover-modal {
+  position: fixed; inset: 0; z-index: 330;
+  background: rgba(15, 12, 22, 0.95);
+  display: flex; align-items: center; justify-content: center;
+  padding: 1rem;
+  animation: modal-fade-in 0.2s ease;
+}
+.gameover-modal.hidden { display: none !important; }
+
+.gameover-modal__card {
+  width: 100%; max-width: 400px;
+  background: linear-gradient(180deg, #2c2440 0%, var(--panel) 100%);
+  border: 2px solid var(--ifrit, #e76060);
+  border-radius: 14px;
+  padding: 1.2rem 1.1rem;
+  display: flex; flex-direction: column;
+  gap: 1rem;
+  text-align: center;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+  animation: modal-pop-in 0.22s cubic-bezier(.2, .8, .4, 1);
+}
+
+.gameover-modal__title {
+  margin: 0;
+  color: var(--ifrit, #e76060);
+  font-size: 1.4rem;
+  letter-spacing: 0.1em;
+}
+
+.gameover-modal__stats {
+  display: flex; flex-direction: column;
+  gap: 0.25rem;
+  color: var(--text);
+  font-size: 0.95rem;
+  font-variant-numeric: tabular-nums;
+}
+.gameover-stat { line-height: 1.4; }
+
+.gameover-modal__form {
+  display: flex; flex-direction: column;
+  gap: 0.5rem;
+}
+.gameover-form__label {
+  color: var(--muted);
+  font-size: 0.78rem;
+  text-align: left;
+  letter-spacing: 0.04em;
+}
+.gameover-form__input {
+  appearance: none;
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.55rem 0.7rem;
+  font-size: 0.95rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+.gameover-form__input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 0;
+}
+.gameover-form__msg {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  min-height: 1em;
+}
+.gameover-modal__retry {
+  margin-top: 0.3rem;
+}

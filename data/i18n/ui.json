@@ -34,6 +34,18 @@
   "levelup.delta":       { "ja": "Lv.{cur} → Lv.{next}",            "en": "Lv.{cur} → Lv.{next}" },
   "ext.new":             { "ja": "NEW",                             "en": "NEW" },
 
+  "gameover.title":      { "ja": "ゲームオーバー",                  "en": "Game Over" },
+  "gameover.elapsed":    { "ja": "経過時間: {time}",                "en": "Time: {time}" },
+  "gameover.level":      { "ja": "Lv.: {n}",                        "en": "Lv.: {n}" },
+  "gameover.kills":      { "ja": "撃破数: {n}",                     "en": "Kills: {n}" },
+  "gameover.namelabel":  { "ja": "プレイヤー名",                    "en": "Player Name" },
+  "gameover.submit":     { "ja": "ランキングに送信",                "en": "Submit Score" },
+  "gameover.submitting": { "ja": "送信中…",                          "en": "Submitting…" },
+  "gameover.submitOk":   { "ja": "送信完了",                        "en": "Submitted!" },
+  "gameover.submitFail": { "ja": "送信失敗: {err}",                  "en": "Submit failed: {err}" },
+  "gameover.retry":      { "ja": "リトライ",                        "en": "Retry" },
+  "gameover.noApi":      { "ja": "ランキング API 未設定",             "en": "Ranking API not configured" },
+
   "btn.close":           { "ja": "閉じる",                         "en": "Close" },
   "btn.confirm":         { "ja": "確認",                           "en": "Confirm" },
   "btn.cancel":          { "ja": "キャンセル",                     "en": "Cancel" },

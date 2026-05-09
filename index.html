@@ -100,6 +100,28 @@
   </main>
 
   <!-- ============================================================ -->
+  <!-- Game Over modal (= SPEC-009)                                   -->
+  <!-- ============================================================ -->
+  <div id="gameOverModal" class="gameover-modal hidden" role="dialog" aria-modal="true"
+       aria-labelledby="gameOverTitle">
+    <div class="gameover-modal__card">
+      <h2 class="gameover-modal__title" id="gameOverTitle" data-i18n="gameover.title">ゲームオーバー</h2>
+      <div class="gameover-modal__stats">
+        <div class="gameover-stat" id="gameOverElapsed"></div>
+        <div class="gameover-stat" id="gameOverLevel"></div>
+        <div class="gameover-stat" id="gameOverKills"></div>
+      </div>
+      <div class="gameover-modal__form">
+        <label class="gameover-form__label" for="gameOverName" data-i18n="gameover.namelabel">プレイヤー名</label>
+        <input class="gameover-form__input" id="gameOverName" type="text" maxlength="30" autocomplete="off" />
+        <button class="btn btn--secondary" id="gameOverSubmit" data-i18n="gameover.submit">ランキングに送信</button>
+        <p class="gameover-form__msg" id="gameOverMsg" aria-live="polite"></p>
+      </div>
+      <button class="btn gameover-modal__retry" id="gameOverRetry" data-i18n="gameover.retry">リトライ</button>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
   <!-- Level-up modal (= SPEC-008、 starter pick + LV up)              -->
   <!-- ============================================================ -->
   <div id="levelUpModal" class="levelup-modal hidden" role="dialog" aria-modal="true"
