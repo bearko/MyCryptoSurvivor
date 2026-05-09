@@ -13,6 +13,18 @@
   "hero.select.placeholder": { "ja": "Hero {n}",                  "en": "Hero {n}" },
   "hero.select.cta":         { "ja": "冒険を始める",               "en": "Begin Survival" },
   "hero.select.empty":       { "ja": "ヒーローを選択してください", "en": "Select a hero to continue" },
+  "hero.select.imgAlt":      { "ja": "{name} のポートレート",      "en": "Portrait of {name}" },
+
+  "hero.element.garuda":     { "ja": "風",                         "en": "Wind" },
+  "hero.element.ifrit":      { "ja": "火",                         "en": "Fire" },
+  "hero.element.leviathan":  { "ja": "水",                         "en": "Water" },
+  "hero.element.tiamat":     { "ja": "土",                         "en": "Earth" },
+
+  "hero.rarity.Common":      { "ja": "コモン",                     "en": "Common" },
+  "hero.rarity.Uncommon":    { "ja": "アンコモン",                 "en": "Uncommon" },
+  "hero.rarity.Rare":        { "ja": "レア",                       "en": "Rare" },
+  "hero.rarity.Epic":        { "ja": "エピック",                   "en": "Epic" },
+  "hero.rarity.Legendary":   { "ja": "レジェンダリー",             "en": "Legendary" },
 
   "btn.close":           { "ja": "閉じる",                         "en": "Close" },
   "btn.confirm":         { "ja": "確認",                           "en": "Confirm" },
