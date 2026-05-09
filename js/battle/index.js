@@ -21,6 +21,7 @@ import { tickProjectiles } from "./projectiles.js";
 import { tickGems } from "./gems.js";
 import { triggerStarterPick } from "./levelup.js";
 import { renderBattle } from "./render.js";
+import { getHeroSprite, getDefaultEnemySprite } from "./sprites.js";
 
 let _canvas = null;
 let _ctx = null;
@@ -52,6 +53,10 @@ export function startBattle(hero) {
   b.player.color = FACTION_COLOR[hero?.faction] ?? FACTION_COLOR_DEFAULT;
   b.camera.x = 0;
   b.camera.y = 0;
+
+  // SPEC-010: hero / 敵の sprite preload (= 描画は ready 待ち、 fallback は単色円)
+  b.playerSprite       = getHeroSprite(hero);
+  b.defaultEnemySprite = getDefaultEnemySprite();
 
   // SPEC-007 / SPEC-008 / SPEC-009: 戦闘世界をクリーンに reset
   b.enemies.length     = 0;
