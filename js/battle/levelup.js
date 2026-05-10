@@ -7,7 +7,7 @@
 
 import { state, pauseTime, resumeTime } from "../state.js";
 import {
-  EXT_ROSTER, extImg, getExt, getCategory,
+  EXT_ROSTER, extImg, extTierImg, getExt, getCategory,
   getTierName, getSkillName, getSkillDesc,
 } from "../extensions.js";
 import {
@@ -213,7 +213,7 @@ export function renderLevelUpModal() {
     const iconImg = document.createElement("img");
     iconImg.className = "levelup-card__icon";
     iconImg.alt = tierName;
-    iconImg.src = extImg(opt.ext);
+    iconImg.src = extTierImg(opt.ext, opt.nextLevel);   // SPEC-021: 次 tier の icon を表示
     iconImg.loading = "lazy";
     iconImg.onerror = () => {
       iconImg.classList.add("levelup-card__icon--missing");

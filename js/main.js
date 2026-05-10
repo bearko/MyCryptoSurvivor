@@ -14,7 +14,7 @@ import {
   HERO_STARTING_WEAPON, HERO_STARTING_WEAPON_DEFAULT,
 } from "./constants.js";
 import {
-  getExt, extImg,
+  getExt, extImg, extTierImg,
   getTierName, getSkillName, getSkillDesc,
 } from "./extensions.js";
 import {
@@ -302,7 +302,7 @@ function renderHeroDetail(heroId) {
   if (ext) {
     if (wIcon) {
       wIcon.classList.remove("hero-detail__weapon-icon--missing");
-      wIcon.src = extImg(ext);
+      wIcon.src = extTierImg(ext, 1);   // SPEC-021: 開始時は Lv.1 (Common) icon
       wIcon.alt = getTierName(ext, 1, lang);
     }
     if (wName)  wName.textContent  = getTierName(ext, 1, lang);
