@@ -193,3 +193,10 @@ export const BGM_BATTLE = "Audio/SE/pvp.mp3";
 // SPEC-019: XP gem アイコン (= MCH 公式 CE icon)
 // ============================================================
 export const GEM_ICON_PATH = "Image/Icons/ce.png";
+
+// ============================================================
+// SPEC-023: ピッカーストック上限 + リロール
+// ============================================================
+export const STOCK_LIMIT_WEAPON = 5;   // 武器系列の最大装備数
+export const STOCK_LIMIT_BUFF   = 5;   // 強化系列の最大装備数
+export const REROLL_PER_BATTLE  = 2;   // 1 戦闘あたりリロール可能回数

@@ -14,6 +14,7 @@ import {
   STATS_INITIAL, STATS_MAX,
   HERO_STARTING_WEAPON, HERO_STARTING_WEAPON_DEFAULT,
   HERO_HP_BASE, HERO_HP_PER_STAT, HERO_SPEED_BASE, HERO_SPEED_PER_AGI,
+  REROLL_PER_BATTLE,
 } from "../constants.js";
 import { getExt, getCategory } from "../extensions.js";
 import { installInput, getInputVector } from "./input.js";
@@ -83,6 +84,7 @@ export function startBattle(hero) {
   b.lastEnemySpawnMs   = performance.now();
   b.contactCooldownMs  = 0;
   b.gameOver           = false;                 // SPEC-009: 多重 trigger 防止 flag
+  b.rerollsLeft        = REROLL_PER_BATTLE;     // SPEC-023: picker リロール残数
   state.ownedExtensions = [];                   // SPEC-008: 装備リセット
   state.killCount       = 0;                    // SPEC-009: 撃破カウンタ
   state.lastRunStats    = null;                 // SPEC-009: snapshot

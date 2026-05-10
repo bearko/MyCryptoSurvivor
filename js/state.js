@@ -66,6 +66,7 @@ export const state = {
     lastEnemySpawnMs: 0,
     contactCooldownMs: 0, // > 0 のあいだ被弾しない
     gameOver:       false, // SPEC-009: HP 0 検出後 true、 多重 trigger 防止
+    rerollsLeft:    2,     // SPEC-023: 1 戦闘あたり picker リロール可能回数
   },
 
   // SPEC-008: 装備 extension + Level-up pick モーダル状態
