@@ -32,13 +32,27 @@ export function renderBattle(ctx) {
   // グリッド (= ステージ全体に薄く重ねて方向感覚補助)
   _drawGrid(ctx, camera, w, h);
 
-  // SPEC-012 / SPEC-015: bombs (= icon 描画 + 残時間 70% 超で点滅、 AoE 範囲を線で示唆)
+  // SPEC-012 / SPEC-015 / SPEC-031: bombs (= 赤い半透明円で当たり判定を可視化 + icon + 点滅)
   for (const b of bombs) {
     const sx = b.x - camera.x;
     const sy = b.y - camera.y;
     const R = b.radius;
     if (sx + R < 0 || sx - R > w || sy + R < 0 || sy - R > h) continue;
     const t = b.age / b.fuseMs;
+    // SPEC-031: AoE 範囲を赤の半透明 fill で表示 (= 着弾前に視認できる)、 fuse 後半で点滅濃度 UP
+    const fillAlpha = (t > 0.7 ? 0.32 : 0.22) + (t > 0.7 ? 0.08 * Math.abs(Math.sin(b.age / 60)) : 0);
+    ctx.globalAlpha = fillAlpha;
+    ctx.fillStyle = "#e76060";
+    ctx.beginPath();
+    ctx.arc(sx, sy, R, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 0.6;
+    ctx.strokeStyle = "#ff8a8a";
+    ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    ctx.arc(sx, sy, R, 0, Math.PI * 2);
+    ctx.stroke();
+    // 中央のアイコン (= 既存挙動)
     const blink = t > 0.7 ? 0.4 + 0.6 * Math.abs(Math.sin(b.age / 60)) : 0.85;
     ctx.globalAlpha = blink;
     let drew = false;
@@ -52,12 +66,6 @@ export function renderBattle(ctx) {
       ctx.arc(sx, sy, 8, 0, Math.PI * 2);
       ctx.fill();
     }
-    ctx.globalAlpha = 0.18;
-    ctx.strokeStyle = b.color;
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(sx, sy, R, 0, Math.PI * 2);
-    ctx.stroke();
     ctx.globalAlpha = 1;
   }
 
