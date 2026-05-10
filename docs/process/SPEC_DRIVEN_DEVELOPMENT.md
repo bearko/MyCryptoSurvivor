@@ -195,3 +195,57 @@ specs/
 ```
 
 `SPEC-001` で「このプロジェクトの Charter (= ゴール)」 を確定し、 `SPEC-002` 以降でゲーム機能を一個ずつ刻んでいく。
+
+## 11. SPEC-INDEX / CHANGELOG の自動生成 (= SPEC-032)
+
+並列 PR で `SPEC-INDEX.md` と `CHANGELOG.md` の同じ行を取り合って毎回コンフリクトしていた問題を解消するため、 両ファイルは **SPEC ファイルの YAML frontmatter** と **per-SPEC の changelog fragment** から自動生成する。
+
+### 11.1 ワークフロー
+
+新規 SPEC PR では:
+
+1. `docs/specs/SPEC-NNN-<topic>.md` を新規作成。 冒頭に YAML frontmatter:
+
+   ```yaml
+   ---
+   id: SPEC-NNN
+   title: 短いタイトル (= INDEX 表に出る、 SPEC タイトル本文と一致させる)
+   status: Implementing       # Done / Cancelled に随時更新
+   pr: feat/spec-NNN-topic    # PR 採番後に "39" 等の数値に更新
+   phase: Phase 0 / Phase 1
+   kind: Added                # Added / Changed / Fixed / Removed (CHANGELOG 見出し)
+   ---
+   ```
+
+2. `docs/changelog/SPEC-NNN.md` を新規作成 (= bullet list **のみ**、 見出し行は不要)。
+
+3. **`docs/specs/SPEC-INDEX.md` と `CHANGELOG.md` は触らない**。 それぞれの自動生成区間 (`<!-- BEGIN AUTO-* -->` ... `<!-- END AUTO-* -->`) の中身は、 後段で再生成される。
+
+### 11.2 PR マージ後の手当て
+
+マージ後、 自分の SPEC frontmatter を更新するために 1 行 PR を出すか、 メンテナーが定期的に:
+
+```sh
+node tools/build-spec-index.mjs
+node tools/build-changelog.mjs
+```
+
+を実行して両ファイルを最新化する。 ツールは純 Node ESM (= 依存なし)、 コミットを 1 個追加するだけ。
+
+### 11.3 並列 PR の衝突は構造的に不可能
+
+PR-A と PR-B が同時に進んでいても:
+
+- 各々が編集するのは **自身の SPEC ファイル** と **自身の fragment ファイル** のみ
+- `SPEC-INDEX.md` / `CHANGELOG.md` は誰も編集しない (= 自動生成されたマーカー間)
+
+→ ファイル単位で衝突源が分離される。 旧来の fresh-branch 戦略はもう不要。
+
+### 11.4 行き先の対応表
+
+| 旧来 (= 衝突あり) | 新ワークフロー |
+|---|---|
+| CHANGELOG.md の `[Unreleased]` 先頭に直接エントリ追加 | `docs/changelog/SPEC-NNN.md` を新規作成 |
+| SPEC-INDEX.md の表に行追加 + 既存 SPEC を `Implementing → Done` に flip | SPEC ファイルの frontmatter を更新するだけ |
+| `merged in #N` の手書きアノテーション | `status: Done` + `pr: N` で自動付与 |
+

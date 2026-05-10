@@ -1,0 +1,6 @@
+- `docs/specs/SPEC-024-picker-card-category-and-lv1-fix.md` 新規 (= ピッカーカード上端にカテゴリ見出し追加、 全 19 系列 Lv.1 効果監査、 Oriflamme Lv.1 magnitude 0 → 1)
+- `js/battle/levelup.js`: `renderLevelUpModal` で各カード先頭に `.levelup-card__cat` を挿入 (= weapon → 「武器エクステ」、 buff → 「強化エクステ」)
+- `data/i18n/ui.json`: `levelup.cat.weapon` / `levelup.cat.buff` 追加
+- `css/components.css`: `.levelup-card__cat` スタイル (= weapon = 赤系、 buff = 緑系)、 mobile breakpoint 対応
+- `data/extensions.json`: Oriflamme tierParams を `0/1/1/2/3` → `1/1/2/2/3` に補正 (= Lv.1 ゼロ効果解消、 Lv.5 ceiling +3 維持)
+- `docs/specs/SPEC-INDEX.md`: SPEC-023 を `#29 (merged)` に flip、 SPEC-024 を Implementing 登録

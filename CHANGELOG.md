@@ -4,7 +4,18 @@
 
 ## [Unreleased]
 
-### Changed — SPEC-031 (= Pierce + LaserGun Fix + Pierrot AoE + Horse Tune + Gunbai + Header Date Removal)
+<!-- BEGIN AUTO-UNRELEASED -->
+### Changed — SPEC-032 (= Changelog Fragments + Auto-Generated SPEC-INDEX)
+- **`tools/build-spec-index.mjs`** 新規 (= 純 Node ESM、 依存なし)。 全 `docs/specs/SPEC-*.md` の YAML frontmatter から `SPEC-INDEX.md` の表を再生成
+- **`tools/build-changelog.mjs`** 新規。 `docs/changelog/SPEC-NNN.md` (= bullet fragment) + SPEC frontmatter から `CHANGELOG.md` の `[Unreleased]` 区間を再生成
+- 全 31 既存 SPEC に YAML frontmatter (= `id` / `title` / `status` / `pr` / `phase` / `kind`) を追加
+- `[Unreleased]` の 30 SPEC エントリを `docs/changelog/SPEC-002.md` ~ `SPEC-031.md` に分割
+- `docs/specs/SPEC-INDEX.md` の表を `<!-- BEGIN AUTO-INDEX -->` ... `<!-- END AUTO-INDEX -->` マーカー間に変更
+- `CHANGELOG.md` の `[Unreleased]` を `<!-- BEGIN AUTO-UNRELEASED -->` ... `<!-- END AUTO-UNRELEASED -->` マーカー間に変更
+- `docs/process/SPEC_DRIVEN_DEVELOPMENT.md` 11 章を新設 (= 新ワークフロー + 自動生成手順)
+- `CLAUDE.md` 「作業の進め方」 に **触る / 触らないファイル** 表を追加
+
+### Changed — SPEC-031 (= Pierce + LaserGun Fix + Pierrot AoE + Horse Tune + Gunbai + Header Date Removal) — merged in #39
 - **Pierce 機構**: `_spawnProjectile` opts に `pierce`、 entity に `pierceLeft` + `hitIds` (Set)。 `tickProjectiles` 衝突で同 frame / 同弾の重複を防ぎつつ pierce > 0 中は次の敵もチェック。 `moaiDrop` は Gunbai 影響を受けない (= shockwave 多重防止)
 - **Panjandrum tier に `pierce`**: 1 / 2 / 3 / 4 / 5 を追加 (= Lv.1 で 2 体目消滅、 Lv.5 で 6 体目消滅)
 - **Gunbai 系列 (extId 20)** 新規: archetype `pierceUp`、 `state.buffs.pierceBonus` を加算、 tier magnitude 1 / 2 / 3 / 4 / 5。 MCH 1037 / 2037 / 3037 / 4037 / 5037
@@ -15,7 +26,7 @@
 - `docs/specs/SPEC-031-pierce-and-tweaks.md` 新規
 - `docs/specs/SPEC-INDEX.md`: SPEC-030 を `#38 (merged)` に flip、 SPEC-031 を Implementing 登録
 
-### Added — SPEC-030 (= Three-Stage System)
+### Added — SPEC-030 (= Three-Stage System (= node : アバカス / ホレリス / トロイ + ファオ / yamap ボス)) — merged in #38
 - 3 ステージ制を導入 (= **node : アバカス → ホレリス → トロイ** を順番に踏破、 ヒーロー引継ぎ / 武器リセット)
 - `data/enemies.json`: id **373** (覚醒魔王ファオ) と **1189** (yamap) を追加
 - `js/constants.js`:
@@ -46,14 +57,14 @@
 - `docs/specs/SPEC-030-three-stage-system.md` 新規
 - `docs/specs/SPEC-INDEX.md`: SPEC-029 を `#36 (merged)` に flip、 SPEC-030 を Implementing 登録
 
-### Added — SPEC-029 (= Logo Image + OG Thumbnail) — merged in #36
+### Added — SPEC-029 (= Logo Image + OG Thumbnail (= タイトル/スプラッシュ画像化 + X/OGP サムネ)) — merged in #36
 - `assets/logo.png` 追加 (= 2200×640、 タイトル / スプラッシュ用バナーロゴ)
 - `assets/og-image.png` 追加 (= 1280×720、 X / Twitter / Discord プレビュー用)
 - `index.html`: splash / title のテキストを `<img src="assets/logo.png">` 化、 OGP `og:image` を `assets/og-image.png` + `width`/`height` + `twitter:image`
 - `css/layout.css`: `.splash__logo` / `.title-screen__logo` を画像ロゴ向けに再設計
 - `docs/specs/SPEC-029-logo-and-og-image.md` 新規
 
-### Changed — SPEC-028 (= Orbit Redistribution + Per-Level Size Growth)
+### Changed — SPEC-028 (= Orbit Redistribution + Per-Level Size Growth (= Book/Blade 等間隔 + tier icon swap + Lv 連動拡大)) — merged in #35
 - `js/constants.js`: `WEAPON_SIZE_GROWTH_PER_LEVEL = 0.06` (= Lv 連動の当たり / icon サイズ倍率、 Lv.5 で +24%)
 - `js/battle/archetypes.js`:
   - `_levelSizeMul(w)` 新規 (= 1 + GROWTH × (level - 1))
@@ -63,13 +74,13 @@
 - `docs/specs/SPEC-028-orbit-redistribute-and-size-growth.md` 新規
 - `docs/specs/SPEC-INDEX.md`: SPEC-027 を `#34 (merged)` に flip、 SPEC-028 を Implementing 登録
 
-### Changed — SPEC-027 (= Clear Title on Win Conditions) — merged in #34
+### Changed — SPEC-027 (= Clear Title on Win Conditions (= ボス撃破 / 5 分耐久 で 「クリア!」 表記)) — merged in #34
 - `data/i18n/ui.json`: `gameover.titleClear` 追加 (= 「クリア!」 / 「Clear!」)
 - `js/battle/gameover.js`: `triggerGameOver(reason)` で `state.lastRunStats.reason` を保存、 `_renderGameOverModal` で reason="clear" のときタイトルを `gameover.titleClear` に差し替え
 - `docs/specs/SPEC-027-clear-title-on-win.md` 新規
 - `docs/specs/SPEC-INDEX.md`: SPEC-026 を `#33 (merged)` に flip、 SPEC-027 を Implementing 登録
 
-### Added — SPEC-026 (= Balance Tuning + Bounded Stage with Background) — merged in #33
+### Added — SPEC-026 (= Balance Tuning + Bounded Stage with Background (= XP / Gyoku / 1001.png + dim overlay)) — merged in #33
 - `js/constants.js`:
   - `XP_TO_NEXT_INITIAL` `5` → **4**、 `XP_TO_NEXT_GROWTH` `1.5` → **1.3** (= レベルアップ頻度 UP)
   - `ENEMY_SPECS` 各 entry に `xpValue` を追加 (= 1 / 2 / 4 / 7 / 60、 強敵ほど多)
@@ -84,7 +95,7 @@
 - `docs/specs/SPEC-026-balance-and-stage-bg.md` 新規 (= 設計 + 受入基準)
 - `docs/specs/SPEC-INDEX.md`: SPEC-025 を `#32 (merged)` に flip、 SPEC-026 を Implementing 登録
 
-### Fixed — SPEC-025 (= Audio paths aligned to MCH catalog) — merged in #32
+### Fixed — SPEC-025 (= Fix Audio Paths (= MCH カタログ実体に整合、 404 → 200)) — merged in #32
 - `js/constants.js`: SFX 9 件 + `BGM_BATTLE` のパスを MCH 実体に合わせて修正 (= 全 10 件 404 → 200)
   - `BGM_BATTLE` `Audio/SE/pvp.mp3` → **`Audio/BGM/pvp.mp3`**
   - `HERO_PICK` / `GEM_PICKUP` / `LEVEL_UP` / `PICK_WEAPON` を `Audio/SE/Actions/` 配下へ
@@ -93,7 +104,7 @@
 - `docs/specs/SPEC-025-fix-audio-paths.md` 新規 (= MCH 実構造表 + 旧→新パス対応表)
 - `docs/specs/SPEC-INDEX.md`: SPEC-024 を `#31 (merged)` に flip、 SPEC-025 を Implementing 登録
 
-### Added — SPEC-024 (= Picker Card Category Label + Lv.1 Effect Audit) — merged in #31
+### Added — SPEC-024 (= Picker Card Category Label + Lv.1 Effect Audit (= Oriflamme +0 → +1)) — merged in #31
 - `docs/specs/SPEC-024-picker-card-category-and-lv1-fix.md` 新規 (= ピッカーカード上端にカテゴリ見出し追加、 全 19 系列 Lv.1 効果監査、 Oriflamme Lv.1 magnitude 0 → 1)
 - `js/battle/levelup.js`: `renderLevelUpModal` で各カード先頭に `.levelup-card__cat` を挿入 (= weapon → 「武器エクステ」、 buff → 「強化エクステ」)
 - `data/i18n/ui.json`: `levelup.cat.weapon` / `levelup.cat.buff` 追加
@@ -101,7 +112,7 @@
 - `data/extensions.json`: Oriflamme tierParams を `0/1/1/2/3` → `1/1/2/2/3` に補正 (= Lv.1 ゼロ効果解消、 Lv.5 ceiling +3 維持)
 - `docs/specs/SPEC-INDEX.md`: SPEC-023 を `#29 (merged)` に flip、 SPEC-024 を Implementing 登録
 
-### Added — SPEC-023 (= Picker Stock Limit + Reroll) — merged in #29
+### Added — SPEC-023 (= Picker Stock Limit (= 武器 5 / 強化 5) + Reroll (= 1戦 2回)) — merged in #29
 - `docs/specs/SPEC-023-picker-stock-and-reroll.md` 新規 (= 武器 5 / 強化 5 のストック上限 + 1 戦 2 回のリロール)
 - `js/constants.js`: `STOCK_LIMIT_WEAPON=5` / `STOCK_LIMIT_BUFF=5` / `REROLL_PER_BATTLE=2`
 - `js/state.js`: `state.battle.rerollsLeft`
@@ -122,7 +133,7 @@
 - `js/battle/damage.js`: ボス撃破時に `bossDefeated=true` (= clear trigger)
 - `js/battle/index.js`: startBattle で stage timing reset
 
-### Added — SPEC-021 (= Per-Tier Extension Icons + Names) — merged in #25
+### Added — SPEC-021 (= Per-Tier Extension Icons + Names (= MCH 公式準拠、 1xxx → 5xxx)) — merged in #25
 - `docs/specs/SPEC-021-per-tier-icons-and-names.md` 新規 (= MCH 公式の +1000 ルールで 19 系列 × 5 tier の icon と名前を完全準拠)
 - `data/extensions.json`: 全 19 entry に `tierIconIds[5]` 追加 + `tierNames[5]` を MCH 公式名で上書き (= 95/95 hit)
 - `js/extensions.js`: `extTierImg(ext, level)` 新規 export (= ext.tierIconIds[level-1] → URL)
@@ -131,18 +142,19 @@
 - `js/battle/levelup.js`: カード icon に `extTierImg(opt.ext, opt.nextLevel)` (= ピック後の見た目をプレビュー)
 - 戦闘中の投射体 / 周回 / bomb は LV up と同時に新 tier の icon に切替
 
-### Added — SPEC-020 (= Extension Icon Fix with user-provided MCH IDs)
+### Added — SPEC-020 (= Extension Icon Fix (= ユーザー指定 MCH ID で全系列を完全一致)) — merged in #24
 - `docs/specs/SPEC-020-fix-icons-with-user-mapping.md` 新規 (= ユーザー指定の MCH Common id で 10 系列 + Knife を完全一致 icon に修正)
 - `data/extensions.json`: 11 entry の `iconId` 更新
   - Panjandrum 1023→**1153** (Wooden Panjandrum) / Moai 1018→**1106** / Shuriken 1014→**1124** / LaserGun 1002→**1130** (Raygun) / Knife 1028→**1048** / Pierrot 1032→**1063** / Ramen 1030→**1154** / Apple 1033→**1159** / Oriflamme 1016→**1140** / Specimen 1019→**1169** / Gyoku 1009→**1098** (Orb)
 - 残り 8 系列 (Revolver/Book/Axe/Blade/Armor/Boots/Horse/Shield) は SPEC-018 で既に完全一致のため変更なし
 - `docs/specs/SPEC-INDEX.md`: SPEC-019 を Done (= #23 merged) に flip、 SPEC-020 を Implementing 登録
 
-### Added — SPEC-019 Phase 0 (= 2 New Buff Series + Revolver/Blade Tweaks + XP Gem Icon spec)
+### Added — SPEC-019 (= 2 New Buff Series + Revolver/Blade Tweaks + XP Gem Icon) — merged in #23
+**Added Phase 0 (= 2 New Buff Series + Revolver/Blade Tweaks + XP Gem Icon spec)**
 - `docs/specs/SPEC-019-new-buffs-revolver-blade-gem.md` 新規 (= 液浸標本 attackRangeUp + ギョク pickupRangeUp の 2 buff 追加 / Revolver の projectileIconId=null + Lv.1 弾数 1 / Blade orbit を Book の半分以下に / 経験値 gem アイコンを Image/Icons/ce.png に差し替え)
 - `docs/specs/SPEC-INDEX.md`: SPEC-018 を `#21 (merged)` に flip、 SPEC-019 を Implementing 登録
 
-### Planned — SPEC-019 Phase 1 (= 実装)
+**Planned Phase 1 (= 実装)**
 - `js/constants.js`: `GEM_ICON_PATH = "Image/Icons/ce.png"`
 - `js/state.js`: `state.buffs.rangeMul = 1` / `state.buffs.pickupMul = 1` 追加
 - `js/battle/buffs.js`: `attackRangeUp` / `pickupRangeUp` archetype を switch + `resetBuffs` で初期化
@@ -157,13 +169,15 @@
   - Revolver: `projectileIconId: null` + tierParams.bullets を 1/2/3/4/6 に
   - Blade: tierParams.orbitR を 32/34/36/38/40 に
 
-### Added — SPEC-018 Phase 0 / Phase 1 (= Extension Icon Mapping Fix) — merged in #21
+### Added — SPEC-018 (= Extension Icon Mapping Fix (= 名前と icon の不一致解消)) — merged in #21
+**Added Phase 0 / Phase 1 (= Extension Icon Mapping Fix) — merged in #21**
 
-### Added — SPEC-017 Phase 0 (= Sound Effects + BGM Wiring spec)
+### Added — SPEC-017 (= Sound Effects + BGM Wiring) — merged in #19
+**Added Phase 0 (= Sound Effects + BGM Wiring spec)**
 - `docs/specs/SPEC-017-audio-and-bgm.md` 新規 (= タイトル click → tooldev、 戦闘 BGM pvp loop、 被弾 1_single_damage、 gem 拾得 crash、 LV up open_treasure、 武器 pick insp、 buff (回復以外) 4_buff、 回復 (Armor/Ramen) 3_heal_resurrection、 lose / win)
 - `docs/specs/SPEC-INDEX.md`: SPEC-013〜SPEC-016 を Done (= マージ済 #15-#18) に flip、 SPEC-017 を Implementing 登録
 
-### Planned — SPEC-017 Phase 1 (= 実装)
+**Planned Phase 1 (= 実装)**
 - `js/constants.js`: `SFX.*` 9 パス + `BGM_BATTLE` 追加
 - `js/audio.js`: `unlockAudio()` を新規 export (= 初回 user gesture で autoplay policy 解除)
 - `js/main.js`: dismissTitle で `unlockAudio()`、 applyHeroPick で `tooldev.mp3`
@@ -173,10 +187,11 @@
 - `js/battle/levelup.js`: open 時 `open_treasure.mp3`、 applyPick で weapon=insp / heal=3_heal / その他 buff=4_buff
 - `js/battle/gameover.js`: triggerGameOver(reason) で BGM 停止 + lose / win 分岐
 
-### Added — SPEC-016 Phase 0 (= HP Bars + Damage Numbers + Hit Freeze spec)
+### Added — SPEC-016 (= HP Bars + Damage Numbers + Hit Freeze) — merged in #18
+**Added Phase 0 (= HP Bars + Damage Numbers + Hit Freeze spec)**
 - `docs/specs/SPEC-016-hp-bars-and-damage-feedback.md` 新規 (= player + enemy アイコン下に HP バー、 満タン非表示、 数値なし、 ダメージ数字 floater、 hit freeze 100ms)
 
-### Planned — SPEC-016 Phase 1 (= 実装)
+**Planned Phase 1 (= 実装)**
 - `js/constants.js`: `DAMAGE_NUMBER_*` / `HIT_FREEZE_MS` / `HP_BAR_*`
 - `js/battle/damage.js` 新規 (= `hitEnemy(enemy, dmg)` / `pushDamageNumber` / `tickDamageNumbers`)
 - `js/state.js`: `state.battle.damageNumbers` 追加、 enemy entity に `hitFreezeMs`
@@ -185,10 +200,11 @@
 - `js/battle/index.js` _loop: `tickDamageNumbers` 配線、 startBattle で reset
 - `js/battle/render.js`: `_drawHpBar` (= 満タン非表示 + 緑/黄/赤 ratio 色)、 ダメージ数字を fillText + strokeText で描画
 
-### Added — SPEC-015 Phase 0 (= Extension Visual Icons + Weapon Balance + Moai Homing/Shockwave spec)
+### Added — SPEC-015 (= Extension Visual Icons + Weapon Balance + Moai Homing/Shockwave) — merged in #17
+**Added Phase 0 (= Extension Visual Icons + Weapon Balance + Moai Homing/Shockwave spec)**
 - `docs/specs/SPEC-015-ext-visuals-balance-moai.md` 新規 (= 投射体/周回/爆弾を icon 描画 + Knife 45° offset + 武器威力底上げ + Moai 追従 + 着弾衝撃波)
 
-### Planned — SPEC-015 Phase 1 (= 実装)
+**Planned Phase 1 (= 実装)**
 - `js/battle/sprites.js` 拡張: `getExtSprite(extOrId)` + `drawSpriteRotated(ctx, entry, cx, cy, size, angle)`
 - `js/battle/extensions-as-weapons.js`: weapon spec に iconId を含める
 - `js/battle/archetypes.js`: 各 fireXxx で iconId / iconRotOffset を渡す、 Knife は π/4、 Moai に moaiTargetId / moaiAoeR / moaiAoeDmg
@@ -198,11 +214,12 @@
 - `js/battle/render.js`: projectiles / orbits / bombs を icon 描画化、 shockwave ring 描画
 - `data/extensions.json`: 全武器の Lv.1 dmg 底上げ (= Knife/Revolver/Axe 30、 Moai/Pierrot 25-35、 Panjandrum 60、 等)
 
-### Added — SPEC-014 Phase 0 (= Hero Selection Detail Panel + Per-Hero HP/Speed spec)
+### Added — SPEC-014 (= Hero Selection Detail Panel + Per-Hero HP/Speed Differentiation) — merged in #16
+**Added Phase 0 (= Hero Selection Detail Panel + Per-Hero HP/Speed spec)**
 - `docs/specs/SPEC-014-hero-detail-panel.md` 新規 (= ヒーロー選択モーダル上部に詳細パネル / hero.stats から HP 上限・移動速度を派生 / 担当 extension のアイコン+効果説明を表示)
 - `docs/specs/SPEC-INDEX.md`: SPEC-013 を `#15 (open)`、 SPEC-014 を Implementing 登録
 
-### Planned — SPEC-014 Phase 1 (= 実装)
+**Planned Phase 1 (= 実装)**
 - `js/constants.js`: `HERO_HP_BASE` / `HERO_HP_PER_STAT` / `HERO_SPEED_BASE` / `HERO_SPEED_PER_AGI`
 - `js/battle/index.js` `startBattle`: hero.stats から maxHp / speed を派生
 - `index.html`: `<div id="heroDetail">` を hero modal 内 grid 直前に追加
@@ -210,21 +227,23 @@
 - `data/i18n/ui.json`: `hero.detail.placeholder` / `hp` / `speed` / `starterWeapon`
 - `css/components.css`: `.hero-detail*` 一式
 
-### Added — SPEC-013 Phase 0 (= Hero Starter Weapon + Picker Rules spec)
+### Added — SPEC-013 (= Hero Starter Weapon (= Lv.1 固定割当) + Picker Rules (= 重複なし / weapon ≥ 1)) — merged in #15
+**Added Phase 0 (= Hero Starter Weapon + Picker Rules spec)**
 - `docs/specs/SPEC-013-hero-starter-weapon-and-picker-rules.md` 新規 (= 各ヒーローに固定の starter 武器を Lv.1 で装備 / starter pick モーダル撤去 / Level up picker で同系列重複禁止 / Level up picker に最低 1 weapon 枠を保証)
 - `docs/specs/SPEC-INDEX.md`: SPEC-012 を `#13 (open, also bundled in re-stack PR #14)` に、 SPEC-013 を Implementing 登録
 - 10 ヒーロー × 10 武器の 1:1 mapping を確定 (= キャラクター性に寄せた配置)
 
-### Planned — SPEC-013 Phase 1 (= 実装)
+**Planned Phase 1 (= 実装)**
 - `js/constants.js` に `HERO_STARTING_WEAPON` (= heroId → weapon extId) と `HERO_STARTING_WEAPON_DEFAULT = 1` 追加
 - `js/battle/index.js` `startBattle`: `triggerStarterPick()` 呼出を削除、 代わりに hero の starter weapon を `state.ownedExtensions` に push + `rebuildWeaponsFromOwned()`
 - `js/battle/levelup.js` `_samplePicks`: 重複防止 (= Set で usedIds 管理)、 最低 1 weapon (= weaponPool が空でない限り 1 つ確実に含める)、 結果を最終 shuffle で表示順ランダム化
 
-### Added — SPEC-012 Phase 0 (= 10 Weapon Archetype Behaviors spec)
+### Added — SPEC-012 (= 10 Weapon Archetype Behaviors (= radial / orbit / beam / placement / etc))
+**Added Phase 0 (= 10 Weapon Archetype Behaviors spec)**
 - `docs/specs/SPEC-012-weapon-archetypes.md` 新規 (= 武器 10 系列の固有挙動を archetype.js で実装、 新 entity orbits/beams/bombs を追加、 Oriflamme bulletCountBonus を全 archetype に反映)
 - `docs/specs/SPEC-INDEX.md`: SPEC-011 を `#12 (open)`、 SPEC-012 を Implementing 登録
 
-### Planned — SPEC-012 Phase 1 (= 実装)
+**Planned Phase 1 (= 実装)**
 - `js/state.js`: `state.battle.orbits` / `beams` / `bombs` を追加、 startBattle で reset
 - `js/battle/archetypes.js` 新規 (= fireRadial / fireBigHoming / fireDropTarget / fireStack / fireBeam / fireDiagonal / fireRandomRadial / firePlaceBomb / fireHoming + ensureOrbits + tickOrbits + tickBeams + tickBombs + tickHomingProjectiles)
 - `js/battle/weapons.js`: archetype dispatcher 化
@@ -232,11 +251,12 @@
 - `js/battle/index.js` _loop: tickHomingProjectiles → tickProjectiles → tickOrbits → tickBeams → tickBombs の順で配線
 - `js/battle/render.js`: orbits / beams / bombs の描画追加
 
-### Added — SPEC-011 Phase 0 (= Extension Schema Overhaul 17×5 + Buff Archetype spec)
+### Added — SPEC-011 (= Extension Schema Overhaul (17 系列 × 5 段階) + Buff Archetype)
+**Added Phase 0 (= Extension Schema Overhaul 17×5 + Buff Archetype spec)**
 - `docs/specs/SPEC-011-extension-tiers-and-buffs.md` 新規 (= 武器 10 系列 + 強化 7 系列 × 5 段階レアリティ。 ピックで tier 昇格 = 名前/スキル名/効果説明が変化。 Buff 7 種が即時効果。 武器固有挙動は SPEC-012 で扱う)
 - `docs/specs/SPEC-INDEX.md`: SPEC-010 を `#11 (open)`、 SPEC-011 を Implementing 登録
 
-### Planned — SPEC-011 Phase 1 (= 実装)
+**Planned Phase 1 (= 実装)**
 - `data/extensions.json` v2: 17 系列 × tierNames[5] / skillName / skillDescTpl / tierParams[5] / archetype / category
 - `js/extensions.js`: ローダ更新、 `getTierName(ext, level, lang)` / `getSkillDesc(ext, level, lang)` / `getCategory(ext)` 追加
 - `js/state.js`: `state.buffs = {hpMaxBonus, regenPerSec, speedMul, cdMul, dmgTakenMul, dmgMul, bulletCountBonus}`、 startBattle で reset
@@ -248,12 +268,13 @@
 - `js/battle/weapons.js`: cdMul / dmgMul 適用
 - `js/battle/enemies.js`: dmgTakenMul 適用
 
-### Added — SPEC-010 Phase 0 (= Mobile Viewport Fit + Hero/Enemy Sprites + Ext Icon/Effect spec)
+### Added — SPEC-010 (= Mobile Viewport Fit + Hero/Enemy Sprites + Ext Icon/Effect in Level-up Card)
+**Added Phase 0 (= Mobile Viewport Fit + Hero/Enemy Sprites + Ext Icon/Effect spec)**
 - `docs/specs/SPEC-010-mobile-viewport-and-sprites.md` 新規 (= モバイル full-screen 化 / プレイヤー & 敵を MCH 画像で円形クリップ描画 / Level up カードに extension アイコン + 効果テキスト追加)
 - `docs/specs/SPEC-INDEX.md`: SPEC-009 を `#10 (open)` に、 SPEC-010 を Implementing 登録
 - 17 系列 × 5 段階の本格再設計 (= SPEC-011) の前段の **視覚 / レイアウト 改修のみ** に絞る
 
-### Planned — SPEC-010 Phase 1 (= 実装)
+**Planned Phase 1 (= 実装)**
 - `css/base.css` / `css/layout.css` / `css/components.css`: `html/body { height:100% }`, `.app { height:100dvh; overflow:hidden }`, `.battle-canvas { position:absolute; inset:0 }` で mobile full-screen
 - `js/battle/sprites.js` 新規 (= preload 画像キャッシュ + `drawSpriteCircular`)
 - `js/state.js`: `state.battle.playerSprite` / `defaultEnemySprite` 追加
@@ -263,12 +284,13 @@
 - `data/i18n/ui.json`: `levelup.weaponEffect` 追加
 - `css/components.css`: `.levelup-card` を grid + icon + effect 表示用に再設計
 
-### Added — SPEC-009 Phase 0 (= Game Over + Retry + Ranking Submit spec)
+### Added — SPEC-009 (= Game Over + Retry + Ranking Submit (= MVP 完了、 死んだら終わる + もう 1 回))
+**Added Phase 0 (= Game Over + Retry + Ranking Submit spec)**
 - `docs/specs/SPEC-009-game-over.md` 新規 (= HP 0 で Game Over モーダル + 経過時間 / Lv / 撃破数 表示 + プレイヤー名入力 + 既存 submitScore() 経由でランキング送信 + リトライボタン)
 - `docs/specs/SPEC-INDEX.md`: SPEC-008 を `#9 (open)` に、 SPEC-009 を Implementing 登録
 - これにより VS-like MVP 完了 (= 「死んだら終わる」 + 「もう 1 回」)
 
-### Planned — SPEC-009 Phase 1 (= 実装)
+**Planned Phase 1 (= 実装)**
 - `js/state.js`: `state.killCount` / `state.battle.gameOver` / `state.lastRunStats` 追加
 - `js/battle/projectiles.js`: 敵撃破時 `state.killCount++`
 - `js/battle/enemies.js`: 接触ダメージ後 HP <= 0 で `triggerGameOver()`
@@ -278,11 +300,12 @@
 - `data/i18n/ui.json`: `gameover.*` 11 キー追加
 - `css/components.css`: `.gameover-modal*` / `.gameover-form*` / `.gameover-stat`
 
-### Added — SPEC-008 Phase 0 (= Extensions as Weapons + Level-Up Picker Modal spec)
+### Added — SPEC-008 (= Extensions as Weapons + Level-Up Picker Modal (= スキル = extension、 投射体武器化))
+**Added Phase 0 (= Extensions as Weapons + Level-Up Picker Modal spec)**
 - `docs/specs/SPEC-008-extensions-as-weapons.md` 新規 (= 仮 shockwave 撤去 + EXT_ROSTER を投射体武器化 + Level up モーダル + 3 択ピック + starter pick + ext.stats 由来の dmg/cd/range/projSpeed)
 - `docs/specs/SPEC-INDEX.md`: SPEC-007 を `#8 (open)` に、 SPEC-008 を Implementing 登録
 
-### Planned — SPEC-008 Phase 1 (= 実装)
+**Planned Phase 1 (= 実装)**
 - `js/constants.js`: `EXT_MAX_LEVEL=5` / `PROJECTILE_LIFE_MS=1500` / `PROJECTILE_RADIUS=5` / `PICK_OPTIONS_COUNT=3` / `SERIES_COLOR` map 追加、 `SHOCKWAVE_*` 撤去
 - `js/state.js`: `state.ownedExtensions=[]` / `state.pendingPickOptions=[]` / `state.pendingPickIsStarter=false` / `state.battle.projectiles=[]` 追加、 `state.battle.shockwaveAnims` 撤去
 - `js/battle/extensions-as-weapons.js` 新規 (= weaponFromExt + rebuildWeaponsFromOwned)
@@ -296,12 +319,13 @@
 - `data/i18n/ui.json`: `levelup.title` / `levelup.sub` / `levelup.starter` / `ext.new` 追加
 - `css/components.css`: `.levelup-modal*` / `.levelup-card*` 追加
 
-### Added — SPEC-007 Phase 0 (= Enemies + Hardcoded Weapon + XP Gems + Level Trigger spec)
+### Added — SPEC-007 (= Enemies + Hardcoded Weapon + XP Gems + Level Trigger (= VS core loop 完成))
+**Added Phase 0 (= Enemies + Hardcoded Weapon + XP Gems + Level Trigger spec)**
 - `docs/specs/SPEC-007-enemies-and-xp.md` 新規 (= 敵スポーン waves + 追跡 AI + 接触ダメージ + 仮 hardcoded shockwave 武器 + 撃破時 XP gem ドロップ + 拾う + level up trigger、 VS core loop の完成形)
 - `docs/specs/SPEC-INDEX.md`: SPEC-006 を `#7 (open)` に、 SPEC-007 を Implementing 登録
 - 武器を Extension に置き換える次段は SPEC-008 (= level up モーダル + extension picker)、 Game Over は SPEC-009
 
-### Planned — SPEC-007 Phase 1 (= 実装)
+**Planned Phase 1 (= 実装)**
 - `js/constants.js`: `ENEMY_*` / `CONTACT_COOLDOWN_MS` / `GEM_*` / `SHOCKWAVE_VISUAL_*` / `XP_TO_NEXT_GROWTH` / `MAX_ENEMIES` 追加
 - `js/state.js`: `state.battle` に `enemies` / `gems` / `shockwaveAnims` / `weapons` / `nextEntityId` / `lastEnemySpawnMs` / `contactCooldownMs` 追加
 - `js/battle/enemies.js` 新規 (= tickEnemies + spawnEnemyAtRing + 接触ダメージ throttle)
@@ -310,11 +334,12 @@
 - `js/battle/index.js` 改修 (= startBattle で各 entity reset + RAF ループに新規 tick 追加)
 - `js/battle/render.js` 改修 (= shockwave / gem / enemy 描画追加、 viewport カリング)
 
-### Added — SPEC-006 Phase 0 (= Battle Stage Scaffold spec)
+### Added — SPEC-006 (= Battle Stage Scaffold (= canvas + プレイヤー移動 WASD/joystick + カメラ追従))
+**Added Phase 0 (= Battle Stage Scaffold spec)**
 - `docs/specs/SPEC-006-battle-scaffold.md` 新規 (= canvas + プレイヤー移動 WASD/矢印/仮想ジョイスティック + カメラ追従 + 背景グリッド + DPR 対応 + RAF ループ + pauseFlags 連動)
 - `docs/specs/SPEC-INDEX.md`: SPEC-006 を Implementing 登録 (= SPEC-005 にスタック)
 
-### Planned — SPEC-006 Phase 1 (= 実装)
+**Planned Phase 1 (= 実装)**
 - `js/constants.js`: `BATTLE_GRID_SIZE` / `PLAYER_RADIUS` / `PLAYER_SPEED_PX_S` / `JOYSTICK_RADIUS` / `JOYSTICK_DEADZONE` 追加
 - `js/state.js`: `state.battle = { active, player, camera, viewport }` 追加
 - `js/battle/index.js` 新規 (= startBattle / stopBattle / RAF ループ / resize)
@@ -327,11 +352,12 @@
 - `css/components.css`: `.battle-canvas` / `.joystick` / `.joystick__base` / `.joystick__stick`
 - `js/main.js`: `applyHeroPick` 末尾で `startBattle(state.ownedHero)`
 
-### Added — SPEC-005 Phase 0 (= VS HUD slim spec)
+### Added — SPEC-005 (= VS HUD slim (= HP のみ + XP + Lv、 体温/食料 撤去、 ヴァンパイアサバイバー方向に転換))
+**Added Phase 0 (= VS HUD slim spec)**
 - `docs/specs/SPEC-005-vs-hud-slim.md` 新規 (= 体温/食料 を撤去し HP のみ + XP バー + Lv 表示 + 経過時間 mm:ss、 ヴァンパイアサバイバーライクへの方向転換 prep)
 - `docs/specs/SPEC-INDEX.md`: SPEC-004 を Done (#5) に flip、 SPEC-005 を Implementing として登録
 
-### Planned — SPEC-005 Phase 1 (= 実装)
+**Planned Phase 1 (= 実装)**
 - `js/state.js` から `state.day` / `state.stats.temp,food` / `state.statsMax.temp,food` を撤去、 `state.level=1` / `state.xp=0` / `state.xpToNext=5` / `state.elapsedTicks=0` を追加
 - `js/constants.js`: `STATS_INITIAL` / `STATS_MAX` から temp/food を撤去、 `STATS_DECAY_PER_TICK.hp=0` (= idle decay 廃止)、 `XP_INITIAL` / `XP_TO_NEXT_INITIAL` / `LEVEL_INITIAL` 追加
 - `js/survival.js`: `STAT_KEYS=["hp"]`、 `renderHud` を Level/Elapsed/HP/XP 4 セルに改修、 `formatElapsed` export
@@ -341,11 +367,12 @@
 - `css/base.css`: `--xp` 黄色変数追加
 - `css/components.css`: `.hud__level` / `.hud__elapsed` / `.hud__bar[data-stat="xp"]` 追加、 temp/food 用セレクタ撤去
 
-### Added — SPEC-004 Phase 0 (= Survival HUD spec)
+### Added — SPEC-004 (= Survival HUD (= Day N + HP / 体温 / 食料 + tick decay)) — merged in #5
+**Added Phase 0 (= Survival HUD spec)**
 - `docs/specs/SPEC-004-survival-hud.md` 新規作成 (= Day N + HP/体温/食料 の 3 スタッツ + 1 tick = 1 sec の線形 decay + pauseFlags 連動)
 - `docs/specs/SPEC-INDEX.md` を更新 (= SPEC-002 / SPEC-003 を Done に flip、 PR 番号も #2 / #4 で正、 SPEC-004 を Implementing として登録)
 
-### Planned — SPEC-004 Phase 1 (= 実装)
+**Planned Phase 1 (= 実装)**
 - `js/state.js` に `state.day` (= 1 開始) と `state.stats` / `state.statsMax` (= `{hp, temp, food}`) を追加
 - `js/constants.js` に `STATS_INITIAL` / `STATS_MAX` / `STATS_DECAY_PER_TICK` を追加
 - `js/survival.js` 新規 (= `tickStatsDecay` / `clampStats` / `getStatRatio` / `renderHud`)
@@ -354,11 +381,12 @@
 - `data/i18n/ui.json` に `hud.day` / `hud.stats.{hp,temp,food}` を追加
 - `css/base.css` に `--hp` / `--temp` / `--food` の 3 色変数追加、 `css/components.css` に `.hud` / `.hud__bar` 系を追加、 `css/responsive.css` で 640px 未満の折り返し対応
 
-### Added — SPEC-003 Phase 0 (= MCH IP Data Sources spec)
+### Added — SPEC-003 (= MCH IP Data Sources (= bearko/mycryptoheroes 由来の heroes/extensions/enemies 先行整備)) — merged in #4
+**Added Phase 0 (= MCH IP Data Sources spec)**
 - `docs/specs/SPEC-003-mch-data-sources.md` 新規作成 (= ASSET_BASE を bearko/mycryptoheroes に切替、 heroes/extensions/enemies 3 種データ層を先行整備、 MCH 5 派閥 GENBU/SUZAKU/BYAKKO/SEIRYU/KOURYU カラー追加)
 - `docs/specs/SPEC-INDEX.md` に SPEC-003 を Implementing として登録 (= SPEC-002 ブランチにスタック)
 
-### Planned — SPEC-003 Phase 1 (= 実装)
+**Planned Phase 1 (= 実装)**
 - `js/constants.js` の `ASSET_BASE` を `bearko/mycryptoheroes/main/` に切替
 - `data/heroes.json` を v2 に更新 (= MCH 公式 ID 1001-2013 から 10 体 curated, faction フィールド導入)
 - `data/extensions.json` 新規 (= 10 件 curated, version 1)
@@ -369,17 +397,19 @@
 - `data/i18n/ui.json` に `hero.faction.*` 5 派閥追加、 `hero.element.*` 撤去
 - `css/base.css` に 5 派閥 CSS 変数追加、 `css/components.css` の hero-tile / header__hero-badge を `data-faction` 駆動に
 
-### Added — SPEC-002 Phase 0 (= Hero Roster spec)
+### Added — SPEC-002 (= Hero Roster (= heroes.json + 10 体実データ + state.ownedHero)) — merged in #2
+**Added Phase 0 (= Hero Roster spec)**
 - `docs/specs/SPEC-002-hero-roster.md` 新規作成 (= heroes.json スキーマ / 10 体ロスター / loadHeroes / state.ownedHero / 元素 + レアリティ色帯 + onerror フォールバック)
 - `docs/specs/SPEC-INDEX.md` を更新 (= SPEC-001 を Done, SPEC-002 を Implementing として登録)
 
-### Changed — SPEC-002 Phase 1 (= 実装)
+**Changed Phase 1 (= 実装)**
 - `data/heroes.json` (= version 1, 10 体 placeholder) の追加 (= SPEC-003 で v2 に上書き)
 - `js/data-loader.js` の `loadJson` 経由で `loadHeroes()` を main.js から呼ぶ
 - `js/state.js` に `state.ownedHero` 追加、 `pendingHeroPick` を heroId ベースに
 - `index.html` ヘッダーに `#ownedHeroBadge`、 ヒーロー選択モーダルのタイル構造を実データ駆動に
 - `data/i18n/ui.json` に `hero.element.*` / `hero.rarity.*` / `hero.select.imgAlt` を追加 (= `hero.element.*` は SPEC-003 で `hero.faction.*` に置換)
 - `css/components.css` の `.hero-tile` を画像 + meta に再構成、 element / rarity の色付けを追加
+<!-- END AUTO-UNRELEASED -->
 
 ## [SPEC-001] — 2026-05-09 (PR #1 merged as `b3f5e93`)
 

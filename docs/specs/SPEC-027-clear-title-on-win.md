@@ -1,3 +1,12 @@
+---
+id: SPEC-027
+title: Clear Title on Win Conditions (= ボス撃破 / 5 分耐久 で 「クリア!」 表記)
+status: Done
+pr: 34
+phase: Phase 0 / Phase 1
+kind: Changed
+---
+
 # SPEC-027 — Clear Title on Win Conditions
 
 - **Status**: Implementing

@@ -1,3 +1,12 @@
+---
+id: SPEC-007
+title: Enemies + Hardcoded Weapon + XP Gems + Level Trigger (= VS core loop 完成)
+status: Implementing
+pr: 8
+phase: Phase 0 / Phase 1
+kind: Added
+---
+
 # SPEC-007 — Enemies, Hardcoded Weapon, XP Gems, Level Trigger
 
 - **Status**: Implementing

@@ -1,3 +1,12 @@
+---
+id: SPEC-031
+title: Pierce + LaserGun Fix + Pierrot AoE + Horse Tune + Gunbai + Header Date Removal
+status: Done
+pr: 39
+phase: Phase 0 / Phase 1
+kind: Changed
+---
+
 # SPEC-031 — Pierce + LaserGun Fix + Pierrot AoE + Horse Tune + Gunbai + Header Date Removal
 
 - **Status**: Implementing

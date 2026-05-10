@@ -1,3 +1,12 @@
+---
+id: SPEC-009
+title: Game Over + Retry + Ranking Submit (= MVP 完了、 死んだら終わる + もう 1 回)
+status: Implementing
+pr: 10
+phase: Phase 0 / Phase 1
+kind: Added
+---
+
 # SPEC-009 — Game Over + Retry + Ranking Submit
 
 - **Status**: Implementing
