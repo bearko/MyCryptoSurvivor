@@ -141,6 +141,39 @@
   </div>
 
   <!-- ============================================================ -->
+  <!-- Activity Report modal (= SPEC-033 全ステージ clear 時)          -->
+  <!-- ============================================================ -->
+  <div id="activityReportModal" class="gameover-modal hidden" role="dialog" aria-modal="true"
+       aria-labelledby="activityReportTitle">
+    <div class="gameover-modal__card report-card">
+      <h2 class="gameover-modal__title" id="activityReportTitle">活動レポート</h2>
+      <div class="report-hero" id="activityReportHero"></div>
+      <div class="report-stages-wrap">
+        <table class="report-stages">
+          <thead>
+            <tr>
+              <th data-i18n="report.col.stage">ステージ</th>
+              <th data-i18n="report.col.time">時間</th>
+              <th data-i18n="report.col.kills">撃破</th>
+              <th data-i18n="report.col.level">Lv</th>
+              <th data-i18n="report.col.exts">取得エクステ</th>
+            </tr>
+          </thead>
+          <tbody id="activityReportStages"></tbody>
+        </table>
+      </div>
+      <div class="report-totals" id="activityReportTotals"></div>
+      <div class="gameover-modal__form">
+        <label class="gameover-form__label" id="activityReportNameLabel" for="activityReportName">プレイヤー名</label>
+        <input class="gameover-form__input" id="activityReportName" type="text" maxlength="30" autocomplete="off" />
+        <button class="btn btn--secondary" id="activityReportSubmit">ランキングに送信</button>
+        <p class="gameover-form__msg" id="activityReportMsg" aria-live="polite"></p>
+      </div>
+      <button class="btn gameover-modal__retry" id="activityReportRetry">リトライ</button>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
   <!-- Level-up modal (= SPEC-008、 starter pick + LV up)              -->
   <!-- ============================================================ -->
   <div id="levelUpModal" class="levelup-modal hidden" role="dialog" aria-modal="true"

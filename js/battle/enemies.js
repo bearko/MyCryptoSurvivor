@@ -11,6 +11,7 @@ import {
   STAGE_DURATION_MS, BOSS_SPAWN_AT_MS,
   WAVE_TABLE, ENEMY_SPECS, STAGE_TABLE,
   WORLD_W, WORLD_H,
+  RARE_ENEMY_IDS, RARE_SPAWN_INTERVAL_MS,
   SFX,
 } from "../constants.js";
 import { triggerStageEndOrTransition } from "./stage-transition.js";
@@ -66,6 +67,15 @@ export function tickEnemies(dt, nowMs) {
     const id = pool[Math.floor(Math.random() * pool.length)];
     spawnEnemyAtRing(id);
     b.lastEnemySpawnMs = nowMs;
+  }
+
+  // SPEC-033: レアエネミーを 1 分に 1 回スポーン (= 全ステージ共通、 ボス出現中も並行)
+  if (b.enemies.length < MAX_ENEMIES &&
+      b.stageElapsedMs >= RARE_SPAWN_INTERVAL_MS &&
+      nowMs - b.lastRareSpawnMs >= RARE_SPAWN_INTERVAL_MS) {
+    const rid = RARE_ENEMY_IDS[Math.floor(Math.random() * RARE_ENEMY_IDS.length)];
+    spawnEnemyAtRing(rid);
+    b.lastRareSpawnMs = nowMs;
   }
 
   const px = b.player.x;
@@ -150,6 +160,7 @@ export function spawnEnemyAtRing(enemyId = 101) {
     color: ENEMY_COLOR,
     hitFreezeMs: 0,
     isBoss,
+    isRare: !!spec.isRare,                                          // SPEC-033: drop magic card on death
     xpValue: xpVal,
     bossAttack: isBoss ? (stage.bossAttack ?? null) : null,        // SPEC-030
     bossAttackExtId: isBoss ? (stage.bossAttackExtId ?? null) : null,

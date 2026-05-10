@@ -11,21 +11,48 @@
 import { state, pauseTime, resumeTime } from "../state.js";
 import { STAGE_TABLE } from "../constants.js";
 import { triggerGameOver } from "./gameover.js";
+import { triggerActivityReport } from "./activity-report.js";
 import { t, tpl, onLangChange } from "../i18n.js";
 
 let _wired = false;
 
 /**
+ * SPEC-033: 現ステージの snapshot を state.run.stages に push、
+ * state.run.totalKills / totalElapsedMs を更新する。
+ */
+function _captureStageSnapshot() {
+  const idx = state.currentStageIdx ?? 0;
+  // 既に同 idx の snapshot がある場合は重複 push 防止 (= 同 frame で複数 trigger される事故対策)
+  if (state.run.stages.some(s => s.idx === idx)) return;
+  const snapshot = {
+    idx,
+    nameKey:  STAGE_TABLE[idx]?.nameKey ?? "",
+    elapsedMs: state.battle.stageElapsedMs ?? 0,
+    kills:    state.killCount ?? 0,
+    level:    state.level     ?? 1,
+    ownedExtensions: (state.ownedExtensions ?? []).map(o => ({ extId: o.extId, level: o.level })),
+  };
+  state.run.stages.push(snapshot);
+  state.run.totalKills    += snapshot.kills;
+  state.run.totalElapsedMs += snapshot.elapsedMs;
+}
+
+/**
  * ステージ終了 (= ボス撃破 or 5 分経過) の trigger。
- * 次ステージがあれば transition modal、 無ければ全クリアで gameover("clear")。
+ * 次ステージがあれば transition modal、 無ければ全ステージクリアで activity report。
+ * 死亡 (= state.stats.hp <= 0) はこの関数を経由しない (= triggerGameOver(undefined))。
  */
 export function triggerStageEndOrTransition() {
   if (state.battle.gameOver) return;
 
+  // SPEC-033: 終了直前にステージ snapshot を保存 (= activity report 用)
+  _captureStageSnapshot();
+
   const isLast = (state.currentStageIdx ?? 0) >= STAGE_TABLE.length - 1;
   if (isLast) {
-    // 全クリア → 既存の game over flow に乗せる (= ranking 送信 + Clear! タイトル)
-    triggerGameOver("clear");
+    // SPEC-033: 全ステージクリア → activity report (= 既存 gameover modal を置換)
+    state.battle.gameOver = true;
+    triggerActivityReport();
     return;
   }
 
