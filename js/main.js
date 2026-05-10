@@ -30,6 +30,8 @@ import { loadExtensions } from "./extensions.js";
 import { loadEnemies } from "./enemies.js";
 import { tickStatsDecay, renderHud } from "./survival.js";
 import { startBattle } from "./battle/index.js";
+import { playSe, unlockAudio } from "./audio.js";
+import { SFX } from "./constants.js";
 
 // ============================================================
 // DOM helpers
@@ -75,10 +77,9 @@ function setupTitleScreen() {
 }
 
 function dismissTitle() {
+  unlockAudio();   // SPEC-017: 初回 user gesture で audio policy 解除
   $("#titleScreen")?.classList.add("hidden");
   $("#app")?.classList.remove("hidden");
-  // BGM 開始は audio.js の startBgm をここで呼ぶ
-  // import("./audio.js").then(({ startBgm }) => startBgm("Audio/bgm_home.mp3"));
 
   // Day 1: ヒーロー選択モーダルを開く (= SPEC-001 Phase 1 mock)
   openHeroSelectModal();
@@ -336,6 +337,7 @@ function refreshHeroSelectCta() {
 function applyHeroPick() {
   const hero = getHero(state.pendingHeroPick);
   if (!hero) return;
+  playSe(SFX.HERO_PICK);   // SPEC-017: tooldev.mp3
   state.ownedHero = { ...hero };
   renderOwnedHeroBadge();
   closeHeroSelectModal();

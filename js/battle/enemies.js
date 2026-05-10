@@ -11,6 +11,8 @@ import {
 } from "../constants.js";
 import { triggerGameOver } from "./gameover.js";
 import { pushDamageNumber } from "./damage.js";
+import { playSe } from "../audio.js";
+import { SFX } from "../constants.js";
 
 /**
  * 1 frame 分: 必要ならスポーン → 全敵がプレイヤーに 1 step 接近 → 接触判定
@@ -55,6 +57,8 @@ export function tickEnemies(dt, nowMs) {
       b.contactCooldownMs = CONTACT_COOLDOWN_MS;
       // SPEC-016: プレイヤー被弾も damage number で表示 (= 赤色)
       pushDamageNumber(b.player.x, b.player.y - b.player.r - 4, takenInt, "#ff7676");
+      // SPEC-017: 被弾 SE (= 200ms throttle で連発時も耳障りにならない)
+      playSe(SFX.PLAYER_DAMAGED, 200, 0.55);
       // SPEC-009: HP 0 で Game Over (= 多重 trigger 防止は gameover.js 側で gate)
       if (state.stats.hp <= 0 && !b.gameOver) {
         triggerGameOver();
