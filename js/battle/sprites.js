@@ -8,6 +8,7 @@
 import { heroImg } from "../heroes.js";
 import { enemyImg, ENEMY_ROSTER } from "../enemies.js";
 import { extImg } from "../extensions.js";
+import { img, GEM_ICON_PATH } from "../constants.js";
 
 const _imageCache = new Map();   // url -> {img, ready, failed}
 
@@ -55,6 +56,13 @@ export function drawSpriteCircular(ctx, entry, cx, cy, r) {
   ctx.drawImage(entry.img, cx - r, cy - r, r * 2, r * 2);
   ctx.restore();
   return true;
+}
+
+/**
+ * SPEC-019: 経験値 gem のアイコン (= MCH 公式 CE icon)。
+ */
+export function getGemSprite() {
+  return _loadImage(img(GEM_ICON_PATH));
 }
 
 /**
