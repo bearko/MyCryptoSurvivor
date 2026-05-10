@@ -15,10 +15,11 @@
   transition: opacity 0.3s;
 }
 .splash__logo {
-  font-size: 2rem;
-  font-weight: 800;
-  color: var(--accent);
-  letter-spacing: 0.05em;
+  /* SPEC-029: 画像ロゴ。 1100×320 banner、 横幅基準で fit */
+  width: min(80vw, 480px);
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 0 12px rgba(86, 204, 242, 0.35));
 }
 .splash__loading {
   color: var(--muted);
@@ -41,11 +42,17 @@
   text-align: center;
 }
 .title-screen__title {
+  /* SPEC-029: 画像ロゴ用 wrapper (= h1 のままセマンティクスは保持) */
   margin: 0;
-  font-size: clamp(1.8rem, 6vw, 3rem);
-  font-weight: 900;
-  color: var(--accent);
-  letter-spacing: 0.06em;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+.title-screen__logo {
+  width: min(86vw, 600px);
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 0 16px rgba(86, 204, 242, 0.45));
 }
 .title-screen__sub {
   margin: 0;

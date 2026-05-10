@@ -10,8 +10,11 @@
   <meta property="og:title" content="MyCryptoSurvivor" />
   <meta property="og:description" content="MyCryptoSurvivor — choose a hero and survive the chain. A vanilla JS web game." />
   <meta property="og:type" content="website" />
-  <meta property="og:image" content="og-image.png" />
+  <meta property="og:image" content="assets/og-image.png" />
+  <meta property="og:image:width" content="1280" />
+  <meta property="og:image:height" content="720" />
   <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="assets/og-image.png" />
 
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><text y=%2250%22 font-size=%2256%22>🏔️</text></svg>" />
 
@@ -24,18 +27,20 @@
 <body>
 
   <!-- ============================================================ -->
-  <!-- 1. Splash (= boot 中)                                          -->
+  <!-- 1. Splash (= boot 中) — SPEC-029: ロゴ画像化                    -->
   <!-- ============================================================ -->
   <div id="splash" class="splash">
-    <div class="splash__logo">MyCryptoSurvivor</div>
+    <img class="splash__logo" src="assets/logo.png" alt="MyCryptoSurvivors" />
     <div class="splash__loading" data-i18n="splash.loading">読み込み中…</div>
   </div>
 
   <!-- ============================================================ -->
-  <!-- 2. Title screen (= テキストロゴのみ)                            -->
+  <!-- 2. Title screen (= SPEC-029 で画像ロゴ化)                       -->
   <!-- ============================================================ -->
   <section id="titleScreen" class="title-screen hidden">
-    <h1 class="title-screen__title">MyCryptoSurvivor</h1>
+    <h1 class="title-screen__title">
+      <img class="title-screen__logo" src="assets/logo.png" alt="MyCryptoSurvivors" />
+    </h1>
     <p class="title-screen__sub" data-i18n="title.subtitle">サバイバルがチェーンを駆ける。</p>
 
     <button id="btnPressStart" class="title-screen__press" data-i18n="title.press">
