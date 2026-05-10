@@ -30,7 +30,8 @@
 | SPEC-023 | Picker Stock Limit (= 武器 5 / 強化 5) + Reroll (= 1戦 2回) | Done | Phase 0 / Phase 1 | #29 (merged、 旧 #27 は close) |
 | SPEC-024 | Picker Card Category Label + Lv.1 Effect Audit (= Oriflamme +0 → +1) | Done | Phase 0 / Phase 1 | #31 (merged、 旧 #30 は close) |
 | SPEC-025 | Fix Audio Paths (= MCH カタログ実体に整合、 404 → 200) | Done | Phase 0 / Phase 1 | #32 (merged) |
-| SPEC-026 | Balance Tuning + Bounded Stage with Background (= XP / Gyoku / 1001.png + dim overlay) | Implementing | Phase 0 / Phase 1 | feat/spec-026-balance-and-bg |
+| SPEC-026 | Balance Tuning + Bounded Stage with Background (= XP / Gyoku / 1001.png + dim overlay) | Done | Phase 0 / Phase 1 | #33 (merged) |
+| SPEC-027 | Clear Title on Win Conditions (= ボス撃破 / 5 分耐久 で 「クリア!」 表記) | Implementing | Phase 0 / Phase 1 | feat/spec-027-clear-title |
 
 ## 命名規則
 

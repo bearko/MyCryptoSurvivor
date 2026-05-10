@@ -45,6 +45,7 @@
   "ext.new":             { "ja": "NEW",                             "en": "NEW" },
 
   "gameover.title":      { "ja": "ゲームオーバー",                  "en": "Game Over" },
+  "gameover.titleClear": { "ja": "クリア!",                          "en": "Clear!" },
   "gameover.elapsed":    { "ja": "経過時間: {time}",                "en": "Time: {time}" },
   "gameover.level":      { "ja": "Lv.: {n}",                        "en": "Lv.: {n}" },
   "gameover.kills":      { "ja": "撃破数: {n}",                     "en": "Kills: {n}" },
