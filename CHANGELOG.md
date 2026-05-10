@@ -4,6 +4,37 @@
 
 ## [Unreleased]
 
+### Added — SPEC-030 (= Three-Stage System)
+- 3 ステージ制を導入 (= **node : アバカス → ホレリス → トロイ** を順番に踏破、 ヒーロー引継ぎ / 武器リセット)
+- `data/enemies.json`: id **373** (覚醒魔王ファオ) と **1189** (yamap) を追加
+- `js/constants.js`:
+  - `STAGE_TABLE`: 3 ステージ × `bgPath` / `bossEnemyId` / `bossAttack` / `enemyHpMul` / `enemyDmgMul` / `xpMul` / `spawnIntervalMul`
+  - `ENEMY_SPECS` に boss 373 / 1189 を追加
+  - ファオ攻撃: `FAO_FIRE_INTERVAL_MS=2200` / `FAO_BULLETS=6` / `FAO_PROJ_*`
+  - yamap 周回: `YAMAP_ORBIT_COUNT=8` / `YAMAP_ORBIT_RADIUS=110` / `YAMAP_ORBIT_*`
+- `js/state.js`: `state.currentStageIdx`、 `state.battle.bossProjectiles` / `bossOrbits` / `bossLastFireMs`
+- `js/battle/enemies.js`:
+  - `tickEnemies` で stage 別の boss id / `spawnIntervalMul` を反映、 boss 撃破 / 5 分耐久で `triggerStageEndOrTransition` に委譲
+  - `spawnEnemyAtRing` で雑魚 hp/dmg/xp を `enemyHpMul / enemyDmgMul / xpMul` で乗算、 boss は絶対値 + `bossAttack` / `bossAttackExtId` を entity に持たせる
+- `js/battle/boss-attack.js` 新規:
+  - `tickBossAttack(dt, nowMs)` が ファオ放射 (= ext 5055 アイコン、 6 発周期) と yamap 周回 (= ext 5002、 8 個常時等間隔) を一括処理
+  - プレイヤー衝突は既存 `contactCooldownMs` throttle を共有、 yamap orbit は同 orbit から 600ms 再ヒット throttle
+  - 死亡したボスに紐づく entity を `_purgeOrphanedEntities` で掃除
+- `js/battle/stage-transition.js` 新規:
+  - `triggerStageEndOrTransition()` が最終ステージなら既存 `triggerGameOver("clear")` に委譲、 それ以外は `#stageTransitionModal` を開く
+  - 「次のステージへ」 click で `state.currentStageIdx++` + `startBattle(state.ownedHero)` 再呼出
+- `js/battle/sprites.js`: `getBackgroundSprite()` を `STAGE_TABLE[currentStageIdx].bgPath` 由来に変更
+- `js/battle/render.js`: `bossProjectiles` (= 進行方向 rotate) と `bossOrbits` (= angle + π/2 接線方向) を icon 描画
+- `js/battle/index.js`:
+  - `tickBossAttack` を RAF ループに配線
+  - `startBattle` で `bossProjectiles` / `bossOrbits` を 0 リセット
+- `js/main.js`: `applyHeroPick` で `state.currentStageIdx = 0`
+- `js/battle/gameover.js`: `applyRetry` で `state.currentStageIdx = 0` (= リトライは常にステージ 1 から)
+- `index.html`: `#stageTransitionModal` 追加 (= 既存 `.gameover-modal` クラス流用)
+- `data/i18n/ui.json`: `stage.clearTitle` / `stage.proceed` / `stage.proceedNext` / `stage.akabasu` / `stage.horeris` / `stage.troy`
+- `docs/specs/SPEC-030-three-stage-system.md` 新規
+- `docs/specs/SPEC-INDEX.md`: SPEC-028 を `#35 (merged)` に flip、 SPEC-029 を `#36 (open)` に更新、 SPEC-030 を Implementing 登録
+
 ### Changed — SPEC-028 (= Orbit Redistribution + Per-Level Size Growth)
 - `js/constants.js`: `WEAPON_SIZE_GROWTH_PER_LEVEL = 0.06` (= Lv 連動の当たり / icon サイズ倍率、 Lv.5 で +24%)
 - `js/battle/archetypes.js`:

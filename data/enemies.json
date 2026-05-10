@@ -57,6 +57,18 @@
       "name":    { "ja": "ディープ・ヨシュカ", "en": "Deep Yoshka" },
       "stats":   { "hp": 3000, "phy": 30, "int": 30, "agi": 1 },
       "isBoss":  true
+    },
+    {
+      "enemyId": 373,
+      "name":    { "ja": "覚醒魔王ファオ", "en": "Dark Lord Fao" },
+      "stats":   { "hp": 4500, "phy": 35, "int": 35, "agi": 1 },
+      "isBoss":  true
+    },
+    {
+      "enemyId": 1189,
+      "name":    { "ja": "yamap", "en": "yamap" },
+      "stats":   { "hp": 6000, "phy": 40, "int": 40, "agi": 1 },
+      "isBoss":  true
     }
   ]
 }

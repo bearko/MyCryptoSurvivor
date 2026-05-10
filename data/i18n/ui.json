@@ -46,6 +46,13 @@
 
   "gameover.title":      { "ja": "ゲームオーバー",                  "en": "Game Over" },
   "gameover.titleClear": { "ja": "クリア!",                          "en": "Clear!" },
+
+  "stage.clearTitle":    { "ja": "ステージクリア!",                  "en": "Stage Clear!" },
+  "stage.proceed":       { "ja": "次のステージへ",                   "en": "Next Stage" },
+  "stage.proceedNext":   { "ja": "次は {next}",                       "en": "Next: {next}" },
+  "stage.akabasu":       { "ja": "node : アバカス",                   "en": "node : Abacus" },
+  "stage.horeris":       { "ja": "node : ホレリス",                   "en": "node : Hollerith" },
+  "stage.troy":          { "ja": "node : トロイ",                     "en": "node : Troy" },
   "gameover.elapsed":    { "ja": "経過時間: {time}",                "en": "Time: {time}" },
   "gameover.level":      { "ja": "Lv.: {n}",                        "en": "Lv.: {n}" },
   "gameover.kills":      { "ja": "撃破数: {n}",                     "en": "Kills: {n}" },

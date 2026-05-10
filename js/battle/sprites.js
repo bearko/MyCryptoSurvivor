@@ -8,7 +8,8 @@
 import { heroImg } from "../heroes.js";
 import { enemyImg, ENEMY_ROSTER } from "../enemies.js";
 import { extImg } from "../extensions.js";
-import { img, GEM_ICON_PATH, BG_IMAGE_PATH } from "../constants.js";
+import { img, GEM_ICON_PATH, BG_IMAGE_PATH, STAGE_TABLE } from "../constants.js";
+import { state } from "../state.js";
 
 const _imageCache = new Map();   // url -> {img, ready, failed}
 
@@ -74,10 +75,13 @@ export function getGemSprite() {
 }
 
 /**
- * SPEC-026: ステージ背景 (= MCH 公式 1001.png)。
+ * SPEC-026 / SPEC-030: 現ステージの背景 (= STAGE_TABLE[currentStageIdx].bgPath、 fallback で BG_IMAGE_PATH)。
  */
 export function getBackgroundSprite() {
-  return _loadImage(img(BG_IMAGE_PATH));
+  const idx   = state.currentStageIdx ?? 0;
+  const stage = STAGE_TABLE[idx];
+  const path  = stage?.bgPath ?? BG_IMAGE_PATH;
+  return _loadImage(img(path));
 }
 
 /**
