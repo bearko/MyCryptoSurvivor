@@ -238,3 +238,9 @@ export const WORLD_H            = 1500;
 export const BG_IMAGE_PATH      = "Image/Backgrounds/1001.png";
 // 背景の上に乗せる半透明ダーク (= 暗色の敵を視認しやすくする)
 export const BG_OVERLAY_COLOR   = "rgba(0, 0, 0, 0.45)";
+
+// ============================================================
+// SPEC-028: 武器レベルアップに伴う当たり判定 / アイコンサイズ拡大
+// scale = 1 + GROWTH × (level - 1) (= Lv.5 で +24%)
+// ============================================================
+export const WEAPON_SIZE_GROWTH_PER_LEVEL = 0.06;

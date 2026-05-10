@@ -31,7 +31,8 @@
 | SPEC-024 | Picker Card Category Label + Lv.1 Effect Audit (= Oriflamme +0 → +1) | Done | Phase 0 / Phase 1 | #31 (merged、 旧 #30 は close) |
 | SPEC-025 | Fix Audio Paths (= MCH カタログ実体に整合、 404 → 200) | Done | Phase 0 / Phase 1 | #32 (merged) |
 | SPEC-026 | Balance Tuning + Bounded Stage with Background (= XP / Gyoku / 1001.png + dim overlay) | Done | Phase 0 / Phase 1 | #33 (merged) |
-| SPEC-027 | Clear Title on Win Conditions (= ボス撃破 / 5 分耐久 で 「クリア!」 表記) | Implementing | Phase 0 / Phase 1 | feat/spec-027-clear-title |
+| SPEC-027 | Clear Title on Win Conditions (= ボス撃破 / 5 分耐久 で 「クリア!」 表記) | Done | Phase 0 / Phase 1 | #34 (merged) |
+| SPEC-028 | Orbit Redistribution + Per-Level Size Growth (= Book/Blade 等間隔 + tier icon swap + Lv 連動拡大) | Implementing | Phase 0 / Phase 1 | feat/spec-028-orbit-redistribute-and-size-growth |
 
 ## 命名規則
 
