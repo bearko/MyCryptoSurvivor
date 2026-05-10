@@ -188,3 +188,8 @@ export const SFX = {
   GAME_OVER_CLEAR: "Audio/SE/win.mp3",
 };
 export const BGM_BATTLE = "Audio/SE/pvp.mp3";
+
+// ============================================================
+// SPEC-019: XP gem アイコン (= MCH 公式 CE icon)
+// ============================================================
+export const GEM_ICON_PATH = "Image/Icons/ce.png";
