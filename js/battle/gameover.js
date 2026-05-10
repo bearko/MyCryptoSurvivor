@@ -29,6 +29,7 @@ export function triggerGameOver(reason = "lose") {
     elapsed: state.elapsedTicks,
     level:   state.level,
     kills:   state.killCount,
+    reason,                  // SPEC-027: "lose" | "clear" でタイトル分岐に使う
   };
   pauseTime();
   _wireOnce();
@@ -120,6 +121,13 @@ function _heroName() {
 function _renderGameOverModal() {
   const stats = state.lastRunStats;
   if (!stats) return;
+  // SPEC-027: ボス撃破 / 5 分耐久 はクリア表記、 死亡は従来通りゲームオーバー
+  const titleEl = document.getElementById("gameOverTitle");
+  if (titleEl) {
+    titleEl.textContent = (stats.reason === "clear")
+      ? t("gameover.titleClear", "Clear!")
+      : t("gameover.title", "Game Over");
+  }
   const elapsedEl = document.getElementById("gameOverElapsed");
   const levelEl   = document.getElementById("gameOverLevel");
   const killsEl   = document.getElementById("gameOverKills");
