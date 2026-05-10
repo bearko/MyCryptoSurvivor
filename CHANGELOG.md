@@ -4,6 +4,16 @@
 
 ## [Unreleased]
 
+### Added — SPEC-018 Phase 0 (= Extension Icon Mapping Fix spec)
+- `docs/specs/SPEC-018-fix-extension-icon-mapping.md` 新規 (= MCH 公式の 33 件 extension catalog を再調査し、 我々の 17 系列の `iconId` を正しい MCH ID に補正)
+
+### Planned — SPEC-018 Phase 1 (= 実装)
+- `data/extensions.json` の 13 entry の `iconId` を書き換え:
+  - 完全一致発見 (= Revolver→1029, Book→1008, Boots→1031, Shield→1010)
+  - 被り解消 (= Knife→1028 Rapier, Shuriken→1014 Cross Spear)
+  - より忠実 (= LaserGun→1002 Musket, Pierrot→1032 Sensu, Apple→1033 MCH Medal, Oriflamme→1016 Scrolls, Panjandrum→1023 Bull, Moai→1018 Kabuto)
+  - 維持 (= Axe 1011, Blade 1001, Armor 1004, Horse 1005, Ramen 1030)
+
 ### Added — SPEC-016 Phase 0 (= HP Bars + Damage Numbers + Hit Freeze spec)
 - `docs/specs/SPEC-016-hp-bars-and-damage-feedback.md` 新規 (= player + enemy アイコン下に HP バー、 満タン非表示、 数値なし、 ダメージ数字 floater、 hit freeze 100ms)
 
