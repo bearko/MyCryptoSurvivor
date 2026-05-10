@@ -168,7 +168,7 @@
       "category": "weapon",
       "series": "Panjandrum",
       "archetype": "bigHoming",
-      "iconId": 1023,
+      "iconId": 1153,
       "seriesColor": "#ff7a59",
       "tierNames": [
         {
@@ -248,7 +248,7 @@
       "category": "weapon",
       "series": "Moai",
       "archetype": "dropTarget",
-      "iconId": 1018,
+      "iconId": 1106,
       "seriesColor": "#d4d4dc",
       "tierNames": [
         {
@@ -338,7 +338,7 @@
       "category": "weapon",
       "series": "Shuriken",
       "archetype": "stack",
-      "iconId": 1014,
+      "iconId": 1124,
       "seriesColor": "#5ecf8a",
       "tierNames": [
         {
@@ -423,7 +423,7 @@
       "category": "weapon",
       "series": "LaserGun",
       "archetype": "beam",
-      "iconId": 1002,
+      "iconId": 1130,
       "seriesColor": "#f0c14b",
       "tierNames": [
         {
@@ -513,7 +513,7 @@
       "category": "weapon",
       "series": "Knife",
       "archetype": "diagonal",
-      "iconId": 1028,
+      "iconId": 1048,
       "seriesColor": "#d4d4dc",
       "tierNames": [
         {
@@ -663,7 +663,7 @@
       "category": "weapon",
       "series": "Pierrot",
       "archetype": "placeBomb",
-      "iconId": 1032,
+      "iconId": 1063,
       "seriesColor": "#fdcb6e",
       "tierNames": [
         {
@@ -883,7 +883,7 @@
       "category": "buff",
       "series": "Ramen",
       "archetype": "regen",
-      "iconId": 1030,
+      "iconId": 1154,
       "seriesColor": "#9be7c4",
       "tierNames": [
         {
@@ -1103,7 +1103,7 @@
       "category": "buff",
       "series": "Apple",
       "archetype": "dmgUp",
-      "iconId": 1033,
+      "iconId": 1159,
       "seriesColor": "#e76060",
       "tierNames": [
         {
@@ -1158,7 +1158,7 @@
       "category": "buff",
       "series": "Oriflamme",
       "archetype": "bulletCount",
-      "iconId": 1016,
+      "iconId": 1140,
       "seriesColor": "#bb86fc",
       "tierNames": [
         {
@@ -1213,7 +1213,7 @@
       "category": "buff",
       "series": "Specimen",
       "archetype": "attackRangeUp",
-      "iconId": 1019,
+      "iconId": 1169,
       "seriesColor": "#9be7c4",
       "tierNames": [
         { "ja": "液浸標本",   "en": "Specimen" },
@@ -1237,7 +1237,7 @@
       "category": "buff",
       "series": "Gyoku",
       "archetype": "pickupRangeUp",
-      "iconId": 1009,
+      "iconId": 1098,
       "seriesColor": "#fdcb6e",
       "tierNames": [
         { "ja": "ギョク",     "en": "Gyoku" },
