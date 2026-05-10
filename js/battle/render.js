@@ -10,7 +10,7 @@ import {
   HP_BAR_PLAYER_WIDTH, HP_BAR_PLAYER_HEIGHT,
   DAMAGE_NUMBER_LIFE_MS,
 } from "../constants.js";
-import { drawSpriteCircular, drawSpriteRotated, getExtSprite, getGemSprite } from "./sprites.js";
+import { drawSpriteCircular, drawSpriteRotated, getExtSprite, getGemSprite, getEnemySprite } from "./sprites.js";
 
 /**
  * 1 frame 描画。 ctx は dpr 反映済の transform で渡される前提。
@@ -154,12 +154,15 @@ export function renderBattle(ctx) {
 
   // SPEC-010: enemies (sprite で円形クリップ、 fallback は単色円)
   // SPEC-016: アイコン下に HP バー (= 満タン非表示)
-  const enemySprite = state.battle.defaultEnemySprite;
+  // SPEC-022: enemyId 別 sprite を引き当て、 fallback で default
   for (const e of enemies) {
     const sx = e.x - camera.x;
     const sy = e.y - camera.y;
     if (sx + e.r < 0 || sx - e.r > w || sy + e.r < 0 || sy - e.r > h) continue;
-    const drew = drawSpriteCircular(ctx, enemySprite, sx, sy, e.r);
+    const sp = (e.enemyId != null)
+      ? (getEnemySprite(e.enemyId) || state.battle.defaultEnemySprite)
+      : state.battle.defaultEnemySprite;
+    const drew = drawSpriteCircular(ctx, sp, sx, sy, e.r);
     if (!drew) {
       ctx.fillStyle = e.color;
       ctx.beginPath();
