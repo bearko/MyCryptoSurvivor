@@ -10,13 +10,14 @@ import {
   CONTACT_COOLDOWN_MS,
   STAGE_DURATION_MS, BOSS_SPAWN_AT_MS, BOSS_ENEMY_ID,
   WAVE_TABLE, ENEMY_SPECS,
+  WORLD_W, WORLD_H,
   SFX,
 } from "../constants.js";
 import { triggerGameOver } from "./gameover.js";
 import { pushDamageNumber } from "./damage.js";
 import { playSe } from "../audio.js";
 
-const DEFAULT_SPEC = { hp: 25, dmg: 10, speed: 80, radius: 12 };
+const DEFAULT_SPEC = { hp: 25, dmg: 10, speed: 80, radius: 12, xpValue: 1 };
 
 /**
  * SPEC-022: stageElapsedMs から該当 wave の pool を返す (= 配列)
@@ -109,6 +110,14 @@ export function spawnEnemyAtRing(enemyId = 101) {
     x = b.player.x + Math.cos(angle) * halfW;
     y = b.player.y + Math.sin(angle) * halfH;
   }
+  // SPEC-026: 世界端でクランプ (= 半径分だけ内側に収める)
+  const r = spec.radius;
+  const HW = WORLD_W / 2 - r;
+  const HH = WORLD_H / 2 - r;
+  if (x < -HW) x = -HW;
+  if (x >  HW) x =  HW;
+  if (y < -HH) y = -HH;
+  if (y >  HH) y =  HH;
   b.enemies.push({
     id: b.nextEntityId++,
     enemyId,
@@ -120,5 +129,6 @@ export function spawnEnemyAtRing(enemyId = 101) {
     color: ENEMY_COLOR,
     hitFreezeMs: 0,
     isBoss: enemyId === BOSS_ENEMY_ID,
+    xpValue: spec.xpValue ?? 1,            // SPEC-026: 撃破時の gem.value 用
   });
 }
