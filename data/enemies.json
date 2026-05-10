@@ -51,6 +51,12 @@
       "enemyId": 182,
       "name":    { "ja": "ベーグル トール", "en": "Bagle-tall" },
       "stats":   { "hp": 21, "phy": 4,  "int": 6,  "agi": 3 }
+    },
+    {
+      "enemyId": 171,
+      "name":    { "ja": "ディープ・ヨシュカ", "en": "Deep Yoshka" },
+      "stats":   { "hp": 3000, "phy": 30, "int": 30, "agi": 1 },
+      "isBoss":  true
     }
   ]
 }
