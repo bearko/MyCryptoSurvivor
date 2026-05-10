@@ -4,6 +4,13 @@
 
 ## [Unreleased]
 
+### Added — SPEC-020 (= Extension Icon Fix with user-provided MCH IDs)
+- `docs/specs/SPEC-020-fix-icons-with-user-mapping.md` 新規 (= ユーザー指定の MCH Common id で 10 系列 + Knife を完全一致 icon に修正)
+- `data/extensions.json`: 11 entry の `iconId` 更新
+  - Panjandrum 1023→**1153** (Wooden Panjandrum) / Moai 1018→**1106** / Shuriken 1014→**1124** / LaserGun 1002→**1130** (Raygun) / Knife 1028→**1048** / Pierrot 1032→**1063** / Ramen 1030→**1154** / Apple 1033→**1159** / Oriflamme 1016→**1140** / Specimen 1019→**1169** / Gyoku 1009→**1098** (Orb)
+- 残り 8 系列 (Revolver/Book/Axe/Blade/Armor/Boots/Horse/Shield) は SPEC-018 で既に完全一致のため変更なし
+- `docs/specs/SPEC-INDEX.md`: SPEC-019 を Done (= #23 merged) に flip、 SPEC-020 を Implementing 登録
+
 ### Added — SPEC-019 Phase 0 (= 2 New Buff Series + Revolver/Blade Tweaks + XP Gem Icon spec)
 - `docs/specs/SPEC-019-new-buffs-revolver-blade-gem.md` 新規 (= 液浸標本 attackRangeUp + ギョク pickupRangeUp の 2 buff 追加 / Revolver の projectileIconId=null + Lv.1 弾数 1 / Blade orbit を Book の半分以下に / 経験値 gem アイコンを Image/Icons/ce.png に差し替え)
 - `docs/specs/SPEC-INDEX.md`: SPEC-018 を `#21 (merged)` に flip、 SPEC-019 を Implementing 登録
