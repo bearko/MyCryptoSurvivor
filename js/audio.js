@@ -6,6 +6,24 @@ import { audioUrl } from "./constants.js";
 
 let _bgm = null;
 const _seThrottle = new Map();
+let _audioUnlocked = false;
+
+/**
+ * SPEC-017: 初回 user gesture (= Press Start click) で audio policy を解除する。
+ * dummy <audio> を一度 play しておくと、 mobile Safari の autoplay 制限が緩む。
+ * 既に解除済なら no-op。
+ */
+export function unlockAudio() {
+  if (_audioUnlocked) return;
+  _audioUnlocked = true;
+  try {
+    const a = new Audio();
+    a.muted = true;
+    a.volume = 0;
+    const p = a.play();
+    if (p && typeof p.catch === "function") p.catch(() => {});
+  } catch (_) {}
+}
 
 /**
  * BGM を切り替える (= autoplay 制限回避のため、 必ずユーザー操作後に呼ぶこと)

@@ -17,10 +17,11 @@
 | SPEC-010 | Mobile Viewport Fit + Hero/Enemy Sprites + Ext Icon/Effect in Level-up Card | Implementing | Phase 0 / Phase 1 | #11 (open, stacked on SPEC-009) |
 | SPEC-011 | Extension Schema Overhaul (17 系列 × 5 段階) + Buff Archetype | Implementing | Phase 0 / Phase 1 | #12 (open, stacked on SPEC-010) |
 | SPEC-012 | 10 Weapon Archetype Behaviors (= radial / orbit / beam / placement / etc) | Implementing | Phase 0 / Phase 1 | #13 (open, also bundled in re-stack PR #14) |
-| SPEC-013 | Hero Starter Weapon (= Lv.1 固定割当) + Picker Rules (= 重複なし / weapon ≥ 1) | Implementing | Phase 0 / Phase 1 | #15 (open, base=main) |
-| SPEC-014 | Hero Selection Detail Panel + Per-Hero HP/Speed Differentiation | Implementing | Phase 0 / Phase 1 | #16 (open, base=main) |
-| SPEC-015 | Extension Visual Icons + Weapon Balance + Moai Homing/Shockwave | Implementing | Phase 0 / Phase 1 | #17 (open, base=main) |
-| SPEC-016 | HP Bars + Damage Numbers + Hit Freeze | Implementing | Phase 0 / Phase 1 | feat/spec-016-hp-bars-and-damage-feedback |
+| SPEC-013 | Hero Starter Weapon (= Lv.1 固定割当) + Picker Rules (= 重複なし / weapon ≥ 1) | Done | Phase 0 / Phase 1 | #15 (merged) |
+| SPEC-014 | Hero Selection Detail Panel + Per-Hero HP/Speed Differentiation | Done | Phase 0 / Phase 1 | #16 (merged) |
+| SPEC-015 | Extension Visual Icons + Weapon Balance + Moai Homing/Shockwave | Done | Phase 0 / Phase 1 | #17 (merged) |
+| SPEC-016 | HP Bars + Damage Numbers + Hit Freeze | Done | Phase 0 / Phase 1 | #18 (merged) |
+| SPEC-017 | Sound Effects + BGM Wiring | Implementing | Phase 0 / Phase 1 | feat/spec-017-audio-and-bgm |
 
 ## 命名規則
 

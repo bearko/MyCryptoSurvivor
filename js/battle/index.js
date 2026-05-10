@@ -31,6 +31,8 @@ import {
   tickShockwaves,
 } from "./archetypes.js";
 import { tickDamageNumbers } from "./damage.js";
+import { startBgm } from "../audio.js";
+import { BGM_BATTLE } from "../constants.js";
 
 let _canvas = null;
 let _ctx = null;
@@ -114,6 +116,9 @@ export function startBattle(hero) {
   resizeCanvas();
   _lastMs = performance.now();
   if (!_raf) _raf = requestAnimationFrame(_loop);
+
+  // SPEC-017: 戦闘 BGM (= retry でも startBgm 内 stopBgm が掛かるので 1 トラックに収束)
+  startBgm(BGM_BATTLE, 0.32);
 }
 
 export function stopBattle() {
