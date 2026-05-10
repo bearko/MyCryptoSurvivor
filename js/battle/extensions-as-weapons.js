@@ -34,6 +34,8 @@ export function weaponFromExt(extId, level) {
     bullets:    params.bullets ?? 1,
     color,
     iconId:     ext.iconId ?? null,           // SPEC-015: render が描画用に使う
+    // SPEC-019: 投射体専用 icon を ext で明示できる (= null で circle fallback)
+    projectileIconId: (ext.projectileIconId !== undefined) ? ext.projectileIconId : (ext.iconId ?? null),
     series:     ext.series ?? null,           // SPEC-015: rotation offset 判定用
     lastFireMs: 0,
     // SPEC-012 が読む可能性のある archetype 別パラメータをそのまま渡す

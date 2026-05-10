@@ -34,6 +34,8 @@ export function applyBuff(extId, level) {
     case "dmgTakenDown":  buffs.dmgTakenMul     = m; break;
     case "dmgUp":         buffs.dmgMul          = m; break;
     case "bulletCount":   buffs.bulletCountBonus = m; break;
+    case "attackRangeUp": buffs.rangeMul         = m; break;   // SPEC-019: 液浸標本
+    case "pickupRangeUp": buffs.pickupMul        = m; break;   // SPEC-019: ギョク
     default:
       console.warn("[buffs] unknown archetype:", ext.archetype);
   }
@@ -62,4 +64,6 @@ export function resetBuffs() {
   state.buffs.dmgTakenMul      = 1;
   state.buffs.dmgMul           = 1;
   state.buffs.bulletCountBonus = 0;
+  state.buffs.rangeMul         = 1;   // SPEC-019: 液浸標本
+  state.buffs.pickupMul        = 1;   // SPEC-019: ギョク
 }

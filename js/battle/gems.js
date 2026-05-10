@@ -26,7 +26,10 @@ export function tickGems(_dt) {
   const b = state.battle;
   const px = b.player.x;
   const py = b.player.y;
-  const r2 = GEM_PICKUP_RADIUS * GEM_PICKUP_RADIUS;
+  // SPEC-019: ギョク (pickupMul) で吸引半径拡大
+  const pickupMul = state.buffs?.pickupMul ?? 1;
+  const pickupR = GEM_PICKUP_RADIUS * pickupMul;
+  const r2 = pickupR * pickupR;
 
   let pickedAny = false;
   for (let i = b.gems.length - 1; i >= 0; i--) {
