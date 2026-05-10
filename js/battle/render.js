@@ -43,7 +43,8 @@ export function renderBattle(ctx) {
     ctx.globalAlpha = blink;
     let drew = false;
     if (b.iconId != null) {
-      drew = drawSpriteRotated(ctx, getExtSprite(b.iconId), sx, sy, 26, 0);
+      // SPEC-028: bomb の icon サイズも武器レベル由来 (= b.iconSize、 fallback 26)
+      drew = drawSpriteRotated(ctx, getExtSprite(b.iconId), sx, sy, b.iconSize ?? 26, 0);
     }
     if (!drew) {
       ctx.fillStyle = b.color;
