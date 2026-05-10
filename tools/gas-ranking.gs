@@ -16,9 +16,11 @@
 // ⚠ 不正対策が必要なら GAS 側で score 上限 / IP rate limit を別途追加。
 
 const SHEET_NAME = "ranking";
+// SPEC-037: regulation + regulationMul を末尾に追加
 const HEADERS = [
   "timestamp", "playerName", "score",
   "level", "kills", "hero", "faction", "version", "elapsedSec",
+  "regulation", "regulationMul",
 ];
 
 function doPost(e) {
@@ -53,19 +55,23 @@ function doGet(e) {
       idx[h] = i >= 0 ? i : -1;
     });
 
+    const regulation = params.regulation || null;   // SPEC-037: NORMAL / ABSOLUTE で絞込
     const rows = data.slice(1)
       .map(r => ({
-        timestamp:  _str(r[idx.timestamp]),
-        playerName: _str(r[idx.playerName]),
-        score:      Number(r[idx.score]) || 0,
-        level:      Number(r[idx.level]) || 0,
-        kills:      Number(r[idx.kills]) || 0,
-        hero:       _str(r[idx.hero]),
-        faction:    _str(r[idx.faction]),
-        version:    _str(r[idx.version]),
-        elapsedSec: Number(r[idx.elapsedSec]) || 0,
+        timestamp:    _str(r[idx.timestamp]),
+        playerName:   _str(r[idx.playerName]),
+        score:        Number(r[idx.score]) || 0,
+        level:        Number(r[idx.level]) || 0,
+        kills:        Number(r[idx.kills]) || 0,
+        hero:         _str(r[idx.hero]),
+        faction:      _str(r[idx.faction]),
+        version:      _str(r[idx.version]),
+        elapsedSec:   Number(r[idx.elapsedSec]) || 0,
+        regulation:   _str(r[idx.regulation]) || "NORMAL",   // SPEC-037
+        regulationMul: Number(r[idx.regulationMul]) || 1,
       }))
-      .filter(r => !version || r.version === version)
+      .filter(r => !version    || r.version    === version)
+      .filter(r => !regulation || r.regulation === regulation)
       .sort((a, b) => b.score - a.score)
       .slice(0, limit);
     return _json({ ok: true, ranking: rows });
@@ -162,9 +168,14 @@ function _appendSampleRows(sh, n) {
     const elapsedSec = Math.max(180, 280 + Math.floor(Math.random() * 320));
     // timestamp は数日前から少しずつばらつかせる (= ranking 一覧でリアルに見える)
     const ts = new Date(now.getTime() - i * 1000 * 60 * 60 * 7).toISOString();
+    // SPEC-037: 偶数 index は NORMAL、 奇数は ABSOLUTE で 1.0..2.0 のランダム倍率
+    const isAbs = (i % 2 === 1);
+    const regulation    = isAbs ? "ABSOLUTE" : "NORMAL";
+    const regulationMul = isAbs ? Math.round((1.0 + Math.random()) * 100) / 100 : 1.0;
     rows.push([
       ts, player, score, level, kills,
       hero.name, hero.faction, "0.1.0", elapsedSec,
+      regulation, regulationMul,
     ]);
   }
   sh.getRange(sh.getLastRow() + 1, 1, rows.length, HEADERS.length).setValues(rows);

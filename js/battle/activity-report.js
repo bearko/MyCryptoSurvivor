@@ -14,6 +14,7 @@
 import { state, pauseTime, resumeTime } from "../state.js";
 import {
   STAGE_TABLE, APP_VERSION, SFX,
+  computeRegulationMul,
 } from "../constants.js";
 import { t, tpl, onLangChange } from "../i18n.js";
 import { getExt, getTierName } from "../extensions.js";
@@ -85,8 +86,10 @@ async function _onSubmitClick() {
   btn.disabled = true;
   msg.textContent = t("gameover.submitting", "Submitting…");
 
-  const score    = computeScore(state.run);
-  const totalSec = Math.round(state.run.totalElapsedMs / 1000);
+  const baseScore = computeScore(state.run);
+  const regMul    = computeRegulationMul(state.regulation, state.absolute);
+  const score     = Math.round(baseScore * regMul);
+  const totalSec  = Math.round(state.run.totalElapsedMs / 1000);
   const result = await submitScore({
     playerName: name,
     score,
@@ -96,6 +99,9 @@ async function _onSubmitClick() {
     faction:    state.ownedHero?.faction ?? null,
     version:    APP_VERSION,
     elapsedSec: totalSec,
+    // SPEC-037: レギュレーション + 倍率
+    regulation:    state.regulation ?? "NORMAL",
+    regulationMul: regMul,
   });
   if (result.ok) {
     msg.textContent = t("gameover.submitOk", "Submitted!");
@@ -174,8 +180,15 @@ function _renderReport() {
   const totalsEl = document.getElementById("activityReportTotals");
   if (totalsEl) {
     const totalSec = Math.round(state.run.totalElapsedMs / 1000);
-    const score = computeScore(state.run);
+    // SPEC-037: 最終スコアは regulationMul 込み
+    const baseScore = computeScore(state.run);
+    const regMul    = computeRegulationMul(state.regulation, state.absolute);
+    const score     = Math.round(baseScore * regMul);
+    const regLabel  = (state.regulation === "ABSOLUTE")
+      ? `ABSOLUTE ×${regMul.toFixed(2)}`
+      : `NORMAL ×1.00`;
     totalsEl.innerHTML =
+      `<div>${escapeHtml(tpl(t("report.regulation", "レギュレーション: {n}"), { n: regLabel }))}</div>` +
       `<div>${escapeHtml(tpl(t("report.totalTime", "総クリア時間: {time}"), { time: formatElapsed(totalSec) }))}</div>` +
       `<div>${escapeHtml(tpl(t("report.totalKills", "総撃破数: {n}"), { n: state.run.totalKills }))}</div>` +
       `<div class="report-totals__score">${escapeHtml(tpl(t("report.score", "スコア: {n}"), { n: score }))}</div>`;

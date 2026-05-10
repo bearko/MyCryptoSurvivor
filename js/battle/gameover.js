@@ -11,7 +11,7 @@ import { t, tpl, onLangChange } from "../i18n.js";
 import {
   getPlayerName, setPlayerName, submitScore, getRankingApiUrl,
 } from "../ranking-client.js";
-import { APP_VERSION, SFX } from "../constants.js";
+import { APP_VERSION, SFX, computeRegulationMul } from "../constants.js";
 import { formatElapsed } from "../survival.js";
 import { stopBgm, playSe } from "../audio.js";
 
@@ -62,8 +62,13 @@ function _wireOnce() {
   if (_wired) return;
   _wired = true;
 
+  // SPEC-037: 「今のレギュレーションで再走」 (= 既存 retry の挙動と同じ)
   document.getElementById("gameOverRetry")
     ?.addEventListener("click", applyRetry);
+
+  // SPEC-037: 「タイトルに戻る」 — 戦闘停止 / state リセットして title 画面へ
+  document.getElementById("gameOverToTitle")
+    ?.addEventListener("click", _onToTitleClick);
 
   document.getElementById("gameOverSubmit")
     ?.addEventListener("click", _onSubmitClick);
@@ -73,6 +78,38 @@ function _wireOnce() {
       _renderGameOverModal();
     }
   });
+}
+
+async function _onToTitleClick() {
+  document.getElementById("gameOverModal")?.classList.add("hidden");
+  // 全 modal close
+  for (const id of ["levelUpModal", "stageTransitionModal", "activityReportModal", "rankingModal"]) {
+    document.getElementById(id)?.classList.add("hidden");
+  }
+  // pauseFlags を 0 にリセット (= タイトル画面では時間停止扱い)
+  while (state.pauseFlags > 0) resumeTime();
+  // 戦闘停止 + BGM 停止
+  const m = await import("./index.js");
+  m.stopBattle?.();
+  stopBgm();
+  // run / hero / regulation を reset
+  state.currentStageIdx = 0;
+  state.ownedHero       = null;
+  state.pendingHeroPick = null;
+  state.stats.hp        = state.statsMax.hp;
+  state.level           = 1;
+  state.xp              = 0;
+  state.killCount       = 0;
+  state.lastRunStats    = null;
+  state.run.stages.length = 0;
+  state.run.totalKills    = 0;
+  state.run.totalElapsedMs = 0;
+  // owned hero badge を消す
+  const badge = document.getElementById("ownedHeroBadge");
+  if (badge) { badge.classList.add("hidden"); badge.textContent = ""; }
+  // app を隠して title 表示 (= regulation は state.regulation のまま、 mode select で再選択)
+  document.getElementById("app")?.classList.add("hidden");
+  document.getElementById("titleScreen")?.classList.remove("hidden");
 }
 
 async function _onSubmitClick() {
@@ -92,14 +129,18 @@ async function _onSubmitClick() {
   msg.textContent = t("gameover.submitting", "Submitting…");
 
   const stats = state.lastRunStats || { elapsed: 0, level: 1, kills: 0 };
+  const regMul = computeRegulationMul(state.regulation, state.absolute);
   const result = await submitScore({
     playerName: name,
-    score:      stats.elapsed,
+    score:      Math.round(stats.elapsed * regMul),
     level:      stats.level,
     kills:      stats.kills,
     hero:       _heroName(),
     faction:    state.ownedHero?.faction ?? null,
     version:    APP_VERSION,
+    elapsedSec: stats.elapsed,
+    regulation:    state.regulation ?? "NORMAL",
+    regulationMul: regMul,
   });
 
   if (result.ok) {

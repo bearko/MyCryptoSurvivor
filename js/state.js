@@ -92,6 +92,17 @@ export const state = {
     totalElapsedMs: 0,
   },
 
+  // SPEC-037: ゲームモード (= 「NORMAL」 / 「ABSOLUTE」 の 2 種)
+  // - NORMAL  : 通常プレイ (= ABSOLUTE 倍率 = 全 1.0、 score × 1.0)
+  // - ABSOLUTE: ユーザーが 4 軸の倍率を 0.5〜2.0 で調整、 平均がスコア倍率に
+  regulation: "NORMAL",
+  absolute: {
+    spawnMul: 1.0,   // 敵の出現数 (= spawnIntervalMul の逆数として効く)
+    hpMul:    1.0,   // 雑魚 hp
+    dmgMul:   1.0,   // 雑魚 dmg
+    speedMul: 1.0,   // 雑魚 speed
+  },
+
   // SPEC-008: 装備 extension + Level-up pick モーダル状態
   ownedExtensions:       [],   // [{extId, level}]
   pendingPickOptions:    [],   // [{extId, ext, currentLevel, nextLevel, isNew}]

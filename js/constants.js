@@ -333,3 +333,33 @@ export const YAMAP_ORBIT_HIT_COOLDOWN_MS = 600;   // 同 orbit から再 dmg ま
 // SPEC-034: 0.06 → 0.25 (= Lv.5 で 2.0×、 ユーザー指定の 「Lv5 で Lv1 の 2 倍」)
 // ============================================================
 export const WEAPON_SIZE_GROWTH_PER_LEVEL = 0.25;
+
+// ============================================================
+// SPEC-037: ゲームモード + ABSOLUTE レギュレーション (= mycryptotactics 風)
+// 4 軸 (= spawn / hp / dmg / speed) を 0.5 〜 2.0 で 0.25 step で調整。
+// regulationMul = 4 軸の算術平均。 NORMAL は全 1.0 で mul = 1.0。
+// ABSOLUTE は 0.5..2.0 で mul も 0.5..2.0 (= 楽すれば下、 きつくすれば上)。
+// ============================================================
+export const REGULATION_NORMAL    = "NORMAL";
+export const REGULATION_ABSOLUTE  = "ABSOLUTE";
+export const ABSOLUTE_SLIDER_MIN  = 0.5;
+export const ABSOLUTE_SLIDER_MAX  = 2.0;
+export const ABSOLUTE_SLIDER_STEP = 0.25;
+export const ABSOLUTE_SLIDER_DEFAULT = 1.0;
+export const ABSOLUTE_AXES = [
+  { key: "spawnMul", labelKey: "absolute.axis.spawn" },
+  { key: "hpMul",    labelKey: "absolute.axis.hp"    },
+  { key: "dmgMul",   labelKey: "absolute.axis.dmg"   },
+  { key: "speedMul", labelKey: "absolute.axis.speed" },
+];
+
+/**
+ * regulation + absolute から score multiplier を計算 (= 4 軸の算術平均)。
+ * NORMAL は state.absolute を見ず常に 1.0 を返す。
+ */
+export function computeRegulationMul(regulation, absolute) {
+  if (regulation !== REGULATION_ABSOLUTE) return 1.0;
+  const a = absolute || {};
+  const sum = (a.spawnMul ?? 1) + (a.hpMul ?? 1) + (a.dmgMul ?? 1) + (a.speedMul ?? 1);
+  return Math.round((sum / 4) * 100) / 100;   // 0.5 〜 2.0、 小数 2 桁丸め
+}
