@@ -225,10 +225,11 @@ export const ENEMY_SPECS = {
   373:  { hp: 4500, dmg: 30, speed: 50, radius: 52, xpValue: 100 },   // 覚醒魔王ファオ
   1189: { hp: 6000, dmg: 30, speed: 55, radius: 50, xpValue: 150 },   // yamap
   // SPEC-033: rare enemies (= ~2× normal hp、 +20-30 xp)
-  147:  { hp:  160, dmg: 16, speed: 78, radius: 14, xpValue:  20, isRare: true },   // クリーパー フラペチーノ ドッピオ
-  170:  { hp:  400, dmg: 24, speed: 65, radius: 21, xpValue:  35, isRare: true },   // バイトバンディット フラペチーノ ドッピオ
-  396:  { hp:  220, dmg: 18, speed: 95, radius: 13, xpValue:  25, isRare: true },   // ラビット フラペチーノ ドッピオ
-  407:  { hp:  280, dmg: 20, speed: 70, radius: 16, xpValue:  30, isRare: true },   // ラブレター フラペチーノ ドッピオ
+  // SPEC-034: radius × 1.5 (= 視認性向上、 当たり判定もそのまま大きく)
+  147:  { hp:  160, dmg: 16, speed: 78, radius: 21, xpValue:  20, isRare: true },   // クリーパー フラペチーノ ドッピオ (= 14 → 21)
+  170:  { hp:  400, dmg: 24, speed: 65, radius: 32, xpValue:  35, isRare: true },   // バイトバンディット フラペチーノ ドッピオ (= 21 → 32)
+  396:  { hp:  220, dmg: 18, speed: 95, radius: 20, xpValue:  25, isRare: true },   // ラビット フラペチーノ ドッピオ (= 13 → 20)
+  407:  { hp:  280, dmg: 20, speed: 70, radius: 24, xpValue:  30, isRare: true },   // ラブレター フラペチーノ ドッピオ (= 16 → 24)
 };
 
 // SPEC-033: レアエネミー定数
@@ -246,7 +247,7 @@ export const MAGIC_CARD_ICON_SIZE    = 32;
 // ============================================================
 export const STOCK_LIMIT_WEAPON = 5;   // 武器系列の最大装備数
 export const STOCK_LIMIT_BUFF   = 5;   // 強化系列の最大装備数
-export const REROLL_PER_BATTLE  = 2;   // 1 戦闘あたりリロール可能回数
+export const REROLL_PER_BATTLE  = 3;   // SPEC-034: 1 戦闘あたりリロール可能回数 (= 2 → 3)
 
 // ============================================================
 // SPEC-026: 有限ステージ + 背景画像 + 暗色オーバーレイ
@@ -328,6 +329,7 @@ export const YAMAP_ORBIT_HIT_COOLDOWN_MS = 600;   // 同 orbit から再 dmg ま
 
 // ============================================================
 // SPEC-028: 武器レベルアップに伴う当たり判定 / アイコンサイズ拡大
-// scale = 1 + GROWTH × (level - 1) (= Lv.5 で +24%)
+// scale = 1 + GROWTH × (level - 1)
+// SPEC-034: 0.06 → 0.25 (= Lv.5 で 2.0×、 ユーザー指定の 「Lv5 で Lv1 の 2 倍」)
 // ============================================================
-export const WEAPON_SIZE_GROWTH_PER_LEVEL = 0.06;
+export const WEAPON_SIZE_GROWTH_PER_LEVEL = 0.25;
