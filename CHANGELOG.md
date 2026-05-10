@@ -4,7 +4,13 @@
 
 ## [Unreleased]
 
-### Added — SPEC-026 (= Balance Tuning + Bounded Stage with Background)
+### Changed — SPEC-027 (= Clear Title on Win Conditions)
+- `data/i18n/ui.json`: `gameover.titleClear` 追加 (= 「クリア!」 / 「Clear!」)
+- `js/battle/gameover.js`: `triggerGameOver(reason)` で `state.lastRunStats.reason` を保存、 `_renderGameOverModal` で reason="clear" のときタイトルを `gameover.titleClear` に差し替え
+- `docs/specs/SPEC-027-clear-title-on-win.md` 新規
+- `docs/specs/SPEC-INDEX.md`: SPEC-026 を `#33 (merged)` に flip、 SPEC-027 を Implementing 登録
+
+### Added — SPEC-026 (= Balance Tuning + Bounded Stage with Background) — merged in #33
 - `js/constants.js`:
   - `XP_TO_NEXT_INITIAL` `5` → **4**、 `XP_TO_NEXT_GROWTH` `1.5` → **1.3** (= レベルアップ頻度 UP)
   - `ENEMY_SPECS` 各 entry に `xpValue` を追加 (= 1 / 2 / 4 / 7 / 60、 強敵ほど多)
