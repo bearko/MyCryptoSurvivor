@@ -8,6 +8,7 @@
       "series": "Revolver",
       "archetype": "radial",
       "iconId": 1002,
+      "projectileIconId": null,
       "seriesColor": "#56ccf2",
       "tierNames": [
         {
@@ -41,7 +42,7 @@
       },
       "tierParams": [
         {
-          "bullets": 3,
+          "bullets": 1,
           "dmg": 30,
           "cdMs": 1300,
           "range": 320,
@@ -49,7 +50,7 @@
           "spreadDeg": 30
         },
         {
-          "bullets": 4,
+          "bullets": 2,
           "dmg": 38,
           "cdMs": 1200,
           "range": 340,
@@ -57,7 +58,7 @@
           "spreadDeg": 35
         },
         {
-          "bullets": 5,
+          "bullets": 3,
           "dmg": 48,
           "cdMs": 1100,
           "range": 360,
@@ -65,7 +66,7 @@
           "spreadDeg": 40
         },
         {
-          "bullets": 6,
+          "bullets": 4,
           "dmg": 60,
           "cdMs": 1000,
           "range": 380,
@@ -73,7 +74,7 @@
           "spreadDeg": 45
         },
         {
-          "bullets": 8,
+          "bullets": 6,
           "dmg": 75,
           "cdMs": 900,
           "range": 400,
@@ -786,7 +787,7 @@
           "cdMs": 600,
           "range": 0,
           "speedPx": 0,
-          "orbitR": 50
+          "orbitR": 32
         },
         {
           "bullets": 3,
@@ -794,7 +795,7 @@
           "cdMs": 600,
           "range": 0,
           "speedPx": 0,
-          "orbitR": 52
+          "orbitR": 34
         },
         {
           "bullets": 4,
@@ -802,7 +803,7 @@
           "cdMs": 600,
           "range": 0,
           "speedPx": 0,
-          "orbitR": 54
+          "orbitR": 36
         },
         {
           "bullets": 5,
@@ -810,7 +811,7 @@
           "cdMs": 600,
           "range": 0,
           "speedPx": 0,
-          "orbitR": 56
+          "orbitR": 38
         },
         {
           "bullets": 6,
@@ -818,7 +819,7 @@
           "cdMs": 600,
           "range": 0,
           "speedPx": 0,
-          "orbitR": 58
+          "orbitR": 40
         }
       ]
     },
@@ -1205,6 +1206,54 @@
         {
           "magnitude": 3
         }
+      ]
+    },
+    {
+      "extId": 18,
+      "category": "buff",
+      "series": "Specimen",
+      "archetype": "attackRangeUp",
+      "iconId": 1019,
+      "seriesColor": "#9be7c4",
+      "tierNames": [
+        { "ja": "液浸標本",   "en": "Specimen" },
+        { "ja": "結晶標本",   "en": "Crystal Specimen" },
+        { "ja": "黄金標本",   "en": "Aurum Specimen" },
+        { "ja": "古代標本",   "en": "Ancient Specimen" },
+        { "ja": "禁断標本",   "en": "Forbidden Specimen" }
+      ],
+      "skillName":    { "ja": "拡張視野",            "en": "Wide Sight" },
+      "skillDescTpl": { "ja": "攻撃範囲 ×{magnitude}", "en": "Attack range ×{magnitude}" },
+      "tierParams": [
+        { "magnitude": 1.10 },
+        { "magnitude": 1.20 },
+        { "magnitude": 1.32 },
+        { "magnitude": 1.46 },
+        { "magnitude": 1.60 }
+      ]
+    },
+    {
+      "extId": 19,
+      "category": "buff",
+      "series": "Gyoku",
+      "archetype": "pickupRangeUp",
+      "iconId": 1009,
+      "seriesColor": "#fdcb6e",
+      "tierNames": [
+        { "ja": "ギョク",     "en": "Gyoku" },
+        { "ja": "勾玉",       "en": "Magatama" },
+        { "ja": "翡翠玉",     "en": "Jade Orb" },
+        { "ja": "賢者の石",   "en": "Sage Stone" },
+        { "ja": "天玉",       "en": "Heavenly Orb" }
+      ],
+      "skillName":    { "ja": "招集",                  "en": "Beckon" },
+      "skillDescTpl": { "ja": "CE 収集範囲 ×{magnitude}", "en": "CE pickup range ×{magnitude}" },
+      "tierParams": [
+        { "magnitude": 1.20 },
+        { "magnitude": 1.40 },
+        { "magnitude": 1.65 },
+        { "magnitude": 1.95 },
+        { "magnitude": 2.30 }
       ]
     }
   ]

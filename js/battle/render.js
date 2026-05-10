@@ -10,7 +10,7 @@ import {
   HP_BAR_PLAYER_WIDTH, HP_BAR_PLAYER_HEIGHT,
   DAMAGE_NUMBER_LIFE_MS,
 } from "../constants.js";
-import { drawSpriteCircular, drawSpriteRotated, getExtSprite } from "./sprites.js";
+import { drawSpriteCircular, drawSpriteRotated, getExtSprite, getGemSprite } from "./sprites.js";
 
 /**
  * 1 frame 描画。 ctx は dpr 反映済の transform で渡される前提。
@@ -81,22 +81,27 @@ export function renderBattle(ctx) {
     ctx.lineCap = "butt";
   }
 
-  // gems (= 黄ダイヤ = 45 度回転正方形)
+  // gems (= SPEC-019: MCH の CE icon、 fallback で従来の黄ダイヤ)
+  const gemSprite = getGemSprite();
   for (const g of gems) {
     const sx = g.x - camera.x;
     const sy = g.y - camera.y;
-    if (sx < -g.r || sx > w + g.r || sy < -g.r || sy > h + g.r) continue;
-    ctx.fillStyle = g.color;
-    ctx.beginPath();
-    ctx.moveTo(sx,        sy - g.r);
-    ctx.lineTo(sx + g.r,  sy);
-    ctx.lineTo(sx,        sy + g.r);
-    ctx.lineTo(sx - g.r,  sy);
-    ctx.closePath();
-    ctx.fill();
-    ctx.strokeStyle = "rgba(0, 0, 0, 0.4)";
-    ctx.lineWidth = 1;
-    ctx.stroke();
+    const drawR = g.r * 1.6;   // ce.png は丸い MCH エンブレム、 ダイヤより大きめに
+    if (sx < -drawR || sx > w + drawR || sy < -drawR || sy > h + drawR) continue;
+    const drew = drawSpriteCircular(ctx, gemSprite, sx, sy, drawR);
+    if (!drew) {
+      ctx.fillStyle = g.color;
+      ctx.beginPath();
+      ctx.moveTo(sx,        sy - g.r);
+      ctx.lineTo(sx + g.r,  sy);
+      ctx.lineTo(sx,        sy + g.r);
+      ctx.lineTo(sx - g.r,  sy);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = "rgba(0, 0, 0, 0.4)";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
   }
 
   // SPEC-015: projectiles を extension icon で描画 (= 進行方向に rotate、 系列ごと iconRotOffset)
