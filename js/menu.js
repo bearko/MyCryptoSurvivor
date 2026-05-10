@@ -1,8 +1,9 @@
 // ============================================================
-// menu.js — ヘッダー一時停止メニュー (= SPEC-034)
+// menu.js — ヘッダー一時停止メニュー (= SPEC-034 / SPEC-035)
 // ============================================================
 //
-// ヘッダーの ☰ ボタンで開く。 ボタン 3 択:
+// ヘッダーの ☰ ボタンで開く。 ボタン 4 択:
+//   - ランキング                   → ランキングモーダルを開く (= SPEC-035)
 //   - ステージをはじめからやり直す → 現ステージ idx 維持で startBattle 再呼出
 //   - タイトルに戻る               → app 非表示 / titleScreen 表示 / state リセット
 //   - 閉じる                       → 単に modal を閉じる
@@ -19,6 +20,7 @@ let _wired = false;
 let _opened = false;
 
 function _modal()      { return document.getElementById("pauseMenuModal"); }
+function _btnRanking() { return document.getElementById("pauseMenuRanking"); }
 function _btnRestart() { return document.getElementById("pauseMenuRestart"); }
 function _btnTitle()   { return document.getElementById("pauseMenuToTitle"); }
 function _btnClose()   { return document.getElementById("pauseMenuClose"); }
@@ -28,12 +30,20 @@ export function installMenu() {
   if (_wired) return;
   _wired = true;
   _btnOpen()?.addEventListener("click", openMenu);
+  _btnRanking()?.addEventListener("click", _onRanking);   // SPEC-035
   _btnRestart()?.addEventListener("click", _onRestart);
   _btnTitle()?.addEventListener("click", _onToTitle);
   _btnClose()?.addEventListener("click", closeMenu);
   // 言語切替で再描画 (= 既存挙動と同じ。 data-i18n applyDataI18n も働く)
   onLangChange(_renderLabels);
   _renderLabels();
+}
+
+async function _onRanking() {
+  // メニューを閉じてランキングモーダルを開く (= 同時に複数 modal を開かない)
+  closeMenu();
+  const m = await import("./ranking-ui.js");
+  m.openRanking();
 }
 
 export function openMenu() {
@@ -98,6 +108,7 @@ function _onToTitle() {
 }
 
 function _renderLabels() {
+  const trk = _btnRanking(); if (trk) trk.textContent = t("menu.ranking", "ランキング");
   const tr = _btnRestart(); if (tr) tr.textContent = t("menu.restart", "ステージをはじめからやり直す");
   const tt = _btnTitle();   if (tt) tt.textContent = t("menu.toTitle", "タイトルに戻る");
   const tc = _btnClose();   if (tc) tc.textContent = t("menu.close",   "閉じる");

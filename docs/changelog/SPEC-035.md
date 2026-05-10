@@ -1,0 +1,14 @@
+- **GAS バックエンドスクリプト** `tools/gas-ranking.gs` 新規 (= `doPost` 追記 + `doGet` top N、 `ranking` シート自動作成、 score 降順 / version 絞込)
+- **デプロイ手順書** `docs/process/RANKING_SETUP.md` 新規 (= Spreadsheet 新規 → Apps Script 貼付 → ウェブアプリデプロイ → URL 投入の 5 分手順、 不正対策 hints + 再デプロイ + 削除手順)
+- **`js/ranking-ui.js`** 新規: ランキングモーダル制御、 `installRankingUI` を `init()` から呼出、 `openRanking()` / `closeRanking()` で pause/resume、 fetch + table render + filter (= 全 / 現バージョン)
+- **URL ブートストラップ**: `?#api=base64(URL)` 付き URL を踏むと自動で `localStorage` 保存 + hash 消去
+- **タイトル画面**: `#btnTitleRanking` 追加 (= "Press to Start" の下)
+- **一時停止メニュー** (`js/menu.js` + `index.html`): `#pauseMenuRanking` を 4 つめのボタンとして追加、 click で `import("./ranking-ui.js").openRanking()` を呼出
+- **ランキングモーダル** `#rankingModal` (= 既存 `.gameover-modal` 流用 + `.ranking-card`):
+  - フィルタ select (= 全 / 現バージョン)
+  - 更新ボタン
+  - 5 列 table (= # / プレイヤー / スコア / 撃破 / 時間)
+  - 状態メッセージ + URL 未設定時の入力欄 + 保存ボタン
+- **活動レポート連携** (`js/battle/activity-report.js` + `index.html`): 送信成功時に `#activityReportViewRanking` (= 「ランキングを見る」 ボタン) が現れ、 click で `openRanking()`
+- **i18n** (`data/i18n/ui.json`): `ranking.*` 17 キー + `menu.ranking` 追加 (= title / openTitle / refresh / loading / empty / loadFail / needUrl / urlInvalid / urlSaved / urlPlaceholder / configLabel / saveUrl / filter.{all,current} / col.{rank,player,score,kills,time})
+- **CSS** (`css/components.css`): `.ranking-card` / `.ranking-toolbar` / `.ranking-filter` / `.ranking-table*` / `.ranking-msg` / `.ranking-config*` / `.ranking-close` / `.title-screen__ranking` + mobile breakpoint
