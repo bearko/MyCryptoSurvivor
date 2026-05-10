@@ -11,12 +11,18 @@ import { t, tpl, onLangChange } from "../i18n.js";
 import {
   getPlayerName, setPlayerName, submitScore, getRankingApiUrl,
 } from "../ranking-client.js";
-import { APP_VERSION } from "../constants.js";
+import { APP_VERSION, SFX } from "../constants.js";
 import { formatElapsed } from "../survival.js";
+import { stopBgm, playSe } from "../audio.js";
 
 let _wired = false;
 
-export function triggerGameOver() {
+/**
+ * SPEC-009: HP 0 で Game Over。
+ * SPEC-017: reason ("lose" | "clear") を取って BGM 停止 + 対応 SE を鳴らす。
+ *           reason 省略時は "lose" 扱い (= 既存呼出と互換)。
+ */
+export function triggerGameOver(reason = "lose") {
   if (state.battle.gameOver) return;
   state.battle.gameOver = true;
   state.lastRunStats = {
@@ -36,6 +42,10 @@ export function triggerGameOver() {
     state.pendingPickIsStarter = false;
     resumeTime();   // levelup の pauseTime を解く (= triggerGameOver の +1 と相殺ではなく独立)
   }
+  // SPEC-017: BGM 停止 + 結果 SE
+  stopBgm();
+  const sfx = (reason === "clear") ? SFX.GAME_OVER_CLEAR : SFX.GAME_OVER_LOSE;
+  playSe(sfx, 0, 0.7);
 }
 
 export async function applyRetry() {
