@@ -63,6 +63,19 @@ export function extImg(extOrId) {
 }
 
 /**
+ * SPEC-021: tier ごとのアイコン URL を返す。
+ * ext.tierIconIds[level-1] が無ければ ext.iconId にフォールバック。
+ * @param {object} ext - extension entry (必須)
+ * @param {number} level - 1..5
+ */
+export function extTierImg(ext, level) {
+  if (!ext) return img(`Image/Extensions/0.png`);
+  const idx = Math.max(0, Math.min((ext.tierIconIds?.length ?? 1) - 1, (level | 0) - 1));
+  const id = ext.tierIconIds?.[idx] ?? ext.iconId;
+  return img(`Image/Extensions/${id}.png`);
+}
+
+/**
  * tier index (0..4) でローカライズ済の tier 名を返す。
  * @param {object} ext - extension entry
  * @param {number} level - 1..5 (= tier index = level-1)
