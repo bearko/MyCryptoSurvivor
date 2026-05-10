@@ -4,7 +4,17 @@
 
 ## [Unreleased]
 
-### Changed — SPEC-028 (= Orbit Redistribution + Per-Level Size Growth)
+### Added — SPEC-029 (= Logo Image + OG Thumbnail)
+- `assets/logo.png` 追加 (= 2200×640、 タイトル / スプラッシュ用バナーロゴ)
+- `assets/og-image.png` 追加 (= 1280×720、 X / Twitter / Discord プレビュー用)
+- `index.html`:
+  - splash と title-screen のテキスト 「MyCryptoSurvivor」 を `<img src="assets/logo.png">` に置換
+  - OGP / Twitter meta を `og-image.png` (root) → `assets/og-image.png` に変更、 `og:image:width/height` + `twitter:image` を追加
+- `css/layout.css`: `.splash__logo` / `.title-screen__title` / `.title-screen__logo` を画像ロゴ向けに再設計 (= drop-shadow、 mobile 対応の `min(Nvw, Mpx)`)
+- `docs/specs/SPEC-029-logo-and-og-image.md` 新規
+- `docs/specs/SPEC-INDEX.md`: SPEC-028 を `#35 (merged)` に flip、 SPEC-029 を Implementing 登録
+
+### Changed — SPEC-028 (= Orbit Redistribution + Per-Level Size Growth) — merged in #35
 - `js/constants.js`: `WEAPON_SIZE_GROWTH_PER_LEVEL = 0.06` (= Lv 連動の当たり / icon サイズ倍率、 Lv.5 で +24%)
 - `js/battle/archetypes.js`:
   - `_levelSizeMul(w)` 新規 (= 1 + GROWTH × (level - 1))
