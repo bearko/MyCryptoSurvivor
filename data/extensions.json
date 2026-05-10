@@ -1304,13 +1304,13 @@
       },
       "tierParams": [
         {
-          "magnitude": 0
-        },
-        {
           "magnitude": 1
         },
         {
           "magnitude": 1
+        },
+        {
+          "magnitude": 2
         },
         {
           "magnitude": 2
