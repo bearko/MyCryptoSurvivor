@@ -33,9 +33,13 @@ export function weaponFromExt(extId, level) {
     speedPx:    params.speedPx ?? 280,
     bullets:    params.bullets ?? 1,
     color,
-    iconId:     ext.iconId ?? null,           // SPEC-015: render が描画用に使う
+    // SPEC-021: tier ごとの icon (= ext.tierIconIds[level-1])、 fallback で iconId
+    iconId:     ext.tierIconIds?.[lv - 1] ?? ext.iconId ?? null,
     // SPEC-019: 投射体専用 icon を ext で明示できる (= null で circle fallback)
-    projectileIconId: (ext.projectileIconId !== undefined) ? ext.projectileIconId : (ext.iconId ?? null),
+    // SPEC-021: tier 連動 (= projectileIconId 明示なら全 tier 共通、 未設定なら現 tier icon に追従)
+    projectileIconId: (ext.projectileIconId !== undefined)
+      ? ext.projectileIconId
+      : (ext.tierIconIds?.[lv - 1] ?? ext.iconId ?? null),
     series:     ext.series ?? null,           // SPEC-015: rotation offset 判定用
     lastFireMs: 0,
     // SPEC-012 が読む可能性のある archetype 別パラメータをそのまま渡す

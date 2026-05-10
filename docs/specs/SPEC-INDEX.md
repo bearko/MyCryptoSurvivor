@@ -24,7 +24,8 @@
 | SPEC-017 | Sound Effects + BGM Wiring | Done | Phase 0 / Phase 1 | #19 (merged) |
 | SPEC-018 | Extension Icon Mapping Fix (= 名前と icon の不一致解消) | Done | Phase 0 / Phase 1 | #21 (merged、 旧 #20 は close) |
 | SPEC-019 | 2 New Buff Series + Revolver/Blade Tweaks + XP Gem Icon | Done | Phase 0 / Phase 1 | #23 (merged) |
-| SPEC-020 | Extension Icon Fix (= ユーザー指定 MCH ID で全系列を完全一致) | Implementing | Phase 0 / Phase 1 | feat/spec-020-fix-icons-with-user-mapping |
+| SPEC-020 | Extension Icon Fix (= ユーザー指定 MCH ID で全系列を完全一致) | Implementing | Phase 0 / Phase 1 | #24 (open) |
+| SPEC-021 | Per-Tier Extension Icons + Names (= MCH 公式準拠、 1xxx → 5xxx) | Implementing | Phase 0 / Phase 1 | feat/spec-021-per-tier-icons-and-names |
 
 ## 命名規則
 
