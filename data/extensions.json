@@ -7,7 +7,7 @@
       "category": "weapon",
       "series": "Revolver",
       "archetype": "radial",
-      "iconId": 1002,
+      "iconId": 1029,
       "seriesColor": "#56ccf2",
       "tierNames": [
         {
@@ -87,7 +87,7 @@
       "category": "weapon",
       "series": "Book",
       "archetype": "orbit",
-      "iconId": 1003,
+      "iconId": 1008,
       "seriesColor": "#bb86fc",
       "tierNames": [
         {
@@ -167,7 +167,7 @@
       "category": "weapon",
       "series": "Panjandrum",
       "archetype": "bigHoming",
-      "iconId": 1022,
+      "iconId": 1023,
       "seriesColor": "#ff7a59",
       "tierNames": [
         {
@@ -247,7 +247,7 @@
       "category": "weapon",
       "series": "Moai",
       "archetype": "dropTarget",
-      "iconId": 1023,
+      "iconId": 1018,
       "seriesColor": "#d4d4dc",
       "tierNames": [
         {
@@ -337,7 +337,7 @@
       "category": "weapon",
       "series": "Shuriken",
       "archetype": "stack",
-      "iconId": 1011,
+      "iconId": 1014,
       "seriesColor": "#5ecf8a",
       "tierNames": [
         {
@@ -422,7 +422,7 @@
       "category": "weapon",
       "series": "LaserGun",
       "archetype": "beam",
-      "iconId": 1003,
+      "iconId": 1002,
       "seriesColor": "#f0c14b",
       "tierNames": [
         {
@@ -512,7 +512,7 @@
       "category": "weapon",
       "series": "Knife",
       "archetype": "diagonal",
-      "iconId": 1001,
+      "iconId": 1028,
       "seriesColor": "#d4d4dc",
       "tierNames": [
         {
@@ -662,7 +662,7 @@
       "category": "weapon",
       "series": "Pierrot",
       "archetype": "placeBomb",
-      "iconId": 1025,
+      "iconId": 1032,
       "seriesColor": "#fdcb6e",
       "tierNames": [
         {
@@ -937,7 +937,7 @@
       "category": "buff",
       "series": "Boots",
       "archetype": "speedUp",
-      "iconId": 1005,
+      "iconId": 1031,
       "seriesColor": "#5ecf8a",
       "tierNames": [
         {
@@ -1047,7 +1047,7 @@
       "category": "buff",
       "series": "Shield",
       "archetype": "dmgTakenDown",
-      "iconId": 1004,
+      "iconId": 1010,
       "seriesColor": "#56ccf2",
       "tierNames": [
         {
@@ -1102,7 +1102,7 @@
       "category": "buff",
       "series": "Apple",
       "archetype": "dmgUp",
-      "iconId": 1030,
+      "iconId": 1033,
       "seriesColor": "#e76060",
       "tierNames": [
         {
@@ -1157,7 +1157,7 @@
       "category": "buff",
       "series": "Oriflamme",
       "archetype": "bulletCount",
-      "iconId": 1022,
+      "iconId": 1016,
       "seriesColor": "#bb86fc",
       "tierNames": [
         {
