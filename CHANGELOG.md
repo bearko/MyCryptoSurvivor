@@ -5,6 +5,32 @@
 ## [Unreleased]
 
 <!-- BEGIN AUTO-UNRELEASED -->
+### Added — SPEC-037 (= Game Modes — NORMAL / ABSOLUTE Regulation)
+- **ゲームモード選択画面** (`index.html` + `js/mode-select.js` 新規): タイトル → **NORMAL / ABSOLUTE 選択** → ヒーロー選択 の 3 段遷移。 各モードカードに 「これで始める」 ボタン + バックボタン
+- **ABSOLUTE レギュレーション** (`js/state.js` + `js/constants.js`):
+  - `state.regulation` (= "NORMAL" | "ABSOLUTE")、 `state.absolute = { spawnMul, hpMul, dmgMul, speedMul }`
+  - 4 軸を **0.5〜5.0** (= 0.25 step) で個別調整、 スライダー UI でリアルタイム反映 (= 全軸 5× で score mul 5.0)
+  - `computeRegulationMul(regulation, absolute)` = 4 軸の算術平均 (= NORMAL は常に 1.0)
+- **雑魚への倍率適用** (`js/battle/enemies.js`):
+  - spawn 間隔: `ENEMY_SPAWN_INTERVAL_MS / state.absolute.spawnMul` (= mul=2 で 2× 出現)
+  - hp / dmg / speed に `state.absolute.{hpMul, dmgMul, speedMul}` を乗算
+  - ボスは ABSOLUTE 倍率を **受けない** (= 絶対値維持)
+- **スコア倍率** (`js/battle/activity-report.js` + `js/battle/gameover.js`):
+  - 最終スコア = `computeScore(run) × regulationMul` で計算、 ranking 送信
+  - 活動レポートにレギュ表示 (= 「レギュレーション: ABSOLUTE ×1.50」 行追加)
+- **ランキング拡張** (`js/ranking-ui.js` + `index.html`):
+  - レギュレーションフィルタ追加 (= 全 / NORMAL / ABSOLUTE)
+  - 表に **レギュ列** を追加 (= NORMAL / `ABS ×1.50` 短縮形)
+- **GAS バックエンド** (`tools/gas-ranking.gs`):
+  - HEADERS に `regulation` / `regulationMul` を追加
+  - `doGet` に `?regulation=...` フィルタ
+  - `seedSampleData` の dummy が交互に NORMAL / ABSOLUTE (= 1.0..2.0 ランダム mul)
+- **Game Over の 2 ボタン化** (`index.html` + `js/battle/gameover.js`):
+  - 旧 「リトライ」 → 「今のレギュレーションで再走」 にラベル変更 + 挙動維持
+  - 「タイトルに戻る」 を新設 (= 戦闘停止 + state リセット + titleScreen 表示)
+- **i18n** (`data/i18n/ui.json`): `mode.*` 7 / `absolute.axis.*` 4 / `report.regulation` / `ranking.col.reg` / `ranking.reg.*` 3 / `gameover.toTitle` / `gameover.retryCurrent`
+- **CSS** (`css/components.css`): `.mode-select` / `.mode-card*` / `.abs-slider*` / `.gameover-modal__choices` 一式
+
 ### Added — SPEC-036 (= GAS Sample Data Seed + Re-apply Default API URL)
 - **GAS シード関数 3 種** (`tools/gas-ranking.gs`):
   - `seedSampleData()` = `ranking` シートをリセット → ヘッダー + 12 件のダミーデータ投入 (= 推奨)
