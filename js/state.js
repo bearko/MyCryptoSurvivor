@@ -70,6 +70,7 @@ export const state = {
     stageElapsedMs: 0,     // ステージ開始からの経過 (= ms、 wave 切替に使う)
     bossSpawned:    false, // ディープ・ヨシュカ multi-spawn 防止
     bossDefeated:   false, // ボス撃破フラグ (= clear trigger)
+    rerollsLeft:    2,     // SPEC-023: 1 戦闘あたり picker リロール可能回数
   },
 
   // SPEC-008: 装備 extension + Level-up pick モーダル状態
