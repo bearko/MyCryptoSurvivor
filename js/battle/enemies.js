@@ -60,7 +60,9 @@ export function tickEnemies(dt, nowMs) {
   }
 
   // 通常 spawn (= wave pool からランダム、 ステージごと spawn 間隔 mul)
-  const spawnInterval = ENEMY_SPAWN_INTERVAL_MS * (stage.spawnIntervalMul ?? 1);
+  // SPEC-037: ABSOLUTE の spawnMul で出現密度をスケール (= mul=2 → 2 倍出る → interval を 1/2 に)
+  const absSpawnMul = state.absolute?.spawnMul ?? 1;
+  const spawnInterval = ENEMY_SPAWN_INTERVAL_MS * (stage.spawnIntervalMul ?? 1) / Math.max(0.1, absSpawnMul);
   if (b.enemies.length < MAX_ENEMIES &&
       nowMs - b.lastEnemySpawnMs >= spawnInterval) {
     const pool = _currentPool(b.stageElapsedMs);
@@ -141,13 +143,18 @@ export function spawnEnemyAtRing(enemyId = 101) {
   if (y >  HH) y =  HH;
 
   // SPEC-030: 雑魚はステージ mul で強化、 ボス は絶対値 (= ENEMY_SPECS そのまま)
-  const hpMul  = isBoss ? 1 : (stage.enemyHpMul  ?? 1);
-  const dmgMul = isBoss ? 1 : (stage.enemyDmgMul ?? 1);
+  // SPEC-037: ABSOLUTE 倍率 (= 雑魚のみ) を更に乗算。 ボスは規定通り
+  const absHp    = isBoss ? 1 : (state.absolute?.hpMul    ?? 1);
+  const absDmg   = isBoss ? 1 : (state.absolute?.dmgMul   ?? 1);
+  const absSpeed = isBoss ? 1 : (state.absolute?.speedMul ?? 1);
+  const hpMul  = isBoss ? 1 : (stage.enemyHpMul  ?? 1) * absHp;
+  const dmgMul = isBoss ? 1 : (stage.enemyDmgMul ?? 1) * absDmg;
   const xpMul  = isBoss ? 1 : (stage.xpMul       ?? 1);
 
   const hp     = Math.max(1, Math.round(spec.hp  * hpMul));
   const dmg    = Math.max(1, Math.round(spec.dmg * dmgMul));
   const xpVal  = Math.max(1, Math.round((spec.xpValue ?? 1) * xpMul));
+  const speed  = Math.max(10, spec.speed * absSpeed);
 
   b.enemies.push({
     id: b.nextEntityId++,
@@ -156,7 +163,7 @@ export function spawnEnemyAtRing(enemyId = 101) {
     r: spec.radius,
     hp, hpMax: hp,
     dmg,
-    speed: spec.speed,
+    speed,
     color: ENEMY_COLOR,
     hitFreezeMs: 0,
     isBoss,
