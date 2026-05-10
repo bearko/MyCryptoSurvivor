@@ -1,0 +1,12 @@
+- **レアエネミーサイズ × 1.5** (`js/constants.js` ENEMY_SPECS): 147 radius 14→21、 170 radius 21→32、 396 radius 13→20、 407 radius 16→24
+- **武器サイズ拡大率 × 4 強化** (`js/constants.js`): `WEAPON_SIZE_GROWTH_PER_LEVEL` `0.06` → **`0.25`** (= Lv.5 で Lv.1 の 2 倍、 アイコン + 当たり判定 + ビーム厚 + 爆弾アイコン 全てに反映)
+- **リロール回数 +1** (`js/constants.js`): `REROLL_PER_BATTLE` `2` → **`3`**
+- **ヘッダーメニュー (一時停止)** (`index.html` + `js/menu.js` 新規 + `js/main.js`):
+  - `<header.header__right>` に `☰` ボタン (`#btnMenuOpen`) を追加
+  - `#pauseMenuModal` (= 3 ボタンモーダル): 「ステージをはじめからやり直す」 / 「タイトルに戻る」 / 「閉じる」
+  - `installMenu()` を `init()` から呼出、 open で `pauseTime` / close で `resumeTime`
+  - **やり直す**: state.run の現ステージ snapshot を除去 → totals 再計算 → `startBattle(state.ownedHero)` で武器 / Lv / HP / 撃破数 0 リセット (= currentStageIdx 維持)
+  - **タイトルに戻る**: 全 modal close → `stopBattle` + `stopBgm` → state.ownedHero / state.run / currentStageIdx / stats を全リセット → `#app` を隠して `#titleScreen` に戻る
+  - **閉じる**: modal を閉じて `resumeTime` のみ
+- `data/i18n/ui.json`: `menu.title` / `menu.restart` / `menu.toTitle` / `menu.close`
+- `css/components.css`: `.pause-menu__card` (= max-width 360px) + `.pause-menu__buttons` (= flex column、 gap 0.5rem)

@@ -39,6 +39,7 @@
 | SPEC-031 | Pierce + LaserGun Fix + Pierrot AoE + Horse Tune + Gunbai + Header Date Removal | Done | Phase 0 / Phase 1 | #39 (merged) |
 | SPEC-032 | Changelog Fragments + Auto-Generated SPEC-INDEX | Implementing | Phase 0 / Phase 1 | feat/spec-032-changelog-fragments |
 | SPEC-033 | Rare Enemies + Magic Card + Activity Report + Stage 2/3 Boss Clear Fix | Implementing | Phase 0 / Phase 1 | feat/spec-033-rare-enemies-and-activity-report |
+| SPEC-034 | Rare Size + Weapon Growth × 2 + Reroll 3 + Pause Menu | Implementing | Phase 0 / Phase 1 | feat/spec-034-tunes-and-pause-menu |
 <!-- END AUTO-INDEX -->
 
 ## 命名規則

@@ -75,6 +75,11 @@
   "gameover.retry":      { "ja": "リトライ",                        "en": "Retry" },
   "gameover.noApi":      { "ja": "ランキング API 未設定",             "en": "Ranking API not configured" },
 
+  "menu.title":          { "ja": "メニュー",                       "en": "Menu" },
+  "menu.restart":        { "ja": "ステージをはじめからやり直す",     "en": "Restart this stage" },
+  "menu.toTitle":        { "ja": "タイトルに戻る",                  "en": "Back to title" },
+  "menu.close":          { "ja": "閉じる",                         "en": "Close" },
+
   "btn.close":           { "ja": "閉じる",                         "en": "Close" },
   "btn.confirm":         { "ja": "確認",                           "en": "Confirm" },
   "btn.cancel":          { "ja": "キャンセル",                     "en": "Cancel" },
