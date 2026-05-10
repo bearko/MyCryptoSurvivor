@@ -1,0 +1,9 @@
+- `docs/specs/SPEC-022-enemy-variety-and-boss.md` 新規 (= 5 分間ステージ / 1 分ごとに敵 pool 拡張 / 4 分でボス出現 / 5 分 or ボス撃破でクリア)
+- `js/constants.js`: `STAGE_DURATION_MS=300000` / `BOSS_SPAWN_AT_MS=240000` / `BOSS_ENEMY_ID=171` / `WAVE_TABLE` / `ENEMY_SPECS` (= 各敵に hp/dmg/speed/radius)
+- `js/state.js`: `state.battle.stageElapsedMs` / `bossSpawned` / `bossDefeated`
+- `data/enemies.json`: ディープ・ヨシュカ (= id 171) を追加
+- `js/battle/enemies.js`: tickEnemies が wave 切替 + boss spawn + クリア判定、 spawnEnemyAtRing が enemyId 引数を取り個別 spec を使う
+- `js/battle/sprites.js`: `getEnemySprite(enemyId)` 新規
+- `js/battle/render.js`: enemy ごとに sprite を引き当て (= per-enemy 画像)
+- `js/battle/damage.js`: ボス撃破時に `bossDefeated=true` (= clear trigger)
+- `js/battle/index.js`: startBattle で stage timing reset

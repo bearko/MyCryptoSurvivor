@@ -1,3 +1,12 @@
+---
+id: SPEC-019
+title: 2 New Buff Series + Revolver/Blade Tweaks + XP Gem Icon
+status: Done
+pr: 23
+phase: Phase 0 / Phase 1
+kind: Added
+---
+
 # SPEC-019 — 2 New Buff Series + Revolver/Blade Tweaks + XP Gem Icon
 
 - **Status**: Implementing

@@ -1,3 +1,12 @@
+---
+id: SPEC-015
+title: Extension Visual Icons + Weapon Balance + Moai Homing/Shockwave
+status: Done
+pr: 17
+phase: Phase 0 / Phase 1
+kind: Added
+---
+
 # SPEC-015 — Extension Visual Icons + Weapon Balance + Moai Homing/Shockwave
 
 - **Status**: Implementing

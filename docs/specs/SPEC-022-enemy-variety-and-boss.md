@@ -1,3 +1,12 @@
+---
+id: SPEC-022
+title: Enemy Variety + Time-Based Waves + Deep Yoshka Boss
+status: Done
+pr: 28
+phase: Phase 0 / Phase 1
+kind: Added
+---
+
 # SPEC-022 — Enemy Variety + Time-Based Waves + Deep Yoshka Boss
 
 - **Status**: Implementing

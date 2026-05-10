@@ -1,0 +1,8 @@
+- `js/constants.js`: `WEAPON_SIZE_GROWTH_PER_LEVEL = 0.06` (= Lv 連動の当たり / icon サイズ倍率、 Lv.5 で +24%)
+- `js/battle/archetypes.js`:
+  - `_levelSizeMul(w)` 新規 (= 1 + GROWTH × (level - 1))
+  - `ensureOrbits` 全面リファクタ — 個数変化時に既存 + 新規を **等間隔で再配置** (= 2/3/4/5/6 → 180°/120°/90°/72°/60°)、 毎 frame で iconId / radius / iconSize / dmg / color を現 weapon spec から再書込 (= レベルアップ即時反映 + tier icon swap)
+  - 全 fireXxx + fireHoming で `iconSize` / 投射体 `r` / Pierrot bomb iconSize / LaserGun beam thick に lvMul を乗算
+- `js/battle/render.js`: bomb 描画で iconSize を bomb entity から (= `b.iconSize ?? 26`) 読む
+- `docs/specs/SPEC-028-orbit-redistribute-and-size-growth.md` 新規
+- `docs/specs/SPEC-INDEX.md`: SPEC-027 を `#34 (merged)` に flip、 SPEC-028 を Implementing 登録

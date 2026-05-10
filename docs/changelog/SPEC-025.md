@@ -1,0 +1,7 @@
+- `js/constants.js`: SFX 9 件 + `BGM_BATTLE` のパスを MCH 実体に合わせて修正 (= 全 10 件 404 → 200)
+  - `BGM_BATTLE` `Audio/SE/pvp.mp3` → **`Audio/BGM/pvp.mp3`**
+  - `HERO_PICK` / `GEM_PICKUP` / `LEVEL_UP` / `PICK_WEAPON` を `Audio/SE/Actions/` 配下へ
+  - `PLAYER_DAMAGED` / `PICK_BUFF` / `PICK_HEAL` を `Audio/SE/Battle/` 配下へ
+  - `GAME_OVER_LOSE` / `GAME_OVER_CLEAR` を `Audio/SE/Jingles/` 配下へ
+- `docs/specs/SPEC-025-fix-audio-paths.md` 新規 (= MCH 実構造表 + 旧→新パス対応表)
+- `docs/specs/SPEC-INDEX.md`: SPEC-024 を `#31 (merged)` に flip、 SPEC-025 を Implementing 登録

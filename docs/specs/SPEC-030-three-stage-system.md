@@ -1,3 +1,12 @@
+---
+id: SPEC-030
+title: Three-Stage System (= node : アバカス / ホレリス / トロイ + ファオ / yamap ボス)
+status: Done
+pr: 38
+phase: Phase 0 / Phase 1
+kind: Added
+---
+
 # SPEC-030 — Three-Stage System (Abacus / Hollerith / Troy)
 
 - **Status**: Implementing

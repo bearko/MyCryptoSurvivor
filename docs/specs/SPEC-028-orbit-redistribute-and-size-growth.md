@@ -1,3 +1,12 @@
+---
+id: SPEC-028
+title: Orbit Redistribution + Per-Level Size Growth (= Book/Blade 等間隔 + tier icon swap + Lv 連動拡大)
+status: Done
+pr: 35
+phase: Phase 0 / Phase 1
+kind: Changed
+---
+
 # SPEC-028 — Orbit Redistribution + Per-Level Size Growth
 
 - **Status**: Implementing

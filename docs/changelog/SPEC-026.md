@@ -1,0 +1,13 @@
+- `js/constants.js`:
+  - `XP_TO_NEXT_INITIAL` `5` → **4**、 `XP_TO_NEXT_GROWTH` `1.5` → **1.3** (= レベルアップ頻度 UP)
+  - `ENEMY_SPECS` 各 entry に `xpValue` を追加 (= 1 / 2 / 4 / 7 / 60、 強敵ほど多)
+  - `WORLD_W = 1000` / `WORLD_H = 1500` / `BG_IMAGE_PATH = "Image/Backgrounds/1001.png"` / `BG_OVERLAY_COLOR = "rgba(0,0,0,0.45)"`
+- `data/extensions.json`: Gyoku tierParams `1.2/1.4/1.65/1.95/2.3` → **`1.4/1.8/2.3/2.9/3.6`** (= 0 起点増分の倍化)
+- `js/battle/enemies.js`: `spawnEnemyAtRing` で `enemy.xpValue = spec.xpValue ?? 1` を持たせ、 spawn 座標を world 端でクランプ
+- `js/battle/damage.js`: 撃破時 `spawnGem(e.x, e.y, e.xpValue ?? 1)` で個別 XP 値を渡す
+- `js/battle/player.js`: `tickPlayer` 末尾で player 座標を world 端でクランプ、 `centerCameraOnPlayer` で camera を world 内に固定 (= viewport ≥ world は中央寄せ、 < world は端で停止)
+- `js/battle/sprites.js`: `getBackgroundSprite()` 新規 export
+- `js/battle/render.js`: 冒頭で `_drawBackground` (= bg 画像 + overlay) を実行、 viewport / stage 矩形の AABB 交差で clip
+- `js/battle/index.js`: `startBattle` で `getBackgroundSprite()` を preload
+- `docs/specs/SPEC-026-balance-and-stage-bg.md` 新規 (= 設計 + 受入基準)
+- `docs/specs/SPEC-INDEX.md`: SPEC-025 を `#32 (merged)` に flip、 SPEC-026 を Implementing 登録

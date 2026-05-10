@@ -1,3 +1,12 @@
+---
+id: SPEC-003
+title: MCH IP Data Sources (= bearko/mycryptoheroes 由来の heroes/extensions/enemies 先行整備)
+status: Done
+pr: 4
+phase: Phase 0 / Phase 1
+kind: Added
+---
+
 # SPEC-003 — MCH IP Data Sources (= heroes / extensions / enemies 先行整備)
 
 - **Status**: Implementing

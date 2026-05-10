@@ -1,3 +1,12 @@
+---
+id: SPEC-004
+title: Survival HUD (= Day N + HP / 体温 / 食料 + tick decay)
+status: Done
+pr: 5
+phase: Phase 0 / Phase 1
+kind: Added
+---
+
 # SPEC-004 — Survival HUD (= Day N + HP / 体温 / 食料 + tick decay)
 
 - **Status**: Implementing

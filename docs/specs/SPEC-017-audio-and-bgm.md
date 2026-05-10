@@ -1,3 +1,12 @@
+---
+id: SPEC-017
+title: Sound Effects + BGM Wiring
+status: Done
+pr: 19
+phase: Phase 0 / Phase 1
+kind: Added
+---
+
 # SPEC-017 — Sound Effects + BGM Wiring
 
 - **Status**: Implementing

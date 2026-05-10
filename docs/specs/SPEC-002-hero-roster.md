@@ -1,3 +1,12 @@
+---
+id: SPEC-002
+title: Hero Roster (= heroes.json + 10 体実データ + state.ownedHero)
+status: Done
+pr: 2
+phase: Phase 0 / Phase 1
+kind: Added
+---
+
 # SPEC-002 — Phase 1 ヒーロー実データ (= roster + 選択確定)
 
 - **Status**: Implementing

@@ -1,0 +1,5 @@
+- `assets/logo.png` 追加 (= 2200×640、 タイトル / スプラッシュ用バナーロゴ)
+- `assets/og-image.png` 追加 (= 1280×720、 X / Twitter / Discord プレビュー用)
+- `index.html`: splash / title のテキストを `<img src="assets/logo.png">` 化、 OGP `og:image` を `assets/og-image.png` + `width`/`height` + `twitter:image`
+- `css/layout.css`: `.splash__logo` / `.title-screen__logo` を画像ロゴ向けに再設計
+- `docs/specs/SPEC-029-logo-and-og-image.md` 新規
