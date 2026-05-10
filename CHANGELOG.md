@@ -4,7 +4,17 @@
 
 ## [Unreleased]
 
-### Added — SPEC-022 (= Enemy Variety + Time-Based Waves + Deep Yoshka Boss)
+### Added — SPEC-023 (= Picker Stock Limit + Reroll)
+- `docs/specs/SPEC-023-picker-stock-and-reroll.md` 新規 (= 武器 5 / 強化 5 のストック上限 + 1 戦 2 回のリロール)
+- `js/constants.js`: `STOCK_LIMIT_WEAPON=5` / `STOCK_LIMIT_BUFF=5` / `REROLL_PER_BATTLE=2`
+- `js/state.js`: `state.battle.rerollsLeft`
+- `js/battle/index.js`: startBattle で `rerollsLeft = REROLL_PER_BATTLE`
+- `js/battle/levelup.js`: `_samplePicks` でカテゴリ別 stock 上限を判定 + `rerollPicks()` 新規 export
+- `index.html`: levelup モーダル末尾に `#levelUpReroll` ボタン追加
+- `data/i18n/ui.json`: `levelup.reroll` (= 「リロール (残 {n})」) / `levelup.rerollNone`
+- `css/components.css`: `.levelup-modal__reroll`
+
+### Added — SPEC-022 (= Enemy Variety + Time-Based Waves + Deep Yoshka Boss) — merged in #28
 - `docs/specs/SPEC-022-enemy-variety-and-boss.md` 新規 (= 5 分間ステージ / 1 分ごとに敵 pool 拡張 / 4 分でボス出現 / 5 分 or ボス撃破でクリア)
 - `js/constants.js`: `STAGE_DURATION_MS=300000` / `BOSS_SPAWN_AT_MS=240000` / `BOSS_ENEMY_ID=171` / `WAVE_TABLE` / `ENEMY_SPECS` (= 各敵に hp/dmg/speed/radius)
 - `js/state.js`: `state.battle.stageElapsedMs` / `bossSpawned` / `bossDefeated`

@@ -218,3 +218,10 @@ export const ENEMY_SPECS = {
   164: { hp:  160, dmg: 22, speed: 65, radius: 19 },
   171: { hp: 3000, dmg: 30, speed: 45, radius: 48 },
 };
+
+// ============================================================
+// SPEC-023: ピッカーストック上限 + リロール
+// ============================================================
+export const STOCK_LIMIT_WEAPON = 5;   // 武器系列の最大装備数
+export const STOCK_LIMIT_BUFF   = 5;   // 強化系列の最大装備数
+export const REROLL_PER_BATTLE  = 2;   // 1 戦闘あたりリロール可能回数

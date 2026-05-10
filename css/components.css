@@ -769,3 +769,16 @@
   .hero-detail__weapon { grid-column: 1 / -1; }
   .hero-detail__portrait { width: 56px; height: 56px; }
 }
+
+/* SPEC-023: ピッカーリロールボタン (= モーダル下部) */
+.levelup-modal__reroll {
+  align-self: stretch;
+  margin-top: 0.4rem;
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+}
+.levelup-modal__reroll:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
