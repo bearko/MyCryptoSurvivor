@@ -31,9 +31,14 @@ export function setRankingApiUrl(url) {
   } catch (e) {}
 }
 
+// SPEC-038: 未設定時は "anonymous" を返す (= ユーザーが何も入力しなくても送信できる)
+const DEFAULT_PLAYER_NAME = "anonymous";
+
 export function getPlayerName() {
-  try { return localStorage.getItem(LS_PLAYER_NAME) || ""; }
-  catch (e) { return ""; }
+  try {
+    const v = localStorage.getItem(LS_PLAYER_NAME);
+    return (v && v.trim()) ? v : DEFAULT_PLAYER_NAME;
+  } catch (e) { return DEFAULT_PLAYER_NAME; }
 }
 
 export function setPlayerName(name) {

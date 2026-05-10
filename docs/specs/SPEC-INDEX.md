@@ -43,6 +43,7 @@
 | SPEC-035 | Ranking — GAS Backend + UI | Implementing | Phase 0 / Phase 1 | feat/spec-035-ranking-gas |
 | SPEC-036 | GAS Sample Data Seed + Re-apply Default API URL | Implementing | Phase 0 / Phase 1 | feat/spec-036-gas-seed-sample |
 | SPEC-037 | Game Modes — NORMAL / ABSOLUTE Regulation | Implementing | Phase 0 / Phase 1 | feat/spec-037-game-modes-and-absolute |
+| SPEC-038 | Activity Report Icon Layout + Anonymous Default Name | Implementing | Phase 0 / Phase 1 | feat/spec-038-report-icons-and-anon |
 <!-- END AUTO-INDEX -->
 
 ## 命名規則
