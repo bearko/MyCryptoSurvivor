@@ -67,6 +67,7 @@
               aria-live="polite"></span>
       </div>
       <div class="header__right">
+        <button id="btnMenuOpen"   class="btn btn--ghost" title="Menu" aria-label="menu">☰</button>
         <button id="btnLangToggle" class="btn btn--ghost" title="Language">JP/EN</button>
         <button id="btnHelpOpen"   class="btn btn--ghost" title="Help">?</button>
       </div>
@@ -137,6 +138,21 @@
         <p class="gameover-form__msg" id="gameOverMsg" aria-live="polite"></p>
       </div>
       <button class="btn gameover-modal__retry" id="gameOverRetry" data-i18n="gameover.retry">リトライ</button>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- Pause menu modal (= SPEC-034)                                  -->
+  <!-- ============================================================ -->
+  <div id="pauseMenuModal" class="gameover-modal hidden" role="dialog" aria-modal="true"
+       aria-labelledby="pauseMenuTitle">
+    <div class="gameover-modal__card pause-menu__card">
+      <h2 class="gameover-modal__title" id="pauseMenuTitle" data-i18n="menu.title">メニュー</h2>
+      <div class="pause-menu__buttons">
+        <button class="btn btn--secondary" id="pauseMenuRestart" data-i18n="menu.restart">ステージをはじめからやり直す</button>
+        <button class="btn btn--secondary" id="pauseMenuToTitle" data-i18n="menu.toTitle">タイトルに戻る</button>
+        <button class="btn"                id="pauseMenuClose"   data-i18n="menu.close">閉じる</button>
+      </div>
     </div>
   </div>
 
