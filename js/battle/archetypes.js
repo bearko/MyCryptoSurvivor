@@ -72,22 +72,24 @@ function _nearestDir(px, py, range) {
 export function fireRadial(w, dmgMul, bulletBonus) {
   const px = state.battle.player.x;
   const py = state.battle.player.y;
-  const dir = _nearestDir(px, py, w.range);
+  const rangeMul = state.buffs?.rangeMul ?? 1;
+  const dir = _nearestDir(px, py, w.range * rangeMul);
   if (!dir) return;
   const baseAngle = Math.atan2(dir.y, dir.x);
   const spreadDeg = w.params?.spreadDeg ?? 30;
   const total = (w.bullets ?? 1) + bulletBonus;
   const spreadRad = (spreadDeg * Math.PI) / 180;
   const speed = w.speedPx;
+  // SPEC-019: Revolver は projectileIconId=null で円描画 fallback
+  const projIcon = (w.projectileIconId !== undefined) ? w.projectileIconId : w.iconId;
   for (let i = 0; i < total; i++) {
-    // 等間隔: i=(0..total-1) を [-spreadRad/2 ... +spreadRad/2] にマップ
     const t = total <= 1 ? 0.5 : i / (total - 1);
     const a = baseAngle - spreadRad / 2 + spreadRad * t;
     _spawnProjectile({
       x: px, y: py,
       vx: Math.cos(a) * speed, vy: Math.sin(a) * speed,
       dmg: w.dmg * dmgMul, color: w.color,
-      iconId: w.iconId, iconSize: 22,
+      iconId: projIcon, iconSize: 22,
     });
   }
 }
@@ -101,9 +103,10 @@ export function fireBigHoming(w, dmgMul, bulletBonus) {
   const py = state.battle.player.y;
   const total = (w.bullets ?? 1) + bulletBonus;
   const size = w.params?.size ?? 14;
+  const rangeMul = state.buffs?.rangeMul ?? 1;
+  const projIcon = (w.projectileIconId !== undefined) ? w.projectileIconId : w.iconId;
   for (let i = 0; i < total; i++) {
-    // 候補敵を順に拾う (= 候補が < total の場合は random 方向)
-    const t = _findNearestEnemy(px, py, w.range);
+    const t = _findNearestEnemy(px, py, w.range * rangeMul);
     let vx, vy, targetId = null;
     if (t) {
       const dx = t.x - px, dy = t.y - py;
@@ -120,7 +123,7 @@ export function fireBigHoming(w, dmgMul, bulletBonus) {
       x: px, y: py, vx, vy,
       dmg: w.dmg * dmgMul, color: w.color,
       r: size, life: 4000, targetId, kind: "homing",
-      iconId: w.iconId, iconSize: Math.max(28, size * 1.6),
+      iconId: projIcon, iconSize: Math.max(28, size * 1.6),
     });
   }
 }
@@ -135,9 +138,10 @@ export function fireDropTarget(w, dmgMul, bulletBonus) {
   const total = (w.bullets ?? 1) + bulletBonus;
   const fallH = w.params?.fallH ?? 220;
   const speed = w.speedPx;
-  const aoeR  = w.params?.aoeR    ?? 60;
+  const rangeMul = state.buffs?.rangeMul ?? 1;
+  const aoeR  = (w.params?.aoeR ?? 60) * rangeMul;
   const aoeDmgRatio = w.params?.aoeDmgRatio ?? 0.7;
-  // 候補敵が total より少ないと同じ敵に重なるので、 random 抽出 + 重複は許容 (= 同 frame で複数発が同じ敵)
+  const projIcon = (w.projectileIconId !== undefined) ? w.projectileIconId : w.iconId;
   for (let i = 0; i < total; i++) {
     const t = enemies[Math.floor(Math.random() * enemies.length)];
     if (!t) continue;
@@ -150,7 +154,7 @@ export function fireDropTarget(w, dmgMul, bulletBonus) {
       moaiTargetId: t.id,
       moaiAoeR: aoeR,
       moaiAoeDmg: w.dmg * dmgMul * aoeDmgRatio,
-      iconId: w.iconId, iconSize: 28,
+      iconId: projIcon, iconSize: 28,
     });
   }
 }
@@ -162,15 +166,16 @@ export function fireDropTarget(w, dmgMul, bulletBonus) {
 export function fireStack(w, dmgMul, bulletBonus) {
   const px = state.battle.player.x;
   const py = state.battle.player.y;
-  const dir = _nearestDir(px, py, w.range);
+  const rangeMul = state.buffs?.rangeMul ?? 1;
+  const dir = _nearestDir(px, py, w.range * rangeMul);
   if (!dir) return;
   const baseAngle = Math.atan2(dir.y, dir.x);
   const dirs = w.params?.dirs ?? 1;
   const stack = (w.bullets ?? 3);
   const stackGap = w.params?.stackGap ?? 18;
   const speed = w.speedPx;
-  // bulletBonus は dirs に追加 (= Oriflamme で多方向化)
   const totalDirs = dirs + bulletBonus;
+  const projIcon = (w.projectileIconId !== undefined) ? w.projectileIconId : w.iconId;
   for (let k = 0; k < totalDirs; k++) {
     const a = baseAngle + (Math.PI * 2 * k) / totalDirs;
     const ux = Math.cos(a), uy = Math.sin(a);
@@ -180,7 +185,7 @@ export function fireStack(w, dmgMul, bulletBonus) {
         y: py - uy * stackGap * s,
         vx: ux * speed, vy: uy * speed,
         dmg: w.dmg * dmgMul, color: w.color,
-        iconId: w.iconId, iconSize: 22,
+        iconId: projIcon, iconSize: 22,
       });
     }
   }
@@ -193,14 +198,14 @@ export function fireStack(w, dmgMul, bulletBonus) {
 export function fireBeam(w, dmgMul, bulletBonus) {
   const px = state.battle.player.x;
   const py = state.battle.player.y;
-  const dir = _nearestDir(px, py, w.range);
+  const rangeMul = state.buffs?.rangeMul ?? 1;
+  const dir = _nearestDir(px, py, w.range * rangeMul);
   if (!dir) return;
   const baseAngle = Math.atan2(dir.y, dir.x);
   const total = (w.bullets ?? 1) + bulletBonus;
-  const len   = w.params?.len   ?? 600;
+  const len   = (w.params?.len   ?? 600) * rangeMul;   // SPEC-019: rangeMul を beam 長に
   const thick = w.params?.thick ?? 6;
   const dur   = w.params?.durMs ?? 600;
-  // dmg は params で 「秒あたりの dmg」 と定義
   const dmgPerSec = w.dmg * (dmgMul ?? 1);
   for (let i = 0; i < total; i++) {
     const a = baseAngle + (Math.PI * 2 * i) / total;
@@ -225,15 +230,16 @@ export function fireDiagonal(w, dmgMul, bulletBonus) {
   const py = state.battle.player.y;
   const total = (w.bullets ?? 4) + bulletBonus;
   const speed = w.speedPx;
-  const offset = Math.PI / 4;   // 開始 45° (= 4 のとき NE/NW/SE/SW)
+  const offset = Math.PI / 4;
+  const projIcon = (w.projectileIconId !== undefined) ? w.projectileIconId : w.iconId;
   for (let i = 0; i < total; i++) {
     const a = offset + (Math.PI * 2 * i) / total;
     _spawnProjectile({
       x: px, y: py,
       vx: Math.cos(a) * speed, vy: Math.sin(a) * speed,
       dmg: w.dmg * dmgMul, color: w.color,
-      iconId: w.iconId, iconSize: 24,
-      iconRotOffset: Math.PI / 4,   // SPEC-015: ナイフ icon は 「右上」 が自然向き
+      iconId: projIcon, iconSize: 24,
+      iconRotOffset: Math.PI / 4,
     });
   }
 }
@@ -247,13 +253,14 @@ export function fireRandomRadial(w, dmgMul, bulletBonus) {
   const py = state.battle.player.y;
   const total = (w.bullets ?? 2) + bulletBonus;
   const speed = w.speedPx;
+  const projIcon = (w.projectileIconId !== undefined) ? w.projectileIconId : w.iconId;
   for (let i = 0; i < total; i++) {
     const a = Math.random() * Math.PI * 2;
     _spawnProjectile({
       x: px, y: py,
       vx: Math.cos(a) * speed, vy: Math.sin(a) * speed,
       dmg: w.dmg * dmgMul, color: w.color,
-      iconId: w.iconId, iconSize: 24,
+      iconId: projIcon, iconSize: 24,
     });
   }
 }
@@ -267,9 +274,10 @@ export function firePlaceBomb(w, dmgMul, bulletBonus) {
   const py = state.battle.player.y;
   const total  = (w.bullets ?? 1) + bulletBonus;
   const fuseMs = w.params?.fuseMs ?? 1000;
-  const radius = w.params?.radius ?? 60;
+  const rangeMul = state.buffs?.rangeMul ?? 1;
+  const radius = (w.params?.radius ?? 60) * rangeMul;   // SPEC-019: rangeMul で AoE 拡大
   for (let i = 0; i < total; i++) {
-    const off = (i === 0) ? 0 : 20;   // 同 frame 多重置きを散らす
+    const off = (i === 0) ? 0 : 20;
     const ox = (Math.random() * 2 - 1) * off;
     const oy = (Math.random() * 2 - 1) * off;
     state.battle.bombs.push({
@@ -278,7 +286,7 @@ export function firePlaceBomb(w, dmgMul, bulletBonus) {
       fuseMs, age: 0,
       radius, dmg: Math.max(1, Math.round(w.dmg * dmgMul)),
       color: w.color,
-      iconId: w.iconId,   // SPEC-015: render が icon 描画
+      iconId: w.iconId,
     });
   }
 }
@@ -290,14 +298,16 @@ export function firePlaceBomb(w, dmgMul, bulletBonus) {
 export function fireHoming(w, dmgMul) {
   const px = state.battle.player.x;
   const py = state.battle.player.y;
-  const dir = _nearestDir(px, py, w.range);
+  const rangeMul = state.buffs?.rangeMul ?? 1;
+  const dir = _nearestDir(px, py, w.range * rangeMul);
   if (!dir) return;
+  const projIcon = (w.projectileIconId !== undefined) ? w.projectileIconId : w.iconId;
   _spawnProjectile({
     x: px, y: py,
     vx: dir.x * w.speedPx, vy: dir.y * w.speedPx,
     dmg: w.dmg * dmgMul, color: w.color,
     targetId: dir.target?.id ?? null, kind: "homing",
-    iconId: w.iconId, iconSize: 22,
+    iconId: projIcon, iconSize: 22,
   });
 }
 
@@ -309,9 +319,13 @@ export function ensureOrbits(w, dmgMul, bulletBonus) {
   const desired = (w.bullets ?? 1) + bulletBonus;
   const orbits  = state.battle.orbits;
   const owned   = orbits.filter(o => String(o.weaponExtId) === String(w.extId));
+  // SPEC-019: rangeMul を毎フレーム再適用 (= 既存 orbit の半径も更新)
+  const rangeMul = state.buffs?.rangeMul ?? 1;
+  const baseR    = w.params?.orbitR ?? 70;
+  const r        = baseR * rangeMul;
+  for (const o of owned) o.r = r;
   if (owned.length === desired) return;
   if (owned.length < desired) {
-    const r        = w.params?.orbitR ?? 70;
     const baseAng  = (owned.length > 0) ? owned[0].angle : 0;
     for (let i = owned.length; i < desired; i++) {
       orbits.push({
@@ -321,9 +335,9 @@ export function ensureOrbits(w, dmgMul, bulletBonus) {
         r, dmg: Math.max(1, Math.round(w.dmg * dmgMul)),
         color: w.color,
         hitMap: {},
-        kind: w.archetype,   // "orbit" or "orbitClose"
+        kind: w.archetype,
         radius: (w.archetype === "orbitClose") ? 9 : 11,
-        iconId: w.iconId,    // SPEC-015: render が icon 描画
+        iconId: w.iconId,
         iconSize: (w.archetype === "orbitClose") ? 22 : 26,
       });
     }
