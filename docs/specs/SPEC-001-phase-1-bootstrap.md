@@ -1,3 +1,12 @@
+---
+id: SPEC-001
+title: Phase 1 Bootstrap (= Charter / 識別子 / Day 1 ヒーロー選択 mock)
+status: Done
+pr: 1
+phase: Phase 0 / Phase 1
+kind: Added
+---
+
 # SPEC-001 — Phase 1 Bootstrap (= Charter / 識別子 / Day 1 ヒーロー選択 mock)
 
 - **Status**: Implementing

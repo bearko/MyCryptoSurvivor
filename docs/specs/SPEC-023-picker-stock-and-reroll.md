@@ -1,3 +1,12 @@
+---
+id: SPEC-023
+title: Picker Stock Limit (= 武器 5 / 強化 5) + Reroll (= 1戦 2回)
+status: Done
+pr: 29
+phase: Phase 0 / Phase 1
+kind: Added
+---
+
 # SPEC-023 — Picker Stock Limit + Reroll
 
 - **Status**: Implementing

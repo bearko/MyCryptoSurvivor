@@ -1,3 +1,12 @@
+---
+id: SPEC-029
+title: Logo Image + OG Thumbnail (= タイトル/スプラッシュ画像化 + X/OGP サムネ)
+status: Done
+pr: 36
+phase: Phase 0 / Phase 1
+kind: Added
+---
+
 # SPEC-029 — Logo Image + OG Thumbnail
 
 - **Status**: Implementing

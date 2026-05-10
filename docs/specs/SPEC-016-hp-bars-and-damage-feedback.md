@@ -1,3 +1,12 @@
+---
+id: SPEC-016
+title: HP Bars + Damage Numbers + Hit Freeze
+status: Done
+pr: 18
+phase: Phase 0 / Phase 1
+kind: Added
+---
+
 # SPEC-016 — HP Bars + Damage Numbers + Hit Freeze
 
 - **Status**: Implementing

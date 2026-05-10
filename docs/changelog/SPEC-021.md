@@ -1,0 +1,7 @@
+- `docs/specs/SPEC-021-per-tier-icons-and-names.md` 新規 (= MCH 公式の +1000 ルールで 19 系列 × 5 tier の icon と名前を完全準拠)
+- `data/extensions.json`: 全 19 entry に `tierIconIds[5]` 追加 + `tierNames[5]` を MCH 公式名で上書き (= 95/95 hit)
+- `js/extensions.js`: `extTierImg(ext, level)` 新規 export (= ext.tierIconIds[level-1] → URL)
+- `js/battle/extensions-as-weapons.js`: weaponFromExt が iconId / projectileIconId に **現 tier の icon** を採用
+- `js/main.js`: hero 詳細パネルで `extTierImg(ext, 1)` (= 開始時 = Common icon)
+- `js/battle/levelup.js`: カード icon に `extTierImg(opt.ext, opt.nextLevel)` (= ピック後の見た目をプレビュー)
+- 戦闘中の投射体 / 周回 / bomb は LV up と同時に新 tier の icon に切替

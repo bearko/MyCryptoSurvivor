@@ -1,3 +1,12 @@
+---
+id: SPEC-012
+title: 10 Weapon Archetype Behaviors (= radial / orbit / beam / placement / etc)
+status: Implementing
+pr: 13
+phase: Phase 0 / Phase 1
+kind: Added
+---
+
 # SPEC-012 — 10 Weapon Archetype Behaviors
 
 - **Status**: Implementing

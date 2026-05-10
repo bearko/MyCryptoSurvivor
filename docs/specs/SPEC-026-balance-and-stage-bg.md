@@ -1,3 +1,12 @@
+---
+id: SPEC-026
+title: Balance Tuning + Bounded Stage with Background (= XP / Gyoku / 1001.png + dim overlay)
+status: Done
+pr: 33
+phase: Phase 0 / Phase 1
+kind: Added
+---
+
 # SPEC-026 — Balance Tuning + Bounded Stage with Background
 
 - **Status**: Implementing

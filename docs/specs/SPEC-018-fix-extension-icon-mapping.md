@@ -1,3 +1,12 @@
+---
+id: SPEC-018
+title: Extension Icon Mapping Fix (= 名前と icon の不一致解消)
+status: Done
+pr: 21
+phase: Phase 0 / Phase 1
+kind: Added
+---
+
 # SPEC-018 — Extension Icon Mapping Fix (= 名前と icon の不一致解消)
 
 - **Status**: Implementing
