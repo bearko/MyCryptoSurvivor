@@ -1,0 +1,7 @@
+- **GAS シード関数 3 種** (`tools/gas-ranking.gs`):
+  - `seedSampleData()` = `ranking` シートをリセット → ヘッダー + 12 件のダミーデータ投入 (= 推奨)
+  - `appendSampleData()` = 既存行を残して 12 件追記
+  - `clearAllRankings()` = ヘッダー残し全データ削除
+  - サンプル: player 12 種 (= JA/EN 混成) × hero 10 種、 score 30000→8000 グラデ、 timestamp 7 時間ずつ過去
+- **`_DEFAULT_API_URL_ENC` 再適用** (`js/ranking-client.js`): SPEC-035 PR #43 マージ時に commit 漏れしていた default GAS URL の base64 埋込を復活
+- **`docs/process/RANKING_SETUP.md`**: 8 章 「テスト用サンプルデータ投入」 を新設 (= 3 関数の表 + 実行手順 + サンプル内訳)、 旧 「削除 / リセット」 「参考リンク」 を 9 / 10 にずらして `clearAllRankings()` を案内

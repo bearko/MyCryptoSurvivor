@@ -41,6 +41,7 @@
 | SPEC-033 | Rare Enemies + Magic Card + Activity Report + Stage 2/3 Boss Clear Fix | Implementing | Phase 0 / Phase 1 | feat/spec-033-rare-enemies-and-activity-report |
 | SPEC-034 | Rare Size + Weapon Growth × 2 + Reroll 3 + Pause Menu | Implementing | Phase 0 / Phase 1 | feat/spec-034-tunes-and-pause-menu |
 | SPEC-035 | Ranking — GAS Backend + UI | Implementing | Phase 0 / Phase 1 | feat/spec-035-ranking-gas |
+| SPEC-036 | GAS Sample Data Seed + Re-apply Default API URL | Implementing | Phase 0 / Phase 1 | feat/spec-036-gas-seed-sample |
 <!-- END AUTO-INDEX -->
 
 ## 命名規則
