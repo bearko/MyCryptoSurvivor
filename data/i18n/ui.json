@@ -75,6 +75,30 @@
   "gameover.retry":      { "ja": "リトライ",                        "en": "Retry" },
   "gameover.noApi":      { "ja": "ランキング API 未設定",             "en": "Ranking API not configured" },
 
+  "mode.title":          { "ja": "ゲームモード",                  "en": "Game Mode" },
+  "mode.sub":            { "ja": "難易度を選んで進む",            "en": "Pick a difficulty to proceed" },
+  "mode.normalDesc":     { "ja": "通常のバランス。 全 4 軸が 1.0×。 スコア倍率 1.00。",
+                           "en": "Standard balance. All 4 axes 1.0×. Score ×1.00." },
+  "mode.absoluteDesc":   { "ja": "難易度を 4 軸で自分でチューニング。 きつくするほどスコア倍率 UP、 楽にすると DOWN。",
+                           "en": "Tune 4 axes yourself. Harder → score up, easier → score down." },
+  "mode.startNormal":    { "ja": "これで始める",                  "en": "Start Normal" },
+  "mode.startAbsolute":  { "ja": "これで始める",                  "en": "Start Absolute" },
+  "mode.back":           { "ja": "タイトルに戻る",                "en": "Back to title" },
+  "absolute.axis.spawn": { "ja": "敵の出現数",                    "en": "Spawn Rate" },
+  "absolute.axis.hp":    { "ja": "敵の HP",                       "en": "Enemy HP" },
+  "absolute.axis.dmg":   { "ja": "敵の攻撃力",                    "en": "Enemy DMG" },
+  "absolute.axis.speed": { "ja": "敵の行動スピード",               "en": "Enemy Speed" },
+
+  "report.regulation":   { "ja": "レギュレーション: {n}",         "en": "Regulation: {n}" },
+
+  "ranking.col.reg":     { "ja": "レギュ",                       "en": "Reg" },
+  "ranking.reg.all":     { "ja": "全レギュレーション",            "en": "All regulations" },
+  "ranking.reg.normal":  { "ja": "NORMAL のみ",                   "en": "NORMAL only" },
+  "ranking.reg.absolute":{ "ja": "ABSOLUTE のみ",                 "en": "ABSOLUTE only" },
+
+  "gameover.toTitle":      { "ja": "タイトルに戻る",               "en": "Back to title" },
+  "gameover.retryCurrent": { "ja": "今のレギュレーションで再走",   "en": "Retry with this regulation" },
+
   "menu.title":          { "ja": "メニュー",                       "en": "Menu" },
   "menu.ranking":        { "ja": "ランキング",                       "en": "Ranking" },
   "menu.restart":        { "ja": "ステージをはじめからやり直す",     "en": "Restart this stage" },
