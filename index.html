@@ -59,6 +59,37 @@
   </section>
 
   <!-- ============================================================ -->
+  <!-- 2.5 Game Mode select (= SPEC-037)                              -->
+  <!-- ============================================================ -->
+  <section id="gameModeSelectScreen" class="title-screen mode-select hidden">
+    <h2 class="mode-select__title" id="modeSelectTitle">ゲームモード</h2>
+    <p class="mode-select__sub" id="modeSelectSub">難易度を選んで進む</p>
+
+    <div class="mode-select__cards">
+      <article class="mode-card" data-mode="NORMAL" id="modeCardNormal">
+        <header class="mode-card__head">
+          <h3 class="mode-card__name">NORMAL</h3>
+          <span class="mode-card__mul" id="modeCardNormalMul">×1.00</span>
+        </header>
+        <p class="mode-card__desc" id="modeCardNormalDesc">通常のバランス。 全 4 軸が 1.0×。 スコア倍率 1.00。</p>
+        <button class="btn mode-card__cta" id="btnModeNormal">これで始める</button>
+      </article>
+
+      <article class="mode-card" data-mode="ABSOLUTE" id="modeCardAbsolute">
+        <header class="mode-card__head">
+          <h3 class="mode-card__name">ABSOLUTE</h3>
+          <span class="mode-card__mul" id="modeCardAbsoluteMul">×1.00</span>
+        </header>
+        <p class="mode-card__desc" id="modeCardAbsoluteDesc">難易度を 4 軸で自分でチューニング。 きつくするほどスコア倍率 UP、 楽にすると DOWN。</p>
+        <div class="mode-card__sliders" id="absoluteSliders"></div>
+        <button class="btn mode-card__cta" id="btnModeAbsolute">これで始める</button>
+      </article>
+    </div>
+
+    <button class="btn btn--ghost mode-select__back" id="btnModeBack">タイトルに戻る</button>
+  </section>
+
+  <!-- ============================================================ -->
   <!-- 3. Main app                                                    -->
   <!-- ============================================================ -->
   <main id="app" class="app hidden">
@@ -133,6 +164,11 @@
           <option value="current" id="rankingFilterCurrent">v 0.1.0 のみ</option>
           <option value="all"     id="rankingFilterAll">全バージョン</option>
         </select>
+        <select id="rankingRegFilter" class="ranking-filter">
+          <option value="all"      id="rankingRegFilterAll">全レギュレーション</option>
+          <option value="NORMAL"   id="rankingRegFilterNormal">NORMAL のみ</option>
+          <option value="ABSOLUTE" id="rankingRegFilterAbsolute">ABSOLUTE のみ</option>
+        </select>
         <button class="btn btn--ghost" id="rankingRefresh">更新</button>
       </div>
       <div class="ranking-table-wrap">
@@ -142,6 +178,7 @@
               <th>#</th>
               <th>プレイヤー</th>
               <th>スコア</th>
+              <th>レギュ</th>
               <th>撃破</th>
               <th>時間</th>
             </tr>
@@ -178,7 +215,10 @@
         <button class="btn btn--secondary" id="gameOverSubmit" data-i18n="gameover.submit">ランキングに送信</button>
         <p class="gameover-form__msg" id="gameOverMsg" aria-live="polite"></p>
       </div>
-      <button class="btn gameover-modal__retry" id="gameOverRetry" data-i18n="gameover.retry">リトライ</button>
+      <div class="gameover-modal__choices">
+        <button class="btn btn--secondary" id="gameOverToTitle" data-i18n="gameover.toTitle">タイトルに戻る</button>
+        <button class="btn gameover-modal__retry" id="gameOverRetry" data-i18n="gameover.retryCurrent">今のレギュレーションで再走</button>
+      </div>
     </div>
   </div>
 

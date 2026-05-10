@@ -6,6 +6,7 @@ import { state, pauseTime, resumeTime } from "./state.js";
 import { initI18n, setLang, getLang, t, tpl, onLangChange } from "./i18n.js";
 import { installMenu } from "./menu.js";
 import { installRankingUI } from "./ranking-ui.js";
+import { installModeSelect, showModeSelect } from "./mode-select.js";
 import {
   TICK_INTERVAL_MS,
   SECONDS_PER_WEEK,
@@ -66,6 +67,11 @@ async function init() {
   setupHeroSelectModal();
   installMenu();   // SPEC-034: ヘッダー一時停止メニュー
   installRankingUI();   // SPEC-035: タイトル / メニューから開くランキングモーダル
+  // SPEC-037: タイトル → モード選択 → ヒーロー選択 の順
+  installModeSelect(() => {
+    $("#app")?.classList.remove("hidden");
+    openHeroSelectModal();
+  });
 
   renderHud();   // SPEC-004: 初期描画 (= Day 1 / 100 / 50 / 100)
 
@@ -82,11 +88,8 @@ function setupTitleScreen() {
 
 function dismissTitle() {
   unlockAudio();   // SPEC-017: 初回 user gesture で audio policy 解除
-  $("#titleScreen")?.classList.add("hidden");
-  $("#app")?.classList.remove("hidden");
-
-  // Day 1: ヒーロー選択モーダルを開く (= SPEC-001 Phase 1 mock)
-  openHeroSelectModal();
+  // SPEC-037: タイトル → モード選択画面 (= 旧来は直接 hero 選択モーダルだった)
+  showModeSelect();
 }
 
 // ============================================================

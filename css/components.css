@@ -962,3 +962,113 @@
   .ranking-table th       { font-size: 0.66rem; padding: 0.22rem 0.3rem; }
   .ranking-table td       { padding: 0.22rem 0.3rem; }
 }
+
+/* SPEC-037: ゲームモード選択画面 + ABSOLUTE スライダー */
+.mode-select {
+  gap: 1rem;
+  padding: 2rem 1rem 1rem;
+}
+.mode-select__title {
+  margin: 0;
+  font-size: clamp(1.4rem, 4.5vw, 2rem);
+  color: var(--accent);
+  letter-spacing: 0.06em;
+}
+.mode-select__sub {
+  margin: 0;
+  color: var(--muted);
+  font-size: clamp(0.78rem, 2vw, 0.95rem);
+}
+.mode-select__cards {
+  display: flex;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+  max-width: 760px;
+}
+.mode-card {
+  flex: 1 1 320px;
+  min-width: 280px;
+  max-width: 360px;
+  background: var(--panel);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  text-align: left;
+}
+.mode-card[data-mode="ABSOLUTE"] { border-color: rgba(231, 96, 96, 0.55); }
+.mode-card__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.mode-card__name {
+  margin: 0;
+  font-size: 1.2rem;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+}
+.mode-card__mul {
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: var(--text);
+}
+.mode-card[data-mode="ABSOLUTE"] .mode-card__mul { color: #ff8a8a; }
+.mode-card__desc {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+  line-height: 1.45;
+}
+.mode-card__cta {
+  align-self: stretch;
+  margin-top: auto;
+}
+.mode-card__sliders {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 0.4rem 0.2rem 0.2rem;
+}
+.abs-slider {
+  display: grid;
+  grid-template-columns: minmax(7em, auto) 1fr 3.5em;
+  gap: 0.5rem;
+  align-items: center;
+  font-size: 0.78rem;
+}
+.abs-slider__label {
+  color: var(--muted);
+}
+.abs-slider__range {
+  width: 100%;
+  accent-color: var(--accent);
+}
+.abs-slider__value {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--text);
+}
+.mode-select__back {
+  align-self: center;
+  margin-top: 0.4rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+}
+
+/* SPEC-037: gameover の 2 ボタン choices */
+.gameover-modal__choices {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  align-self: stretch;
+  margin-top: 0.4rem;
+}
+.gameover-modal__choices .btn { letter-spacing: 0.04em; }
