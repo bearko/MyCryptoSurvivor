@@ -4,6 +4,14 @@
 
 ## [Unreleased]
 
+### Added — SPEC-024 (= Picker Card Category Label + Lv.1 Effect Audit)
+- `docs/specs/SPEC-024-picker-card-category-and-lv1-fix.md` 新規 (= ピッカーカード上端にカテゴリ見出し追加、 全 19 系列 Lv.1 効果監査、 Oriflamme Lv.1 magnitude 0 → 1)
+- `js/battle/levelup.js`: `renderLevelUpModal` で各カード先頭に `.levelup-card__cat` を挿入 (= weapon → 「武器エクステ」、 buff → 「強化エクステ」)
+- `data/i18n/ui.json`: `levelup.cat.weapon` / `levelup.cat.buff` 追加
+- `css/components.css`: `.levelup-card__cat` スタイル (= weapon = 赤系、 buff = 緑系)、 mobile breakpoint 対応
+- `data/extensions.json`: Oriflamme tierParams を `0/1/1/2/3` → `1/1/2/2/3` に補正 (= Lv.1 ゼロ効果解消、 Lv.5 ceiling +3 維持)
+- `docs/specs/SPEC-INDEX.md`: SPEC-022 を `#28 (merged)` に flip、 SPEC-023 を `#29 (open)` に更新、 SPEC-024 を Implementing 登録
+
 ### Added — SPEC-022 (= Enemy Variety + Time-Based Waves + Deep Yoshka Boss)
 - `docs/specs/SPEC-022-enemy-variety-and-boss.md` 新規 (= 5 分間ステージ / 1 分ごとに敵 pool 拡張 / 4 分でボス出現 / 5 分 or ボス撃破でクリア)
 - `js/constants.js`: `STAGE_DURATION_MS=300000` / `BOSS_SPAWN_AT_MS=240000` / `BOSS_ENEMY_ID=171` / `WAVE_TABLE` / `ENEMY_SPECS` (= 各敵に hp/dmg/speed/radius)
