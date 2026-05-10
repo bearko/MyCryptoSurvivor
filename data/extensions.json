@@ -16,20 +16,20 @@
           "en": "Revolver"
         },
         {
-          "ja": "ガンスリンガー",
-          "en": "Gunslinger"
+          "ja": "エリートリボルバー",
+          "en": "Elite Revolver"
         },
         {
-          "ja": "デュアルリボルバー",
-          "en": "Dual Revolver"
+          "ja": "ウィズダムリボルバー",
+          "en": "Wisdom Revolver"
         },
         {
-          "ja": "サイキックリボルバー",
-          "en": "Psyche Revolver"
+          "ja": "ドラグーン",
+          "en": "Dragoon"
         },
         {
-          "ja": "ガトリングガン",
-          "en": "Gatling Gun"
+          "ja": "モデル１",
+          "en": "Model-1"
         }
       ],
       "skillName": {
@@ -81,6 +81,13 @@
           "speedPx": 360,
           "spreadDeg": 50
         }
+      ],
+      "tierIconIds": [
+        1029,
+        2029,
+        3029,
+        4029,
+        5029
       ]
     },
     {
@@ -92,24 +99,24 @@
       "seriesColor": "#bb86fc",
       "tierNames": [
         {
-          "ja": "ブック",
-          "en": "Book"
+          "ja": "ノービスブック",
+          "en": "Novice Book"
         },
         {
-          "ja": "グリモア",
-          "en": "Grimoire"
+          "ja": "エリートブック",
+          "en": "Elite Book"
         },
         {
-          "ja": "コーデックス",
-          "en": "Codex"
+          "ja": "ウィズダムブック",
+          "en": "Wisdom Book"
         },
         {
-          "ja": "アーカイブ",
-          "en": "Archive"
+          "ja": "罪と罰",
+          "en": "Crime and Punishment"
         },
         {
-          "ja": "アカシック",
-          "en": "Akashic"
+          "ja": "アトランティコ手稿",
+          "en": "Codex Atlanticus"
         }
       ],
       "skillName": {
@@ -161,6 +168,13 @@
           "speedPx": 0,
           "orbitR": 90
         }
+      ],
+      "tierIconIds": [
+        1008,
+        2008,
+        3008,
+        4008,
+        5008
       ]
     },
     {
@@ -172,24 +186,24 @@
       "seriesColor": "#ff7a59",
       "tierNames": [
         {
-          "ja": "パンジャンドラム",
-          "en": "Panjandrum"
+          "ja": "木製パンジャンドラム",
+          "en": "Wooden Panjandrum"
         },
         {
-          "ja": "ヘビーパンジャンドラム",
-          "en": "Heavy Panjandrum"
+          "ja": "鉄製パンジャンドラム",
+          "en": "Iron Panjandrum"
         },
         {
-          "ja": "タイタンパンジャンドラム",
-          "en": "Titan Panjandrum"
+          "ja": "白磁のパンジャンドラム",
+          "en": "White Porcelain Panjandrum"
         },
         {
-          "ja": "デモリッシャー",
-          "en": "Demolisher"
+          "ja": "自律型パンジャンドラム",
+          "en": "Autonomous Panjandrum"
         },
         {
-          "ja": "アポカリプス",
-          "en": "Apocalypse"
+          "ja": "クリプトパンジャンドラム",
+          "en": "Crypto Panjandrum"
         }
       ],
       "skillName": {
@@ -241,6 +255,13 @@
           "speedPx": 130,
           "size": 26
         }
+      ],
+      "tierIconIds": [
+        1153,
+        2153,
+        3153,
+        4153,
+        5153
       ]
     },
     {
@@ -252,24 +273,24 @@
       "seriesColor": "#d4d4dc",
       "tierNames": [
         {
-          "ja": "モアイ",
-          "en": "Moai"
+          "ja": "待合せ場所のモアイ像",
+          "en": "Moai at the meeting place"
         },
         {
-          "ja": "エルダーモアイ",
-          "en": "Elder Moai"
+          "ja": "ぐらふぁい島モアイの目覚",
+          "en": "Awakening of Graph-Island Moai"
         },
         {
-          "ja": "ガーディアン",
-          "en": "Guardian"
+          "ja": "ぐらふぁい島モアイの息吹",
+          "en": "Breath of Graph-Island Moai"
         },
         {
-          "ja": "アンセスタル",
-          "en": "Ancestral"
+          "ja": "モアイ艦長",
+          "en": "Captain Moai"
         },
         {
-          "ja": "モアイ・ハンマー",
-          "en": "Moai Hammer"
+          "ja": "財宝ゴールデンモアイ",
+          "en": "Golden Moai of Treasure"
         }
       ],
       "skillName": {
@@ -331,6 +352,13 @@
           "aoeR": 85,
           "aoeDmgRatio": 0.8
         }
+      ],
+      "tierIconIds": [
+        1106,
+        2106,
+        3106,
+        4106,
+        5106
       ]
     },
     {
@@ -346,20 +374,20 @@
           "en": "Shuriken"
         },
         {
-          "ja": "双手裏剣",
-          "en": "Twin Shuriken"
+          "ja": "エリート手裏剣",
+          "en": "Elite Shuriken"
         },
         {
-          "ja": "三手裏剣",
-          "en": "Triple Shuriken"
+          "ja": "ブレイブ手裏剣",
+          "en": "Brave Shuriken"
         },
         {
-          "ja": "八方手裏剣",
-          "en": "Octa Shuriken"
+          "ja": "火車剣",
+          "en": "Gunpowder Shuriken"
         },
         {
-          "ja": "風魔手裏剣",
-          "en": "Fuma Shuriken"
+          "ja": "赤目四十八滝",
+          "en": "Akame 48 Waterfalls"
         }
       ],
       "skillName": {
@@ -416,6 +444,13 @@
           "speedPx": 460,
           "stackGap": 22
         }
+      ],
+      "tierIconIds": [
+        1124,
+        2124,
+        3124,
+        4124,
+        5124
       ]
     },
     {
@@ -428,23 +463,23 @@
       "tierNames": [
         {
           "ja": "レーザーガン",
-          "en": "Laser Gun"
+          "en": "Raygun"
         },
         {
-          "ja": "デュアルレーザー",
-          "en": "Dual Laser"
+          "ja": "エリートレーザーガン",
+          "en": "Elite Raygun"
         },
         {
-          "ja": "プリズム",
-          "en": "Prism"
+          "ja": "ウィズダムレーザーガン",
+          "en": "Wisdom Raygun"
         },
         {
-          "ja": "スターブレイカー",
-          "en": "Starbreaker"
+          "ja": "レーザーブラスター",
+          "en": "Lazer Blaster"
         },
         {
-          "ja": "コスミックビーム",
-          "en": "Cosmic Beam"
+          "ja": "メギド",
+          "en": "Megiddo"
         }
       ],
       "skillName": {
@@ -506,6 +541,13 @@
           "len": 780,
           "thick": 10
         }
+      ],
+      "tierIconIds": [
+        1130,
+        2130,
+        3130,
+        4130,
+        5130
       ]
     },
     {
@@ -521,20 +563,20 @@
           "en": "Knife"
         },
         {
-          "ja": "ダブルナイフ",
-          "en": "Double Knife"
+          "ja": "エリートナイフ",
+          "en": "Elite Knife"
         },
         {
-          "ja": "クロスナイフ",
-          "en": "Cross Knife"
+          "ja": "ブレイブナイフ",
+          "en": "Brave Knife"
         },
         {
-          "ja": "エイトナイフ",
-          "en": "Eight Knife"
+          "ja": "グルカナイフ",
+          "en": "Gurkha Knife"
         },
         {
-          "ja": "ストームナイフ",
-          "en": "Storm Knife"
+          "ja": "アゾット",
+          "en": "Azoth"
         }
       ],
       "skillName": {
@@ -581,6 +623,13 @@
           "range": 400,
           "speedPx": 440
         }
+      ],
+      "tierIconIds": [
+        1048,
+        2048,
+        3048,
+        4048,
+        5048
       ]
     },
     {
@@ -596,20 +645,20 @@
           "en": "Axe"
         },
         {
-          "ja": "グレートアックス",
-          "en": "Great Axe"
+          "ja": "エリートアックス",
+          "en": "Elite Axe"
         },
         {
-          "ja": "ダブルアックス",
-          "en": "Twin Axe"
+          "ja": "ブレイブアックス",
+          "en": "Brave Axe"
         },
         {
-          "ja": "エクスキューショナー",
-          "en": "Executioner"
+          "ja": "テカムセのトマホーク",
+          "en": "Tecumseh’s Tomahawk"
         },
         {
-          "ja": "ストームアックス",
-          "en": "Storm Axe"
+          "ja": "バイキングアックス",
+          "en": "Viking Axe"
         }
       ],
       "skillName": {
@@ -656,6 +705,13 @@
           "range": 440,
           "speedPx": 400
         }
+      ],
+      "tierIconIds": [
+        1011,
+        2011,
+        3011,
+        4011,
+        5011
       ]
     },
     {
@@ -671,20 +727,20 @@
           "en": "Pierrot"
         },
         {
-          "ja": "ハーレクイン",
-          "en": "Harlequin"
+          "ja": "エリートピエロ",
+          "en": "Elite Pierrot"
+        },
+        {
+          "ja": "ウィズダムピエロ",
+          "en": "Wisdom Pierrot"
+        },
+        {
+          "ja": "アルルカン",
+          "en": "Arlequin"
         },
         {
           "ja": "ジョーカー",
           "en": "Joker"
-        },
-        {
-          "ja": "トリックスター",
-          "en": "Trickster"
-        },
-        {
-          "ja": "カオスメーカー",
-          "en": "Chaos Maker"
         }
       ],
       "skillName": {
@@ -741,6 +797,13 @@
           "fuseMs": 1000,
           "radius": 80
         }
+      ],
+      "tierIconIds": [
+        1063,
+        2063,
+        3063,
+        4063,
+        5063
       ]
     },
     {
@@ -752,24 +815,24 @@
       "seriesColor": "#c4a35a",
       "tierNames": [
         {
-          "ja": "ブレード",
-          "en": "Blade"
+          "ja": "ノービスブレード",
+          "en": "Novice Blade"
         },
         {
-          "ja": "デュアルブレード",
-          "en": "Dual Blade"
+          "ja": "エリートブレード",
+          "en": "Elite Blade"
         },
         {
-          "ja": "ホーリーブレード",
-          "en": "Holy Blade"
+          "ja": "ブレイブブレード",
+          "en": "Brave Blade"
         },
         {
-          "ja": "エクスカリバー",
-          "en": "Excalibur"
+          "ja": "インペリアルブレード",
+          "en": "Imperial Blade"
         },
         {
-          "ja": "ヴォーパルブレード",
-          "en": "Vorpal Blade"
+          "ja": "MCHブレード",
+          "en": "MCH Blade"
         }
       ],
       "skillName": {
@@ -821,6 +884,13 @@
           "speedPx": 0,
           "orbitR": 40
         }
+      ],
+      "tierIconIds": [
+        1001,
+        2001,
+        3001,
+        4001,
+        5001
       ]
     },
     {
@@ -832,24 +902,24 @@
       "seriesColor": "#aaaaaa",
       "tierNames": [
         {
-          "ja": "アーマー",
-          "en": "Armor"
+          "ja": "ノービスアーマー",
+          "en": "Novice Armor"
         },
         {
-          "ja": "プレートアーマー",
-          "en": "Plate Armor"
+          "ja": "エリートアーマー",
+          "en": "Elite Armor"
         },
         {
-          "ja": "ナイトアーマー",
-          "en": "Knight Armor"
+          "ja": "ブレイブアーマー",
+          "en": "Brave Armor"
         },
         {
-          "ja": "ホーリーアーマー",
-          "en": "Holy Armor"
+          "ja": "フリューテッドアーマー",
+          "en": "Fluted Armor"
         },
         {
-          "ja": "ドラゴンアーマー",
-          "en": "Dragon Armor"
+          "ja": "MCHアーマー",
+          "en": "MCH Armor"
         }
       ],
       "skillName": {
@@ -876,6 +946,13 @@
         {
           "magnitude": 160
         }
+      ],
+      "tierIconIds": [
+        1004,
+        2004,
+        3004,
+        4004,
+        5004
       ]
     },
     {
@@ -887,24 +964,24 @@
       "seriesColor": "#9be7c4",
       "tierNames": [
         {
-          "ja": "ラーメン",
-          "en": "Ramen"
+          "ja": "お手軽カップラーメン",
+          "en": "Instant Cup Ramen"
         },
         {
-          "ja": "味噌ラーメン",
-          "en": "Miso Ramen"
+          "ja": "濃厚油そば",
+          "en": "Rich and Hearty Oil Soba"
         },
         {
-          "ja": "醤油ラーメン",
-          "en": "Shoyu Ramen"
+          "ja": "定番醤油ラーメン",
+          "en": "Standard Soy Sauce Ramen"
         },
         {
-          "ja": "豚骨ラーメン",
-          "en": "Tonkotsu Ramen"
+          "ja": "デカ盛りもやしラーメン",
+          "en": "Large Portion Bean Sprout Ramen"
         },
         {
-          "ja": "神龍ラーメン",
-          "en": "Shenlong Ramen"
+          "ja": "絶品龍骨ラーメン",
+          "en": "Excellent Ramen with Dragon Bone "
         }
       ],
       "skillName": {
@@ -931,6 +1008,13 @@
         {
           "magnitude": 2
         }
+      ],
+      "tierIconIds": [
+        1154,
+        2154,
+        3154,
+        4154,
+        5154
       ]
     },
     {
@@ -946,20 +1030,20 @@
           "en": "Boots"
         },
         {
-          "ja": "ハイブーツ",
-          "en": "High Boots"
+          "ja": "エリートブーツ",
+          "en": "Elite Boots"
         },
         {
-          "ja": "ウィングブーツ",
-          "en": "Wing Boots"
+          "ja": "ブレイブブーツ",
+          "en": "Brave Boots"
         },
         {
-          "ja": "ヘルメスブーツ",
-          "en": "Hermes Boots"
+          "ja": "大西部のブーツ",
+          "en": "Great Western Boots"
         },
         {
-          "ja": "ライトニングブーツ",
-          "en": "Lightning Boots"
+          "ja": "コボルドのブーツ",
+          "en": "Kobold Boots"
         }
       ],
       "skillName": {
@@ -986,6 +1070,13 @@
         {
           "magnitude": 1.32
         }
+      ],
+      "tierIconIds": [
+        1031,
+        2031,
+        3031,
+        4031,
+        5031
       ]
     },
     {
@@ -997,24 +1088,24 @@
       "seriesColor": "#f0c14b",
       "tierNames": [
         {
-          "ja": "ホース",
-          "en": "Horse"
+          "ja": "ノービスホース",
+          "en": "Novice Horse"
         },
         {
-          "ja": "サラブレッド",
-          "en": "Thoroughbred"
+          "ja": "エリートホース",
+          "en": "Elite Horse"
         },
         {
-          "ja": "ペガサス",
-          "en": "Pegasus"
+          "ja": "ブレイブホース",
+          "en": "Brave Horse"
         },
         {
-          "ja": "ユニコーン",
-          "en": "Unicorn"
+          "ja": "赤兎馬",
+          "en": "Red Hare"
         },
         {
-          "ja": "スレイプニル",
-          "en": "Sleipnir"
+          "ja": "ブケファロス",
+          "en": "Bucephalus"
         }
       ],
       "skillName": {
@@ -1041,6 +1132,13 @@
         {
           "magnitude": 0.72
         }
+      ],
+      "tierIconIds": [
+        1005,
+        2005,
+        3005,
+        4005,
+        5005
       ]
     },
     {
@@ -1052,24 +1150,24 @@
       "seriesColor": "#56ccf2",
       "tierNames": [
         {
-          "ja": "シールド",
-          "en": "Shield"
+          "ja": "ノービスシールド",
+          "en": "Novice Shield"
         },
         {
-          "ja": "タワーシールド",
-          "en": "Tower Shield"
+          "ja": "エリートシールド",
+          "en": "Elite Shield"
         },
         {
-          "ja": "ナイトシールド",
-          "en": "Knight Shield"
+          "ja": "ブレイブシールド",
+          "en": "Brave Shield"
         },
         {
-          "ja": "ホーリーシールド",
-          "en": "Holy Shield"
+          "ja": "プリトウェン",
+          "en": "Prytwen"
         },
         {
-          "ja": "ミラーシールド",
-          "en": "Mirror Shield"
+          "ja": "アイギス",
+          "en": "Aegis"
         }
       ],
       "skillName": {
@@ -1096,6 +1194,13 @@
         {
           "magnitude": 0.6
         }
+      ],
+      "tierIconIds": [
+        1010,
+        2010,
+        3010,
+        4010,
+        5010
       ]
     },
     {
@@ -1111,20 +1216,20 @@
           "en": "Apple"
         },
         {
-          "ja": "金のりんご",
-          "en": "Golden Apple"
+          "ja": "葉とらずりんご",
+          "en": "Leafless Apple"
         },
         {
-          "ja": "知恵のりんご",
-          "en": "Wisdom Apple"
+          "ja": "寿りんご",
+          "en": "Auspicious Apple"
         },
         {
-          "ja": "不死のりんご",
-          "en": "Immortal Apple"
+          "ja": "帝国式林檎型電脳心臓 APC1984",
+          "en": "Imperial Apple-Type Cyber Heart APC1984"
         },
         {
-          "ja": "黄金の杏",
-          "en": "Aurum Apricot"
+          "ja": "不和の女神授けし黄金の果実",
+          "en": "Golden Fruit by the Goddess of Discord"
         }
       ],
       "skillName": {
@@ -1151,6 +1256,13 @@
         {
           "magnitude": 1.6
         }
+      ],
+      "tierIconIds": [
+        1159,
+        2159,
+        3159,
+        4159,
+        5159
       ]
     },
     {
@@ -1166,20 +1278,20 @@
           "en": "Oriflamme"
         },
         {
-          "ja": "ロイヤルオリフラム",
-          "en": "Royal Oriflamme"
+          "ja": "エリートオリフラム",
+          "en": "Elite Oriflamme"
         },
         {
-          "ja": "ホーリーオリフラム",
-          "en": "Holy Oriflamme"
+          "ja": "ノーブルオリフラム",
+          "en": "Noble Oriflamme"
         },
         {
-          "ja": "エンペラーズフラッグ",
-          "en": "Emperor's Flag"
+          "ja": "太陽のオリフラム",
+          "en": "Oriflamme of the Sun"
         },
         {
-          "ja": "アークエンジェル",
-          "en": "Archangel"
+          "ja": "フルール・ド・リス",
+          "en": "Fleur-de-lis"
         }
       ],
       "skillName": {
@@ -1206,6 +1318,13 @@
         {
           "magnitude": 3
         }
+      ],
+      "tierIconIds": [
+        1140,
+        2140,
+        3140,
+        4140,
+        5140
       ]
     },
     {
@@ -1216,20 +1335,58 @@
       "iconId": 1169,
       "seriesColor": "#9be7c4",
       "tierNames": [
-        { "ja": "液浸標本",   "en": "Specimen" },
-        { "ja": "結晶標本",   "en": "Crystal Specimen" },
-        { "ja": "黄金標本",   "en": "Aurum Specimen" },
-        { "ja": "古代標本",   "en": "Ancient Specimen" },
-        { "ja": "禁断標本",   "en": "Forbidden Specimen" }
+        {
+          "ja": "カエルの標本",
+          "en": "Frog Specimen"
+        },
+        {
+          "ja": "アンモナイトの標本",
+          "en": "Ammonite Specimen"
+        },
+        {
+          "ja": "メデューサの目玉標本",
+          "en": "Medusa's Eye Specimen"
+        },
+        {
+          "ja": "シーサーペントの尾ビレ標本",
+          "en": "Sea Serpent Tail Fin Specimen"
+        },
+        {
+          "ja": "レッドドラゴンの右腕標本",
+          "en": "Red Dragon's Right Arm Specimen"
+        }
       ],
-      "skillName":    { "ja": "拡張視野",            "en": "Wide Sight" },
-      "skillDescTpl": { "ja": "攻撃範囲 ×{magnitude}", "en": "Attack range ×{magnitude}" },
+      "skillName": {
+        "ja": "拡張視野",
+        "en": "Wide Sight"
+      },
+      "skillDescTpl": {
+        "ja": "攻撃範囲 ×{magnitude}",
+        "en": "Attack range ×{magnitude}"
+      },
       "tierParams": [
-        { "magnitude": 1.10 },
-        { "magnitude": 1.20 },
-        { "magnitude": 1.32 },
-        { "magnitude": 1.46 },
-        { "magnitude": 1.60 }
+        {
+          "magnitude": 1.1
+        },
+        {
+          "magnitude": 1.2
+        },
+        {
+          "magnitude": 1.32
+        },
+        {
+          "magnitude": 1.46
+        },
+        {
+          "magnitude": 1.6
+        }
+      ],
+      "tierIconIds": [
+        1169,
+        2169,
+        3169,
+        4169,
+        5169
       ]
     },
     {
@@ -1240,20 +1397,58 @@
       "iconId": 1098,
       "seriesColor": "#fdcb6e",
       "tierNames": [
-        { "ja": "ギョク",     "en": "Gyoku" },
-        { "ja": "勾玉",       "en": "Magatama" },
-        { "ja": "翡翠玉",     "en": "Jade Orb" },
-        { "ja": "賢者の石",   "en": "Sage Stone" },
-        { "ja": "天玉",       "en": "Heavenly Orb" }
+        {
+          "ja": "ギョク",
+          "en": "Orb"
+        },
+        {
+          "ja": "エリートギョク",
+          "en": "Elite Orb"
+        },
+        {
+          "ja": "ウィズダムギョク",
+          "en": "Wisdom Orb"
+        },
+        {
+          "ja": "カルデアの玉",
+          "en": "Chaldea’s Orb"
+        },
+        {
+          "ja": "龍玉",
+          "en": "Dragon Orb"
+        }
       ],
-      "skillName":    { "ja": "招集",                  "en": "Beckon" },
-      "skillDescTpl": { "ja": "CE 収集範囲 ×{magnitude}", "en": "CE pickup range ×{magnitude}" },
+      "skillName": {
+        "ja": "招集",
+        "en": "Beckon"
+      },
+      "skillDescTpl": {
+        "ja": "CE 収集範囲 ×{magnitude}",
+        "en": "CE pickup range ×{magnitude}"
+      },
       "tierParams": [
-        { "magnitude": 1.20 },
-        { "magnitude": 1.40 },
-        { "magnitude": 1.65 },
-        { "magnitude": 1.95 },
-        { "magnitude": 2.30 }
+        {
+          "magnitude": 1.2
+        },
+        {
+          "magnitude": 1.4
+        },
+        {
+          "magnitude": 1.65
+        },
+        {
+          "magnitude": 1.95
+        },
+        {
+          "magnitude": 2.3
+        }
+      ],
+      "tierIconIds": [
+        1098,
+        2098,
+        3098,
+        4098,
+        5098
       ]
     }
   ]
