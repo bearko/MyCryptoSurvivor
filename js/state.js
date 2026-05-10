@@ -66,6 +66,10 @@ export const state = {
     lastEnemySpawnMs: 0,
     contactCooldownMs: 0, // > 0 のあいだ被弾しない
     gameOver:       false, // SPEC-009: HP 0 検出後 true、 多重 trigger 防止
+    // SPEC-022: ステージ進行 + ボス
+    stageElapsedMs: 0,     // ステージ開始からの経過 (= ms、 wave 切替に使う)
+    bossSpawned:    false, // ディープ・ヨシュカ multi-spawn 防止
+    bossDefeated:   false, // ボス撃破フラグ (= clear trigger)
   },
 
   // SPEC-008: 装備 extension + Level-up pick モーダル状態
