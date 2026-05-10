@@ -245,21 +245,9 @@
        aria-labelledby="activityReportTitle">
     <div class="gameover-modal__card report-card">
       <h2 class="gameover-modal__title" id="activityReportTitle">活動レポート</h2>
+      <!-- SPEC-038: テキストではなくアイコン重視のレイアウトに刷新 -->
       <div class="report-hero" id="activityReportHero"></div>
-      <div class="report-stages-wrap">
-        <table class="report-stages">
-          <thead>
-            <tr>
-              <th data-i18n="report.col.stage">ステージ</th>
-              <th data-i18n="report.col.time">時間</th>
-              <th data-i18n="report.col.kills">撃破</th>
-              <th data-i18n="report.col.level">Lv</th>
-              <th data-i18n="report.col.exts">取得エクステ</th>
-            </tr>
-          </thead>
-          <tbody id="activityReportStages"></tbody>
-        </table>
-      </div>
+      <div class="report-stages" id="activityReportStages"></div>
       <div class="report-totals" id="activityReportTotals"></div>
       <div class="gameover-modal__form">
         <label class="gameover-form__label" id="activityReportNameLabel" for="activityReportName">プレイヤー名</label>

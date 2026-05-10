@@ -5,6 +5,19 @@
 ## [Unreleased]
 
 <!-- BEGIN AUTO-UNRELEASED -->
+### Changed — SPEC-038 (= Activity Report Icon Layout + Anonymous Default Name)
+- **活動レポートをアイコン中心レイアウトに刷新** (`js/battle/activity-report.js` + `index.html`):
+  - ヒーロー: **ポートレート (= 56px 円形)** + 名前 + 派閥カラーボーダー
+  - ステージ: 旧 table → **カード式** (`<div class="report-stage">` × N)、 head に ステージ名 + (⏱ 時間 / 💀 撃破 / Lv.N)
+  - 取得 ext: **38px タイル** (= `extTierImg` アイコン + 右下 Lv バッジ) を flex-wrap で並べる、 名前は hover tooltip のみ
+  - 総合スタッツ: meta row (= 🏷️ レギュ / ⏱ 総時間 / 💀 総撃破) + **巨大スコア** (= clamp 2.6〜4rem、 `toLocaleString()` で 3 桁区切り) + "SCORE" ラベル
+- **ランキング名のデフォルトを "anonymous" に** (`js/ranking-client.js`):
+  - `DEFAULT_PLAYER_NAME = "anonymous"` を新設、 `getPlayerName()` で localStorage 未設定時に fallback
+  - 名前欄が空のまま 「ランキングに送信」 を押しても 「anonymous」 で送信できる
+- **ランキング表のスコア列強調** (`css/components.css`): `.ranking-table .ranking-score` を `font-size: 1.05rem; font-weight: 900; tabular-nums` に
+- **i18n** (`data/i18n/ui.json`): `report.scoreLabel` (= "SCORE") を追加
+- **CSS** (`css/components.css`): `.report-hero__inner` (= 派閥カラーボーダー) / `.report-hero__portrait` (= 56px 円形) / `.report-stage*` 一式 / `.report-ext` (= 38px タイル) / `.report-ext__lv` (= 右下バッジ) / `.report-meta-row` / `.report-score-big` (= clamp + drop-shadow + tabular-nums) / `.report-score-label` (= letter-spacing 0.3em) を新規追加。 mobile (< 480px) で 48px / 34px / 0.95rem に縮小
+
 ### Added — SPEC-037 (= Game Modes — NORMAL / ABSOLUTE Regulation)
 - **ゲームモード選択画面** (`index.html` + `js/mode-select.js` 新規): タイトル → **NORMAL / ABSOLUTE 選択** → ヒーロー選択 の 3 段遷移。 各モードカードに 「これで始める」 ボタン + バックボタン
 - **ABSOLUTE レギュレーション** (`js/state.js` + `js/constants.js`):
