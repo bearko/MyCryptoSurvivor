@@ -339,6 +339,7 @@ function applyHeroPick() {
   if (!hero) return;
   playSe(SFX.HERO_PICK);   // SPEC-017: tooldev.mp3
   state.ownedHero = { ...hero };
+  state.currentStageIdx = 0;       // SPEC-030: 新規 hero pick で stage 1 から
   renderOwnedHeroBadge();
   closeHeroSelectModal();
   startBattle(state.ownedHero);   // SPEC-006: 戦闘ステージ開始

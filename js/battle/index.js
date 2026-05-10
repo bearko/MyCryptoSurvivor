@@ -32,6 +32,7 @@ import {
   tickShockwaves,
 } from "./archetypes.js";
 import { tickDamageNumbers } from "./damage.js";
+import { tickBossAttack } from "./boss-attack.js";
 import { startBgm } from "../audio.js";
 import { BGM_BATTLE } from "../constants.js";
 
@@ -89,6 +90,11 @@ export function startBattle(hero) {
   b.bossSpawned        = false;                 // SPEC-022: ボス multi-spawn 防止
   b.bossDefeated       = false;                 // SPEC-022: ボス撃破フラグ
   b.rerollsLeft        = REROLL_PER_BATTLE;     // SPEC-023: picker リロール残数
+  // SPEC-030: ボス攻撃エンティティを毎戦リセット
+  b.bossProjectiles    = b.bossProjectiles ?? [];
+  b.bossOrbits         = b.bossOrbits      ?? [];
+  b.bossProjectiles.length = 0;
+  b.bossOrbits.length      = 0;
   state.ownedExtensions = [];                   // SPEC-008: 装備リセット
   state.killCount       = 0;                    // SPEC-009: 撃破カウンタ
   state.lastRunStats    = null;                 // SPEC-009: snapshot
@@ -172,6 +178,7 @@ function _loop(now) {
     tickBeams(dt);                 // SPEC-012: LaserGun の持続レーザー
     tickBombs(dt);                 // SPEC-012: Pierrot の遅延爆発
     tickShockwaves(dt);            // SPEC-015: Moai 着弾の AoE 衝撃波
+    tickBossAttack(dt, now);       // SPEC-030: ボス攻撃 (= ファオ放射 / yamap 周回) + 衝突
     tickDamageNumbers(dt);         // SPEC-016: ダメージ数字 floater
     tickGems(dt);                  // SPEC-007: 拾う + level up trigger
     tickRegen(dt);                 // SPEC-011: Ramen 系列の HP regen
