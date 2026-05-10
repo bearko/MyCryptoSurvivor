@@ -1,3 +1,12 @@
+---
+id: SPEC-021
+title: Per-Tier Extension Icons + Names (= MCH 公式準拠、 1xxx → 5xxx)
+status: Done
+pr: 25
+phase: Phase 0 / Phase 1
+kind: Added
+---
+
 # SPEC-021 — Per-Tier Extension Icons + Names (= MCH 公式準拠)
 
 - **Status**: Implementing

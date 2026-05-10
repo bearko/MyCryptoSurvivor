@@ -1,3 +1,12 @@
+---
+id: SPEC-013
+title: Hero Starter Weapon (= Lv.1 固定割当) + Picker Rules (= 重複なし / weapon ≥ 1)
+status: Done
+pr: 15
+phase: Phase 0 / Phase 1
+kind: Added
+---
+
 # SPEC-013 — Hero Starter Weapon + Picker Rules (= no dup, ≥1 weapon)
 
 - **Status**: Implementing

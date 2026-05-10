@@ -1,3 +1,12 @@
+---
+id: SPEC-008
+title: Extensions as Weapons + Level-Up Picker Modal (= スキル = extension、 投射体武器化)
+status: Implementing
+pr: 9
+phase: Phase 0 / Phase 1
+kind: Added
+---
+
 # SPEC-008 — Extensions as Weapons + Level-Up Picker Modal
 
 - **Status**: Implementing

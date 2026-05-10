@@ -1,0 +1,9 @@
+- **Pierce 機構**: `_spawnProjectile` opts に `pierce`、 entity に `pierceLeft` + `hitIds` (Set)。 `tickProjectiles` 衝突で同 frame / 同弾の重複を防ぎつつ pierce > 0 中は次の敵もチェック。 `moaiDrop` は Gunbai 影響を受けない (= shockwave 多重防止)
+- **Panjandrum tier に `pierce`**: 1 / 2 / 3 / 4 / 5 を追加 (= Lv.1 で 2 体目消滅、 Lv.5 で 6 体目消滅)
+- **Gunbai 系列 (extId 20)** 新規: archetype `pierceUp`、 `state.buffs.pierceBonus` を加算、 tier magnitude 1 / 2 / 3 / 4 / 5。 MCH 1037 / 2037 / 3037 / 4037 / 5037
+- **LaserGun 丸め損対策**: beam に `dmgAccum` / `lastHitMs` を持たせ、 `BEAM_HIT_INTERVAL_MS=250` ごとに整数 dmg を dispatch。 `tickBeams(dt, nowMs)` シグネチャ更新
+- **Pierrot AoE 可視化**: 爆発半径を赤の半透明 fill (`#e76060` α=0.22-0.32) + 赤系 stroke (`#ff8a8a`) で表示、 fuse 後半で点滅
+- **Horse 強化**: tier magnitude を `0.95/0.9/0.84/0.78/0.72` → **`0.85/0.7/0.55/0.4/0.3`**
+- **ヘッダー日付削除**: `<div class="header__center">` (= `#dateLabel`) を `index.html` から撤去。 `renderHeader` は `if(el)` ガード済で no-op 残置
+- `docs/specs/SPEC-031-pierce-and-tweaks.md` 新規
+- `docs/specs/SPEC-INDEX.md`: SPEC-030 を `#38 (merged)` に flip、 SPEC-031 を Implementing 登録

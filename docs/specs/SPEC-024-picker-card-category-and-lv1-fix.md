@@ -1,3 +1,12 @@
+---
+id: SPEC-024
+title: Picker Card Category Label + Lv.1 Effect Audit (= Oriflamme +0 → +1)
+status: Done
+pr: 31
+phase: Phase 0 / Phase 1
+kind: Added
+---
+
 # SPEC-024 — Picker Card Category Label + Lv.1 Effect Audit
 
 - **Status**: Implementing

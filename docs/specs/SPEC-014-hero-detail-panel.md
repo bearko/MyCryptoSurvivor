@@ -1,3 +1,12 @@
+---
+id: SPEC-014
+title: Hero Selection Detail Panel + Per-Hero HP/Speed Differentiation
+status: Done
+pr: 16
+phase: Phase 0 / Phase 1
+kind: Added
+---
+
 # SPEC-014 — Hero Selection Detail Panel + Per-Hero HP/Speed Differentiation
 
 - **Status**: Implementing

@@ -1,3 +1,12 @@
+---
+id: SPEC-020
+title: Extension Icon Fix (= ユーザー指定 MCH ID で全系列を完全一致)
+status: Done
+pr: 24
+phase: Phase 0 / Phase 1
+kind: Added
+---
+
 # SPEC-020 — Extension Icon Fix (= ユーザー指定 MCH ID で全系列を完全一致)
 
 - **Status**: Implementing

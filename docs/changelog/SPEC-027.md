@@ -1,0 +1,4 @@
+- `data/i18n/ui.json`: `gameover.titleClear` 追加 (= 「クリア!」 / 「Clear!」)
+- `js/battle/gameover.js`: `triggerGameOver(reason)` で `state.lastRunStats.reason` を保存、 `_renderGameOverModal` で reason="clear" のときタイトルを `gameover.titleClear` に差し替え
+- `docs/specs/SPEC-027-clear-title-on-win.md` 新規
+- `docs/specs/SPEC-INDEX.md`: SPEC-026 を `#33 (merged)` に flip、 SPEC-027 を Implementing 登録

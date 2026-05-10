@@ -1,3 +1,12 @@
+---
+id: SPEC-025
+title: Fix Audio Paths (= MCH カタログ実体に整合、 404 → 200)
+status: Done
+pr: 32
+phase: Phase 0 / Phase 1
+kind: Fixed
+---
+
 # SPEC-025 — Fix Audio Paths (MCH カタログ整合)
 
 - **Status**: Implementing

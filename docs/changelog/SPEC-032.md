@@ -1,0 +1,8 @@
+- **`tools/build-spec-index.mjs`** 新規 (= 純 Node ESM、 依存なし)。 全 `docs/specs/SPEC-*.md` の YAML frontmatter から `SPEC-INDEX.md` の表を再生成
+- **`tools/build-changelog.mjs`** 新規。 `docs/changelog/SPEC-NNN.md` (= bullet fragment) + SPEC frontmatter から `CHANGELOG.md` の `[Unreleased]` 区間を再生成
+- 全 31 既存 SPEC に YAML frontmatter (= `id` / `title` / `status` / `pr` / `phase` / `kind`) を追加
+- `[Unreleased]` の 30 SPEC エントリを `docs/changelog/SPEC-002.md` ~ `SPEC-031.md` に分割
+- `docs/specs/SPEC-INDEX.md` の表を `<!-- BEGIN AUTO-INDEX -->` ... `<!-- END AUTO-INDEX -->` マーカー間に変更
+- `CHANGELOG.md` の `[Unreleased]` を `<!-- BEGIN AUTO-UNRELEASED -->` ... `<!-- END AUTO-UNRELEASED -->` マーカー間に変更
+- `docs/process/SPEC_DRIVEN_DEVELOPMENT.md` 11 章を新設 (= 新ワークフロー + 自動生成手順)
+- `CLAUDE.md` 「作業の進め方」 に **触る / 触らないファイル** 表を追加
