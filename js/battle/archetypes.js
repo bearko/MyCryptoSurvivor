@@ -11,11 +11,20 @@
 
 import { state } from "../state.js";
 import { hitEnemy } from "./damage.js";
-import { PROJECTILE_RADIUS, PROJECTILE_LIFE_MS } from "../constants.js";
+import {
+  PROJECTILE_RADIUS, PROJECTILE_LIFE_MS,
+  WEAPON_SIZE_GROWTH_PER_LEVEL,
+} from "../constants.js";
 
 const ORBIT_HIT_COOLDOWN_MS = 250;   // 同じ敵を 0.25 sec ごとにしか damage しない
 const ORBIT_ANGULAR_SPEED   = 1.2;   // rad/sec  (= Book)
 const ORBIT_CLOSE_ANG_SPEED = 2.4;   // rad/sec  (= Blade)
+
+// SPEC-028: weapon.level に応じた当たり判定 / アイコンサイズ倍率
+function _levelSizeMul(w) {
+  const lv = w?.level ?? 1;
+  return 1 + WEAPON_SIZE_GROWTH_PER_LEVEL * (lv - 1);
+}
 
 // ============================================================
 // 共通: 投射体 spawn
@@ -82,6 +91,7 @@ export function fireRadial(w, dmgMul, bulletBonus) {
   const speed = w.speedPx;
   // SPEC-019: Revolver は projectileIconId=null で円描画 fallback
   const projIcon = (w.projectileIconId !== undefined) ? w.projectileIconId : w.iconId;
+  const lvMul = _levelSizeMul(w);   // SPEC-028
   for (let i = 0; i < total; i++) {
     const t = total <= 1 ? 0.5 : i / (total - 1);
     const a = baseAngle - spreadRad / 2 + spreadRad * t;
@@ -89,7 +99,8 @@ export function fireRadial(w, dmgMul, bulletBonus) {
       x: px, y: py,
       vx: Math.cos(a) * speed, vy: Math.sin(a) * speed,
       dmg: w.dmg * dmgMul, color: w.color,
-      iconId: projIcon, iconSize: 22,
+      iconId: projIcon, iconSize: 22 * lvMul,
+      r: PROJECTILE_RADIUS * lvMul,
     });
   }
 }
@@ -105,6 +116,7 @@ export function fireBigHoming(w, dmgMul, bulletBonus) {
   const size = w.params?.size ?? 14;
   const rangeMul = state.buffs?.rangeMul ?? 1;
   const projIcon = (w.projectileIconId !== undefined) ? w.projectileIconId : w.iconId;
+  const lvMul = _levelSizeMul(w);   // SPEC-028
   for (let i = 0; i < total; i++) {
     const t = _findNearestEnemy(px, py, w.range * rangeMul);
     let vx, vy, targetId = null;
@@ -122,8 +134,8 @@ export function fireBigHoming(w, dmgMul, bulletBonus) {
     _spawnProjectile({
       x: px, y: py, vx, vy,
       dmg: w.dmg * dmgMul, color: w.color,
-      r: size, life: 4000, targetId, kind: "homing",
-      iconId: projIcon, iconSize: Math.max(28, size * 1.6),
+      r: size * lvMul, life: 4000, targetId, kind: "homing",
+      iconId: projIcon, iconSize: Math.max(28, size * 1.6) * lvMul,
     });
   }
 }
@@ -142,6 +154,7 @@ export function fireDropTarget(w, dmgMul, bulletBonus) {
   const aoeR  = (w.params?.aoeR ?? 60) * rangeMul;
   const aoeDmgRatio = w.params?.aoeDmgRatio ?? 0.7;
   const projIcon = (w.projectileIconId !== undefined) ? w.projectileIconId : w.iconId;
+  const lvMul = _levelSizeMul(w);   // SPEC-028
   for (let i = 0; i < total; i++) {
     const t = enemies[Math.floor(Math.random() * enemies.length)];
     if (!t) continue;
@@ -149,12 +162,12 @@ export function fireDropTarget(w, dmgMul, bulletBonus) {
       x: t.x, y: t.y - fallH,
       vx: 0, vy: speed,
       dmg: w.dmg * dmgMul, color: w.color,
-      r: 10, life: 1500,
+      r: 10 * lvMul, life: 1500,
       kind: "moaiDrop",
       moaiTargetId: t.id,
       moaiAoeR: aoeR,
       moaiAoeDmg: w.dmg * dmgMul * aoeDmgRatio,
-      iconId: projIcon, iconSize: 28,
+      iconId: projIcon, iconSize: 28 * lvMul,
     });
   }
 }
@@ -176,6 +189,7 @@ export function fireStack(w, dmgMul, bulletBonus) {
   const speed = w.speedPx;
   const totalDirs = dirs + bulletBonus;
   const projIcon = (w.projectileIconId !== undefined) ? w.projectileIconId : w.iconId;
+  const lvMul = _levelSizeMul(w);   // SPEC-028
   for (let k = 0; k < totalDirs; k++) {
     const a = baseAngle + (Math.PI * 2 * k) / totalDirs;
     const ux = Math.cos(a), uy = Math.sin(a);
@@ -185,7 +199,8 @@ export function fireStack(w, dmgMul, bulletBonus) {
         y: py - uy * stackGap * s,
         vx: ux * speed, vy: uy * speed,
         dmg: w.dmg * dmgMul, color: w.color,
-        iconId: projIcon, iconSize: 22,
+        iconId: projIcon, iconSize: 22 * lvMul,
+        r: PROJECTILE_RADIUS * lvMul,
       });
     }
   }
@@ -204,7 +219,9 @@ export function fireBeam(w, dmgMul, bulletBonus) {
   const baseAngle = Math.atan2(dir.y, dir.x);
   const total = (w.bullets ?? 1) + bulletBonus;
   const len   = (w.params?.len   ?? 600) * rangeMul;   // SPEC-019: rangeMul を beam 長に
-  const thick = w.params?.thick ?? 6;
+  const baseThick = w.params?.thick ?? 6;
+  const lvMul = _levelSizeMul(w);   // SPEC-028
+  const thick = baseThick * lvMul;
   const dur   = w.params?.durMs ?? 600;
   const dmgPerSec = w.dmg * (dmgMul ?? 1);
   for (let i = 0; i < total; i++) {
@@ -232,14 +249,16 @@ export function fireDiagonal(w, dmgMul, bulletBonus) {
   const speed = w.speedPx;
   const offset = Math.PI / 4;
   const projIcon = (w.projectileIconId !== undefined) ? w.projectileIconId : w.iconId;
+  const lvMul = _levelSizeMul(w);   // SPEC-028
   for (let i = 0; i < total; i++) {
     const a = offset + (Math.PI * 2 * i) / total;
     _spawnProjectile({
       x: px, y: py,
       vx: Math.cos(a) * speed, vy: Math.sin(a) * speed,
       dmg: w.dmg * dmgMul, color: w.color,
-      iconId: projIcon, iconSize: 24,
+      iconId: projIcon, iconSize: 24 * lvMul,
       iconRotOffset: Math.PI / 4,
+      r: PROJECTILE_RADIUS * lvMul,
     });
   }
 }
@@ -254,13 +273,15 @@ export function fireRandomRadial(w, dmgMul, bulletBonus) {
   const total = (w.bullets ?? 2) + bulletBonus;
   const speed = w.speedPx;
   const projIcon = (w.projectileIconId !== undefined) ? w.projectileIconId : w.iconId;
+  const lvMul = _levelSizeMul(w);   // SPEC-028
   for (let i = 0; i < total; i++) {
     const a = Math.random() * Math.PI * 2;
     _spawnProjectile({
       x: px, y: py,
       vx: Math.cos(a) * speed, vy: Math.sin(a) * speed,
       dmg: w.dmg * dmgMul, color: w.color,
-      iconId: projIcon, iconSize: 24,
+      iconId: projIcon, iconSize: 24 * lvMul,
+      r: PROJECTILE_RADIUS * lvMul,
     });
   }
 }
@@ -276,6 +297,7 @@ export function firePlaceBomb(w, dmgMul, bulletBonus) {
   const fuseMs = w.params?.fuseMs ?? 1000;
   const rangeMul = state.buffs?.rangeMul ?? 1;
   const radius = (w.params?.radius ?? 60) * rangeMul;   // SPEC-019: rangeMul で AoE 拡大
+  const lvMul = _levelSizeMul(w);   // SPEC-028
   for (let i = 0; i < total; i++) {
     const off = (i === 0) ? 0 : 20;
     const ox = (Math.random() * 2 - 1) * off;
@@ -287,6 +309,7 @@ export function firePlaceBomb(w, dmgMul, bulletBonus) {
       radius, dmg: Math.max(1, Math.round(w.dmg * dmgMul)),
       color: w.color,
       iconId: w.iconId,
+      iconSize: 26 * lvMul,
     });
   }
 }
@@ -302,12 +325,14 @@ export function fireHoming(w, dmgMul) {
   const dir = _nearestDir(px, py, w.range * rangeMul);
   if (!dir) return;
   const projIcon = (w.projectileIconId !== undefined) ? w.projectileIconId : w.iconId;
+  const lvMul = _levelSizeMul(w);   // SPEC-028
   _spawnProjectile({
     x: px, y: py,
     vx: dir.x * w.speedPx, vy: dir.y * w.speedPx,
     dmg: w.dmg * dmgMul, color: w.color,
     targetId: dir.target?.id ?? null, kind: "homing",
-    iconId: projIcon, iconSize: 22,
+    iconId: projIcon, iconSize: 22 * lvMul,
+    r: PROJECTILE_RADIUS * lvMul,
   });
 }
 
@@ -318,27 +343,50 @@ export function fireHoming(w, dmgMul) {
 export function ensureOrbits(w, dmgMul, bulletBonus) {
   const desired = (w.bullets ?? 1) + bulletBonus;
   const orbits  = state.battle.orbits;
-  const owned   = orbits.filter(o => String(o.weaponExtId) === String(w.extId));
   // SPEC-019: rangeMul を毎フレーム再適用 (= 既存 orbit の半径も更新)
   const rangeMul = state.buffs?.rangeMul ?? 1;
   const baseR    = w.params?.orbitR ?? 70;
   const r        = baseR * rangeMul;
-  for (const o of owned) o.r = r;
+  // SPEC-028: 武器レベルで当たり判定 / アイコンを拡大
+  const lvMul        = _levelSizeMul(w);
+  const baseHitR     = (w.archetype === "orbitClose") ?  9 : 11;
+  const baseIconSize = (w.archetype === "orbitClose") ? 22 : 26;
+  const hitR         = baseHitR     * lvMul;
+  const iconSize     = baseIconSize * lvMul;
+  const dmg          = Math.max(1, Math.round(w.dmg * dmgMul));
+
+  // 既存 orbit に半径 / 武器レベル由来パラメータ / 現 tier icon を毎 frame 反映
+  // (= レベルアップ即時に icon / 当たり / dmg / radius が切り替わる)
+  for (const o of orbits) {
+    if (String(o.weaponExtId) !== String(w.extId)) continue;
+    o.r        = r;
+    o.radius   = hitR;
+    o.iconId   = w.iconId;
+    o.iconSize = iconSize;
+    o.dmg      = dmg;
+    o.color    = w.color;
+  }
+
+  // 個数調整
+  let owned = orbits.filter(o => String(o.weaponExtId) === String(w.extId));
   if (owned.length === desired) return;
+
+  // anchor: 既存先頭の角度を維持して再配置 (= 回転は smooth に継続)
+  const baseAng = (owned.length > 0) ? owned[0].angle : 0;
+
   if (owned.length < desired) {
-    const baseAng  = (owned.length > 0) ? owned[0].angle : 0;
     for (let i = owned.length; i < desired; i++) {
       orbits.push({
         id: state.battle.nextEntityId++,
         weaponExtId: w.extId,
-        angle: baseAng + (Math.PI * 2 * i) / desired,
-        r, dmg: Math.max(1, Math.round(w.dmg * dmgMul)),
+        angle: 0,            // 後段で redistribute
+        r, dmg,
         color: w.color,
         hitMap: {},
         kind: w.archetype,
-        radius: (w.archetype === "orbitClose") ? 9 : 11,
+        radius: hitR,
         iconId: w.iconId,
-        iconSize: (w.archetype === "orbitClose") ? 22 : 26,
+        iconSize,
       });
     }
   } else {
@@ -350,6 +398,13 @@ export function ensureOrbits(w, dmgMul, bulletBonus) {
         toRemove--;
       }
     }
+  }
+
+  // SPEC-028: 既存 + 新規を等間隔に再配置 (= 2→180° / 3→120° / 4→90° / N→360/N°)
+  owned = orbits.filter(o => String(o.weaponExtId) === String(w.extId));
+  const step = (Math.PI * 2) / Math.max(1, desired);
+  for (let i = 0; i < owned.length; i++) {
+    owned[i].angle = baseAng + step * i;
   }
 }
 
