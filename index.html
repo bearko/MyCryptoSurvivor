@@ -47,6 +47,8 @@
       Press to Start
     </button>
 
+    <button id="btnTitleRanking" class="btn btn--ghost title-screen__ranking" data-i18n="ranking.openTitle">ランキング</button>
+
     <div class="lang-toggle" id="langToggle">
       <span class="lang-toggle-label" data-i18n="lang.toggle.label">Language / 言語</span>
       <div class="lang-toggle-buttons">
@@ -120,6 +122,45 @@
   </div>
 
   <!-- ============================================================ -->
+  <!-- Ranking modal (= SPEC-035)                                     -->
+  <!-- ============================================================ -->
+  <div id="rankingModal" class="gameover-modal hidden" role="dialog" aria-modal="true"
+       aria-labelledby="rankingTitle">
+    <div class="gameover-modal__card ranking-card">
+      <h2 class="gameover-modal__title" id="rankingTitle">ランキング</h2>
+      <div class="ranking-toolbar">
+        <select id="rankingFilter" class="ranking-filter">
+          <option value="current" id="rankingFilterCurrent">v 0.1.0 のみ</option>
+          <option value="all"     id="rankingFilterAll">全バージョン</option>
+        </select>
+        <button class="btn btn--ghost" id="rankingRefresh">更新</button>
+      </div>
+      <div class="ranking-table-wrap">
+        <table class="ranking-table" id="rankingTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>プレイヤー</th>
+              <th>スコア</th>
+              <th>撃破</th>
+              <th>時間</th>
+            </tr>
+          </thead>
+          <tbody id="rankingList"></tbody>
+        </table>
+      </div>
+      <p class="ranking-msg" id="rankingMsg" aria-live="polite"></p>
+      <div class="ranking-config hidden" id="rankingConfig">
+        <label class="ranking-config__label" id="rankingConfigLabel" for="rankingApiInput">ランキング API URL (= GAS Web App)</label>
+        <input class="gameover-form__input" id="rankingApiInput" type="text"
+               placeholder="https://script.google.com/macros/s/.../exec" autocomplete="off" />
+        <button class="btn btn--secondary" id="rankingApiSave">API URL を保存</button>
+      </div>
+      <button class="btn ranking-close" id="rankingClose">閉じる</button>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
   <!-- Game Over modal (= SPEC-009)                                   -->
   <!-- ============================================================ -->
   <div id="gameOverModal" class="gameover-modal hidden" role="dialog" aria-modal="true"
@@ -149,6 +190,7 @@
     <div class="gameover-modal__card pause-menu__card">
       <h2 class="gameover-modal__title" id="pauseMenuTitle" data-i18n="menu.title">メニュー</h2>
       <div class="pause-menu__buttons">
+        <button class="btn btn--secondary" id="pauseMenuRanking" data-i18n="menu.ranking">ランキング</button>
         <button class="btn btn--secondary" id="pauseMenuRestart" data-i18n="menu.restart">ステージをはじめからやり直す</button>
         <button class="btn btn--secondary" id="pauseMenuToTitle" data-i18n="menu.toTitle">タイトルに戻る</button>
         <button class="btn"                id="pauseMenuClose"   data-i18n="menu.close">閉じる</button>
@@ -185,6 +227,7 @@
         <button class="btn btn--secondary" id="activityReportSubmit">ランキングに送信</button>
         <p class="gameover-form__msg" id="activityReportMsg" aria-live="polite"></p>
       </div>
+      <button class="btn btn--ghost hidden" id="activityReportViewRanking">ランキングを見る</button>
       <button class="btn gameover-modal__retry" id="activityReportRetry">リトライ</button>
     </div>
   </div>
