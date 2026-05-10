@@ -16,6 +16,7 @@ import { state } from "../state.js";
 import { spawnGem } from "./gems.js";
 import {
   HIT_FREEZE_MS, DAMAGE_NUMBER_LIFE_MS, DAMAGE_NUMBER_RISE_PX_S,
+  BOSS_ENEMY_ID,
 } from "../constants.js";
 
 /**
@@ -37,6 +38,10 @@ export function hitEnemy(idx, dmg) {
     spawnGem(e.x, e.y);
     enemies.splice(idx, 1);
     state.killCount++;
+    // SPEC-022: ボス撃破フラグ → 次 tick で triggerGameOver("clear")
+    if (e.enemyId === BOSS_ENEMY_ID) {
+      state.battle.bossDefeated = true;
+    }
     return true;
   }
   return false;

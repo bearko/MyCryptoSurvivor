@@ -83,6 +83,9 @@ export function startBattle(hero) {
   b.lastEnemySpawnMs   = performance.now();
   b.contactCooldownMs  = 0;
   b.gameOver           = false;                 // SPEC-009: 多重 trigger 防止 flag
+  b.stageElapsedMs     = 0;                     // SPEC-022: ステージ経過リセット
+  b.bossSpawned        = false;                 // SPEC-022: ボス multi-spawn 防止
+  b.bossDefeated       = false;                 // SPEC-022: ボス撃破フラグ
   state.ownedExtensions = [];                   // SPEC-008: 装備リセット
   state.killCount       = 0;                    // SPEC-009: 撃破カウンタ
   state.lastRunStats    = null;                 // SPEC-009: snapshot
