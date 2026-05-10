@@ -14,13 +14,14 @@ import {
 import {
   drawSpriteCircular, drawSpriteRotated,
   getExtSprite, getGemSprite, getEnemySprite, getBackgroundSprite,
+  getMagicCardSprite,
 } from "./sprites.js";
 
 /**
  * 1 frame 描画。 ctx は dpr 反映済の transform で渡される前提。
  */
 export function renderBattle(ctx) {
-  const { player, camera, viewport, enemies, gems, projectiles, orbits, beams, bombs, shockwaves, damageNumbers, bossProjectiles, bossOrbits } = state.battle;
+  const { player, camera, viewport, enemies, gems, projectiles, orbits, beams, bombs, shockwaves, damageNumbers, bossProjectiles, bossOrbits, magicCards } = state.battle;
   const w = viewport.w, h = viewport.h;
   if (w <= 0 || h <= 0) return;
 
@@ -115,6 +116,34 @@ export function renderBattle(ctx) {
       ctx.strokeStyle = "rgba(0, 0, 0, 0.4)";
       ctx.lineWidth = 1;
       ctx.stroke();
+    }
+  }
+
+  // SPEC-033: magic cards (= ext 5178 アイコン、 ふわっと光る)
+  if (magicCards && magicCards.length) {
+    const mcSprite = getMagicCardSprite();
+    for (const c of magicCards) {
+      const sx = c.x - camera.x;
+      const sy = c.y - camera.y;
+      const size = 32;
+      if (sx + size < 0 || sx - size > w || sy + size < 0 || sy - size > h) continue;
+      // 光彩オーラ
+      ctx.globalAlpha = 0.45;
+      ctx.fillStyle = "#fff7c2";
+      ctx.beginPath();
+      ctx.arc(sx, sy, size * 0.85, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      const drew = drawSpriteRotated(ctx, mcSprite, sx, sy, size, 0);
+      if (!drew) {
+        ctx.fillStyle = "#f0c14b";
+        ctx.beginPath();
+        ctx.arc(sx, sy, c.r ?? 12, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "rgba(0,0,0,0.5)";
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      }
     }
   }
 

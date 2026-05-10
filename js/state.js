@@ -75,11 +75,22 @@ export const state = {
     bossProjectiles: [],   // {id, x, y, vx, vy, r, dmg, life, age, iconId, iconSize}
     bossOrbits:      [],   // {id, bossEnemyId, angle, r, dmg, iconId, iconSize, hitR, lastHitMs}
     bossLastFireMs:  0,    // ファオ攻撃の throttle
+    // SPEC-033: マジックカード (= 取得で即時レベルアップ)、 レアエネミー撃破でドロップ
+    magicCards:      [],   // {id, x, y, r}
+    lastRareSpawnMs: 0,    // 1 分に 1 回の throttle
   },
 
   // SPEC-030: 現在のステージ index (= STAGE_TABLE[N])
   // hero pick 時に 0 リセット、 ボス撃破 / 5 分耐久で +1。 3 の手前で Game Clear。
   currentStageIdx: 0,
+
+  // SPEC-033: 全ステージ通しの履歴 (= activity report 用)
+  // hero pick で初期化、 各ステージ終了時に snapshot を push、 全クリアで report に渡す。
+  run: {
+    stages:        [],   // [{idx, elapsedMs, kills, level, ownedExtensions:[{extId,level}]}]
+    totalKills:    0,
+    totalElapsedMs: 0,
+  },
 
   // SPEC-008: 装備 extension + Level-up pick モーダル状態
   ownedExtensions:       [],   // [{extId, level}]

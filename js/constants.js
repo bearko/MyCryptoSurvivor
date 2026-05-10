@@ -215,6 +215,7 @@ export const WAVE_TABLE = [
 // 個別敵スペック (= MCH stats とは別の game balance)
 // SPEC-026: xpValue を追加 (= 強い敵ほど多い経験値を落とす、 後半サクサクレベルアップ)
 // SPEC-030: 各ステージのボス (373 = ファオ、 1189 = yamap) 追加
+// SPEC-033: レアエネミー 4 種 (= フラペチーノ ドッピオ系)、 hp 2× 相当 + isRare フラグ
 export const ENEMY_SPECS = {
   101:  { hp:   25, dmg: 10, speed: 80, radius: 12, xpValue:   1 },
   124:  { hp:   55, dmg: 14, speed: 75, radius: 14, xpValue:   2 },
@@ -223,7 +224,22 @@ export const ENEMY_SPECS = {
   171:  { hp: 3000, dmg: 30, speed: 45, radius: 48, xpValue:  60 },
   373:  { hp: 4500, dmg: 30, speed: 50, radius: 52, xpValue: 100 },   // 覚醒魔王ファオ
   1189: { hp: 6000, dmg: 30, speed: 55, radius: 50, xpValue: 150 },   // yamap
+  // SPEC-033: rare enemies (= ~2× normal hp、 +20-30 xp)
+  147:  { hp:  160, dmg: 16, speed: 78, radius: 14, xpValue:  20, isRare: true },   // クリーパー フラペチーノ ドッピオ
+  170:  { hp:  400, dmg: 24, speed: 65, radius: 21, xpValue:  35, isRare: true },   // バイトバンディット フラペチーノ ドッピオ
+  396:  { hp:  220, dmg: 18, speed: 95, radius: 13, xpValue:  25, isRare: true },   // ラビット フラペチーノ ドッピオ
+  407:  { hp:  280, dmg: 20, speed: 70, radius: 16, xpValue:  30, isRare: true },   // ラブレター フラペチーノ ドッピオ
 };
+
+// SPEC-033: レアエネミー定数
+export const RARE_ENEMY_IDS = [147, 170, 396, 407];
+export const RARE_SPAWN_INTERVAL_MS = 60000;   // 1 分に 1 回ペース
+
+// SPEC-033: マジックカード (= 取得で即時レベルアップ)、 アイコンは MCH ext 5178 (= マジックカード:光輝)
+export const MAGIC_CARD_EXT_ID       = 5178;
+export const MAGIC_CARD_RADIUS       = 12;
+export const MAGIC_CARD_PICKUP_RADIUS = 32;
+export const MAGIC_CARD_ICON_SIZE    = 32;
 
 // ============================================================
 // SPEC-023: ピッカーストック上限 + リロール
