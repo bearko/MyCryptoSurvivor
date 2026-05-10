@@ -22,7 +22,8 @@
 | SPEC-015 | Extension Visual Icons + Weapon Balance + Moai Homing/Shockwave | Done | Phase 0 / Phase 1 | #17 (merged) |
 | SPEC-016 | HP Bars + Damage Numbers + Hit Freeze | Done | Phase 0 / Phase 1 | #18 (merged) |
 | SPEC-017 | Sound Effects + BGM Wiring | Done | Phase 0 / Phase 1 | #19 (merged) |
-| SPEC-018 | Extension Icon Mapping Fix (= 名前と icon の不一致解消) | Implementing | Phase 0 / Phase 1 | feat/spec-018-fix-extension-icon-mapping |
+| SPEC-018 | Extension Icon Mapping Fix (= 名前と icon の不一致解消) | Done | Phase 0 / Phase 1 | #21 (merged、 旧 #20 は close) |
+| SPEC-019 | 2 New Buff Series + Revolver/Blade Tweaks + XP Gem Icon | Implementing | Phase 0 / Phase 1 | feat/spec-019-new-buffs-v2 |
 
 ## 命名規則
 
