@@ -52,6 +52,7 @@ export function triggerGameOver(reason = "lose") {
 export async function applyRetry() {
   document.getElementById("gameOverModal")?.classList.add("hidden");
   resumeTime();
+  state.currentStageIdx = 0;       // SPEC-030: リトライは常にステージ 1 から
   // 循環 import 回避のため動的に startBattle を取得
   const m = await import("./index.js");
   m.startBattle(state.ownedHero);
