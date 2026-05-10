@@ -46,6 +46,12 @@ function _wireOnce() {
     ?.addEventListener("click", _onRetryClick);
   document.getElementById("activityReportSubmit")
     ?.addEventListener("click", _onSubmitClick);
+  // SPEC-035: 送信成功後に表示される 「ランキングを見る」 ボタン
+  document.getElementById("activityReportViewRanking")
+    ?.addEventListener("click", async () => {
+      const m = await import("../ranking-ui.js");
+      m.openRanking();
+    });
   onLangChange(() => {
     if (!document.getElementById("activityReportModal")?.classList.contains("hidden")) {
       _renderReport();
@@ -93,6 +99,8 @@ async function _onSubmitClick() {
   });
   if (result.ok) {
     msg.textContent = t("gameover.submitOk", "Submitted!");
+    // SPEC-035: 送信成功時に 「ランキングを見る」 ボタンを表示
+    document.getElementById("activityReportViewRanking")?.classList.remove("hidden");
   } else {
     btn.disabled = false;
     const errTpl = t("gameover.submitFail", "Submit failed: {err}");
@@ -180,6 +188,8 @@ function _renderReport() {
   if (submitBtn) submitBtn.disabled = noApi;
   if (msg) msg.textContent = noApi ? t("gameover.noApi", "Ranking API not configured") : "";
   if (submitBtn) submitBtn.textContent = t("gameover.submit", "ランキングに送信");
+  const viewBtn = document.getElementById("activityReportViewRanking");
+  if (viewBtn) viewBtn.textContent = t("ranking.openTitle", "ランキングを見る");
   const retryBtn = document.getElementById("activityReportRetry");
   if (retryBtn) retryBtn.textContent = t("gameover.retry", "リトライ");
   const nameLabel = document.getElementById("activityReportNameLabel");
