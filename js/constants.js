@@ -172,3 +172,19 @@ export const HP_BAR_WIDTH           = 24;      // HP バー幅 (= 敵)
 export const HP_BAR_HEIGHT          = 3;       // HP バー高さ (= 敵)
 export const HP_BAR_PLAYER_WIDTH    = 32;      // HP バー幅 (= プレイヤー、 やや大きめ)
 export const HP_BAR_PLAYER_HEIGHT   = 4;
+
+// ============================================================
+// SPEC-017: Sound effect / BGM パス定数 (= ASSET_BASE/Audio/SE/...)
+// ============================================================
+export const SFX = {
+  HERO_PICK:       "Audio/SE/tooldev.mp3",
+  PLAYER_DAMAGED:  "Audio/SE/1_single_damage.mp3",
+  GEM_PICKUP:      "Audio/SE/crash.mp3",
+  LEVEL_UP:        "Audio/SE/open_treasure.mp3",
+  PICK_WEAPON:     "Audio/SE/insp.mp3",
+  PICK_BUFF:       "Audio/SE/4_buff.mp3",
+  PICK_HEAL:       "Audio/SE/3_heal_resurrection.mp3",
+  GAME_OVER_LOSE:  "Audio/SE/lose.mp3",
+  GAME_OVER_CLEAR: "Audio/SE/win.mp3",
+};
+export const BGM_BATTLE = "Audio/SE/pvp.mp3";

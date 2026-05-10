@@ -13,10 +13,12 @@ import {
 import {
   EXT_MAX_LEVEL, PICK_OPTIONS_COUNT,
   SERIES_COLOR_DEFAULT, FALLBACK_WEAPON,
+  SFX,
 } from "../constants.js";
 import { rebuildWeaponsFromOwned } from "./extensions-as-weapons.js";
 import { applyBuff } from "./buffs.js";
 import { t, tpl, getLang, onLangChange } from "../i18n.js";
+import { playSe } from "../audio.js";
 
 let _pendingCount = 0;
 let _isOpen      = false;
@@ -61,6 +63,7 @@ function _openNext() {
   _wireOnce();
   renderLevelUpModal();
   document.getElementById("levelUpModal")?.classList.remove("hidden");
+  playSe(SFX.LEVEL_UP, 200, 0.55);   // SPEC-017: open_treasure.mp3
 }
 
 function _samplePicks(n) {
@@ -127,10 +130,14 @@ export function applyPick(extId) {
   else       state.ownedExtensions.push({ extId, level: next });
 
   // SPEC-011: weapon vs buff で適用先を分岐
+  // SPEC-017: ピック確定 SE (= 武器 = insp、 回復 = 3_heal、 その他 buff = 4_buff)
   if (getCategory(ext) === "buff") {
     applyBuff(extId, next);
+    const isHeal = ext?.archetype === "hpMaxUp" || ext?.archetype === "regen";
+    playSe(isHeal ? SFX.PICK_HEAL : SFX.PICK_BUFF, 100, 0.55);
   } else {
     rebuildWeaponsFromOwned();
+    playSe(SFX.PICK_WEAPON, 100, 0.55);
   }
   _close();
 }
