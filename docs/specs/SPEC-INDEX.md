@@ -28,7 +28,8 @@
 | SPEC-021 | Per-Tier Extension Icons + Names (= MCH 公式準拠、 1xxx → 5xxx) | Done | Phase 0 / Phase 1 | #25 (merged) |
 | SPEC-022 | Enemy Variety + Time-Based Waves + Deep Yoshka Boss | Done | Phase 0 / Phase 1 | #28 (merged、 旧 #26 は close) |
 | SPEC-023 | Picker Stock Limit (= 武器 5 / 強化 5) + Reroll (= 1戦 2回) | Done | Phase 0 / Phase 1 | #29 (merged、 旧 #27 は close) |
-| SPEC-024 | Picker Card Category Label + Lv.1 Effect Audit (= Oriflamme +0 → +1) | Implementing | Phase 0 / Phase 1 | #30 (open) |
+| SPEC-024 | Picker Card Category Label + Lv.1 Effect Audit (= Oriflamme +0 → +1) | Done | Phase 0 / Phase 1 | #31 (merged、 旧 #30 は close) |
+| SPEC-025 | Fix Audio Paths (= MCH カタログ実体に整合、 404 → 200) | Implementing | Phase 0 / Phase 1 | feat/spec-025-fix-audio-paths |
 
 ## 命名規則
 
