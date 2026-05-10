@@ -101,6 +101,7 @@ export const state = {
     bulletCountBonus:  0,    // Oriflamme: 弾数ボーナス (= SPEC-012 の archetype が利用)
     rangeMul:          1,    // SPEC-019 Specimen: 攻撃範囲倍率 (= weapon.range / orbitR / beam.len / bomb.radius / Moai aoeR)
     pickupMul:         1,    // SPEC-019 Gyoku: CE 収集範囲倍率 (= GEM_PICKUP_RADIUS に乗算)
+    pierceBonus:       0,    // SPEC-031 Gunbai: 投射体の貫通体数を加算 (= 全 projectile 武器に適用)
   },
 
   // ゲーム固有 (= 後続 SPEC で追加)

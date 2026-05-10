@@ -19,6 +19,7 @@ import {
 const ORBIT_HIT_COOLDOWN_MS = 250;   // 同じ敵を 0.25 sec ごとにしか damage しない
 const ORBIT_ANGULAR_SPEED   = 1.2;   // rad/sec  (= Book)
 const ORBIT_CLOSE_ANG_SPEED = 2.4;   // rad/sec  (= Blade)
+const BEAM_HIT_INTERVAL_MS  = 250;   // SPEC-031: ビームの dispatch 周期 (= 同 enemy ごと)
 
 // SPEC-028: weapon.level に応じた当たり判定 / アイコンサイズ倍率
 function _levelSizeMul(w) {
@@ -32,6 +33,12 @@ function _levelSizeMul(w) {
 
 function _spawnProjectile(opts) {
   const id = state.battle.nextEntityId++;
+  // SPEC-031: pierce = 「貫通する追加体数」 (= 0 なら 1 体目で消滅、 1 なら 2 体目で消滅)
+  // 武器固有の base pierce + Gunbai (state.buffs.pierceBonus) を合算
+  // moaiDrop は shockwave で AoE 完結なので opts.pierce=0 で打ち消す
+  const basePierce  = opts.pierce ?? 0;
+  const gunbaiBonus = state.buffs?.pierceBonus ?? 0;
+  const pierce = (opts.kind === "moaiDrop") ? 0 : (basePierce + gunbaiBonus);
   state.battle.projectiles.push({
     id,
     x: opts.x, y: opts.y,
@@ -51,6 +58,9 @@ function _spawnProjectile(opts) {
     moaiTargetId: opts.moaiTargetId ?? null,
     moaiAoeR:     opts.moaiAoeR     ?? 0,
     moaiAoeDmg:   opts.moaiAoeDmg   ?? 0,
+    // SPEC-031: 貫通残数 + 既ヒット enemy id (= 同 frame 二重ヒット防止)
+    pierceLeft: pierce,
+    hitIds:     null,         // 初回ヒット時に Set 化 (= ガベージ削減)
   });
 }
 
@@ -136,6 +146,7 @@ export function fireBigHoming(w, dmgMul, bulletBonus) {
       dmg: w.dmg * dmgMul, color: w.color,
       r: size * lvMul, life: 4000, targetId, kind: "homing",
       iconId: projIcon, iconSize: Math.max(28, size * 1.6) * lvMul,
+      pierce: w.pierce ?? 0,                           // SPEC-031: Panjandrum tier 貫通
     });
   }
 }
@@ -234,6 +245,9 @@ export function fireBeam(w, dmgMul, bulletBonus) {
       age: 0, life: dur,
       dmgPerSec, color: w.color,
       weaponExtId: w.extId,
+      // SPEC-031: 敵ごとに dmg を実数で蓄積し 250ms 毎に整数化して dispatch (= 高 fps での丸め損 0 化)
+      dmgAccum: {},     // { [enemyId]: float }
+      lastHitMs: {},    // { [enemyId]: number }
     });
   }
 }
@@ -440,7 +454,7 @@ export function tickOrbits(dt, nowMs) {
 // tickBeams - 持続レーザー、 player を原点に dir 固定
 // ============================================================
 
-export function tickBeams(dt) {
+export function tickBeams(dt, nowMs) {
   const beams   = state.battle.beams;
   const enemies = state.battle.enemies;
   const player  = state.battle.player;
@@ -451,9 +465,11 @@ export function tickBeams(dt) {
     if (b.age >= b.life) { beams.splice(i, 1); continue; }
     // origin は毎フレーム player に置き直す (= ヒーロー中心)
     b.x = player.x; b.y = player.y;
-    // 線分 (= origin から len) 上の敵に dmg/sec
-    const dmg = b.dmgPerSec * dt;
+    // SPEC-031: dmg は実数で蓄積、 250ms 毎に整数化して dispatch (= 高 fps の丸め損対策)
+    const dmgF = b.dmgPerSec * dt;
     const halfThick = b.thick / 2;
+    if (!b.dmgAccum)  b.dmgAccum  = {};
+    if (!b.lastHitMs) b.lastHitMs = {};
     for (let j = enemies.length - 1; j >= 0; j--) {
       const e = enemies[j];
       const ex = e.x - b.x, ey = e.y - b.y;
@@ -465,7 +481,16 @@ export function tickBeams(dt) {
       const dx = ex - px, dy = ey - py;
       const dist = Math.hypot(dx, dy);
       if (dist > halfThick + e.r) continue;
-      hitEnemy(j, dmg);   // SPEC-016
+      // SPEC-031: 敵ごとに float 蓄積、 250ms 経過で整数 dmg を dispatch
+      b.dmgAccum[e.id] = (b.dmgAccum[e.id] ?? 0) + dmgF;
+      const last = b.lastHitMs[e.id] ?? 0;
+      if (nowMs - last < BEAM_HIT_INTERVAL_MS) continue;
+      const accum = b.dmgAccum[e.id];
+      if (accum < 1) continue;
+      const intDmg = Math.round(accum);
+      b.dmgAccum[e.id] = 0;
+      b.lastHitMs[e.id] = nowMs;
+      hitEnemy(j, intDmg);   // SPEC-016: 数字 + freeze 同時発火
     }
   }
 }

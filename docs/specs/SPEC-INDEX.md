@@ -34,7 +34,8 @@
 | SPEC-027 | Clear Title on Win Conditions (= ボス撃破 / 5 分耐久 で 「クリア!」 表記) | Done | Phase 0 / Phase 1 | #34 (merged) |
 | SPEC-028 | Orbit Redistribution + Per-Level Size Growth (= Book/Blade 等間隔 + tier icon swap + Lv 連動拡大) | Done | Phase 0 / Phase 1 | #35 (merged) |
 | SPEC-029 | Logo Image + OG Thumbnail (= タイトル/スプラッシュ画像化 + X/OGP サムネ) | Done | Phase 0 / Phase 1 | #36 (merged) |
-| SPEC-030 | Three-Stage System (= node : アバカス / ホレリス / トロイ + ファオ / yamap ボス) | Implementing | Phase 0 / Phase 1 | #37 (open) |
+| SPEC-030 | Three-Stage System (= node : アバカス / ホレリス / トロイ + ファオ / yamap ボス) | Done | Phase 0 / Phase 1 | #38 (merged、 旧 #37 は close) |
+| SPEC-031 | Pierce + LaserGun Fix + Pierrot AoE + Horse Tune + Gunbai + Header Date Removal | Implementing | Phase 0 / Phase 1 | feat/spec-031-pierce-and-tweaks |
 
 ## 命名規則
 

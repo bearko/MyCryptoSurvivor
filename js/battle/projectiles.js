@@ -35,23 +35,30 @@ export function tickProjectiles(dt) {
       continue;
     }
 
-    // 敵衝突 (= 単発命中で消滅、 pierce なし)、 SPEC-016: hitEnemy 経由で 数字 + freeze
-    let hit = false;
+    // 敵衝突。 SPEC-031: pierceLeft が 0 なら単発消滅、 > 0 なら同 frame で複数体ヒット可。
+    // p.hitIds で同 frame / 同弾内の重複ヒットを防ぐ。
+    // SPEC-016: hitEnemy 経由で 数字 + freeze。
+    let despawn = false;
+    let dropShockwave = false;
     for (let j = b.enemies.length - 1; j >= 0; j--) {
       const e = b.enemies[j];
+      if (p.hitIds && p.hitIds.has(e.id)) continue;
       const dx = e.x - p.x, dy = e.y - p.y;
       const sumR = e.r + p.r;
-      if (dx * dx + dy * dy <= sumR * sumR) {
-        hitEnemy(j, p.dmg);
-        hit = true;
+      if (dx * dx + dy * dy > sumR * sumR) continue;
+      hitEnemy(j, p.dmg);
+      if (!p.hitIds) p.hitIds = new Set();
+      p.hitIds.add(e.id);
+      if ((p.pierceLeft ?? 0) <= 0) {
+        despawn = true;
+        if (p.kind === "moaiDrop" && p.moaiAoeR > 0) dropShockwave = true;
         break;
       }
+      p.pierceLeft -= 1;
+      // 残 pierce > 0 → 続けて他の敵もチェック (= 重なって並ぶ群を 1 frame で抜ける)
     }
-    if (hit) {
-      // SPEC-015: Moai 弾の着弾で衝撃波 spawn
-      if (p.kind === "moaiDrop" && p.moaiAoeR > 0) {
-        _spawnMoaiShockwave(p);
-      }
+    if (despawn) {
+      if (dropShockwave) _spawnMoaiShockwave(p);
       b.projectiles.splice(i, 1);
     }
   }
