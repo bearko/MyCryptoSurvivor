@@ -17,7 +17,8 @@ import {
   computeRegulationMul,
 } from "../constants.js";
 import { t, tpl, onLangChange } from "../i18n.js";
-import { getExt, getTierName } from "../extensions.js";
+import { getExt, getTierName, extTierImg } from "../extensions.js";
+import { heroImg } from "../heroes.js";
 import { formatElapsed } from "../survival.js";
 import { stopBgm, playSe } from "../audio.js";
 import {
@@ -147,36 +148,55 @@ function _renderReport() {
   const titleEl = document.getElementById("activityReportTitle");
   if (titleEl) titleEl.textContent = t("report.title", "活動レポート");
 
-  // ヒーロー
+  // SPEC-038: ヒーローはアイコン + 名前で大きく表示
   const heroEl = document.getElementById("activityReportHero");
   if (heroEl) {
-    const n = _heroName() ?? "—";
-    heroEl.textContent = tpl(t("report.hero", "ヒーロー: {n}"), { n });
-  }
-
-  // ステージごとの table
-  const tbody = document.getElementById("activityReportStages");
-  if (tbody) {
-    tbody.innerHTML = "";
-    for (const s of state.run.stages) {
-      const tr = document.createElement("tr");
-      const stageName = t(s.nameKey, s.nameKey);
-      const time = formatElapsed(Math.round(s.elapsedMs / 1000));
-      const exts = (s.ownedExtensions ?? []).map(o => {
-        const ext = getExt(o.extId);
-        const name = ext ? getTierName(ext, o.level, lang) : `#${o.extId}`;
-        return `${name} Lv.${o.level}`;
-      }).join("、 ") || "—";
-      tr.innerHTML = `<td>${escapeHtml(stageName)}</td>` +
-                     `<td>${escapeHtml(time)}</td>` +
-                     `<td>${s.kills}</td>` +
-                     `<td>Lv.${s.level}</td>` +
-                     `<td class="report-stages__ext">${escapeHtml(exts)}</td>`;
-      tbody.appendChild(tr);
+    const h = state.ownedHero;
+    if (h && h.heroId != null) {
+      const name = _heroName() ?? "—";
+      const faction = h.faction ?? "";
+      heroEl.innerHTML =
+        `<div class="report-hero__inner" data-faction="${escapeAttr(faction)}">` +
+        `  <img class="report-hero__portrait" src="${escapeAttr(heroImg(h.heroId))}" alt="${escapeAttr(name)}" loading="lazy" ` +
+        `       onerror="this.classList.add('report-hero__portrait--missing'); this.removeAttribute('src');" />` +
+        `  <span class="report-hero__name">${escapeHtml(name)}</span>` +
+        `</div>`;
+    } else {
+      heroEl.innerHTML = `<div class="report-hero__inner"><span class="report-hero__name">—</span></div>`;
     }
   }
 
-  // 総合スタッツ
+  // SPEC-038: ステージごとを縦カードで描画 (= テキスト table → アイコンタイル + Lv バッジ)
+  const stagesEl = document.getElementById("activityReportStages");
+  if (stagesEl) {
+    stagesEl.innerHTML = "";
+    for (const s of state.run.stages) {
+      const card = document.createElement("div");
+      card.className = "report-stage";
+      const stageName = t(s.nameKey, s.nameKey);
+      const time = formatElapsed(Math.round(s.elapsedMs / 1000));
+      // ext アイコンタイル
+      const extTiles = (s.ownedExtensions ?? []).map(o => {
+        const ext = getExt(o.extId);
+        if (!ext) return "";
+        const altName = ext ? getTierName(ext, o.level, lang) : `#${o.extId}`;
+        return `<div class="report-ext" title="${escapeAttr(altName)}">` +
+               `  <img class="report-ext__icon" src="${escapeAttr(extTierImg(ext, o.level))}" alt="${escapeAttr(altName)}" loading="lazy" ` +
+               `       onerror="this.classList.add('report-ext__icon--missing'); this.removeAttribute('src');" />` +
+               `  <span class="report-ext__lv">Lv.${o.level | 0}</span>` +
+               `</div>`;
+      }).join("");
+      card.innerHTML =
+        `<header class="report-stage__head">` +
+        `  <span class="report-stage__name">${escapeHtml(stageName)}</span>` +
+        `  <span class="report-stage__stats">⏱ ${escapeHtml(time)} · 💀 ${s.kills | 0} · Lv.${s.level | 0}</span>` +
+        `</header>` +
+        `<div class="report-stage__exts">${extTiles || `<span class="report-ext--empty">—</span>`}</div>`;
+      stagesEl.appendChild(card);
+    }
+  }
+
+  // 総合スタッツ + 大きなスコア
   const totalsEl = document.getElementById("activityReportTotals");
   if (totalsEl) {
     const totalSec = Math.round(state.run.totalElapsedMs / 1000);
@@ -187,11 +207,15 @@ function _renderReport() {
     const regLabel  = (state.regulation === "ABSOLUTE")
       ? `ABSOLUTE ×${regMul.toFixed(2)}`
       : `NORMAL ×1.00`;
+    // SPEC-038: スコアを大きく中央表示、 補助情報をアイコン付き 1 行で
     totalsEl.innerHTML =
-      `<div>${escapeHtml(tpl(t("report.regulation", "レギュレーション: {n}"), { n: regLabel }))}</div>` +
-      `<div>${escapeHtml(tpl(t("report.totalTime", "総クリア時間: {time}"), { time: formatElapsed(totalSec) }))}</div>` +
-      `<div>${escapeHtml(tpl(t("report.totalKills", "総撃破数: {n}"), { n: state.run.totalKills }))}</div>` +
-      `<div class="report-totals__score">${escapeHtml(tpl(t("report.score", "スコア: {n}"), { n: score }))}</div>`;
+      `<div class="report-meta-row">` +
+      `  <span class="report-meta">🏷️ ${escapeHtml(regLabel)}</span>` +
+      `  <span class="report-meta">⏱ ${escapeHtml(formatElapsed(totalSec))}</span>` +
+      `  <span class="report-meta">💀 ${state.run.totalKills | 0}</span>` +
+      `</div>` +
+      `<div class="report-score-big">${(score | 0).toLocaleString()}</div>` +
+      `<div class="report-score-label">${escapeHtml(t("report.scoreLabel", "SCORE"))}</div>`;
   }
 
   // ranking submit ボタン
@@ -216,3 +240,4 @@ function escapeHtml(s) {
     .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
+function escapeAttr(s) { return escapeHtml(s); }

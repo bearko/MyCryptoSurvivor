@@ -1072,3 +1072,142 @@
   margin-top: 0.4rem;
 }
 .gameover-modal__choices .btn { letter-spacing: 0.04em; }
+
+/* SPEC-038: 活動レポートをアイコン重視に刷新 + スコアを大きく */
+.report-hero { padding: 0; margin: 0.2rem 0 0.6rem; }
+.report-hero__inner {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.45rem 0.6rem;
+  background: var(--panel-2);
+  border: 1.5px solid var(--border);
+  border-top: 3px solid var(--border);
+  border-radius: 10px;
+}
+.report-hero__inner[data-faction="SEIRYU"] { border-top-color: var(--seiryu); }
+.report-hero__inner[data-faction="SUZAKU"] { border-top-color: var(--suzaku); }
+.report-hero__inner[data-faction="BYAKKO"] { border-top-color: var(--byakko); }
+.report-hero__inner[data-faction="GENBU"]  { border-top-color: var(--genbu);  }
+.report-hero__inner[data-faction="KOURYU"] { border-top-color: var(--kouryu); }
+.report-hero__portrait {
+  width: 56px; height: 56px;
+  object-fit: cover;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 35%, rgba(196,163,90,0.18), transparent 70%), var(--panel);
+  flex-shrink: 0;
+}
+.report-hero__portrait--missing { opacity: 0.55; }
+.report-hero__name {
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--text);
+}
+
+/* SPEC-038: ステージカード (= 旧テキスト table を icon タイル化) */
+.report-stages {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0 0 0.6rem;
+}
+.report-stage {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.4rem 0.5rem;
+}
+.report-stage__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.4rem;
+  margin-bottom: 0.35rem;
+  font-size: 0.78rem;
+}
+.report-stage__name { font-weight: 800; color: var(--accent); letter-spacing: 0.04em; }
+.report-stage__stats { color: var(--muted); font-variant-numeric: tabular-nums; }
+.report-stage__exts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.32rem;
+}
+.report-ext {
+  position: relative;
+  width: 38px; height: 38px;
+  border-radius: 6px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.report-ext__icon {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.report-ext__icon--missing {
+  background: linear-gradient(135deg, var(--panel-2), var(--panel));
+}
+.report-ext__lv {
+  position: absolute;
+  bottom: 0; right: 0;
+  background: rgba(0, 0, 0, 0.72);
+  color: var(--accent);
+  font-size: 0.62rem;
+  font-weight: 800;
+  padding: 0 3px;
+  border-top-left-radius: 4px;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+.report-ext--empty {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+/* SPEC-038: 総合スタッツ: メタ行 + 巨大スコア */
+.report-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem;
+  margin: 0.4rem 0 0.2rem;
+  font-size: 0.82rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.report-meta { white-space: nowrap; }
+.report-score-big {
+  font-size: clamp(2.6rem, 9vw, 4rem);
+  font-weight: 900;
+  text-align: center;
+  color: var(--accent);
+  letter-spacing: 0.04em;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 12px rgba(196, 163, 90, 0.35);
+  margin: 0.1rem 0 0;
+}
+.report-score-label {
+  text-align: center;
+  font-size: 0.74rem;
+  color: var(--muted);
+  letter-spacing: 0.3em;
+  margin-bottom: 0.4rem;
+}
+
+/* SPEC-038: ranking modal もスコアカラム強調 */
+.ranking-table .ranking-score {
+  font-size: 1.05rem;
+  font-weight: 900;
+}
+
+@media (max-width: 480px) {
+  .report-hero__portrait { width: 48px; height: 48px; }
+  .report-hero__name { font-size: 0.95rem; }
+  .report-ext { width: 34px; height: 34px; }
+  .report-ext__lv { font-size: 0.58rem; }
+  .report-stage__head { font-size: 0.72rem; }
+}

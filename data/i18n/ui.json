@@ -55,6 +55,7 @@
   "report.totalTime":    { "ja": "総クリア時間: {time}",                "en": "Total time: {time}" },
   "report.totalKills":   { "ja": "総撃破数: {n}",                       "en": "Total kills: {n}" },
   "report.score":        { "ja": "スコア: {n}",                          "en": "Score: {n}" },
+  "report.scoreLabel":   { "ja": "SCORE",                                  "en": "SCORE" },
   "report.col.stage":    { "ja": "ステージ",                            "en": "Stage" },
   "report.col.time":     { "ja": "時間",                                "en": "Time" },
   "report.col.kills":    { "ja": "撃破",                                "en": "Kills" },
