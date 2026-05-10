@@ -211,8 +211,8 @@
         "en": "Charge Wheel"
       },
       "skillDescTpl": {
-        "ja": "ゆっくり追尾する大型弾。 数 {bullets} / DMG {dmg} / CD {cd}秒",
-        "en": "Slow homing heavy. Count {bullets} / DMG {dmg} / CD {cd}s"
+        "ja": "ゆっくり追尾する大型弾。 数 {bullets} / DMG {dmg} / CD {cd}秒 / 貫通 {pierce}",
+        "en": "Slow homing heavy. Count {bullets} / DMG {dmg} / CD {cd}s / Pierce {pierce}"
       },
       "tierParams": [
         {
@@ -221,7 +221,8 @@
           "cdMs": 2400,
           "range": 600,
           "speedPx": 90,
-          "size": 14
+          "size": 14,
+          "pierce": 1
         },
         {
           "bullets": 1,
@@ -229,7 +230,8 @@
           "cdMs": 2300,
           "range": 620,
           "speedPx": 100,
-          "size": 17
+          "size": 17,
+          "pierce": 2
         },
         {
           "bullets": 2,
@@ -237,7 +239,8 @@
           "cdMs": 2200,
           "range": 640,
           "speedPx": 110,
-          "size": 20
+          "size": 20,
+          "pierce": 3
         },
         {
           "bullets": 2,
@@ -245,7 +248,8 @@
           "cdMs": 2100,
           "range": 660,
           "speedPx": 120,
-          "size": 23
+          "size": 23,
+          "pierce": 4
         },
         {
           "bullets": 3,
@@ -253,7 +257,8 @@
           "cdMs": 2000,
           "range": 680,
           "speedPx": 130,
-          "size": 26
+          "size": 26,
+          "pierce": 5
         }
       ],
       "tierIconIds": [
@@ -1118,19 +1123,19 @@
       },
       "tierParams": [
         {
-          "magnitude": 0.95
+          "magnitude": 0.85
         },
         {
-          "magnitude": 0.9
+          "magnitude": 0.7
         },
         {
-          "magnitude": 0.84
+          "magnitude": 0.55
         },
         {
-          "magnitude": 0.78
+          "magnitude": 0.4
         },
         {
-          "magnitude": 0.72
+          "magnitude": 0.3
         }
       ],
       "tierIconIds": [
@@ -1449,6 +1454,68 @@
         3098,
         4098,
         5098
+      ]
+    },
+    {
+      "extId": 20,
+      "category": "buff",
+      "series": "Gunbai",
+      "archetype": "pierceUp",
+      "iconId": 1037,
+      "seriesColor": "#f0c14b",
+      "tierNames": [
+        {
+          "ja": "グンバイ",
+          "en": "Gunbai"
+        },
+        {
+          "ja": "エリートグンバイ",
+          "en": "Elite Gunbai"
+        },
+        {
+          "ja": "ブレイブグンバイ",
+          "en": "Brave Gunbai"
+        },
+        {
+          "ja": "立行司の軍配",
+          "en": "Gunbai of TateGyoji"
+        },
+        {
+          "ja": "梵字軍配",
+          "en": "Sanskrit Script Gunbai"
+        }
+      ],
+      "skillName": {
+        "ja": "貫通の采配",
+        "en": "Piercing Command"
+      },
+      "skillDescTpl": {
+        "ja": "武器エクステの貫通 +{magnitude}",
+        "en": "Weapon pierce +{magnitude}"
+      },
+      "tierParams": [
+        {
+          "magnitude": 1
+        },
+        {
+          "magnitude": 2
+        },
+        {
+          "magnitude": 3
+        },
+        {
+          "magnitude": 4
+        },
+        {
+          "magnitude": 5
+        }
+      ],
+      "tierIconIds": [
+        1037,
+        2037,
+        3037,
+        4037,
+        5037
       ]
     }
   ]

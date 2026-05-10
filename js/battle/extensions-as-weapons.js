@@ -32,6 +32,7 @@ export function weaponFromExt(extId, level) {
     range:      params.range   ?? 320,
     speedPx:    params.speedPx ?? 280,
     bullets:    params.bullets ?? 1,
+    pierce:     params.pierce  ?? 0,         // SPEC-031: Panjandrum 系列の貫通体数
     color,
     // SPEC-021: tier ごとの icon (= ext.tierIconIds[level-1])、 fallback で iconId
     iconId:     ext.tierIconIds?.[lv - 1] ?? ext.iconId ?? null,

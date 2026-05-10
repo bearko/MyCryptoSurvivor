@@ -36,6 +36,7 @@ export function applyBuff(extId, level) {
     case "bulletCount":   buffs.bulletCountBonus = m; break;
     case "attackRangeUp": buffs.rangeMul         = m; break;   // SPEC-019: 液浸標本
     case "pickupRangeUp": buffs.pickupMul        = m; break;   // SPEC-019: ギョク
+    case "pierceUp":      buffs.pierceBonus      = m; break;   // SPEC-031: グンバイ
     default:
       console.warn("[buffs] unknown archetype:", ext.archetype);
   }
@@ -66,4 +67,5 @@ export function resetBuffs() {
   state.buffs.bulletCountBonus = 0;
   state.buffs.rangeMul         = 1;   // SPEC-019: 液浸標本
   state.buffs.pickupMul        = 1;   // SPEC-019: ギョク
+  state.buffs.pierceBonus      = 0;   // SPEC-031: グンバイ
 }

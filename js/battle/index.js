@@ -175,7 +175,7 @@ function _loop(now) {
     tickHomingProjectiles(dt);     // SPEC-012: bigHoming の弾道補正
     tickProjectiles(dt);           // SPEC-008: 投射体の移動 + 衝突 + 寿命
     tickOrbits(dt, now);           // SPEC-012: Book / Blade の周回 + 衝突
-    tickBeams(dt);                 // SPEC-012: LaserGun の持続レーザー
+    tickBeams(dt, now);            // SPEC-012/031: LaserGun の持続レーザー (= 250ms 累積 dispatch)
     tickBombs(dt);                 // SPEC-012: Pierrot の遅延爆発
     tickShockwaves(dt);            // SPEC-015: Moai 着弾の AoE 衝撃波
     tickBossAttack(dt, now);       // SPEC-030: ボス攻撃 (= ファオ放射 / yamap 周回) + 衝突
