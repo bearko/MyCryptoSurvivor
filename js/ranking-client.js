@@ -5,7 +5,8 @@
 import { LS_RANKING_API_URL, LS_PLAYER_NAME } from "./constants.js";
 
 // ⚠ デプロイ後、 btoa("https://script.google.com/macros/s/.../exec") で base64 化して埋め込む
-const _DEFAULT_API_URL_ENC = "";
+// SPEC-035: 本プロジェクト共通ランキング (= GAS Web App、 全員アクセス) を default URL に
+const _DEFAULT_API_URL_ENC = "aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J3a1hVRFlqbFk4dFVRSU1ubG44Vm9HejlIRDNTUjRHZEM0Q1hiRWZDdURKMUcxNUROczF3X1dKdTBRcHczc28taHptUS9leGVj";
 
 function _decodeDefault() {
   try {
