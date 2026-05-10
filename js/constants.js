@@ -174,20 +174,21 @@ export const HP_BAR_PLAYER_WIDTH    = 32;      // HP バー幅 (= プレイヤ�
 export const HP_BAR_PLAYER_HEIGHT   = 4;
 
 // ============================================================
-// SPEC-017: Sound effect / BGM パス定数 (= ASSET_BASE/Audio/SE/...)
+// SPEC-017: Sound effect / BGM パス定数
+// SPEC-025: MCH カタログ実パス (= Audio/SE/{Actions,Battle,Jingles}/* と Audio/BGM/*) に整合
 // ============================================================
 export const SFX = {
-  HERO_PICK:       "Audio/SE/tooldev.mp3",
-  PLAYER_DAMAGED:  "Audio/SE/1_single_damage.mp3",
-  GEM_PICKUP:      "Audio/SE/crash.mp3",
-  LEVEL_UP:        "Audio/SE/open_treasure.mp3",
-  PICK_WEAPON:     "Audio/SE/insp.mp3",
-  PICK_BUFF:       "Audio/SE/4_buff.mp3",
-  PICK_HEAL:       "Audio/SE/3_heal_resurrection.mp3",
-  GAME_OVER_LOSE:  "Audio/SE/lose.mp3",
-  GAME_OVER_CLEAR: "Audio/SE/win.mp3",
+  HERO_PICK:       "Audio/SE/Actions/tooldev.mp3",
+  PLAYER_DAMAGED:  "Audio/SE/Battle/1_single_damage.mp3",
+  GEM_PICKUP:      "Audio/SE/Actions/crash.mp3",
+  LEVEL_UP:        "Audio/SE/Actions/open_treasure.mp3",
+  PICK_WEAPON:     "Audio/SE/Actions/insp.mp3",
+  PICK_BUFF:       "Audio/SE/Battle/4_buff.mp3",
+  PICK_HEAL:       "Audio/SE/Battle/3_heal_resurrection.mp3",
+  GAME_OVER_LOSE:  "Audio/SE/Jingles/lose.mp3",
+  GAME_OVER_CLEAR: "Audio/SE/Jingles/win.mp3",
 };
-export const BGM_BATTLE = "Audio/SE/pvp.mp3";
+export const BGM_BATTLE = "Audio/BGM/pvp.mp3";
 
 // ============================================================
 // SPEC-019: XP gem アイコン (= MCH 公式 CE icon)
