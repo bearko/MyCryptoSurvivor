@@ -129,13 +129,39 @@ python3 -m http.server 8080
 
 ローカル `http://localhost:8080` を `mcs.rankingApiUrl` に設定すると `submitScore` の挙動 (= ボタン disabled / 送信中 / submitOk) は確認できる。 GET レスポンスは別途 mock する必要あり。
 
-## 8. 削除 / リセット
+## 8. テスト用サンプルデータ投入 (= SPEC-036)
+
+GAS エディタから手動実行できる関数を 3 つ提供しています:
+
+| 関数 | 用途 |
+|---|---|
+| `seedSampleData()`   | `ranking` シートをリセット (= ヘッダー残し全削除) し、 **ヘッダー + 12 件のダミーデータ** を投入。 推奨 |
+| `appendSampleData()` | 既存行はそのまま、 12 件 **追記**。 多数件 / 同一 player 名重複の挙動を見るとき |
+| `clearAllRankings()` | ヘッダーは残して全データを削除 (= 開発時のクリーンアップ) |
+
+### 手順
+
+1. Apps Script エディタを開く (= 拡張機能 → Apps Script)
+2. ファイルツリー上部の **関数選択ドロップダウン** で `seedSampleData` を選ぶ
+3. **▶ 実行** ボタン → 初回は権限承認ダイアログ (= Spreadsheet 編集権)
+4. Spreadsheet を見ると `ranking` シートに 1 行目ヘッダー + 12 件のサンプル
+5. ゲームの 「ランキング」 ボタンから取得確認 (= score 降順で並ぶ)
+
+サンプルの内訳:
+- player: alice / ボブ / carol / デイブ / Eve / フランク / grace / ハイディ / ivan / ジュリア / kenji / リン
+- hero: コナン・ドイル / 甲斐姫 / シートン / ピタゴラス / ライト兄弟 / スパルタクス / グリム兄弟 / 孫子 / 石田三成 / 許褚
+- score: 30000 → 8000 程度のグラデーション + ±1500 jitter (= 1 位 ~30000、 12 位 ~8000)
+- timestamp: 現在時刻から 7 時間ずつ過去にずらす (= 「最近のスコア」 に見えるデータ)
+
+`?#api=...` 共有リンクで他の人と同じ Spreadsheet を見られる構成にしておけば、 自分以外の score も上位に並んで賑やかしになる。
+
+## 9. 削除 / リセット
 
 ランキングを全消ししたい時:
 - Spreadsheet を直接開いて `ranking` シートをクリア (= ヘッダー行は残す)
-- もしくは GAS エディタから `_getOrCreateSheet().clearContents(); _getOrCreateSheet().appendRow(HEADERS);` を 1 度実行
+- もしくは GAS エディタから **`clearAllRankings()`** を実行 (= ヘッダー残し全データ削除)
 
-## 9. 参考リンク
+## 10. 参考リンク
 
 - Apps Script Web App: <https://developers.google.com/apps-script/guides/web>
 - ContentService API: <https://developers.google.com/apps-script/reference/content/content-service>

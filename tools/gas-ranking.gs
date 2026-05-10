@@ -93,3 +93,79 @@ function _json(obj) {
 }
 
 function _str(v) { return v == null ? "" : String(v); }
+
+// ============================================================
+// SPEC-035: テスト用サンプルデータ投入 (= GAS エディタから手動実行)
+// ============================================================
+// 使い方:
+//   1) Apps Script エディタの関数選択ドロップダウンで `seedSampleData` を選ぶ
+//   2) 実行ボタン → 初回は権限承認ダイアログ
+//   3) Spreadsheet を見るとヘッダー行 + 12 件のダミーデータが入る
+//
+//   `seedSampleData()`     = ranking シートを **完全リセット** してヘッダー + 12 件投入 (= 推奨)
+//   `appendSampleData()`   = 既存行は残して 12 件 **追記**
+//   `clearAllRankings()`   = ヘッダーは残して全データを削除 (= 開発時のクリーンアップ用)
+
+const _SAMPLE_HEROES = [
+  { name: "コナン・ドイル",  faction: "GENBU"  },
+  { name: "甲斐姫",          faction: "SUZAKU" },
+  { name: "シートン",        faction: "SEIRYU" },
+  { name: "ピタゴラス",      faction: "BYAKKO" },
+  { name: "ライト兄弟",      faction: "GENBU"  },
+  { name: "スパルタクス",    faction: "SUZAKU" },
+  { name: "グリム兄弟",      faction: "BYAKKO" },
+  { name: "孫子",            faction: "SEIRYU" },
+  { name: "石田三成",        faction: "KOURYU" },
+  { name: "許褚",            faction: "SUZAKU" },
+];
+
+const _SAMPLE_PLAYERS = [
+  "alice", "ボブ", "carol", "デイブ", "Eve",
+  "フランク", "grace", "ハイディ", "ivan", "ジュリア",
+  "kenji", "リン",
+];
+
+function seedSampleData() {
+  const sh = _getOrCreateSheet();
+  // 1 行目 (= ヘッダー) を残してそれ以降をクリア
+  if (sh.getLastRow() > 1) {
+    sh.getRange(2, 1, sh.getLastRow() - 1, sh.getLastColumn()).clearContent();
+  }
+  _appendSampleRows(sh, _SAMPLE_PLAYERS.length);
+  return _SAMPLE_PLAYERS.length;
+}
+
+function appendSampleData() {
+  const sh = _getOrCreateSheet();
+  _appendSampleRows(sh, _SAMPLE_PLAYERS.length);
+  return _SAMPLE_PLAYERS.length;
+}
+
+function clearAllRankings() {
+  const sh = _getOrCreateSheet();
+  if (sh.getLastRow() > 1) {
+    sh.getRange(2, 1, sh.getLastRow() - 1, sh.getLastColumn()).clearContent();
+  }
+  return true;
+}
+
+function _appendSampleRows(sh, n) {
+  const now = new Date();
+  const rows = [];
+  for (let i = 0; i < n; i++) {
+    const player = _SAMPLE_PLAYERS[i % _SAMPLE_PLAYERS.length];
+    const hero   = _SAMPLE_HEROES[i % _SAMPLE_HEROES.length];
+    // score: 30000 ~ 8000 でばらけさせる (= 1 位を高めに)
+    const score      = Math.round(30000 - i * (22000 / Math.max(1, n - 1)) + Math.random() * 1500);
+    const level      = Math.max(1,  30 - Math.floor(i * 1.6) + Math.floor(Math.random() * 4));
+    const kills      = Math.max(20, 600 - i * 38 + Math.floor(Math.random() * 60));
+    const elapsedSec = Math.max(180, 280 + Math.floor(Math.random() * 320));
+    // timestamp は数日前から少しずつばらつかせる (= ranking 一覧でリアルに見える)
+    const ts = new Date(now.getTime() - i * 1000 * 60 * 60 * 7).toISOString();
+    rows.push([
+      ts, player, score, level, kills,
+      hero.name, hero.faction, "0.1.0", elapsedSec,
+    ]);
+  }
+  sh.getRange(sh.getLastRow() + 1, 1, rows.length, HEADERS.length).setValues(rows);
+}
