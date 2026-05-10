@@ -5,6 +5,7 @@
 import { state, pauseTime, resumeTime } from "./state.js";
 import { initI18n, setLang, getLang, t, tpl, onLangChange } from "./i18n.js";
 import { installMenu } from "./menu.js";
+import { installRankingUI } from "./ranking-ui.js";
 import {
   TICK_INTERVAL_MS,
   SECONDS_PER_WEEK,
@@ -64,6 +65,7 @@ async function init() {
   setupLangToggle();
   setupHeroSelectModal();
   installMenu();   // SPEC-034: ヘッダー一時停止メニュー
+  installRankingUI();   // SPEC-035: タイトル / メニューから開くランキングモーダル
 
   renderHud();   // SPEC-004: 初期描画 (= Day 1 / 100 / 50 / 100)
 
