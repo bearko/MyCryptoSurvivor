@@ -14,9 +14,9 @@
 
 import { state } from "../state.js";
 import { spawnGem } from "./gems.js";
+import { spawnMagicCard } from "./magic-cards.js";
 import {
   HIT_FREEZE_MS, DAMAGE_NUMBER_LIFE_MS, DAMAGE_NUMBER_RISE_PX_S,
-  BOSS_ENEMY_ID,
 } from "../constants.js";
 
 /**
@@ -37,10 +37,14 @@ export function hitEnemy(idx, dmg) {
   if (e.hp <= 0) {
     // SPEC-026: 強敵ほど高 XP を落とす (= ENEMY_SPECS.xpValue 由来、 enemy.xpValue が未設定なら 1)
     spawnGem(e.x, e.y, e.xpValue ?? 1);
+    // SPEC-033: レアエネミー撃破時はマジックカード (= 即時レベルアップアイテム) も同位置にドロップ
+    if (e.isRare) spawnMagicCard(e.x, e.y);
     enemies.splice(idx, 1);
     state.killCount++;
-    // SPEC-022: ボス撃破フラグ → 次 tick で triggerGameOver("clear")
-    if (e.enemyId === BOSS_ENEMY_ID) {
+    // SPEC-022 + SPEC-033: ボス撃破フラグ → 次 tick で triggerStageEndOrTransition
+    // 旧: BOSS_ENEMY_ID hardcode (= ヨシュカ id 171 のみ) → ステージ 2/3 では発火しなかった
+    // 新: e.isBoss を見るので Fao / yamap / 任意ボスで発火
+    if (e.isBoss) {
       state.battle.bossDefeated = true;
     }
     return true;

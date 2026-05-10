@@ -5,6 +5,25 @@
 ## [Unreleased]
 
 <!-- BEGIN AUTO-UNRELEASED -->
+### Added — SPEC-033 (= Rare Enemies + Magic Card + Activity Report + Stage 2/3 Boss Clear Fix)
+- **ステージ 2 / 3 のボス撃破クリア修正**: `js/battle/damage.js` の `e.enemyId === BOSS_ENEMY_ID` (= ヨシュカ id 171 のみ) を `e.isBoss` 参照に変更 → ファオ / yamap 撃破でも即座に `bossDefeated` フラグ → ステージ遷移 / 活動レポートが発火
+- **レアエネミー 4 種** (`data/enemies.json` + `js/constants.js` ENEMY_SPECS): 147 (クリーパー) / 170 (バイトバンディット) / 396 (ラビット) / 407 (ラブレター) の フラペチーノ ドッピオ。 hp 約 2× 相当、 `isRare: true` フラグ
+- **レアスポーン**: `RARE_ENEMY_IDS` / `RARE_SPAWN_INTERVAL_MS=60000`、 `tickEnemies` で 1 分に 1 回ランダムスポーン (= 開幕 1 分は猶予)
+- **マジックカード:光輝** (= ext 5178): レア撃破時に CE gem と一緒にドロップ、 取得で即時 LV up (= state.xp は減らさない、 既得 CE 持ち越し)
+  - `js/battle/magic-cards.js` 新規: `spawnMagicCard` / `tickMagicCards` / `triggerLevelUpPick(picked)` 連鎖
+  - `js/battle/sprites.js`: `getMagicCardSprite()`
+  - `js/battle/render.js`: gem 描画直後にマジックカードを 32px + 光彩オーラで描画
+- **活動レポートモーダル** (`#activityReportModal` + `js/battle/activity-report.js`): 全ステージ clear で `triggerGameOver("clear")` の代わりに発火
+  - hero 名 / 各ステージ行 (= ステージ名 / 時間 / 撃破 / Lv / 取得 ext と Lv) / 総時間 / 総撃破 / スコア
+  - スコア式: `kills*100 + bestLevel*500 + uniqueExt*300 + max(0, 60000 - totalSec*50) + 5000`
+  - ranking 送信 + リトライボタン
+- **per-stage snapshot**: `state.run = { stages, totalKills, totalElapsedMs }`、 `triggerStageEndOrTransition` 冒頭で snapshot を push (= `startBattle` の reset 前)
+- `js/state.js`: `state.battle.magicCards` / `lastRareSpawnMs` / `state.run.*`
+- `js/main.js`: `applyHeroPick` で `state.run` 初期化
+- `js/battle/index.js`: `tickMagicCards` 配線、 `startBattle` で magicCards / lastRareSpawnMs リセット
+- `data/i18n/ui.json`: `report.title` / `report.hero` / `report.totalTime` / `report.totalKills` / `report.score` / `report.col.*` (5 列)
+- `css/components.css`: `.report-card` / `.report-hero` / `.report-stages` / `.report-totals` + mobile breakpoint
+
 ### Changed — SPEC-032 (= Changelog Fragments + Auto-Generated SPEC-INDEX)
 - **`tools/build-spec-index.mjs`** 新規 (= 純 Node ESM、 依存なし)。 全 `docs/specs/SPEC-*.md` の YAML frontmatter から `SPEC-INDEX.md` の表を再生成
 - **`tools/build-changelog.mjs`** 新規。 `docs/changelog/SPEC-NNN.md` (= bullet fragment) + SPEC frontmatter から `CHANGELOG.md` の `[Unreleased]` 区間を再生成

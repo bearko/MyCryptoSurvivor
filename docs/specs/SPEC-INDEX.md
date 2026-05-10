@@ -38,6 +38,7 @@
 | SPEC-030 | Three-Stage System (= node : アバカス / ホレリス / トロイ + ファオ / yamap ボス) | Done | Phase 0 / Phase 1 | #38 (merged) |
 | SPEC-031 | Pierce + LaserGun Fix + Pierrot AoE + Horse Tune + Gunbai + Header Date Removal | Done | Phase 0 / Phase 1 | #39 (merged) |
 | SPEC-032 | Changelog Fragments + Auto-Generated SPEC-INDEX | Implementing | Phase 0 / Phase 1 | feat/spec-032-changelog-fragments |
+| SPEC-033 | Rare Enemies + Magic Card + Activity Report + Stage 2/3 Boss Clear Fix | Implementing | Phase 0 / Phase 1 | feat/spec-033-rare-enemies-and-activity-report |
 <!-- END AUTO-INDEX -->
 
 ## 命名規則

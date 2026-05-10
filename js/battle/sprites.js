@@ -8,7 +8,7 @@
 import { heroImg } from "../heroes.js";
 import { enemyImg, ENEMY_ROSTER } from "../enemies.js";
 import { extImg } from "../extensions.js";
-import { img, GEM_ICON_PATH, BG_IMAGE_PATH, STAGE_TABLE } from "../constants.js";
+import { img, GEM_ICON_PATH, BG_IMAGE_PATH, STAGE_TABLE, MAGIC_CARD_EXT_ID } from "../constants.js";
 import { state } from "../state.js";
 
 const _imageCache = new Map();   // url -> {img, ready, failed}
@@ -94,6 +94,13 @@ export function getExtSprite(extOrId) {
     : extOrId;
   if (id == null) return null;
   return _loadImage(extImg(id));
+}
+
+/**
+ * SPEC-033: マジックカード (= MCH ext 5178 マジックカード:光輝) のスプライト。
+ */
+export function getMagicCardSprite() {
+  return _loadImage(extImg(MAGIC_CARD_EXT_ID));
 }
 
 /**
