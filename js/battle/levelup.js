@@ -14,6 +14,7 @@ import {
   EXT_MAX_LEVEL, PICK_OPTIONS_COUNT,
   SERIES_COLOR_DEFAULT, FALLBACK_WEAPON,
   SFX,
+  STOCK_LIMIT_WEAPON, STOCK_LIMIT_BUFF,
 } from "../constants.js";
 import { rebuildWeaponsFromOwned } from "./extensions-as-weapons.js";
 import { applyBuff } from "./buffs.js";
@@ -68,9 +69,22 @@ function _openNext() {
 
 function _samplePicks(n) {
   const ownedById = new Map(state.ownedExtensions.map(o => [String(o.extId), o]));
+
+  // SPEC-023: stock 上限到達後は新規系列を候補から除外 (= 既所持の lv up のみ)
+  const ownedWeaponCount = state.ownedExtensions
+    .filter(o => getCategory(getExt(o.extId)) === "weapon").length;
+  const ownedBuffCount   = state.ownedExtensions
+    .filter(o => getCategory(getExt(o.extId)) === "buff").length;
+  const weaponStockFull = ownedWeaponCount >= STOCK_LIMIT_WEAPON;
+  const buffStockFull   = ownedBuffCount   >= STOCK_LIMIT_BUFF;
+
   const eligible = EXT_ROSTER.filter(e => {
     const o = ownedById.get(String(e.extId));
-    return !o || o.level < EXT_MAX_LEVEL;
+    if (o) return o.level < EXT_MAX_LEVEL;   // 既所持は EXT_MAX_LEVEL 未満なら eligible
+    // 未所持: stock 上限に達していなければ追加可能
+    if (e.category === "weapon") return !weaponStockFull;
+    if (e.category === "buff")   return !buffStockFull;
+    return true;
   });
 
   // SPEC-013: 重複防止 (= Set)、 最低 1 weapon (= weapon eligible が 0 件のときは buff のみ)
@@ -122,6 +136,19 @@ function _ensureFallbackWeapon() {
   state.battle.weapons.push({ ...FALLBACK_WEAPON, lastFireMs: 0 });
 }
 
+/**
+ * SPEC-023: ピッカーをリロール (= 残回数 1 消費して 3 候補を再抽選)。
+ * pendingPickOptions が空 / モーダル閉 / rerollsLeft <= 0 なら no-op。
+ */
+export function rerollPicks() {
+  if (!_isOpen) return;
+  if ((state.battle.rerollsLeft ?? 0) <= 0) return;
+  state.battle.rerollsLeft -= 1;
+  state.pendingPickOptions = _samplePicks(PICK_OPTIONS_COUNT);
+  renderLevelUpModal();
+  playSe(SFX.LEVEL_UP, 100, 0.4);   // SPEC-017: 同じ open_treasure を流用
+}
+
 export function applyPick(extId) {
   const ext   = getExt(extId);
   const owned = state.ownedExtensions.find(o => String(o.extId) === String(extId));
@@ -155,6 +182,8 @@ function _close() {
 function _wireOnce() {
   if (_wired) return;
   _wired = true;
+  // SPEC-023: リロールボタン
+  document.getElementById("levelUpReroll")?.addEventListener("click", rerollPicks);
   // 言語切替で再描画
   onLangChange(() => {
     if (!document.getElementById("levelUpModal")?.classList.contains("hidden")) {
@@ -250,5 +279,16 @@ export function renderLevelUpModal() {
     card.append(iconWrap, main);
     card.addEventListener("click", () => applyPick(opt.extId));
     grid.appendChild(card);
+  }
+
+  // SPEC-023: リロールボタンの残数表示 + disabled 状態
+  const rerollBtn = document.getElementById("levelUpReroll");
+  if (rerollBtn) {
+    const left = state.battle?.rerollsLeft ?? 0;
+    const lbl  = (left > 0)
+      ? tpl(t("levelup.reroll", "リロール (残 {n})"), { n: String(left) })
+      : t("levelup.rerollNone", "リロール不可");
+    rerollBtn.textContent = lbl;
+    rerollBtn.disabled = left <= 0;
   }
 }

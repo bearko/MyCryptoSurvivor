@@ -36,6 +36,8 @@
   "levelup.title":       { "ja": "レベルアップ!",                  "en": "Level Up!" },
   "levelup.sub":         { "ja": "強化を 1 つ選ぼう",               "en": "Choose one upgrade" },
   "levelup.starter":     { "ja": "最初の武器を選ぼう",              "en": "Choose your starting weapon" },
+  "levelup.reroll":      { "ja": "リロール (残 {n})",                "en": "Reroll ({n} left)" },
+  "levelup.rerollNone":  { "ja": "リロール不可",                    "en": "No rerolls left" },
   "levelup.delta":       { "ja": "Lv.{cur} → Lv.{next}",            "en": "Lv.{cur} → Lv.{next}" },
   "levelup.weaponEffect":{ "ja": "DMG {dmg} · CD {cd}s · {range}px", "en": "DMG {dmg} · CD {cd}s · {range}px" },
   "ext.new":             { "ja": "NEW",                             "en": "NEW" },
