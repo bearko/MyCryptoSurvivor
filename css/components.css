@@ -564,6 +564,24 @@
 .levelup-card[data-category="buff"] {
   border-color: rgba(94, 207, 138, 0.5);
 }
+
+/* SPEC-024: カード上端のカテゴリ見出し (= 武器エクステ / 強化エクステ) */
+.levelup-card__cat {
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  padding: 0.18rem 0.4rem;
+  border-radius: 999px;
+  align-self: center;
+  background: rgba(231, 96, 96, 0.18);
+  color: #f4b8b8;
+  border: 1px solid rgba(231, 96, 96, 0.55);
+}
+.levelup-card[data-category="buff"] .levelup-card__cat {
+  background: rgba(94, 207, 138, 0.18);
+  color: #b8eccb;
+  border-color: rgba(94, 207, 138, 0.6);
+}
 .levelup-card__lv {
   font-size: 0.74rem;
   color: var(--accent);
@@ -578,6 +596,7 @@
   .levelup-card__series-label { font-size: 0.6rem; }
   .levelup-card__effect { font-size: 0.62rem; }
   .levelup-card__lv { font-size: 0.66rem; }
+  .levelup-card__cat { font-size: 0.58rem; padding: 0.14rem 0.3rem; }
 }
 
 /* ============================================================

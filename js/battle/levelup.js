@@ -206,6 +206,13 @@ export function renderLevelUpModal() {
       ? newLabel
       : tpl(lvUpTpl, { cur: String(opt.currentLevel), next: String(opt.nextLevel) });
 
+    // SPEC-024: カード上端に 「武器エクステ / 強化エクステ」 のカテゴリ見出し
+    const catEl = document.createElement("div");
+    catEl.className = "levelup-card__cat";
+    catEl.textContent = opt.ext.category === "buff"
+      ? t("levelup.cat.buff",   "Buff")
+      : t("levelup.cat.weapon", "Weapon");
+
     // 左カラム: アイコン (= iconId 経由)
     const iconWrap = document.createElement("div");
     iconWrap.className = "levelup-card__icon-wrap";
@@ -247,7 +254,7 @@ export function renderLevelUpModal() {
 
     main.append(bar, nameEl, skillEl, descEl, lvEl);
 
-    card.append(iconWrap, main);
+    card.append(catEl, iconWrap, main);
     card.addEventListener("click", () => applyPick(opt.extId));
     grid.appendChild(card);
   }
