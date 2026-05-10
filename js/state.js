@@ -71,7 +71,15 @@ export const state = {
     bossSpawned:    false, // ディープ・ヨシュカ multi-spawn 防止
     bossDefeated:   false, // ボス撃破フラグ (= clear trigger)
     rerollsLeft:    2,     // SPEC-023: 1 戦闘あたり picker リロール可能回数
+    // SPEC-030: ボス攻撃 (= ファオ / yamap) の固有エンティティ
+    bossProjectiles: [],   // {id, x, y, vx, vy, r, dmg, life, age, iconId, iconSize}
+    bossOrbits:      [],   // {id, bossEnemyId, angle, r, dmg, iconId, iconSize, hitR, lastHitMs}
+    bossLastFireMs:  0,    // ファオ攻撃の throttle
   },
+
+  // SPEC-030: 現在のステージ index (= STAGE_TABLE[N])
+  // hero pick 時に 0 リセット、 ボス撃破 / 5 分耐久で +1。 3 の手前で Game Clear。
+  currentStageIdx: 0,
 
   // SPEC-008: 装備 extension + Level-up pick モーダル状態
   ownedExtensions:       [],   // [{extId, level}]

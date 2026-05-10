@@ -105,6 +105,23 @@
   </main>
 
   <!-- ============================================================ -->
+  <!-- Stage transition modal (= SPEC-030)                           -->
+  <!-- ============================================================ -->
+  <div id="stageTransitionModal" class="gameover-modal hidden" role="dialog" aria-modal="true"
+       aria-labelledby="stageTransitionTitle">
+    <div class="gameover-modal__card">
+      <h2 class="gameover-modal__title" id="stageTransitionTitle"
+          data-i18n="stage.clearTitle">Stage Clear!</h2>
+      <div class="gameover-modal__stats">
+        <div class="gameover-stat" id="stageTransitionCurrent"></div>
+        <div class="gameover-stat" id="stageTransitionSub"></div>
+      </div>
+      <button class="btn gameover-modal__retry" id="stageTransitionProceed"
+              data-i18n="stage.proceed">次のステージへ</button>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
   <!-- Game Over modal (= SPEC-009)                                   -->
   <!-- ============================================================ -->
   <div id="gameOverModal" class="gameover-modal hidden" role="dialog" aria-modal="true"
