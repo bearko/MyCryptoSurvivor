@@ -9,8 +9,12 @@ import {
   HP_BAR_WIDTH, HP_BAR_HEIGHT,
   HP_BAR_PLAYER_WIDTH, HP_BAR_PLAYER_HEIGHT,
   DAMAGE_NUMBER_LIFE_MS,
+  WORLD_W, WORLD_H, BG_OVERLAY_COLOR,
 } from "../constants.js";
-import { drawSpriteCircular, drawSpriteRotated, getExtSprite, getGemSprite, getEnemySprite } from "./sprites.js";
+import {
+  drawSpriteCircular, drawSpriteRotated,
+  getExtSprite, getGemSprite, getEnemySprite, getBackgroundSprite,
+} from "./sprites.js";
 
 /**
  * 1 frame 描画。 ctx は dpr 反映済の transform で渡される前提。
@@ -20,11 +24,12 @@ export function renderBattle(ctx) {
   const w = viewport.w, h = viewport.h;
   if (w <= 0 || h <= 0) return;
 
-  // 背景
+  // SPEC-026: ステージ外は黒、 ステージ内は背景画像 + 半透明ダーク overlay
   ctx.fillStyle = "#0e0c14";
   ctx.fillRect(0, 0, w, h);
+  _drawBackground(ctx, camera, w, h);
 
-  // グリッド
+  // グリッド (= ステージ全体に薄く重ねて方向感覚補助)
   _drawGrid(ctx, camera, w, h);
 
   // SPEC-012 / SPEC-015: bombs (= icon 描画 + 残時間 70% 超で点滅、 AoE 範囲を線で示唆)
@@ -275,6 +280,29 @@ function _drawHpBar(ctx, cx, cy, w, h, ratio) {
   if (r < 0.3) color = "#e76060";   // 赤 (30% 以下)
   ctx.fillStyle = color;
   ctx.fillRect(x, cy, w * r, h);
+}
+
+/**
+ * SPEC-026: 世界中心 (0,0) を中心に WORLD_W x WORLD_H の領域へ背景画像を 1 枚だけ描画、
+ * その上に BG_OVERLAY_COLOR を被せて暗色の敵を視認しやすくする。
+ * 画像未読込なら overlay だけ被せる (= 結果は暗色面でも fallback として成立)。
+ */
+function _drawBackground(ctx, camera, w, h) {
+  const x = -WORLD_W / 2 - camera.x;
+  const y = -WORLD_H / 2 - camera.y;
+  // viewport と stage 矩形の交差で clip 描画
+  const sx = Math.max(0, x);
+  const sy = Math.max(0, y);
+  const ex = Math.min(w, x + WORLD_W);
+  const ey = Math.min(h, y + WORLD_H);
+  if (ex <= sx || ey <= sy) return;
+  const bg = getBackgroundSprite();
+  if (bg && bg.ready && !bg.failed) {
+    ctx.drawImage(bg.img, x, y, WORLD_W, WORLD_H);
+  }
+  // 半透明ダーク overlay (= 背景があっても無くても dim する)
+  ctx.fillStyle = BG_OVERLAY_COLOR;
+  ctx.fillRect(sx, sy, ex - sx, ey - sy);
 }
 
 function _drawGrid(ctx, camera, w, h) {

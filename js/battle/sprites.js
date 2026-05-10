@@ -8,7 +8,7 @@
 import { heroImg } from "../heroes.js";
 import { enemyImg, ENEMY_ROSTER } from "../enemies.js";
 import { extImg } from "../extensions.js";
-import { img, GEM_ICON_PATH } from "../constants.js";
+import { img, GEM_ICON_PATH, BG_IMAGE_PATH } from "../constants.js";
 
 const _imageCache = new Map();   // url -> {img, ready, failed}
 
@@ -71,6 +71,13 @@ export function drawSpriteCircular(ctx, entry, cx, cy, r) {
  */
 export function getGemSprite() {
   return _loadImage(img(GEM_ICON_PATH));
+}
+
+/**
+ * SPEC-026: ステージ背景 (= MCH 公式 1001.png)。
+ */
+export function getBackgroundSprite() {
+  return _loadImage(img(BG_IMAGE_PATH));
 }
 
 /**
