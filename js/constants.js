@@ -42,8 +42,9 @@ export const STATS_MAX            = { hp: 100 };
 export const STATS_DECAY_PER_TICK = { hp: 0 };
 
 // XP / Level 初期値 (= SPEC-005)
+// SPEC-026: 初期閾値を 5 → 4、 成長率も 1.5 → 1.3 に下げてレベルアップ頻度 UP
 export const XP_INITIAL          = 0;
-export const XP_TO_NEXT_INITIAL  = 5;
+export const XP_TO_NEXT_INITIAL  = 4;
 export const LEVEL_INITIAL       = 1;
 
 // ============================================================
@@ -84,7 +85,7 @@ export const GEM_RADIUS              = 6;
 export const GEM_COLOR               = "#f0c14b";
 export const GEM_PICKUP_RADIUS       = 28;
 
-export const XP_TO_NEXT_GROWTH       = 1.5;     // 閾値 = ceil(prev * 1.5)
+export const XP_TO_NEXT_GROWTH       = 1.3;     // SPEC-026: 1.5 → 1.3 に緩和 (= 後半のレベル間隔を短縮)
 
 // ============================================================
 // Extensions as weapons + Level-up pick (= SPEC-008)
@@ -212,12 +213,13 @@ export const WAVE_TABLE = [
 ];
 
 // 個別敵スペック (= MCH stats とは別の game balance)
+// SPEC-026: xpValue を追加 (= 強い敵ほど多い経験値を落とす、 後半サクサクレベルアップ)
 export const ENEMY_SPECS = {
-  101: { hp:   25, dmg: 10, speed: 80, radius: 12 },
-  124: { hp:   55, dmg: 14, speed: 75, radius: 14 },
-  134: { hp:   95, dmg: 18, speed: 70, radius: 16 },
-  164: { hp:  160, dmg: 22, speed: 65, radius: 19 },
-  171: { hp: 3000, dmg: 30, speed: 45, radius: 48 },
+  101: { hp:   25, dmg: 10, speed: 80, radius: 12, xpValue:  1 },
+  124: { hp:   55, dmg: 14, speed: 75, radius: 14, xpValue:  2 },
+  134: { hp:   95, dmg: 18, speed: 70, radius: 16, xpValue:  4 },
+  164: { hp:  160, dmg: 22, speed: 65, radius: 19, xpValue:  7 },
+  171: { hp: 3000, dmg: 30, speed: 45, radius: 48, xpValue: 60 },
 };
 
 // ============================================================
@@ -226,3 +228,13 @@ export const ENEMY_SPECS = {
 export const STOCK_LIMIT_WEAPON = 5;   // 武器系列の最大装備数
 export const STOCK_LIMIT_BUFF   = 5;   // 強化系列の最大装備数
 export const REROLL_PER_BATTLE  = 2;   // 1 戦闘あたりリロール可能回数
+
+// ============================================================
+// SPEC-026: 有限ステージ + 背景画像 + 暗色オーバーレイ
+// ============================================================
+// 世界座標系: 中心 (0, 0)、 サイズ = 背景画像と一致 (1000 x 1500)
+export const WORLD_W            = 1000;
+export const WORLD_H            = 1500;
+export const BG_IMAGE_PATH      = "Image/Backgrounds/1001.png";
+// 背景の上に乗せる半透明ダーク (= 暗色の敵を視認しやすくする)
+export const BG_OVERLAY_COLOR   = "rgba(0, 0, 0, 0.45)";
