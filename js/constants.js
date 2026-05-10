@@ -214,12 +214,15 @@ export const WAVE_TABLE = [
 
 // 個別敵スペック (= MCH stats とは別の game balance)
 // SPEC-026: xpValue を追加 (= 強い敵ほど多い経験値を落とす、 後半サクサクレベルアップ)
+// SPEC-030: 各ステージのボス (373 = ファオ、 1189 = yamap) 追加
 export const ENEMY_SPECS = {
-  101: { hp:   25, dmg: 10, speed: 80, radius: 12, xpValue:  1 },
-  124: { hp:   55, dmg: 14, speed: 75, radius: 14, xpValue:  2 },
-  134: { hp:   95, dmg: 18, speed: 70, radius: 16, xpValue:  4 },
-  164: { hp:  160, dmg: 22, speed: 65, radius: 19, xpValue:  7 },
-  171: { hp: 3000, dmg: 30, speed: 45, radius: 48, xpValue: 60 },
+  101:  { hp:   25, dmg: 10, speed: 80, radius: 12, xpValue:   1 },
+  124:  { hp:   55, dmg: 14, speed: 75, radius: 14, xpValue:   2 },
+  134:  { hp:   95, dmg: 18, speed: 70, radius: 16, xpValue:   4 },
+  164:  { hp:  160, dmg: 22, speed: 65, radius: 19, xpValue:   7 },
+  171:  { hp: 3000, dmg: 30, speed: 45, radius: 48, xpValue:  60 },
+  373:  { hp: 4500, dmg: 30, speed: 50, radius: 52, xpValue: 100 },   // 覚醒魔王ファオ
+  1189: { hp: 6000, dmg: 30, speed: 55, radius: 50, xpValue: 150 },   // yamap
 };
 
 // ============================================================
@@ -231,13 +234,81 @@ export const REROLL_PER_BATTLE  = 2;   // 1 戦闘あたりリロール可能回
 
 // ============================================================
 // SPEC-026: 有限ステージ + 背景画像 + 暗色オーバーレイ
+// SPEC-030: bgPath / boss / balance はステージごと (= STAGE_TABLE) 固定値は維持
 // ============================================================
 // 世界座標系: 中心 (0, 0)、 サイズ = 背景画像と一致 (1000 x 1500)
 export const WORLD_W            = 1000;
 export const WORLD_H            = 1500;
+// SPEC-030: 旧定数は STAGE_TABLE[0] への fallback として残す (= 互換)
 export const BG_IMAGE_PATH      = "Image/Backgrounds/1001.png";
 // 背景の上に乗せる半透明ダーク (= 暗色の敵を視認しやすくする)
 export const BG_OVERLAY_COLOR   = "rgba(0, 0, 0, 0.45)";
+
+// ============================================================
+// SPEC-030: 3 ステージ制 (= 連続ステージ、 hero 引継ぎ、 武器リセット)
+// ============================================================
+// stage.bossAttack:
+//   null        — 接触のみ (= ヨシュカ)
+//   "fao"       — Axe 風: 周期的にランダム放射 N 発、 アイコン = ext 5055 (= とっておきのフルーツパフェ)
+//   "yamap"     — Blade 風: ボスを中心に 8 個の周回、 アイコン = ext 5002 (= グランダルメ)
+//
+// enemyHpMul / enemyDmgMul / xpMul: 雑魚の hp / dmg / xpValue に適用 (= ボス絶対値は ENEMY_SPECS)
+// spawnIntervalMul: 通常スポーン間隔の倍率 (= 0.6 で 1.67× の頻度に)
+export const STAGE_TABLE = [
+  {
+    idx: 0,
+    nameKey: "stage.akabasu",
+    bgPath: "Image/Backgrounds/1001.png",
+    bossEnemyId: 171,
+    bossAttack: null,
+    bossAttackExtId: null,
+    enemyHpMul:        1.0,
+    enemyDmgMul:       1.0,
+    xpMul:             1.0,
+    spawnIntervalMul:  1.0,
+  },
+  {
+    idx: 1,
+    nameKey: "stage.horeris",
+    bgPath: "Image/Backgrounds/1038.png",
+    bossEnemyId: 373,                 // 覚醒魔王ファオ
+    bossAttack: "fao",
+    bossAttackExtId: 5055,            // とっておきのフルーツパフェ
+    enemyHpMul:        1.5,
+    enemyDmgMul:       1.25,
+    xpMul:             2.0,
+    spawnIntervalMul:  0.85,
+  },
+  {
+    idx: 2,
+    nameKey: "stage.troy",
+    bgPath: "Image/Backgrounds/1060.png",
+    bossEnemyId: 1189,                // yamap
+    bossAttack: "yamap",
+    bossAttackExtId: 5002,            // グランダルメ
+    enemyHpMul:        2.0,
+    enemyDmgMul:       1.5,
+    xpMul:             3.0,
+    spawnIntervalMul:  0.7,
+  },
+];
+
+// ボス攻撃 (= fao / yamap) のチューニング定数
+export const FAO_FIRE_INTERVAL_MS  = 2200;   // 2.2 sec ごとに次フレームで放射
+export const FAO_BULLETS           = 6;      // 1 周期あたりの飛翔体数
+export const FAO_PROJ_SPEED_PX_S   = 220;
+export const FAO_PROJ_DMG          = 18;
+export const FAO_PROJ_LIFE_MS      = 4500;
+export const FAO_PROJ_R            = 14;
+export const FAO_PROJ_ICON_SIZE    = 32;
+
+export const YAMAP_ORBIT_COUNT     = 8;
+export const YAMAP_ORBIT_RADIUS    = 110;    // ボス中心からの距離
+export const YAMAP_ORBIT_HIT_R     = 14;
+export const YAMAP_ORBIT_DMG       = 14;
+export const YAMAP_ORBIT_ANG_SPEED = 1.6;    // rad/sec
+export const YAMAP_ORBIT_ICON_SIZE = 28;
+export const YAMAP_ORBIT_HIT_COOLDOWN_MS = 600;   // 同 orbit から再 dmg まで
 
 // ============================================================
 // SPEC-028: 武器レベルアップに伴う当たり判定 / アイコンサイズ拡大

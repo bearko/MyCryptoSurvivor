@@ -20,7 +20,7 @@ import {
  * 1 frame 描画。 ctx は dpr 反映済の transform で渡される前提。
  */
 export function renderBattle(ctx) {
-  const { player, camera, viewport, enemies, gems, projectiles, orbits, beams, bombs, shockwaves, damageNumbers } = state.battle;
+  const { player, camera, viewport, enemies, gems, projectiles, orbits, beams, bombs, shockwaves, damageNumbers, bossProjectiles, bossOrbits } = state.battle;
   const w = viewport.w, h = viewport.h;
   if (w <= 0 || h <= 0) return;
 
@@ -220,6 +220,38 @@ export function renderBattle(ctx) {
         ctx.lineWidth = 1.5;
         ctx.stroke();
       }
+    }
+  }
+
+  // SPEC-030: boss projectiles (= ファオ放射) を icon 描画
+  for (const p of bossProjectiles) {
+    const sx = p.x - camera.x;
+    const sy = p.y - camera.y;
+    const half = (p.iconSize ?? 28) / 2;
+    if (sx + half < 0 || sx - half > w || sy + half < 0 || sy - half > h) continue;
+    const angle = Math.atan2(p.vy, p.vx);
+    const drew = drawSpriteRotated(ctx, getExtSprite(p.iconId), sx, sy, p.iconSize ?? 28, angle);
+    if (!drew) {
+      ctx.fillStyle = "#ff7676";
+      ctx.beginPath();
+      ctx.arc(sx, sy, p.r ?? 12, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  // SPEC-030: boss orbits (= yamap 周回) — 接線方向に rotate
+  for (const o of bossOrbits) {
+    const sx = o.x - camera.x;
+    const sy = o.y - camera.y;
+    const half = (o.iconSize ?? 28) / 2;
+    if (sx + half < 0 || sx - half > w || sy + half < 0 || sy - half > h) continue;
+    const angle = o.angle + Math.PI / 2;
+    const drew = drawSpriteRotated(ctx, getExtSprite(o.iconId), sx, sy, o.iconSize ?? 28, angle);
+    if (!drew) {
+      ctx.fillStyle = "#d4d4dc";
+      ctx.beginPath();
+      ctx.arc(sx, sy, o.hitR ?? 12, 0, Math.PI * 2);
+      ctx.fill();
     }
   }
 
