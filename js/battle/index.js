@@ -23,6 +23,7 @@ import { tickEnemies } from "./enemies.js";
 import { tickWeapons } from "./weapons.js";
 import { tickProjectiles } from "./projectiles.js";
 import { tickGems } from "./gems.js";
+import { tickMagicCards } from "./magic-cards.js";
 import { rebuildWeaponsFromOwned } from "./extensions-as-weapons.js";
 import { renderBattle } from "./render.js";
 import { getHeroSprite, getDefaultEnemySprite, getBackgroundSprite } from "./sprites.js";
@@ -95,6 +96,10 @@ export function startBattle(hero) {
   b.bossOrbits         = b.bossOrbits      ?? [];
   b.bossProjectiles.length = 0;
   b.bossOrbits.length      = 0;
+  // SPEC-033: マジックカード + レアエネミーカウンタも各ステージ開始でリセット
+  b.magicCards         = b.magicCards ?? [];
+  b.magicCards.length  = 0;
+  b.lastRareSpawnMs    = performance.now();
   state.ownedExtensions = [];                   // SPEC-008: 装備リセット
   state.killCount       = 0;                    // SPEC-009: 撃破カウンタ
   state.lastRunStats    = null;                 // SPEC-009: snapshot
@@ -181,6 +186,7 @@ function _loop(now) {
     tickBossAttack(dt, now);       // SPEC-030: ボス攻撃 (= ファオ放射 / yamap 周回) + 衝突
     tickDamageNumbers(dt);         // SPEC-016: ダメージ数字 floater
     tickGems(dt);                  // SPEC-007: 拾う + level up trigger
+    tickMagicCards(dt);            // SPEC-033: マジックカード (= 即時 LV up アイテム)
     tickRegen(dt);                 // SPEC-011: Ramen 系列の HP regen
     if (state.battle.contactCooldownMs > 0) {
       state.battle.contactCooldownMs -= dt * 1000;

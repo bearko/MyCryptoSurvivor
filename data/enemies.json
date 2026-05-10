@@ -69,6 +69,30 @@
       "name":    { "ja": "yamap", "en": "yamap" },
       "stats":   { "hp": 6000, "phy": 40, "int": 40, "agi": 1 },
       "isBoss":  true
+    },
+    {
+      "enemyId": 147,
+      "name":    { "ja": "クリーパー フラペチーノ ドッピオ", "en": "Creeper-frappuccino doppio" },
+      "stats":   { "hp": 160, "phy": 16, "int": 12, "agi": 12 },
+      "isRare":  true
+    },
+    {
+      "enemyId": 170,
+      "name":    { "ja": "バイトバンディット フラペチーノ ドッピオ", "en": "Byte Bandit-frappuccino doppio" },
+      "stats":   { "hp": 400, "phy": 24, "int": 5, "agi": 13 },
+      "isRare":  true
+    },
+    {
+      "enemyId": 396,
+      "name":    { "ja": "ラビット フラペチーノ ドッピオ", "en": "Rabbit-frappuccino doppio" },
+      "stats":   { "hp": 220, "phy": 18, "int": 10, "agi": 14 },
+      "isRare":  true
+    },
+    {
+      "enemyId": 407,
+      "name":    { "ja": "ラブレター フラペチーノ ドッピオ", "en": "Loveletter-frappuccino doppio" },
+      "stats":   { "hp": 280, "phy": 20, "int": 12, "agi": 11 },
+      "isRare":  true
     }
   ]
 }

@@ -801,3 +801,66 @@
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+/* SPEC-033: 活動レポートモーダル (= 全ステージ clear 時) */
+.report-card {
+  max-width: 560px;
+}
+.report-hero {
+  margin: 0.2rem 0 0.6rem;
+  font-size: 0.95rem;
+  color: var(--text);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.report-stages-wrap {
+  overflow-x: auto;
+  margin: 0.4rem 0 0.6rem;
+}
+.report-stages {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+}
+.report-stages th, .report-stages td {
+  padding: 0.32rem 0.4rem;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+.report-stages th {
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  background: rgba(196, 163, 90, 0.06);
+}
+.report-stages tbody tr:last-child td { border-bottom: none; }
+.report-stages__ext {
+  color: var(--text);
+  opacity: 0.85;
+  word-break: break-word;
+}
+.report-totals {
+  display: flex;
+  flex-direction: column;
+  gap: 0.18rem;
+  align-items: center;
+  margin: 0.4rem 0 0.6rem;
+  font-size: 0.86rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.report-totals__score {
+  font-size: 1.1rem;
+  color: var(--accent);
+}
+
+@media (max-width: 480px) {
+  .report-stages { font-size: 0.7rem; }
+  .report-stages th { font-size: 0.64rem; padding: 0.22rem 0.3rem; }
+  .report-stages td { padding: 0.22rem 0.3rem; }
+  .report-totals { font-size: 0.78rem; }
+  .report-totals__score { font-size: 1rem; }
+}
