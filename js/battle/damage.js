@@ -35,7 +35,8 @@ export function hitEnemy(idx, dmg) {
   e.hitFreezeMs = HIT_FREEZE_MS;
   pushDamageNumber(e.x, e.y - e.r - 4, dmgInt, "#ffffff");
   if (e.hp <= 0) {
-    spawnGem(e.x, e.y);
+    // SPEC-026: 強敵ほど高 XP を落とす (= ENEMY_SPECS.xpValue 由来、 enemy.xpValue が未設定なら 1)
+    spawnGem(e.x, e.y, e.xpValue ?? 1);
     enemies.splice(idx, 1);
     state.killCount++;
     // SPEC-022: ボス撃破フラグ → 次 tick で triggerGameOver("clear")

@@ -1428,19 +1428,19 @@
       },
       "tierParams": [
         {
-          "magnitude": 1.2
-        },
-        {
           "magnitude": 1.4
         },
         {
-          "magnitude": 1.65
-        },
-        {
-          "magnitude": 1.95
+          "magnitude": 1.8
         },
         {
           "magnitude": 2.3
+        },
+        {
+          "magnitude": 2.9
+        },
+        {
+          "magnitude": 3.6
         }
       ],
       "tierIconIds": [

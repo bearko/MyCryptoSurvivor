@@ -25,7 +25,7 @@ import { tickProjectiles } from "./projectiles.js";
 import { tickGems } from "./gems.js";
 import { rebuildWeaponsFromOwned } from "./extensions-as-weapons.js";
 import { renderBattle } from "./render.js";
-import { getHeroSprite, getDefaultEnemySprite } from "./sprites.js";
+import { getHeroSprite, getDefaultEnemySprite, getBackgroundSprite } from "./sprites.js";
 import { tickRegen, resetBuffs } from "./buffs.js";
 import {
   tickOrbits, tickBeams, tickBombs, tickHomingProjectiles,
@@ -69,6 +69,7 @@ export function startBattle(hero) {
   // SPEC-010: hero / 敵の sprite preload (= 描画は ready 待ち、 fallback は単色円)
   b.playerSprite       = getHeroSprite(hero);
   b.defaultEnemySprite = getDefaultEnemySprite();
+  getBackgroundSprite();   // SPEC-026: 背景画像 preload (= 戻り値は render 側で参照)
 
   // SPEC-007 / SPEC-008 / SPEC-009 / SPEC-012: 戦闘世界をクリーンに reset
   b.enemies.length     = 0;
