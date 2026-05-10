@@ -193,3 +193,28 @@ export const BGM_BATTLE = "Audio/SE/pvp.mp3";
 // SPEC-019: XP gem アイコン (= MCH 公式 CE icon)
 // ============================================================
 export const GEM_ICON_PATH = "Image/Icons/ce.png";
+
+// ============================================================
+// SPEC-022: ステージ進行 + wave + ボス
+// ============================================================
+export const STAGE_DURATION_MS  = 300000;   // 5 分間
+export const BOSS_SPAWN_AT_MS   = 240000;   // 4 分経過時にボススポーン
+export const BOSS_ENEMY_ID      = 171;      // ディープ・ヨシュカ
+
+// 1 分ごとに pool に追加する敵 ID
+export const WAVE_TABLE = [
+  { fromMs:      0, pool: [101] },
+  { fromMs:  60000, pool: [101, 124] },
+  { fromMs: 120000, pool: [101, 124, 134] },
+  { fromMs: 180000, pool: [101, 124, 134, 164] },
+  { fromMs: 240000, pool: [101, 124, 134, 164] },   // 雑魚継続 + ボス別途 spawn
+];
+
+// 個別敵スペック (= MCH stats とは別の game balance)
+export const ENEMY_SPECS = {
+  101: { hp:   25, dmg: 10, speed: 80, radius: 12 },
+  124: { hp:   55, dmg: 14, speed: 75, radius: 14 },
+  134: { hp:   95, dmg: 18, speed: 70, radius: 16 },
+  164: { hp:  160, dmg: 22, speed: 65, radius: 19 },
+  171: { hp: 3000, dmg: 30, speed: 45, radius: 48 },
+};

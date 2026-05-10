@@ -35,12 +35,20 @@ export function getHeroSprite(hero) {
 }
 
 /**
- * デフォルト敵 sprite (= ENEMY_ROSTER[0])。 全敵が当面これを使う。
+ * デフォルト敵 sprite (= ENEMY_ROSTER[0])。 enemyId 不明時の fallback。
  */
 export function getDefaultEnemySprite() {
   const e = ENEMY_ROSTER[0];
   if (!e) return null;
   return _loadImage(enemyImg(e.enemyId));
+}
+
+/**
+ * SPEC-022: enemyId 別の sprite (= preload + cache)。
+ */
+export function getEnemySprite(enemyId) {
+  if (enemyId == null) return null;
+  return _loadImage(enemyImg(enemyId));
 }
 
 /**
