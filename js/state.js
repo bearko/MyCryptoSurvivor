@@ -90,6 +90,7 @@ export const state = {
     stages:        [],   // [{idx, elapsedMs, kills, level, ownedExtensions:[{extId,level}]}]
     totalKills:    0,
     totalElapsedMs: 0,
+    scoreSent:     false, // SPEC-041: この挑戦の総合スコアを送ったか (= 二重に送らない)
   },
 
   // SPEC-037: ゲームモード (= 「NORMAL」 / 「ABSOLUTE」 の 2 種)

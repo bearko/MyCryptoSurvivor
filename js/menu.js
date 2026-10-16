@@ -15,7 +15,7 @@
 import { state, pauseTime, resumeTime } from "./state.js";
 import { stopBgm } from "./audio.js";
 import { onLangChange, t } from "./i18n.js";
-import { abortRtaRun } from "./platform.js";
+import { abortRtaRun, scoreMetrics, reportRunScore } from "./platform.js";
 
 let _wired = false;
 let _opened = false;
@@ -88,6 +88,8 @@ function _onToTitle() {
   stopBgm();
   // SPEC-040: 計測中の RTA は中断
   abortRtaRun();
+  // SPEC-041: 途中でやめても、終えたステージの節目の点は送る (= 全クリア後の活動レポートからは来ない)
+  if (!state.run.scoreSent) reportRunScore(scoreMetrics({ run: state.run, cleared: false, regulation: state.regulation, absolute: state.absolute }));
   // pauseFlags は 0 に戻す (= titleScreen は 「停止状態」 として扱うが counter は綺麗にしておく)
   while (state.pauseFlags > 0) resumeTime();
   // run / battle 状態をリセット (= 次に hero pick したらフレッシュに始まる)
