@@ -14,6 +14,8 @@ import { triggerGameOver } from "./gameover.js";
 import { triggerActivityReport } from "./activity-report.js";
 import { t, tpl, onLangChange } from "../i18n.js";
 import { reportStageEnd, reportRtaStageEnd } from "../platform.js";
+import { formatElapsed } from "../survival.js";
+import { countUp, revealIn } from "../reveal.js";
 
 let _wired = false;
 
@@ -66,7 +68,28 @@ export function triggerStageEndOrTransition() {
   pauseTime();
   _wireOnce();
   _renderTransitionModal();
-  document.getElementById("stageTransitionModal")?.classList.remove("hidden");
+  const modal = document.getElementById("stageTransitionModal");
+  modal?.classList.remove("hidden");
+  // SPEC-046: 上から順に出し、 撃破数を数え上げる
+  revealIn(modal);
+  const snap = state.run.stages.find(s => s.idx === (state.currentStageIdx ?? 0));
+  countUp(document.getElementById("stageTransitionKills"), snap?.kills ?? 0, { durMs: 600, delayMs: 250 });
+}
+
+/** SPEC-046: ⏱ 時間・💀 撃破・Lv のタイル (= ステージクリアとゲームオーバーで同じ形) */
+export function resultTilesHtml({ timeText, kills, level, killsId }) {
+  const esc = (v) => String(v).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  return (
+    `<div class="result-tile"><span class="result-tile__icon" aria-hidden="true">⏱</span>` +
+    `<span class="result-tile__value num">${esc(timeText)}</span>` +
+    `<span class="result-tile__label">${esc(t("result.time", "時間"))}</span></div>` +
+    `<div class="result-tile"><span class="result-tile__icon" aria-hidden="true">💀</span>` +
+    `<span class="result-tile__value num"${killsId ? ` id="${esc(killsId)}"` : ""}>${esc(kills)}</span>` +
+    `<span class="result-tile__label">${esc(t("result.kills", "撃破"))}</span></div>` +
+    `<div class="result-tile"><span class="result-tile__icon" aria-hidden="true">⬆</span>` +
+    `<span class="result-tile__value num">Lv.${esc(level)}</span>` +
+    `<span class="result-tile__label">${esc(t("result.level", "レベル"))}</span></div>`
+  );
 }
 
 /**
@@ -114,5 +137,22 @@ function _renderTransitionModal() {
   const curEl = document.getElementById("stageTransitionCurrent");
   if (curEl && cur) {
     curEl.textContent = t(cur.nameKey, cur.nameKey);
+  }
+
+  // SPEC-046: 進み具合 (●●○) と、 そのステージの成績
+  const pipsEl = document.getElementById("stageTransitionPips");
+  if (pipsEl) {
+    pipsEl.innerHTML = STAGE_TABLE.map((_, i) =>
+      `<span class="stage-pip${i <= idx ? " stage-pip--done" : ""}"></span>`).join("");
+  }
+  const tilesEl = document.getElementById("stageTransitionTiles");
+  const snap = state.run.stages.find(s => s.idx === idx);
+  if (tilesEl && snap) {
+    tilesEl.innerHTML = resultTilesHtml({
+      timeText: formatElapsed(Math.round((snap.elapsedMs ?? 0) / 1000)),
+      kills: snap.kills ?? 0,
+      level: snap.level ?? 1,
+      killsId: "stageTransitionKills",
+    });
   }
 }

@@ -177,5 +177,11 @@
   "settings.reduceFxNote": { "ja": "揺れ・粒・画面の光を止める",   "en": "No shake, particles or flashes" },
   "settings.reduceFxOs": { "ja": "端末の設定で動きを減らしています", "en": "Reduced by your device settings" },
   "settings.lang":       { "ja": "言語",                           "en": "Language" },
-  "boss.warning":        { "ja": "ボス接近",                       "en": "Boss incoming" }
+  "boss.warning":        { "ja": "ボス接近",                       "en": "Boss incoming" },
+  "result.time":         { "ja": "時間",                           "en": "Time" },
+  "result.kills":        { "ja": "撃破",                           "en": "Kills" },
+  "result.level":        { "ja": "レベル",                         "en": "Level" },
+  "result.stageOf":      { "ja": "ステージ {n} / {total}",         "en": "Stage {n} / {total}" },
+  "result.fellAt":       { "ja": "ステージ {n} / {total} で力尽きた", "en": "Fell on stage {n} of {total}" },
+  "stage.introNo":       { "ja": "STAGE {n}",                      "en": "STAGE {n}" }
 }

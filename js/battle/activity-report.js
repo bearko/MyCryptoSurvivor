@@ -22,6 +22,7 @@ import { heroImg } from "../heroes.js";
 import { formatElapsed } from "../survival.js";
 import { stopBgm, playSe } from "../audio.js";
 import { scoreMetrics, reportRunScore } from "../platform.js";
+import { countUp, revealIn } from "../reveal.js";
 import {
   getPlayerName, setPlayerName, submitScore, getRankingApiUrl,
 } from "../ranking-client.js";
@@ -45,7 +46,12 @@ export function triggerActivityReport() {
   stopBgm();
   playSe(SFX.GAME_OVER_CLEAR, 0, 0.7);
   _renderReport();
-  document.getElementById("activityReportModal")?.classList.remove("hidden");
+  const modal = document.getElementById("activityReportModal");
+  modal?.classList.remove("hidden");
+  // SPEC-046: ヒーロー → ステージ → 合計の順に出し、 スコアを 0 から数え上げる
+  revealIn(modal);
+  const scoreEl = document.getElementById("activityReportScore");
+  if (scoreEl) countUp(scoreEl, Number(scoreEl.dataset.score) || 0, { durMs: 800, delayMs: 450 });
 }
 
 function _wireOnce() {
@@ -180,6 +186,7 @@ function _renderReport() {
     for (const s of state.run.stages) {
       const card = document.createElement("div");
       card.className = "report-stage";
+      card.setAttribute("data-reveal", "");   // SPEC-046
       const stageName = t(s.nameKey, s.nameKey);
       const time = formatElapsed(Math.round(s.elapsedMs / 1000));
       // ext アイコンタイル
@@ -221,7 +228,7 @@ function _renderReport() {
       `  <span class="report-meta">⏱ ${escapeHtml(formatElapsed(totalSec))}</span>` +
       `  <span class="report-meta">💀 ${state.run.totalKills | 0}</span>` +
       `</div>` +
-      `<div class="report-score-big">${(score | 0).toLocaleString()}</div>` +
+      `<div class="report-score-big num" id="activityReportScore" data-score="${score | 0}">${(score | 0).toLocaleString()}</div>` +
       `<div class="report-score-label">${escapeHtml(t("report.scoreLabel", "SCORE"))}</div>`;
   }
 
