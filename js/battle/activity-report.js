@@ -21,6 +21,7 @@ import { getExt, getTierName, extTierImg } from "../extensions.js";
 import { heroImg } from "../heroes.js";
 import { formatElapsed } from "../survival.js";
 import { stopBgm, playSe } from "../audio.js";
+import { scoreMetrics, reportRunScore } from "../platform.js";
 import {
   getPlayerName, setPlayerName, submitScore, getRankingApiUrl,
 } from "../ranking-client.js";
@@ -33,6 +34,12 @@ let _wired = false;
  */
 export function triggerActivityReport() {
   pauseTime();
+  // SPEC-041: 共通基盤の総合スコア (= 全クリア)
+  state.run.scoreSent = true;
+  reportRunScore(scoreMetrics({
+    run: state.run, cleared: true, reportScore: computeScore(state.run),
+    regulation: state.regulation, regulationMul: computeRegulationMul(state.regulation, state.absolute), absolute: state.absolute,
+  }));
   _wireOnce();
   // SPEC-017: BGM 停止 + win SE (= 既存 gameover の clear 分岐と同じ感触に)
   stopBgm();

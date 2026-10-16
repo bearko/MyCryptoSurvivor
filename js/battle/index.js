@@ -62,6 +62,14 @@ export function startBattle(hero) {
 
   // SPEC-040: RTA で始めた run は、 ステージ 1 の開始で計測を始める (= 再走も同じ。 前の計測は中断になる)
   if (state.rtaMode && (state.currentStageIdx ?? 0) === 0) startRtaRun();
+  // SPEC-041: 新しい挑戦 (= ステージ 1) では、全ステージ通しの記録を空にして、総合スコアをまだ送っていない状態にする。
+  // (= ゲームオーバーからの再走 applyRetry は state.run を空にしていなかったので、ここでそろえる)
+  if ((state.currentStageIdx ?? 0) === 0) {
+    state.run.stages.length = 0;
+    state.run.totalKills = 0;
+    state.run.totalElapsedMs = 0;
+    state.run.scoreSent = false;
+  }
 
   const b = state.battle;
   b.player.x = 0;

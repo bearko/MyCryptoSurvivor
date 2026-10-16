@@ -1,0 +1,3 @@
+- **bearko.games 共通基盤の総合スコアに参加** (`js/platform.js` + `js/battle/activity-report.js` + `js/battle/gameover.js` + `js/menu.js` + `js/battle/index.js`):
+  - 全クリア・倒れた・タイトルに戻ったときに 1 回の挑戦の成績を送る（計算は共通基盤。自己ベスト更新の通知は SDK が出す）
+  - ゲームオーバーからの再走で、前の挑戦のステージ記録が残っていたのを直す

@@ -90,3 +90,28 @@ test("RTA：計測中だけ区切り・中断を送り、失敗してもゲー�
     delete globalThis.window;
   }
 });
+
+// ---------------------------------------------------------------- SPEC-041: 総合スコア
+import { scoreMetrics, reportRunScore } from "../js/platform.js";
+
+test("総合スコア：送る成績の形", () => {
+  const run = { stages: [{}, {}, {}] };
+  assert.deepEqual(scoreMetrics({ run, cleared: true, reportScore: 150000.4, regulation: "NORMAL", regulationMul: 1 }),
+    { stagesCleared: 3, cleared: true, reportScore: 150000, regulationMul: 1, regulation: "NORMAL", absolute: null });
+  const lost = scoreMetrics({ run: { stages: [{}] }, cleared: false, reportScore: 999 });
+  assert.deepEqual([lost.stagesCleared, lost.cleared, lost.reportScore], [1, false, 0], "倒れたら活動レポートのスコアは入れない");
+});
+
+test("総合スコア：ステージを 1 つも終えていなければ送らず、SDK がなくても例外を出さない", async () => {
+  assert.doesNotThrow(() => reportRunScore(scoreMetrics({ run: { stages: [{}] }, cleared: false })));
+  const sent = [];
+  globalThis.window = { BearkoGames: { submitScore: async (m) => { sent.push(m.stagesCleared); return { ok: true }; } } };
+  try {
+    reportRunScore(scoreMetrics({ run: { stages: [] }, cleared: false }));
+    reportRunScore(scoreMetrics({ run: { stages: [{}, {}] }, cleared: false }));
+    await new Promise((r) => setTimeout(r, 0));
+    assert.deepEqual(sent, [2]);
+  } finally {
+    delete globalThis.window;
+  }
+});

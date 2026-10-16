@@ -14,7 +14,7 @@ import {
 import { APP_VERSION, SFX, computeRegulationMul } from "../constants.js";
 import { formatElapsed } from "../survival.js";
 import { stopBgm, playSe } from "../audio.js";
-import { abortRtaRun } from "../platform.js";
+import { abortRtaRun, scoreMetrics, reportRunScore } from "../platform.js";
 
 let _wired = false;
 
@@ -29,6 +29,9 @@ export function triggerGameOver(reason = "lose") {
   // SPEC-040: 倒れたら RTA の計測は中断 (= 再走は startBattle で新しい計測になる)。
   // "clear" は最後の区切りを送ったあとなので触らない
   if (reason !== "clear") abortRtaRun();
+  // SPEC-041: 共通基盤の総合スコア (= 倒れるまでに終えたステージの節目の点)
+  if (reason !== "clear") state.run.scoreSent = true;
+  if (reason !== "clear") reportRunScore(scoreMetrics({ run: state.run, cleared: false, regulation: state.regulation, absolute: state.absolute }));
   state.lastRunStats = {
     elapsed: state.elapsedTicks,
     level:   state.level,

@@ -92,3 +92,38 @@ export function reportRtaStageEnd(stageIdx, stageCount, igtMs) {
 export function abortRtaRun() {
   _rtaCall("abort", (rta) => (rta.current && rta.current() ? rta.abort() : null));
 }
+
+// ============================================================
+// SPEC-041: 総合スコア (= 共通基盤 SPEC-002 3.2。 計算はサーバー)
+// ============================================================
+
+/**
+ * 1 回の挑戦の成績 (= 共通基盤に送る形)。 純関数 (= tests/platform.test.mjs)
+ *   run: state.run、 cleared: 全ステージクリアか、 reportScore: 活動レポートのスコア (= 倍率の前)
+ */
+export function scoreMetrics({ run, cleared, reportScore, regulation, regulationMul, absolute }) {
+  const stagesCleared = Math.min(3, (run?.stages ?? []).length);
+  return {
+    stagesCleared,
+    cleared: !!cleared && stagesCleared === 3,
+    reportScore: cleared ? Math.max(0, Math.round(reportScore || 0)) : 0,
+    regulationMul: regulationMul || 1,
+    // 将来の「難易度ごとのレギュレーション」用 (= 今は点に効かない)
+    regulation: regulation || "NORMAL",
+    absolute: absolute || null,
+  };
+}
+
+/** 挑戦が終わったとき (= 全クリア・倒れた・タイトルに戻った)。 ステージを 1 つも終えていなければ送らない */
+export function reportRunScore(metrics) {
+  const bg = _sdk();
+  if (!bg || typeof bg.submitScore !== "function" || !metrics) return;
+  if (metrics.stagesCleared < 1) return;
+  try {
+    Promise.resolve(bg.submitScore(metrics))
+      .then((r) => { if (r && r.ok === false) console.warn("[platform] score", r.error); })
+      .catch((e) => console.warn("[platform] score", e));
+  } catch (e) {
+    console.warn("[platform] score", e);
+  }
+}
