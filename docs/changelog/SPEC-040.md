@@ -1,0 +1,4 @@
+- **bearko.games 共通基盤の RTA に参加** (`js/platform.js` + `js/mode-select.js` + `js/battle/index.js` + `js/battle/stage-transition.js` + `js/battle/gameover.js` + `js/menu.js` + `index.html`):
+  - モード選択画面に「RTA」の card を追加。「RTA で始める」で NORMAL のルールのまま、ステージ 1 の開始から全 3 ステージクリアまでの時間を計る
+  - ステージを終えるたびに区間タイム、クリアで公式タイムを通知（共通基盤の SDK が出す）。倒れる・タイトルに戻ると計測は中断
+  - 記録は bearko.games の RTA ランキングとマイページに載る。未ログインでも計測でき、ログインするとランキングに載る

@@ -1001,6 +1001,10 @@
   text-align: left;
 }
 .mode-card[data-mode="ABSOLUTE"] { border-color: rgba(231, 96, 96, 0.55); }
+/* SPEC-040: RTA (= bearko.games 共通基盤の紫) */
+.mode-card[data-mode="RTA"] { border-color: rgba(167, 139, 250, 0.6); }
+.mode-card[data-mode="RTA"] .mode-card__mul { color: #c4b5fd; font-size: 0.8rem; }
+.mode-card__link { font-size: 0.8rem; color: #c4b5fd; font-weight: 700; }
 .mode-card__head {
   display: flex;
   align-items: baseline;

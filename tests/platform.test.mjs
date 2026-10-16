@@ -40,3 +40,53 @@ test("SDK があれば unlockTrophy を呼び、失敗してもゲームを止�
     delete globalThis.window;
   }
 });
+
+// ---------------------------------------------------------------- SPEC-040: RTA
+import { rtaCheckpointForStageEnd, isRtaAvailable, startRtaRun, reportRtaStageEnd, abortRtaRun, RTA_REGULATION } from "../js/platform.js";
+
+test("RTA：ステージ終了で送る区切り", () => {
+  assert.equal(rtaCheckpointForStageEnd(0, STAGES), "stage1");
+  assert.equal(rtaCheckpointForStageEnd(1, STAGES), "stage2");
+  assert.equal(rtaCheckpointForStageEnd(2, STAGES), "clear");
+  assert.equal(rtaCheckpointForStageEnd(3, STAGES), null);
+  assert.equal(rtaCheckpointForStageEnd(0, 0), null);
+});
+
+test("RTA：SDK がなければ出さず、例外も出さない", () => {
+  assert.equal(isRtaAvailable(), false);
+  assert.doesNotThrow(() => { startRtaRun(); reportRtaStageEnd(0, STAGES, 1000); abortRtaRun(); });
+});
+
+test("RTA：計測中だけ区切り・中断を送り、失敗してもゲームを止めない", async () => {
+  const calls = [];
+  let running = false;
+  globalThis.window = {
+    BearkoGames: {
+      rta: {
+        start: async (o) => { calls.push(["start", o.regulation]); running = true; return { ok: true }; },
+        checkpoint: async (id, o) => { calls.push(["checkpoint", id, o.igtMs]); return { ok: false, error: "network" }; },
+        abort: async () => { calls.push(["abort"]); running = false; return { ok: true }; },
+        current: () => (running ? { runId: "x" } : null),
+      },
+    },
+  };
+  const warn = console.warn;
+  console.warn = () => {};
+  try {
+    assert.equal(isRtaAvailable(), true);
+    reportRtaStageEnd(0, STAGES, 1); // 始める前は送らない
+    startRtaRun();
+    await new Promise((r) => setTimeout(r, 0));
+    reportRtaStageEnd(0, STAGES, 240000);
+    reportRtaStageEnd(2, STAGES, 720000);
+    abortRtaRun();
+    abortRtaRun(); // 2 回目は送らない
+    await new Promise((r) => setTimeout(r, 0));
+    assert.deepEqual(calls, [["start", RTA_REGULATION], ["checkpoint", "stage1", 240000], ["checkpoint", "clear", 720000], ["abort"]]);
+    globalThis.window.BearkoGames.rta.start = () => { throw new Error("boom"); };
+    assert.doesNotThrow(() => startRtaRun());
+  } finally {
+    console.warn = warn;
+    delete globalThis.window;
+  }
+});

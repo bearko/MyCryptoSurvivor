@@ -40,3 +40,55 @@ export function reportStageEnd(stageIdx, stageCount) {
     }
   }
 }
+
+// ============================================================
+// SPEC-040: RTA (= 共通基盤の SDK が時間を計る。 公式タイムはサーバーの受信時刻の差)
+// ============================================================
+export const RTA_REGULATION = "survivor-normal";
+
+/** RTA を出せるか (= SDK が読めたときだけ。 ローカルで開いたときなどは RTA の card を隠す) */
+export function isRtaAvailable() {
+  const bg = _sdk();
+  return !!(bg && bg.rta && typeof bg.rta.start === "function");
+}
+
+/**
+ * 終えたステージ（0 始まり）に対応する RTA の区切り ID。純関数 (= tests/platform.test.mjs)
+ * 最終ステージは "clear"、 それ以外は "stage1" / "stage2" …
+ */
+export function rtaCheckpointForStageEnd(stageIdx, stageCount) {
+  if (!(stageCount > 0) || stageIdx < 0 || stageIdx >= stageCount) return null;
+  return stageIdx === stageCount - 1 ? "clear" : `stage${stageIdx + 1}`;
+}
+
+function _rtaCall(name, fn) {
+  const bg = _sdk();
+  if (!bg || !bg.rta) return;
+  try {
+    Promise.resolve(fn(bg.rta))
+      .then((r) => { if (r && r.ok === false) console.warn("[platform] rta", name, r.error); })
+      .catch((e) => console.warn("[platform] rta", name, e));
+  } catch (e) {
+    console.warn("[platform] rta", name, e);
+  }
+}
+
+/** ステージ 1 が始まったとき (= startBattle で stage idx 0)。 前の計測は SDK が中断にする */
+export function startRtaRun() {
+  // 経過時間の表示は HUD (= ヘッダー + Lv / HP / XP) のすぐ下に出す
+  const hud = typeof document !== "undefined" ? document.getElementById("hud") : null;
+  const timerOffset = hud ? Math.round(hud.getBoundingClientRect().bottom) + 6 : 0;
+  _rtaCall("start", (rta) => rta.start({ regulation: RTA_REGULATION, timerOffset }));
+}
+
+/** ステージを終えたとき。 igtMs は各ステージのゲーム内時間の合計 */
+export function reportRtaStageEnd(stageIdx, stageCount, igtMs) {
+  const id = rtaCheckpointForStageEnd(stageIdx, stageCount);
+  if (!id) return;
+  _rtaCall("checkpoint", (rta) => (rta.current && rta.current() ? rta.checkpoint(id, { igtMs }) : null));
+}
+
+/** ゲームオーバー・タイトルに戻ったとき */
+export function abortRtaRun() {
+  _rtaCall("abort", (rta) => (rta.current && rta.current() ? rta.abort() : null));
+}
