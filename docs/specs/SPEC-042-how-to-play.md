@@ -2,7 +2,7 @@
 id: SPEC-042
 title: How to Play — Help Rewrite + First-Run Coach Hint
 status: Done
-pr: feat/spec-042-how-to-play
+pr: 60
 phase: v1.0
 kind: Changed
 ---
