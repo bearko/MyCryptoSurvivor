@@ -1,15 +1,15 @@
 ---
 id: SPEC-034
 title: Rare Size + Weapon Growth × 2 + Reroll 3 + Pause Menu
-status: Implementing
-pr: feat/spec-034-tunes-and-pause-menu
+status: Done
+pr: 42
 phase: Phase 0 / Phase 1
 kind: Changed
 ---
 
 # SPEC-034 — Rare Size + Weapon Growth × 2 + Reroll 3 + Pause Menu
 
-- **Status**: Implementing
+- **Status**: Done
 - **Author**: bearko (with Claude Code)
 - **Created**: 2026-05-10
 

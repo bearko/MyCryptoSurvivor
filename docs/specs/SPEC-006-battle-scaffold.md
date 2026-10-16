@@ -1,7 +1,7 @@
 ---
 id: SPEC-006
 title: Battle Stage Scaffold (= canvas + プレイヤー移動 WASD/joystick + カメラ追従)
-status: Implementing
+status: Done
 pr: 7
 phase: Phase 0 / Phase 1
 kind: Added
@@ -9,7 +9,7 @@ kind: Added
 
 # SPEC-006 — Battle Stage Scaffold (= canvas + プレイヤー移動 + カメラ)
 
-- **Status**: Implementing
+- **Status**: Done
 - **Author**: bearko (with Claude Code)
 - **Created**: 2026-05-09
 - **Updated**: 2026-05-09

@@ -2,7 +2,7 @@
 id: SPEC-039
 title: bearko.games Platform Trophies
 status: Done
-pr: feat/spec-039-platform-trophies
+pr: 48
 phase: Phase 3
 kind: Added
 ---

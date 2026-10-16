@@ -1,15 +1,15 @@
 ---
 id: SPEC-037
 title: Game Modes — NORMAL / ABSOLUTE Regulation
-status: Implementing
-pr: feat/spec-037-game-modes-and-absolute
+status: Done
+pr: 46
 phase: Phase 0 / Phase 1
 kind: Added
 ---
 
 # SPEC-037 — Game Modes (NORMAL / ABSOLUTE Regulation)
 
-- **Status**: Implementing
+- **Status**: Done
 - **Author**: bearko (with Claude Code)
 - **Created**: 2026-05-10
 

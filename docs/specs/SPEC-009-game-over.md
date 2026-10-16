@@ -1,7 +1,7 @@
 ---
 id: SPEC-009
 title: Game Over + Retry + Ranking Submit (= MVP 完了、 死んだら終わる + もう 1 回)
-status: Implementing
+status: Done
 pr: 10
 phase: Phase 0 / Phase 1
 kind: Added
@@ -9,7 +9,7 @@ kind: Added
 
 # SPEC-009 — Game Over + Retry + Ranking Submit
 
-- **Status**: Implementing
+- **Status**: Done
 - **Author**: bearko (with Claude Code)
 - **Created**: 2026-05-09
 - **Updated**: 2026-05-09

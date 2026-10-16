@@ -1,15 +1,15 @@
 ---
 id: SPEC-040
 title: bearko.games Platform RTA
-status: Implementing
-pr: feat/spec-040-platform-rta
+status: Done
+pr: 49
 phase: Phase 3
 kind: Added
 ---
 
 # SPEC-040 — bearko.games 共通基盤の RTA（全 3 ステージ）
 
-- **Status**: Implementing
+- **Status**: Done
 - **関連**: [bearko/mycryptoportfolio の SPEC-001](https://github.com/bearko/mycryptoportfolio/blob/claude/game-portfolio-page-4afqbc/docs/specs/SPEC-001-bearko-games-platform.md)（bearko.games 共通基盤。6 章 RTA、6.7 が本作のレギュレーション）、SPEC-037（ゲームモード）、SPEC-039（トロフィー）
 
 ## 1. 背景

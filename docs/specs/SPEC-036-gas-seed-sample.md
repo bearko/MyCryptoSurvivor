@@ -1,15 +1,15 @@
 ---
 id: SPEC-036
 title: GAS Sample Data Seed + Re-apply Default API URL
-status: Implementing
-pr: feat/spec-036-gas-seed-sample
+status: Done
+pr: 44
 phase: Phase 0 / Phase 1
 kind: Added
 ---
 
 # SPEC-036 — GAS Sample Data Seed + Re-apply Default API URL
 
-- **Status**: Implementing
+- **Status**: Done
 - **Author**: bearko (with Claude Code)
 - **Created**: 2026-05-10
 

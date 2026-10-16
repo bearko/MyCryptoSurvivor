@@ -1,15 +1,15 @@
 ---
 id: SPEC-035
 title: Ranking — GAS Backend + UI
-status: Implementing
-pr: feat/spec-035-ranking-gas
+status: Done
+pr: 43
 phase: Phase 0 / Phase 1
 kind: Added
 ---
 
 # SPEC-035 — Ranking: GAS Backend + UI
 
-- **Status**: Implementing
+- **Status**: Done
 - **Author**: bearko (with Claude Code)
 - **Created**: 2026-05-10
 
