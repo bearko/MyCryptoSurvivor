@@ -27,14 +27,59 @@
   /* VS HUD (= SPEC-005、 SPEC-004 から HP のみに圧縮) */
   --hp:        #e76060;   /* 体力 = 赤 */
   --xp:        #f0c14b;   /* 経験値 = 黄 */
-  /* legacy: SPEC-004 由来、 後続 SPEC で再利用候補のため残置 */
-  --temp:      #56ccf2;
-  --food:      #5ecf8a;
 
-  --rarity-n:  #aaa;
-  --rarity-r:  #56ccf2;
   --rarity-sr: #bb86fc;
   --rarity-ssr: #ffd700;
+
+  /* ---- SPEC-043: UI の土台のトークン ---- */
+  --good:  #5ecf8a;
+  --bad:   #e76060;
+  --warn:  #f0c14b;
+  --line:  rgba(255, 255, 255, 0.08);
+  --on-accent: #1a1420;
+
+  --r-sm:   6px;
+  --r-md:   10px;
+  --r-lg:   14px;
+  --r-pill: 999px;
+
+  --sp-1: 0.25rem;
+  --sp-2: 0.4rem;
+  --sp-3: 0.6rem;
+  --sp-4: 0.8rem;
+  --sp-5: 1.1rem;
+  --sp-6: 1.6rem;
+
+  --fs-xs: 0.7rem;
+  --fs-sm: 0.8rem;
+  --fs-md: 0.9rem;
+  --fs-lg: 1.1rem;
+  --fs-xl: 1.4rem;
+
+  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+               "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN",
+               "Hiragino Sans", "Yu Gothic", Meiryo, sans-serif;
+  --font-display: "Dela Gothic One", var(--font-body);
+  --font-num: "Chakra Petch", ui-monospace, var(--font-body);
+
+  --z-stage-ui:  5;
+  --z-header:    50;
+  --z-toast:     100;
+  --z-title:     200;
+  --z-modal:     320;
+  --z-modal-top: 330;
+  --z-help:      340;
+  --z-splash:    1000;
+
+  --ease-out:    cubic-bezier(.2, .8, .4, 1);
+  --ease-spring: cubic-bezier(.2, .9, .25, 1.15);
+  --dur-fast:    120ms;
+  --dur-base:    220ms;
+
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-l: env(safe-area-inset-left, 0px);
 
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6);
@@ -50,9 +95,7 @@ html, body {
   overflow: hidden;
   background: var(--bg);
   color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-               "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN",
-               "Hiragino Sans", "Yu Gothic", Meiryo, sans-serif;
+  font-family: var(--font-body);
   font-size: 14px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
@@ -66,7 +109,19 @@ button {
   font-family: inherit;
   font-size: inherit;
   color: inherit;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
 }
+
+/* SPEC-043: タップのハイライトを消し、キーボードのときだけフォーカスの枠を出す */
+* { -webkit-tap-highlight-color: transparent; }
+:focus { outline: none; }
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.num { font-family: var(--font-num); font-variant-numeric: tabular-nums; }
 
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
@@ -84,4 +139,14 @@ a:hover { text-decoration: underline; }
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   overflow: hidden;
+}
+
+/* ---------- SPEC-043: 動きを減らす設定 (= OS の reduced-motion) ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

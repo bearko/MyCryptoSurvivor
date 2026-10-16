@@ -1,0 +1,11 @@
+- **UI の土台をそろえる** (`css/base.css` + `css/components.css` + `css/layout.css` + `css/responsive.css` + `index.html`):
+  - `:root` に角・余白・文字・フォント・z-index・動き・safe-area のトークン。使っていない `--temp` `--food` などを削除
+  - 見出しに Dela Gothic One、数字（HUD・モードの倍率）に Chakra Petch（DeckBattle と同じ組み合わせ）
+  - ボタンとカードに押した感じ（縮む）。hover はマウスの端末だけ。`focus-visible` の枠、タップのハイライトを消す
+  - 全モーダルを safe-area の内側に。高さがはみ出すときはカードの中だけスクロール
+  - `prefers-reduced-motion` を全体に（`js/motion.js` の `prefersReducedMotion()` を新設）
+- **戦闘の画面を広く** : ヘッダーを 36px のボタンに詰め、スマホではタイトル名を隠してヒーロー名を 1 行に。XP を HUD の下端の細い帯にして HUD を 1 段に（390×844 でヘッダー＋HUD 117px → 81px）
+- **ヒーロー選択** : 名前を 2 行まで出す（「コナン・ドイル」「ピタゴラス」が切れていた）
+- **タイトル** : ステージ 1 の背景をゆっくり動かして敷く
+- **モーダルの操作** (`js/modal-a11y.js` 新規): メニュー・ランキングを Esc で閉じる。キーボードで開いたときは最初のボタンにフォーカス
+- **テスト** (`tests/modal-a11y.test.mjs`): Esc で押すボタンの選び方

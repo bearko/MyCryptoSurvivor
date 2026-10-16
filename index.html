@@ -18,6 +18,11 @@
 
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><text y=%2250%22 font-size=%2256%22>🏔️</text></svg>" />
 
+  <!-- SPEC-043: 見出し (Dela Gothic One) と数字 (Chakra Petch)。 読めなくてもシステムフォントで動く -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Dela+Gothic+One&display=swap" />
+
   <link rel="stylesheet" href="css/base.css" />
   <link rel="stylesheet" href="css/layout.css" />
   <link rel="stylesheet" href="css/components.css" />
@@ -38,6 +43,7 @@
   <!-- 2. Title screen (= SPEC-029 で画像ロゴ化)                       -->
   <!-- ============================================================ -->
   <section id="titleScreen" class="title-screen hidden">
+    <div class="title-screen__bg" id="titleBg" aria-hidden="true"></div>
     <h1 class="title-screen__title">
       <img class="title-screen__logo" src="assets/logo.png" alt="MyCryptoSurvivors" />
     </h1>
@@ -124,19 +130,19 @@
     <!-- HUD: Level + Elapsed + HP + XP (= SPEC-005 VS slim)            -->
     <!-- ============================================================ -->
     <section class="hud" id="hud" aria-live="polite">
-      <span class="hud__level"   id="hudLevel">Lv.1</span>
-      <span class="hud__elapsed" id="hudElapsed" aria-label="elapsed time">00:00</span>
+      <span class="hud__level num"   id="hudLevel">Lv.1</span>
+      <span class="hud__elapsed num" id="hudElapsed" aria-label="elapsed time">00:00</span>
       <div class="hud__bar" id="hudHp" data-stat="hp" role="meter"
            aria-valuemin="0" aria-valuemax="100" aria-valuenow="100">
         <span class="hud__bar-label" data-i18n="hud.stats.hp">HP</span>
         <span class="hud__bar-track"><span class="hud__bar-fill"></span></span>
-        <span class="hud__bar-value">100</span>
+        <span class="hud__bar-value num">100</span>
       </div>
       <div class="hud__bar" id="hudXp" data-stat="xp" role="meter"
            aria-valuemin="0" aria-valuemax="5" aria-valuenow="0">
         <span class="hud__bar-label" data-i18n="hud.stats.xp">XP</span>
         <span class="hud__bar-track"><span class="hud__bar-fill"></span></span>
-        <span class="hud__bar-value">0/5</span>
+        <span class="hud__bar-value num">0/5</span>
       </div>
     </section>
 
@@ -174,7 +180,7 @@
   <!-- ============================================================ -->
   <!-- Ranking modal (= SPEC-035)                                     -->
   <!-- ============================================================ -->
-  <div id="rankingModal" class="gameover-modal hidden" role="dialog" aria-modal="true"
+  <div id="rankingModal" class="gameover-modal hidden" role="dialog" aria-modal="true" data-esc-close="rankingClose"
        aria-labelledby="rankingTitle">
     <div class="gameover-modal__card ranking-card">
       <h2 class="gameover-modal__title" id="rankingTitle">ランキング</h2>
@@ -244,7 +250,7 @@
   <!-- ============================================================ -->
   <!-- Pause menu modal (= SPEC-034)                                  -->
   <!-- ============================================================ -->
-  <div id="pauseMenuModal" class="gameover-modal hidden" role="dialog" aria-modal="true"
+  <div id="pauseMenuModal" class="gameover-modal hidden" role="dialog" aria-modal="true" data-esc-close="pauseMenuClose"
        aria-labelledby="pauseMenuTitle">
     <div class="gameover-modal__card pause-menu__card">
       <h2 class="gameover-modal__title" id="pauseMenuTitle" data-i18n="menu.title">メニュー</h2>

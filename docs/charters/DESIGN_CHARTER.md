@@ -149,7 +149,7 @@ PR タイトルや commit 本文でも積極的に使う。
 
 - **遷移**: 150-250ms ease (= ボタン hover, modal フェード)
 - **演出**: 1.5-3s (= confetti, sprite float)
-- **`prefers-reduced-motion`** に従う (= 将来的に対応)
+- **`prefers-reduced-motion`** に従う (= SPEC-043 で全体に対応。 キャンバスの演出は `js/motion.js` の `prefersReducedMotion()` を見る)
 
 ## 10. アクセシビリティ
 
