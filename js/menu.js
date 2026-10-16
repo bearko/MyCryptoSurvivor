@@ -15,6 +15,7 @@
 import { state, pauseTime, resumeTime } from "./state.js";
 import { stopBgm } from "./audio.js";
 import { onLangChange, t } from "./i18n.js";
+import { abortRtaRun } from "./platform.js";
 
 let _wired = false;
 let _opened = false;
@@ -85,6 +86,8 @@ function _onToTitle() {
   // 戦闘停止 + BGM 停止
   import("./battle/index.js").then(m => m.stopBattle?.());
   stopBgm();
+  // SPEC-040: 計測中の RTA は中断
+  abortRtaRun();
   // pauseFlags は 0 に戻す (= titleScreen は 「停止状態」 として扱うが counter は綺麗にしておく)
   while (state.pauseFlags > 0) resumeTime();
   // run / battle 状態をリセット (= 次に hero pick したらフレッシュに始まる)

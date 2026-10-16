@@ -35,6 +35,7 @@ import {
 import { tickDamageNumbers } from "./damage.js";
 import { tickBossAttack } from "./boss-attack.js";
 import { startBgm } from "../audio.js";
+import { startRtaRun } from "../platform.js";
 import { BGM_BATTLE } from "../constants.js";
 
 let _canvas = null;
@@ -58,6 +59,9 @@ export function startBattle(hero) {
     window.addEventListener("resize", resizeCanvas);
     _installed = true;
   }
+
+  // SPEC-040: RTA で始めた run は、 ステージ 1 の開始で計測を始める (= 再走も同じ。 前の計測は中断になる)
+  if (state.rtaMode && (state.currentStageIdx ?? 0) === 0) startRtaRun();
 
   const b = state.battle;
   b.player.x = 0;

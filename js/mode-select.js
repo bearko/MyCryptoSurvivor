@@ -14,6 +14,7 @@ import {
   computeRegulationMul,
 } from "./constants.js";
 import { onLangChange, t } from "./i18n.js";
+import { isRtaAvailable } from "./platform.js";
 
 let _wired   = false;
 let _onPick  = null;   // (regulation) => void、 hero select に進む callback
@@ -30,6 +31,8 @@ export function installModeSelect(onPickHandler) {
 
 export function showModeSelect() {
   _$("titleScreen")?.classList.add("hidden");
+  // SPEC-040: RTA の card は共通基盤の SDK が読めたときだけ出す
+  _$("modeCardRta")?.classList.toggle("hidden", !isRtaAvailable());
   _$("gameModeSelectScreen")?.classList.remove("hidden");
   _renderLabels();
   _renderMul();
@@ -45,6 +48,8 @@ function _wireOnce() {
 
   _$("btnModeNormal")?.addEventListener("click", () => _pick(REGULATION_NORMAL));
   _$("btnModeAbsolute")?.addEventListener("click", () => _pick(REGULATION_ABSOLUTE));
+  // SPEC-040: RTA は NORMAL のルール + rtaMode
+  _$("btnModeRta")?.addEventListener("click", () => _pick(REGULATION_NORMAL, { rta: true }));
   _$("btnModeBack")?.addEventListener("click", () => {
     hideModeSelect();
     _$("titleScreen")?.classList.remove("hidden");
@@ -55,8 +60,9 @@ function _wireOnce() {
   });
 }
 
-function _pick(regulation) {
+function _pick(regulation, { rta = false } = {}) {
   state.regulation = regulation;
+  state.rtaMode = rta;
   if (regulation === REGULATION_NORMAL) {
     state.absolute = { spawnMul: 1, hpMul: 1, dmgMul: 1, speedMul: 1 };
   } else {
@@ -113,6 +119,9 @@ function _renderLabels() {
   const bN = _$("btnModeNormal");    if (bN) bN.textContent = t("mode.startNormal", "これで始める");
   const bA = _$("btnModeAbsolute");  if (bA) bA.textContent = t("mode.startAbsolute", "これで始める");
   const bb = _$("btnModeBack");      if (bb) bb.textContent = t("mode.back", "タイトルに戻る");
+  const rd = _$("modeCardRtaDesc");  if (rd) rd.textContent = t("mode.rtaDesc", "NORMAL のルールで、 ステージ 1 の開始から全 3 ステージクリアまでの時間を計る。 15 分以上操作がないと参考記録。");
+  const bR = _$("btnModeRta");       if (bR) bR.textContent = t("mode.startRta", "RTA で始める");
+  const rl = _$("modeRtaRanking");   if (rl) rl.textContent = t("mode.rtaRanking", "RTA ランキング");
   // slider のラベル
   document.querySelectorAll('#absoluteSliders .abs-slider__label').forEach(el => {
     const ax = el.dataset.axis;

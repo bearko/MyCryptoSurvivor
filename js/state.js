@@ -96,6 +96,8 @@ export const state = {
   // - NORMAL  : 通常プレイ (= ABSOLUTE 倍率 = 全 1.0、 score × 1.0)
   // - ABSOLUTE: ユーザーが 4 軸の倍率を 0.5〜2.0 で調整、 平均がスコア倍率に
   regulation: "NORMAL",
+  // SPEC-040: 「RTA で始める」を選んだ run だけ true (= bearko.games 共通基盤で時間を計る。 ルールは NORMAL)
+  rtaMode: false,
   absolute: {
     spawnMul: 1.0,   // 敵の出現数 (= spawnIntervalMul の逆数として効く)
     hpMul:    1.0,   // 雑魚 hp

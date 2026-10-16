@@ -13,7 +13,7 @@ import { STAGE_TABLE } from "../constants.js";
 import { triggerGameOver } from "./gameover.js";
 import { triggerActivityReport } from "./activity-report.js";
 import { t, tpl, onLangChange } from "../i18n.js";
-import { reportStageEnd } from "../platform.js";
+import { reportStageEnd, reportRtaStageEnd } from "../platform.js";
 
 let _wired = false;
 
@@ -51,6 +51,8 @@ export function triggerStageEndOrTransition() {
 
   // SPEC-039: 共通基盤のトロフィー（最初のステージ・全ステージクリア）
   reportStageEnd(state.currentStageIdx ?? 0, STAGE_TABLE.length);
+  // SPEC-040: RTA の区切り (= RTA で始めた run だけ。 IGT は各ステージのゲーム内時間の合計)
+  if (state.rtaMode) reportRtaStageEnd(state.currentStageIdx ?? 0, STAGE_TABLE.length, state.run.totalElapsedMs);
 
   const isLast = (state.currentStageIdx ?? 0) >= STAGE_TABLE.length - 1;
   if (isLast) {
