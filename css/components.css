@@ -1521,3 +1521,102 @@
   /* 全体の reduced-motion で animation が一瞬で終わるので、 帯は静かに出したままにする */
   .boss-banner--in { animation: none; opacity: 1; }
 }
+
+/* ============================================================
+   SPEC-046: 結果の見せ方
+   ============================================================ */
+/* 順に出す: revealIn() が --i を振る。 押すと .reveal--done で全部出る */
+.reveal--run [data-reveal] {
+  animation: reveal-in 300ms var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 90ms);
+}
+.reveal--done [data-reveal] { animation: none; opacity: 1; transform: none; }
+@keyframes reveal-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.reveal--run .result-title {
+  animation: title-pop 420ms var(--ease-spring) both;
+}
+@keyframes title-pop {
+  0%   { opacity: 0; transform: scale(0.6); }
+  60%  { opacity: 1; transform: scale(1.08); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.result-stage-name {
+  color: var(--muted);
+  font-size: var(--fs-sm);
+  margin-top: -0.4rem;
+}
+.result-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-2);
+}
+.result-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: var(--sp-3) var(--sp-2);
+  border-radius: var(--r-md);
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid var(--line);
+}
+.result-tile__icon { font-size: 1.1rem; line-height: 1; }
+.result-tile__value { font-size: var(--fs-lg); font-weight: 700; color: var(--text); }
+.result-tile__label { font-size: var(--fs-xs); color: var(--muted); letter-spacing: 0.04em; }
+.result-next { color: var(--text); font-size: var(--fs-md); }
+
+/* 失敗ではない画面は金の枠 (= ゲームオーバーの赤と分ける) */
+.stage-clear-card,
+.report-card,
+.pause-menu__card,
+.ranking-card { border-color: var(--accent); }
+.stage-clear-card .gameover-modal__title,
+.report-card .gameover-modal__title,
+.pause-menu__card .gameover-modal__title,
+.ranking-card .gameover-modal__title { color: var(--accent); }
+.stage-clear-card,
+.report-card {
+  box-shadow: 0 0 0 1px rgba(196, 163, 90, 0.25), 0 0 40px rgba(196, 163, 90, 0.18), var(--shadow-lg);
+}
+.stage-pips { display: flex; justify-content: center; gap: 8px; }
+.stage-pip {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  background: transparent;
+}
+.stage-pip--done { background: var(--accent); box-shadow: 0 0 8px rgba(196, 163, 90, 0.6); }
+
+/* ステージの始まりの帯 */
+.stage-intro {
+  position: absolute;
+  left: 0; right: 0;
+  top: 38%;
+  z-index: var(--z-stage-ui);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 0.7rem 1rem;
+  background: linear-gradient(90deg, transparent, rgba(18, 16, 24, 0.85) 18%, rgba(18, 16, 24, 0.85) 82%, transparent);
+  border-top: 1px solid rgba(196, 163, 90, 0.7);
+  border-bottom: 1px solid rgba(196, 163, 90, 0.7);
+  pointer-events: none;
+  opacity: 0;
+}
+.stage-intro__no { color: var(--accent); font-weight: 700; letter-spacing: 0.35em; font-size: var(--fs-sm); }
+.stage-intro__name { font-family: var(--font-display); font-size: var(--fs-xl); color: var(--text); letter-spacing: 0.04em; }
+.stage-intro--in { animation: stage-intro 1.6s var(--ease-out) forwards; }
+@keyframes stage-intro {
+  0%   { opacity: 0; transform: translateX(-24px); }
+  18%  { opacity: 1; transform: translateX(0); }
+  78%  { opacity: 1; transform: translateX(0); }
+  100% { opacity: 0; transform: translateX(24px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stage-intro--in { animation: none; opacity: 1; }
+}

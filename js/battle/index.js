@@ -38,7 +38,8 @@ import { startCoachIfFirst, tickCoach, hideCoach } from "./coach.js";
 import { resetFx, tickFx } from "./fx.js";
 import { startBgm } from "../audio.js";
 import { startRtaRun } from "../platform.js";
-import { BGM_BATTLE } from "../constants.js";
+import { BGM_BATTLE, STAGE_TABLE } from "../constants.js";
+import { t, tpl } from "../i18n.js";
 
 let _canvas = null;
 let _ctx = null;
@@ -146,6 +147,7 @@ export function startBattle(hero) {
   b.active = true;
   resetFx();             // SPEC-045: 揺れ・粒・予告をステージごとに作り直す
   startCoachIfFirst();   // SPEC-042: 初回のステージ 1 だけ操作ガイド
+  _showStageIntro();     // SPEC-046: 「STAGE n / ステージ名」の帯
   resizeCanvas();
   _lastMs = performance.now();
   if (!_raf) _raf = requestAnimationFrame(_loop);
@@ -153,6 +155,24 @@ export function startBattle(hero) {
   // SPEC-017: 戦闘 BGM (= retry でも startBgm 内 stopBgm が掛かるので 1 トラックに収束)
   startBgm(BGM_BATTLE, 0.32);
 }
+
+/** SPEC-046: ステージの始まりの帯。 CSS のアニメーションで 1.6 秒出て消える (= 遊びは止めない) */
+function _showStageIntro() {
+  const el = document.getElementById("stageIntro");
+  if (!el) return;
+  const idx = state.currentStageIdx ?? 0;
+  const stage = STAGE_TABLE[idx];
+  const no = document.getElementById("stageIntroNo");
+  const name = document.getElementById("stageIntroName");
+  if (no) no.textContent = tpl(t("stage.introNo", "STAGE {n}"), { n: String(idx + 1) });
+  if (name) name.textContent = stage ? t(stage.nameKey, stage.nameKey) : "";
+  el.classList.remove("hidden", "stage-intro--in");
+  void el.offsetWidth;
+  el.classList.add("stage-intro--in");
+  clearTimeout(_introTimer);
+  _introTimer = setTimeout(() => el.classList.add("hidden"), 1700);
+}
+let _introTimer = 0;
 
 export function stopBattle() {
   state.battle.active = false;

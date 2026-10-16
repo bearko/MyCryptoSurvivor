@@ -154,6 +154,11 @@
         <div class="joystick__base"  id="joystickBase"></div>
         <div class="joystick__stick" id="joystickStick"></div>
       </div>
+      <!-- SPEC-046: ステージの始まりの帯 (= 遊びは止めない) -->
+      <div id="stageIntro" class="stage-intro hidden" aria-live="polite">
+        <span class="stage-intro__no num" id="stageIntroNo"></span>
+        <span class="stage-intro__name" id="stageIntroName"></span>
+      </div>
       <!-- SPEC-045: ボスの予告 (= 3:30 に 1 回) -->
       <div id="bossBanner" class="boss-banner hidden" aria-live="assertive">
         <span class="boss-banner__mark">⚠ WARNING</span>
@@ -170,15 +175,15 @@
   <!-- ============================================================ -->
   <!-- Stage transition modal (= SPEC-030)                           -->
   <!-- ============================================================ -->
-  <div id="stageTransitionModal" class="gameover-modal hidden" role="dialog" aria-modal="true"
+  <div id="stageTransitionModal" class="gameover-modal stage-clear-modal hidden" role="dialog" aria-modal="true"
        aria-labelledby="stageTransitionTitle">
-    <div class="gameover-modal__card">
-      <h2 class="gameover-modal__title" id="stageTransitionTitle"
+    <div class="gameover-modal__card stage-clear-card">
+      <div class="stage-pips" id="stageTransitionPips" data-reveal aria-hidden="true"></div>
+      <h2 class="gameover-modal__title result-title" id="stageTransitionTitle" data-reveal
           data-i18n="stage.clearTitle">Stage Clear!</h2>
-      <div class="gameover-modal__stats">
-        <div class="gameover-stat" id="stageTransitionCurrent"></div>
-        <div class="gameover-stat" id="stageTransitionSub"></div>
-      </div>
+      <div class="result-stage-name" id="stageTransitionCurrent" data-reveal></div>
+      <div class="result-tiles" id="stageTransitionTiles" data-reveal></div>
+      <div class="result-next" id="stageTransitionSub" data-reveal></div>
       <button class="btn gameover-modal__retry" id="stageTransitionProceed"
               data-i18n="stage.proceed">次のステージへ</button>
     </div>
@@ -235,11 +240,18 @@
   <div id="gameOverModal" class="gameover-modal hidden" role="dialog" aria-modal="true"
        aria-labelledby="gameOverTitle">
     <div class="gameover-modal__card">
-      <h2 class="gameover-modal__title" id="gameOverTitle" data-i18n="gameover.title">ゲームオーバー</h2>
-      <div class="gameover-modal__stats">
-        <div class="gameover-stat" id="gameOverElapsed"></div>
-        <div class="gameover-stat" id="gameOverLevel"></div>
-        <div class="gameover-stat" id="gameOverKills"></div>
+      <h2 class="gameover-modal__title result-title" id="gameOverTitle" data-reveal data-i18n="gameover.title">ゲームオーバー</h2>
+      <div class="result-stage-name" id="gameOverStage" data-reveal></div>
+      <div class="result-tiles" data-reveal>
+        <div class="result-tile"><span class="result-tile__icon" aria-hidden="true">⏱</span>
+          <span class="result-tile__value num" id="gameOverElapsed"></span>
+          <span class="result-tile__label" data-i18n="result.time">時間</span></div>
+        <div class="result-tile"><span class="result-tile__icon" aria-hidden="true">💀</span>
+          <span class="result-tile__value num" id="gameOverKills"></span>
+          <span class="result-tile__label" data-i18n="result.kills">撃破</span></div>
+        <div class="result-tile"><span class="result-tile__icon" aria-hidden="true">⬆</span>
+          <span class="result-tile__value num" id="gameOverLevel"></span>
+          <span class="result-tile__label" data-i18n="result.level">レベル</span></div>
       </div>
       <div class="gameover-modal__form">
         <label class="gameover-form__label" for="gameOverName" data-i18n="gameover.namelabel">プレイヤー名</label>
@@ -313,11 +325,11 @@
   <div id="activityReportModal" class="gameover-modal hidden" role="dialog" aria-modal="true"
        aria-labelledby="activityReportTitle">
     <div class="gameover-modal__card report-card">
-      <h2 class="gameover-modal__title" id="activityReportTitle">活動レポート</h2>
-      <!-- SPEC-038: テキストではなくアイコン重視のレイアウトに刷新 -->
-      <div class="report-hero" id="activityReportHero"></div>
+      <h2 class="gameover-modal__title result-title" id="activityReportTitle" data-reveal>活動レポート</h2>
+      <!-- SPEC-038: テキストではなくアイコン重視のレイアウトに刷新 / SPEC-046: 上から順に出す -->
+      <div class="report-hero" id="activityReportHero" data-reveal></div>
       <div class="report-stages" id="activityReportStages"></div>
-      <div class="report-totals" id="activityReportTotals"></div>
+      <div class="report-totals" id="activityReportTotals" data-reveal></div>
       <div class="gameover-modal__form">
         <label class="gameover-form__label" id="activityReportNameLabel" for="activityReportName">プレイヤー名</label>
         <input class="gameover-form__input" id="activityReportName" type="text" maxlength="30" autocomplete="off" />

@@ -15,6 +15,8 @@ import { APP_VERSION, SFX, computeRegulationMul } from "../constants.js";
 import { formatElapsed } from "../survival.js";
 import { stopBgm, playSe } from "../audio.js";
 import { abortRtaRun, scoreMetrics, reportRunScore } from "../platform.js";
+import { STAGE_TABLE } from "../constants.js";
+import { countUp, revealIn } from "../reveal.js";
 
 let _wired = false;
 
@@ -41,7 +43,11 @@ export function triggerGameOver(reason = "lose") {
   pauseTime();
   _wireOnce();
   _renderGameOverModal();
-  document.getElementById("gameOverModal")?.classList.remove("hidden");
+  const modal = document.getElementById("gameOverModal");
+  modal?.classList.remove("hidden");
+  // SPEC-046: 上から順に出し、 撃破数を数え上げる
+  revealIn(modal);
+  countUp(document.getElementById("gameOverKills"), state.lastRunStats.kills ?? 0, { durMs: 600, delayMs: 250 });
   // 残っていた Level-up モーダルが有れば閉じる (= 同フレームで LV up と死亡が起きる場合)
   const lv = document.getElementById("levelUpModal");
   if (lv && !lv.classList.contains("hidden")) {
@@ -180,17 +186,17 @@ function _renderGameOverModal() {
   const elapsedEl = document.getElementById("gameOverElapsed");
   const levelEl   = document.getElementById("gameOverLevel");
   const killsEl   = document.getElementById("gameOverKills");
-  if (elapsedEl) {
-    elapsedEl.textContent = tpl(t("gameover.elapsed", "Time: {time}"),
-                                { time: formatElapsed(stats.elapsed) });
-  }
-  if (levelEl) {
-    levelEl.textContent = tpl(t("gameover.level", "Lv.: {n}"),
-                              { n: String(stats.level) });
-  }
-  if (killsEl) {
-    killsEl.textContent = tpl(t("gameover.kills", "Kills: {n}"),
-                              { n: String(stats.kills) });
+  // SPEC-046: 数字だけをタイルに (= ラベルは HTML 側の data-i18n)
+  if (elapsedEl) elapsedEl.textContent = formatElapsed(stats.elapsed);
+  if (levelEl)   levelEl.textContent   = `Lv.${stats.level}`;
+  if (killsEl)   killsEl.textContent   = String(stats.kills);
+  const stageEl = document.getElementById("gameOverStage");
+  if (stageEl) {
+    const n = (state.currentStageIdx ?? 0) + 1;
+    const cur = STAGE_TABLE[n - 1];
+    const line = tpl(t(stats.reason === "clear" ? "result.stageOf" : "result.fellAt", "Stage {n} / {total}"),
+                     { n: String(n), total: String(STAGE_TABLE.length) });
+    stageEl.textContent = cur ? `${line} — ${t(cur.nameKey, cur.nameKey)}` : line;
   }
 
   const input = document.getElementById("gameOverName");
