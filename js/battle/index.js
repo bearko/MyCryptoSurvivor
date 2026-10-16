@@ -34,6 +34,7 @@ import {
 } from "./archetypes.js";
 import { tickDamageNumbers } from "./damage.js";
 import { tickBossAttack } from "./boss-attack.js";
+import { startCoachIfFirst, tickCoach, hideCoach } from "./coach.js";
 import { startBgm } from "../audio.js";
 import { startRtaRun } from "../platform.js";
 import { BGM_BATTLE } from "../constants.js";
@@ -142,6 +143,7 @@ export function startBattle(hero) {
   }
 
   b.active = true;
+  startCoachIfFirst();   // SPEC-042: 初回のステージ 1 だけ操作ガイド
   resizeCanvas();
   _lastMs = performance.now();
   if (!_raf) _raf = requestAnimationFrame(_loop);
@@ -152,6 +154,7 @@ export function startBattle(hero) {
 
 export function stopBattle() {
   state.battle.active = false;
+  hideCoach();   // SPEC-042
   if (_raf) {
     cancelAnimationFrame(_raf);
     _raf = 0;
@@ -200,6 +203,7 @@ function _loop(now) {
     tickGems(dt);                  // SPEC-007: 拾う + level up trigger
     tickMagicCards(dt);            // SPEC-033: マジックカード (= 即時 LV up アイテム)
     tickRegen(dt);                 // SPEC-011: Ramen 系列の HP regen
+    tickCoach(dt, v.x !== 0 || v.y !== 0);   // SPEC-042: 操作ガイド
     if (state.battle.contactCooldownMs > 0) {
       state.battle.contactCooldownMs -= dt * 1000;
     }

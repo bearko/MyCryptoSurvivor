@@ -47,7 +47,10 @@
       Press to Start
     </button>
 
-    <button id="btnTitleRanking" class="btn btn--ghost title-screen__ranking" data-i18n="ranking.openTitle">ランキング</button>
+    <div class="title-screen__links">
+      <button id="btnTitleHelp" class="btn btn--ghost title-screen__help" data-i18n="help.open">遊び方</button>
+      <button id="btnTitleRanking" class="btn btn--ghost title-screen__ranking" data-i18n="ranking.openTitle">ランキング</button>
+    </div>
 
     <div class="lang-toggle" id="langToggle">
       <span class="lang-toggle-label" data-i18n="lang.toggle.label">Language / 言語</span>
@@ -142,6 +145,11 @@
       <div id="joystick" class="joystick hidden" aria-hidden="true">
         <div class="joystick__base"  id="joystickBase"></div>
         <div class="joystick__stick" id="joystickStick"></div>
+      </div>
+      <!-- SPEC-042: はじめての操作ガイド (= 遊びを止めない、 pointer-events: none) -->
+      <div id="coachHint" class="coach hidden" data-step="0" aria-live="polite">
+        <span class="coach__icon" aria-hidden="true"><span class="coach__finger">👆</span></span>
+        <span class="coach__text"></span>
       </div>
     </section>
   </main>
@@ -344,12 +352,43 @@
   <!-- ============================================================ -->
   <!-- 5. Help overlay                                               -->
   <!-- ============================================================ -->
-  <div id="helpOverlay" class="help-overlay hidden">
+  <div id="helpOverlay" class="help-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
     <div class="help-card">
-      <h2 data-i18n="help.title">ヘルプ</h2>
-      <p data-i18n="help.body">ゲームの遊び方をここに書く。</p>
-      <p data-i18n="help.timeNote">ホーム画面で待機している間のみ時間が進行します。</p>
-      <button id="btnHelpClose" class="btn" data-i18n="btn.close">閉じる</button>
+      <header class="help-card__head">
+        <h2 id="helpTitle" data-i18n="help.title">遊び方</h2>
+        <button id="btnHelpCloseX" class="help-card__close-x" aria-label="Close">×</button>
+      </header>
+      <section class="help-sec">
+        <h3 class="help-sec__title"><span aria-hidden="true">🕹</span> <span data-i18n="help.controls.title">操作</span></h3>
+        <ul class="help-sec__list">
+          <li data-i18n="help.controls.move">移動：画面をドラッグ（指の下にスティックが出る）。PC は WASD・矢印キー</li>
+          <li data-i18n="help.controls.attack">攻撃：自動。武器が近くの敵を勝手に狙う</li>
+          <li data-i18n="help.controls.menu">☰ で一時停止（やり直し・タイトルに戻る）</li>
+        </ul>
+      </section>
+      <section class="help-sec">
+        <h3 class="help-sec__title"><span aria-hidden="true">⏱</span> <span data-i18n="help.stage.title">ステージ</span></h3>
+        <ul class="help-sec__list">
+          <li data-i18n="help.stage.boss">4 分でボスが出る。倒すか、5 分耐えるとクリア</li>
+          <li data-i18n="help.stage.three">全 3 ステージ。Lv は引き継ぎ、武器はステージごとに選び直す</li>
+        </ul>
+      </section>
+      <section class="help-sec">
+        <h3 class="help-sec__title"><span aria-hidden="true">⬆</span> <span data-i18n="help.grow.title">強くなる</span></h3>
+        <ul class="help-sec__list">
+          <li data-i18n="help.grow.gems">敵が落とすジェムを拾うと Lv アップ。武器か強化を 1 つ選ぶ</li>
+          <li data-i18n="help.grow.tiers">同じものを選ぶと段階が上がる（最大 5）。リロールは 1 ステージ 3 回</li>
+          <li data-i18n="help.grow.card">光るカードを拾うと、その場で Lv アップ</li>
+        </ul>
+      </section>
+      <section class="help-sec">
+        <h3 class="help-sec__title"><span aria-hidden="true">🏆</span> <span data-i18n="help.modes.title">モード</span></h3>
+        <ul class="help-sec__list">
+          <li data-i18n="help.modes.list">NORMAL ／ ABSOLUTE（難易度を 4 軸で調整、スコアに倍率）／ RTA（全 3 ステージのタイム）</li>
+          <li data-i18n="help.modes.score">全クリアで活動レポートのスコアをランキングへ</li>
+        </ul>
+      </section>
+      <button id="btnHelpClose" class="btn help-card__close" data-i18n="btn.close">閉じる</button>
     </div>
   </div>
 
