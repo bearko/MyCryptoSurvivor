@@ -76,6 +76,22 @@ export function renderHud() {
   const elEl = document.getElementById("hudElapsed");
   if (elEl) elEl.textContent = formatElapsed(state.elapsedTicks);
 
+  // SPEC-045: 撃破数。 増えたら小さく弾ませる
+  const kEl = document.getElementById("hudKillsValue");
+  if (kEl) {
+    const k = String(state.killCount ?? 0);
+    if (kEl.textContent !== k) {
+      const grew = Number(k) > Number(kEl.textContent || 0);
+      kEl.textContent = k;
+      const root = document.getElementById("hudKills");
+      if (grew && root) {
+        root.classList.remove("hud__kills--pop");
+        void root.offsetWidth;
+        root.classList.add("hud__kills--pop");
+      }
+    }
+  }
+
   // HP bar
   const hpRoot = document.getElementById("hudHp");
   if (hpRoot) {

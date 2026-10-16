@@ -1458,3 +1458,66 @@
 @media (max-width: 380px) {
   .settings-row { grid-template-columns: 6.2rem 1fr 2.6rem; padding: var(--sp-2) var(--sp-3); }
 }
+
+/* ============================================================
+   SPEC-045: 撃破数とボスの予告
+   ============================================================ */
+.hud__kills {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  white-space: nowrap;
+  color: var(--text);
+  opacity: 0.9;
+}
+.hud__kills--pop { animation: kills-pop 220ms var(--ease-spring); }
+@keyframes kills-pop {
+  0%   { transform: scale(1); }
+  45%  { transform: scale(1.22); color: var(--accent); }
+  100% { transform: scale(1); }
+}
+
+.boss-banner {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 18%;
+  z-index: var(--z-stage-ui);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 0.6rem 1rem;
+  background: linear-gradient(90deg, transparent, rgba(120, 20, 20, 0.82) 15%, rgba(120, 20, 20, 0.82) 85%, transparent);
+  border-top: 2px solid rgba(255, 110, 110, 0.85);
+  border-bottom: 2px solid rgba(255, 110, 110, 0.85);
+  color: #fff;
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+}
+.boss-banner__mark {
+  font-family: var(--font-num);
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  font-size: var(--fs-sm);
+  color: #ffb3b3;
+}
+.boss-banner__text {
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  letter-spacing: 0.08em;
+}
+.boss-banner--in { animation: boss-banner 3.2s var(--ease-out) forwards; }
+@keyframes boss-banner {
+  0%   { opacity: 0; transform: scaleY(0.2); }
+  8%   { opacity: 1; transform: scaleY(1); }
+  20%, 40%, 60% { opacity: 1; }
+  30%, 50%     { opacity: 0.55; }
+  85%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  /* 全体の reduced-motion で animation が一瞬で終わるので、 帯は静かに出したままにする */
+  .boss-banner--in { animation: none; opacity: 1; }
+}

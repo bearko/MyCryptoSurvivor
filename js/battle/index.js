@@ -35,6 +35,7 @@ import {
 import { tickDamageNumbers } from "./damage.js";
 import { tickBossAttack } from "./boss-attack.js";
 import { startCoachIfFirst, tickCoach, hideCoach } from "./coach.js";
+import { resetFx, tickFx } from "./fx.js";
 import { startBgm } from "../audio.js";
 import { startRtaRun } from "../platform.js";
 import { BGM_BATTLE } from "../constants.js";
@@ -143,6 +144,7 @@ export function startBattle(hero) {
   }
 
   b.active = true;
+  resetFx();             // SPEC-045: 揺れ・粒・予告をステージごとに作り直す
   startCoachIfFirst();   // SPEC-042: 初回のステージ 1 だけ操作ガイド
   resizeCanvas();
   _lastMs = performance.now();
@@ -200,6 +202,7 @@ function _loop(now) {
     tickShockwaves(dt);            // SPEC-015: Moai 着弾の AoE 衝撃波
     tickBossAttack(dt, now);       // SPEC-030: ボス攻撃 (= ファオ放射 / yamap 周回) + 衝突
     tickDamageNumbers(dt);         // SPEC-016: ダメージ数字 floater
+    tickFx(dt);                    // SPEC-045: 揺れ・縁の赤・粒
     tickGems(dt);                  // SPEC-007: 拾う + level up trigger
     tickMagicCards(dt);            // SPEC-033: マジックカード (= 即時 LV up アイテム)
     tickRegen(dt);                 // SPEC-011: Ramen 系列の HP regen
@@ -209,6 +212,6 @@ function _loop(now) {
     }
   }
 
-  if (_ctx) renderBattle(_ctx);
+  if (_ctx) renderBattle(_ctx, now);
   _raf = requestAnimationFrame(_loop);
 }

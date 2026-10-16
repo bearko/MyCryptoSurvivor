@@ -203,6 +203,7 @@ export const GEM_ICON_PATH = "Image/Icons/ce.png";
 // ============================================================
 export const STAGE_DURATION_MS  = 300000;   // 5 分間
 export const BOSS_SPAWN_AT_MS   = 240000;   // 4 分経過時にボススポーン
+export const BOSS_WARNING_LEAD_MS = 30000;  // SPEC-045: ボスの 30 秒前に予告
 export const BOSS_ENEMY_ID      = 171;      // ディープ・ヨシュカ
 
 // 1 分ごとに pool に追加する敵 ID

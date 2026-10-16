@@ -15,6 +15,7 @@
 import { state } from "../state.js";
 import { spawnGem } from "./gems.js";
 import { spawnMagicCard } from "./magic-cards.js";
+import { fxEnemyHit, fxEnemyKilled } from "./fx.js";
 import {
   HIT_FREEZE_MS, DAMAGE_NUMBER_LIFE_MS, DAMAGE_NUMBER_RISE_PX_S,
 } from "../constants.js";
@@ -33,6 +34,7 @@ export function hitEnemy(idx, dmg) {
   if (dmgInt <= 0) return false;
   e.hp -= dmgInt;
   e.hitFreezeMs = HIT_FREEZE_MS;
+  fxEnemyHit(e);   // SPEC-045: 一瞬白く光る
   pushDamageNumber(e.x, e.y - e.r - 4, dmgInt, "#ffffff");
   if (e.hp <= 0) {
     // SPEC-026: 強敵ほど高 XP を落とす (= ENEMY_SPECS.xpValue 由来、 enemy.xpValue が未設定なら 1)
@@ -41,6 +43,7 @@ export function hitEnemy(idx, dmg) {
     if (e.isRare) spawnMagicCard(e.x, e.y);
     enemies.splice(idx, 1);
     state.killCount++;
+    fxEnemyKilled(e);   // SPEC-045: 粒・撃破音 (= ボスなら揺れ・閃光)
     // SPEC-022 + SPEC-033: ボス撃破フラグ → 次 tick で triggerStageEndOrTransition
     // 旧: BOSS_ENEMY_ID hardcode (= ヨシュカ id 171 のみ) → ステージ 2/3 では発火しなかった
     // 新: e.isBoss を見るので Fao / yamap / 任意ボスで発火
