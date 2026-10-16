@@ -2,7 +2,7 @@
 id: SPEC-046
 title: Result Reveal — Stage Intro, Stage Clear, Game Over, Activity Report
 status: Done
-pr: feat/spec-046-result-reveal
+pr: 64
 phase: v1.0
 kind: Changed
 ---
