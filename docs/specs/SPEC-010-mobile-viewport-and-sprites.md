@@ -1,7 +1,7 @@
 ---
 id: SPEC-010
 title: Mobile Viewport Fit + Hero/Enemy Sprites + Ext Icon/Effect in Level-up Card
-status: Implementing
+status: Done
 pr: 11
 phase: Phase 0 / Phase 1
 kind: Added
@@ -9,7 +9,7 @@ kind: Added
 
 # SPEC-010 — Mobile Viewport Fit + Hero/Enemy Sprites + Extension Icon/Effect in Level-up Card
 
-- **Status**: Implementing
+- **Status**: Done
 - **Author**: bearko (with Claude Code)
 - **Created**: 2026-05-09
 - **Updated**: 2026-05-09

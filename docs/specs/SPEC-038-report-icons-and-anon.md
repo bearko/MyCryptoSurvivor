@@ -1,15 +1,15 @@
 ---
 id: SPEC-038
 title: Activity Report Icon Layout + Anonymous Default Name
-status: Implementing
-pr: feat/spec-038-report-icons-and-anon
+status: Done
+pr: 47
 phase: Phase 0 / Phase 1
 kind: Changed
 ---
 
 # SPEC-038 — Activity Report Icon Layout + Anonymous Default Name
 
-- **Status**: Implementing
+- **Status**: Done
 - **Author**: bearko (with Claude Code)
 - **Created**: 2026-05-10
 

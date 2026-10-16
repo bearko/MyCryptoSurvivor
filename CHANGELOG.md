@@ -5,7 +5,24 @@
 ## [Unreleased]
 
 <!-- BEGIN AUTO-UNRELEASED -->
-### Changed — SPEC-038 (= Activity Report Icon Layout + Anonymous Default Name)
+### Added — SPEC-041 (= bearko.games Platform Total Score) — merged in #50
+- **bearko.games 共通基盤の総合スコアに参加** (`js/platform.js` + `js/battle/activity-report.js` + `js/battle/gameover.js` + `js/menu.js` + `js/battle/index.js`):
+  - 全クリア・倒れた・タイトルに戻ったときに 1 回の挑戦の成績を送る（計算は共通基盤。自己ベスト更新の通知は SDK が出す）
+  - ゲームオーバーからの再走で、前の挑戦のステージ記録が残っていたのを直す
+
+### Added — SPEC-040 (= bearko.games Platform RTA) — merged in #49
+- **bearko.games 共通基盤の RTA に参加** (`js/platform.js` + `js/mode-select.js` + `js/battle/index.js` + `js/battle/stage-transition.js` + `js/battle/gameover.js` + `js/menu.js` + `index.html`):
+  - モード選択画面に「RTA」の card を追加。「RTA で始める」で NORMAL のルールのまま、ステージ 1 の開始から全 3 ステージクリアまでの時間を計る
+  - ステージを終えるたびに区間タイム、クリアで公式タイムを通知（共通基盤の SDK が出す）。倒れる・タイトルに戻ると計測は中断
+  - 記録は bearko.games の RTA ランキングとマイページに載る。未ログインでも計測でき、ログインするとランキングに載る
+
+### Added — SPEC-039 (= bearko.games Platform Trophies) — merged in #48
+- **bearko.games 共通基盤のトロフィーに参加** (`js/platform.js` + `js/battle/stage-transition.js` + `index.html`):
+  - 最初のステージを終えると `survivor.stage1`（スノーフォール）、全 3 ステージクリアで `survivor.clear`（幻の生存者）
+  - 未ログインでも獲得でき、ログインするとまとめて登録（通知とログイン案内は共通基盤の SDK が出す）
+  - SDK が読めなくても何もしない（ゲームの進行は変わらない）
+
+### Changed — SPEC-038 (= Activity Report Icon Layout + Anonymous Default Name) — merged in #47
 - **活動レポートをアイコン中心レイアウトに刷新** (`js/battle/activity-report.js` + `index.html`):
   - ヒーロー: **ポートレート (= 56px 円形)** + 名前 + 派閥カラーボーダー
   - ステージ: 旧 table → **カード式** (`<div class="report-stage">` × N)、 head に ステージ名 + (⏱ 時間 / 💀 撃破 / Lv.N)
@@ -18,7 +35,7 @@
 - **i18n** (`data/i18n/ui.json`): `report.scoreLabel` (= "SCORE") を追加
 - **CSS** (`css/components.css`): `.report-hero__inner` (= 派閥カラーボーダー) / `.report-hero__portrait` (= 56px 円形) / `.report-stage*` 一式 / `.report-ext` (= 38px タイル) / `.report-ext__lv` (= 右下バッジ) / `.report-meta-row` / `.report-score-big` (= clamp + drop-shadow + tabular-nums) / `.report-score-label` (= letter-spacing 0.3em) を新規追加。 mobile (< 480px) で 48px / 34px / 0.95rem に縮小
 
-### Added — SPEC-037 (= Game Modes — NORMAL / ABSOLUTE Regulation)
+### Added — SPEC-037 (= Game Modes — NORMAL / ABSOLUTE Regulation) — merged in #46
 - **ゲームモード選択画面** (`index.html` + `js/mode-select.js` 新規): タイトル → **NORMAL / ABSOLUTE 選択** → ヒーロー選択 の 3 段遷移。 各モードカードに 「これで始める」 ボタン + バックボタン
 - **ABSOLUTE レギュレーション** (`js/state.js` + `js/constants.js`):
   - `state.regulation` (= "NORMAL" | "ABSOLUTE")、 `state.absolute = { spawnMul, hpMul, dmgMul, speedMul }`
@@ -44,7 +61,7 @@
 - **i18n** (`data/i18n/ui.json`): `mode.*` 7 / `absolute.axis.*` 4 / `report.regulation` / `ranking.col.reg` / `ranking.reg.*` 3 / `gameover.toTitle` / `gameover.retryCurrent`
 - **CSS** (`css/components.css`): `.mode-select` / `.mode-card*` / `.abs-slider*` / `.gameover-modal__choices` 一式
 
-### Added — SPEC-036 (= GAS Sample Data Seed + Re-apply Default API URL)
+### Added — SPEC-036 (= GAS Sample Data Seed + Re-apply Default API URL) — merged in #44
 - **GAS シード関数 3 種** (`tools/gas-ranking.gs`):
   - `seedSampleData()` = `ranking` シートをリセット → ヘッダー + 12 件のダミーデータ投入 (= 推奨)
   - `appendSampleData()` = 既存行を残して 12 件追記
@@ -53,7 +70,7 @@
 - **`_DEFAULT_API_URL_ENC` 再適用** (`js/ranking-client.js`): SPEC-035 PR #43 マージ時に commit 漏れしていた default GAS URL の base64 埋込を復活
 - **`docs/process/RANKING_SETUP.md`**: 8 章 「テスト用サンプルデータ投入」 を新設 (= 3 関数の表 + 実行手順 + サンプル内訳)、 旧 「削除 / リセット」 「参考リンク」 を 9 / 10 にずらして `clearAllRankings()` を案内
 
-### Added — SPEC-035 (= Ranking — GAS Backend + UI)
+### Added — SPEC-035 (= Ranking — GAS Backend + UI) — merged in #43
 - **GAS バックエンドスクリプト** `tools/gas-ranking.gs` 新規 (= `doPost` 追記 + `doGet` top N、 `ranking` シート自動作成、 score 降順 / version 絞込)
 - **デプロイ手順書** `docs/process/RANKING_SETUP.md` 新規 (= Spreadsheet 新規 → Apps Script 貼付 → ウェブアプリデプロイ → URL 投入の 5 分手順、 不正対策 hints + 再デプロイ + 削除手順)
 - **`js/ranking-ui.js`** 新規: ランキングモーダル制御、 `installRankingUI` を `init()` から呼出、 `openRanking()` / `closeRanking()` で pause/resume、 fetch + table render + filter (= 全 / 現バージョン)
@@ -69,7 +86,7 @@
 - **i18n** (`data/i18n/ui.json`): `ranking.*` 17 キー + `menu.ranking` 追加 (= title / openTitle / refresh / loading / empty / loadFail / needUrl / urlInvalid / urlSaved / urlPlaceholder / configLabel / saveUrl / filter.{all,current} / col.{rank,player,score,kills,time})
 - **CSS** (`css/components.css`): `.ranking-card` / `.ranking-toolbar` / `.ranking-filter` / `.ranking-table*` / `.ranking-msg` / `.ranking-config*` / `.ranking-close` / `.title-screen__ranking` + mobile breakpoint
 
-### Changed — SPEC-034 (= Rare Size + Weapon Growth × 2 + Reroll 3 + Pause Menu)
+### Changed — SPEC-034 (= Rare Size + Weapon Growth × 2 + Reroll 3 + Pause Menu) — merged in #42
 - **レアエネミーサイズ × 1.5** (`js/constants.js` ENEMY_SPECS): 147 radius 14→21、 170 radius 21→32、 396 radius 13→20、 407 radius 16→24
 - **武器サイズ拡大率 × 4 強化** (`js/constants.js`): `WEAPON_SIZE_GROWTH_PER_LEVEL` `0.06` → **`0.25`** (= Lv.5 で Lv.1 の 2 倍、 アイコン + 当たり判定 + ビーム厚 + 爆弾アイコン 全てに反映)
 - **リロール回数 +1** (`js/constants.js`): `REROLL_PER_BATTLE` `2` → **`3`**
@@ -83,7 +100,7 @@
 - `data/i18n/ui.json`: `menu.title` / `menu.restart` / `menu.toTitle` / `menu.close`
 - `css/components.css`: `.pause-menu__card` (= max-width 360px) + `.pause-menu__buttons` (= flex column、 gap 0.5rem)
 
-### Added — SPEC-033 (= Rare Enemies + Magic Card + Activity Report + Stage 2/3 Boss Clear Fix)
+### Added — SPEC-033 (= Rare Enemies + Magic Card + Activity Report + Stage 2/3 Boss Clear Fix) — merged in #41
 - **ステージ 2 / 3 のボス撃破クリア修正**: `js/battle/damage.js` の `e.enemyId === BOSS_ENEMY_ID` (= ヨシュカ id 171 のみ) を `e.isBoss` 参照に変更 → ファオ / yamap 撃破でも即座に `bossDefeated` フラグ → ステージ遷移 / 活動レポートが発火
 - **レアエネミー 4 種** (`data/enemies.json` + `js/constants.js` ENEMY_SPECS): 147 (クリーパー) / 170 (バイトバンディット) / 396 (ラビット) / 407 (ラブレター) の フラペチーノ ドッピオ。 hp 約 2× 相当、 `isRare: true` フラグ
 - **レアスポーン**: `RARE_ENEMY_IDS` / `RARE_SPAWN_INTERVAL_MS=60000`、 `tickEnemies` で 1 分に 1 回ランダムスポーン (= 開幕 1 分は猶予)
@@ -102,7 +119,7 @@
 - `data/i18n/ui.json`: `report.title` / `report.hero` / `report.totalTime` / `report.totalKills` / `report.score` / `report.col.*` (5 列)
 - `css/components.css`: `.report-card` / `.report-hero` / `.report-stages` / `.report-totals` + mobile breakpoint
 
-### Changed — SPEC-032 (= Changelog Fragments + Auto-Generated SPEC-INDEX)
+### Changed — SPEC-032 (= Changelog Fragments + Auto-Generated SPEC-INDEX) — merged in #40
 - **`tools/build-spec-index.mjs`** 新規 (= 純 Node ESM、 依存なし)。 全 `docs/specs/SPEC-*.md` の YAML frontmatter から `SPEC-INDEX.md` の表を再生成
 - **`tools/build-changelog.mjs`** 新規。 `docs/changelog/SPEC-NNN.md` (= bullet fragment) + SPEC frontmatter から `CHANGELOG.md` の `[Unreleased]` 区間を再生成
 - 全 31 既存 SPEC に YAML frontmatter (= `id` / `title` / `status` / `pr` / `phase` / `kind`) を追加
@@ -335,7 +352,7 @@
 - `js/battle/index.js` `startBattle`: `triggerStarterPick()` 呼出を削除、 代わりに hero の starter weapon を `state.ownedExtensions` に push + `rebuildWeaponsFromOwned()`
 - `js/battle/levelup.js` `_samplePicks`: 重複防止 (= Set で usedIds 管理)、 最低 1 weapon (= weaponPool が空でない限り 1 つ確実に含める)、 結果を最終 shuffle で表示順ランダム化
 
-### Added — SPEC-012 (= 10 Weapon Archetype Behaviors (= radial / orbit / beam / placement / etc))
+### Added — SPEC-012 (= 10 Weapon Archetype Behaviors (= radial / orbit / beam / placement / etc)) — merged in #13
 **Added Phase 0 (= 10 Weapon Archetype Behaviors spec)**
 - `docs/specs/SPEC-012-weapon-archetypes.md` 新規 (= 武器 10 系列の固有挙動を archetype.js で実装、 新 entity orbits/beams/bombs を追加、 Oriflamme bulletCountBonus を全 archetype に反映)
 - `docs/specs/SPEC-INDEX.md`: SPEC-011 を `#12 (open)`、 SPEC-012 を Implementing 登録
@@ -348,7 +365,7 @@
 - `js/battle/index.js` _loop: tickHomingProjectiles → tickProjectiles → tickOrbits → tickBeams → tickBombs の順で配線
 - `js/battle/render.js`: orbits / beams / bombs の描画追加
 
-### Added — SPEC-011 (= Extension Schema Overhaul (17 系列 × 5 段階) + Buff Archetype)
+### Added — SPEC-011 (= Extension Schema Overhaul (17 系列 × 5 段階) + Buff Archetype) — merged in #12
 **Added Phase 0 (= Extension Schema Overhaul 17×5 + Buff Archetype spec)**
 - `docs/specs/SPEC-011-extension-tiers-and-buffs.md` 新規 (= 武器 10 系列 + 強化 7 系列 × 5 段階レアリティ。 ピックで tier 昇格 = 名前/スキル名/効果説明が変化。 Buff 7 種が即時効果。 武器固有挙動は SPEC-012 で扱う)
 - `docs/specs/SPEC-INDEX.md`: SPEC-010 を `#11 (open)`、 SPEC-011 を Implementing 登録
@@ -365,7 +382,7 @@
 - `js/battle/weapons.js`: cdMul / dmgMul 適用
 - `js/battle/enemies.js`: dmgTakenMul 適用
 
-### Added — SPEC-010 (= Mobile Viewport Fit + Hero/Enemy Sprites + Ext Icon/Effect in Level-up Card)
+### Added — SPEC-010 (= Mobile Viewport Fit + Hero/Enemy Sprites + Ext Icon/Effect in Level-up Card) — merged in #11
 **Added Phase 0 (= Mobile Viewport Fit + Hero/Enemy Sprites + Ext Icon/Effect spec)**
 - `docs/specs/SPEC-010-mobile-viewport-and-sprites.md` 新規 (= モバイル full-screen 化 / プレイヤー & 敵を MCH 画像で円形クリップ描画 / Level up カードに extension アイコン + 効果テキスト追加)
 - `docs/specs/SPEC-INDEX.md`: SPEC-009 を `#10 (open)` に、 SPEC-010 を Implementing 登録
@@ -381,7 +398,7 @@
 - `data/i18n/ui.json`: `levelup.weaponEffect` 追加
 - `css/components.css`: `.levelup-card` を grid + icon + effect 表示用に再設計
 
-### Added — SPEC-009 (= Game Over + Retry + Ranking Submit (= MVP 完了、 死んだら終わる + もう 1 回))
+### Added — SPEC-009 (= Game Over + Retry + Ranking Submit (= MVP 完了、 死んだら終わる + もう 1 回)) — merged in #10
 **Added Phase 0 (= Game Over + Retry + Ranking Submit spec)**
 - `docs/specs/SPEC-009-game-over.md` 新規 (= HP 0 で Game Over モーダル + 経過時間 / Lv / 撃破数 表示 + プレイヤー名入力 + 既存 submitScore() 経由でランキング送信 + リトライボタン)
 - `docs/specs/SPEC-INDEX.md`: SPEC-008 を `#9 (open)` に、 SPEC-009 を Implementing 登録
@@ -397,7 +414,7 @@
 - `data/i18n/ui.json`: `gameover.*` 11 キー追加
 - `css/components.css`: `.gameover-modal*` / `.gameover-form*` / `.gameover-stat`
 
-### Added — SPEC-008 (= Extensions as Weapons + Level-Up Picker Modal (= スキル = extension、 投射体武器化))
+### Added — SPEC-008 (= Extensions as Weapons + Level-Up Picker Modal (= スキル = extension、 投射体武器化)) — merged in #9
 **Added Phase 0 (= Extensions as Weapons + Level-Up Picker Modal spec)**
 - `docs/specs/SPEC-008-extensions-as-weapons.md` 新規 (= 仮 shockwave 撤去 + EXT_ROSTER を投射体武器化 + Level up モーダル + 3 択ピック + starter pick + ext.stats 由来の dmg/cd/range/projSpeed)
 - `docs/specs/SPEC-INDEX.md`: SPEC-007 を `#8 (open)` に、 SPEC-008 を Implementing 登録
@@ -416,7 +433,7 @@
 - `data/i18n/ui.json`: `levelup.title` / `levelup.sub` / `levelup.starter` / `ext.new` 追加
 - `css/components.css`: `.levelup-modal*` / `.levelup-card*` 追加
 
-### Added — SPEC-007 (= Enemies + Hardcoded Weapon + XP Gems + Level Trigger (= VS core loop 完成))
+### Added — SPEC-007 (= Enemies + Hardcoded Weapon + XP Gems + Level Trigger (= VS core loop 完成)) — merged in #8
 **Added Phase 0 (= Enemies + Hardcoded Weapon + XP Gems + Level Trigger spec)**
 - `docs/specs/SPEC-007-enemies-and-xp.md` 新規 (= 敵スポーン waves + 追跡 AI + 接触ダメージ + 仮 hardcoded shockwave 武器 + 撃破時 XP gem ドロップ + 拾う + level up trigger、 VS core loop の完成形)
 - `docs/specs/SPEC-INDEX.md`: SPEC-006 を `#7 (open)` に、 SPEC-007 を Implementing 登録
@@ -431,7 +448,7 @@
 - `js/battle/index.js` 改修 (= startBattle で各 entity reset + RAF ループに新規 tick 追加)
 - `js/battle/render.js` 改修 (= shockwave / gem / enemy 描画追加、 viewport カリング)
 
-### Added — SPEC-006 (= Battle Stage Scaffold (= canvas + プレイヤー移動 WASD/joystick + カメラ追従))
+### Added — SPEC-006 (= Battle Stage Scaffold (= canvas + プレイヤー移動 WASD/joystick + カメラ追従)) — merged in #7
 **Added Phase 0 (= Battle Stage Scaffold spec)**
 - `docs/specs/SPEC-006-battle-scaffold.md` 新規 (= canvas + プレイヤー移動 WASD/矢印/仮想ジョイスティック + カメラ追従 + 背景グリッド + DPR 対応 + RAF ループ + pauseFlags 連動)
 - `docs/specs/SPEC-INDEX.md`: SPEC-006 を Implementing 登録 (= SPEC-005 にスタック)
@@ -449,7 +466,7 @@
 - `css/components.css`: `.battle-canvas` / `.joystick` / `.joystick__base` / `.joystick__stick`
 - `js/main.js`: `applyHeroPick` 末尾で `startBattle(state.ownedHero)`
 
-### Added — SPEC-005 (= VS HUD slim (= HP のみ + XP + Lv、 体温/食料 撤去、 サバイバー系アクション方向に転換))
+### Added — SPEC-005 (= VS HUD slim (= HP のみ + XP + Lv、 体温/食料 撤去、 サバイバー系アクション方向に転換)) — merged in #6
 **Added Phase 0 (= VS HUD slim spec)**
 - `docs/specs/SPEC-005-vs-hud-slim.md` 新規 (= 体温/食料 を撤去し HP のみ + XP バー + Lv 表示 + 経過時間 mm:ss、 サバイバー系アクションライクへの方向転換 prep)
 - `docs/specs/SPEC-INDEX.md`: SPEC-004 を Done (#5) に flip、 SPEC-005 を Implementing として登録

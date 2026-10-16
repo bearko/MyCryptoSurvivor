@@ -1,15 +1,15 @@
 ---
 id: SPEC-032
 title: Changelog Fragments + Auto-Generated SPEC-INDEX
-status: Implementing
-pr: feat/spec-032-changelog-fragments
+status: Done
+pr: 40
 phase: Phase 0 / Phase 1
 kind: Changed
 ---
 
 # SPEC-032 — Changelog Fragments + Auto-Generated SPEC-INDEX
 
-- **Status**: Implementing
+- **Status**: Done
 - **Author**: bearko (with Claude Code)
 - **Created**: 2026-05-10
 

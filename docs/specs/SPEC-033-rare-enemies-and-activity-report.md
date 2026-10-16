@@ -1,15 +1,15 @@
 ---
 id: SPEC-033
 title: Rare Enemies + Magic Card + Activity Report + Stage 2/3 Boss Clear Fix
-status: Implementing
-pr: feat/spec-033-rare-enemies-and-activity-report
+status: Done
+pr: 41
 phase: Phase 0 / Phase 1
 kind: Added
 ---
 
 # SPEC-033 — Rare Enemies + Magic Card + Activity Report + Stage 2/3 Boss Clear Fix
 
-- **Status**: Implementing
+- **Status**: Done
 - **Author**: bearko (with Claude Code)
 - **Created**: 2026-05-10
 

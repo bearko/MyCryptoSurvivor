@@ -1,7 +1,7 @@
 ---
 id: SPEC-011
 title: Extension Schema Overhaul (17 系列 × 5 段階) + Buff Archetype
-status: Implementing
+status: Done
 pr: 12
 phase: Phase 0 / Phase 1
 kind: Added
@@ -9,7 +9,7 @@ kind: Added
 
 # SPEC-011 — Extension Schema Overhaul (17 Series × 5 Tiers) + Buff Archetype
 
-- **Status**: Implementing
+- **Status**: Done
 - **Author**: bearko (with Claude Code)
 - **Created**: 2026-05-09
 - **Updated**: 2026-05-09

@@ -1,20 +1,36 @@
 # MyCryptoSurvivor
 
-MCH 経済圏をモチーフにした **「箱庭経営シム風 + 雪山サバイバル」** のシングルプレイ web ゲーム。
-プレイヤーは 10 名のヒーローから 1 名を選び、 限られた日数の中で資源収集 / クラフト / クエスト を回しながら脱出を目指す。
+MyCryptoHeroes のヒーローとエクステンションで遊ぶ **サバイバー系アクション** のシングルプレイ web ゲーム。
+10 名のヒーローから 1 名を選び、押し寄せる敵の中を動き回りながら、自動で撃つ武器（エクステンション）を
+レベルアップのたびに選んで育て、全 3 ステージのボスを倒す（1 プレイ約 15 分）。
+
+**遊ぶ**: https://survivor.bearko.games/
 
 > **ベース**: `bearko/mycryptotemplate` (= vanilla JS / 静的 host テンプレート)
 > **想定範囲**: モバイル / PC 両対応の 2D web ゲーム (= ビルドステップなし)
-> **ジャンル**: サバイバル + リソース管理 + ランキング
+> **ジャンル**: サバイバー系アクション + ランキング（bearko.games のトロフィー・RTA・総合スコアに参加）
+
+## 遊び方
+
+| 操作 | PC | スマホ |
+|---|---|---|
+| 移動 | WASD / 矢印キー | 画面をドラッグ（指の下にスティックが出る） |
+| 攻撃 | 自動 | 自動 |
+| メニュー（一時停止） | ☰ | ☰ |
+
+- 敵を倒すと出る経験値ジェムを拾うと Lv が上がり、武器か強化を 1 つ選ぶ
+- 各ステージは 4 分でボスが出る。倒すか 5 分耐えるとクリア。全 3 ステージで活動レポートとスコア
+- モード：NORMAL ／ ABSOLUTE（難易度を 4 軸で調整、スコアに倍率）／ RTA（bearko.games）
 
 ## クイックリファレンス
 
 | 項目 | 値 |
 |---|---|
 | localStorage prefix | `mcs.*` |
-| ASSET_BASE | `https://raw.githubusercontent.com/bearko/MyCryptoSurvivor-assets/main/` |
+| ASSET_BASE | `https://raw.githubusercontent.com/bearko/mycryptoheroes/main/` |
 | 多言語 | ja / en |
-| 静的ホスティング | Vercel / GitHub Pages 等 (= `build:` 不要) |
+| 静的ホスティング | Cloudflare Workers の静的アセット（`main` にマージで公開。`build:` 不要） |
+| テスト | `node --test tests/*.test.mjs` |
 
 ## 必読 (= Claude Code セッション開始時)
 
@@ -41,20 +57,22 @@ docs/
   patterns/                  実装パターン 8 章 (= テンプレート継承)
   process/                   SPEC 駆動 + Git workflow
   specs/
-    SPEC-INDEX.md            SPEC 一覧
-    SPEC-001-phase-1-bootstrap.md
+    SPEC-INDEX.md            SPEC 一覧（自動生成: node tools/build-spec-index.mjs）
+    SPEC-NNN-<topic>.md      各機能の仕様
   setup/                     新規プロジェクト初期化 / GAS デプロイ
   testing/                   テスト戦略とケース
   lessons-learned/           MCT/MCF 振り返り
 index.html                   エントリポイント
 js/
   main.js / state.js / constants.js / i18n.js
-  effects.js / audio.js / data-loader.js / ranking-client.js
+  effects.js / audio.js / data-loader.js / ranking-client.js / platform.js
+  battle/                    戦闘（入力・敵・武器・描画・レベルアップ・結果）
 css/
   base.css / layout.css / components.css / effects.css / responsive.css
 data/
+  heroes.json / extensions.json / enemies.json
   i18n/ui.json
-  sample-entities.json
+tests/                       node --test のテスト
 tools/sim/                   バランス調整シミュレータ
 ```
 
@@ -79,5 +97,6 @@ bearko 個人プロジェクト。 ヒーロー画像 / 名称は MCH (MyCryptoH
 ## 関連リポジトリ
 
 - `bearko/mycryptotemplate` — 派生元テンプレート
-- `bearko/MyCryptoSurvivor-assets` — 画像 / 音声 CDN (= ASSET_BASE が指す先)
+- `bearko/mycryptoheroes` — 画像 / 音声 CDN (= ASSET_BASE が指す先)
+- `bearko/MyCryptoPortfolio` — bearko.games 共通基盤（ログイン・トロフィー・RTA・総合スコア）
 - `bearko/mycryptotactics` / `bearko/mycryptofactory` — 兄弟プロジェクト

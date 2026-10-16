@@ -1,7 +1,7 @@
 ---
 id: SPEC-005
 title: VS HUD slim (= HP のみ + XP + Lv、 体温/食料 撤去、 サバイバー系アクション方向に転換)
-status: Implementing
+status: Done
 pr: 6
 phase: Phase 0 / Phase 1
 kind: Added
@@ -9,7 +9,7 @@ kind: Added
 
 # SPEC-005 — VS HUD slim (= HP のみ + XP + Level、 体温/食料 撤去)
 
-- **Status**: Implementing
+- **Status**: Done
 - **Author**: bearko (with Claude Code)
 - **Created**: 2026-05-09
 - **Updated**: 2026-05-09

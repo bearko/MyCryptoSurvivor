@@ -1,15 +1,15 @@
 ---
 id: SPEC-041
 title: bearko.games Platform Total Score
-status: Implementing
-pr: feat/spec-041-platform-score
+status: Done
+pr: 50
 phase: Phase 3
 kind: Added
 ---
 
 # SPEC-041 — bearko.games 共通基盤の総合スコア
 
-- **Status**: Implementing
+- **Status**: Done
 - **関連**: [bearko/mycryptoportfolio の SPEC-002](https://github.com/bearko/mycryptoportfolio/blob/claude/game-portfolio-page-4afqbc/docs/specs/SPEC-002-total-score.md)（総合スコア。3.2 が本作の計算式）、SPEC-033（活動レポート）、SPEC-037（ゲームモード）
 
 ## 1. 背景

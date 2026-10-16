@@ -10,14 +10,14 @@
 | SPEC-002 | Hero Roster (= heroes.json + 10 体実データ + state.ownedHero) | Done | Phase 0 / Phase 1 | #2 (merged) |
 | SPEC-003 | MCH IP Data Sources (= bearko/mycryptoheroes 由来の heroes/extensions/enemies 先行整備) | Done | Phase 0 / Phase 1 | #4 (merged) |
 | SPEC-004 | Survival HUD (= Day N + HP / 体温 / 食料 + tick decay) | Done | Phase 0 / Phase 1 | #5 (merged) |
-| SPEC-005 | VS HUD slim (= HP のみ + XP + Lv、 体温/食料 撤去、 サバイバー系アクション方向に転換) | Implementing | Phase 0 / Phase 1 | #6 (open) |
-| SPEC-006 | Battle Stage Scaffold (= canvas + プレイヤー移動 WASD/joystick + カメラ追従) | Implementing | Phase 0 / Phase 1 | #7 (open) |
-| SPEC-007 | Enemies + Hardcoded Weapon + XP Gems + Level Trigger (= VS core loop 完成) | Implementing | Phase 0 / Phase 1 | #8 (open) |
-| SPEC-008 | Extensions as Weapons + Level-Up Picker Modal (= スキル = extension、 投射体武器化) | Implementing | Phase 0 / Phase 1 | #9 (open) |
-| SPEC-009 | Game Over + Retry + Ranking Submit (= MVP 完了、 死んだら終わる + もう 1 回) | Implementing | Phase 0 / Phase 1 | #10 (open) |
-| SPEC-010 | Mobile Viewport Fit + Hero/Enemy Sprites + Ext Icon/Effect in Level-up Card | Implementing | Phase 0 / Phase 1 | #11 (open) |
-| SPEC-011 | Extension Schema Overhaul (17 系列 × 5 段階) + Buff Archetype | Implementing | Phase 0 / Phase 1 | #12 (open) |
-| SPEC-012 | 10 Weapon Archetype Behaviors (= radial / orbit / beam / placement / etc) | Implementing | Phase 0 / Phase 1 | #13 (open) |
+| SPEC-005 | VS HUD slim (= HP のみ + XP + Lv、 体温/食料 撤去、 サバイバー系アクション方向に転換) | Done | Phase 0 / Phase 1 | #6 (merged) |
+| SPEC-006 | Battle Stage Scaffold (= canvas + プレイヤー移動 WASD/joystick + カメラ追従) | Done | Phase 0 / Phase 1 | #7 (merged) |
+| SPEC-007 | Enemies + Hardcoded Weapon + XP Gems + Level Trigger (= VS core loop 完成) | Done | Phase 0 / Phase 1 | #8 (merged) |
+| SPEC-008 | Extensions as Weapons + Level-Up Picker Modal (= スキル = extension、 投射体武器化) | Done | Phase 0 / Phase 1 | #9 (merged) |
+| SPEC-009 | Game Over + Retry + Ranking Submit (= MVP 完了、 死んだら終わる + もう 1 回) | Done | Phase 0 / Phase 1 | #10 (merged) |
+| SPEC-010 | Mobile Viewport Fit + Hero/Enemy Sprites + Ext Icon/Effect in Level-up Card | Done | Phase 0 / Phase 1 | #11 (merged) |
+| SPEC-011 | Extension Schema Overhaul (17 系列 × 5 段階) + Buff Archetype | Done | Phase 0 / Phase 1 | #12 (merged) |
+| SPEC-012 | 10 Weapon Archetype Behaviors (= radial / orbit / beam / placement / etc) | Done | Phase 0 / Phase 1 | #13 (merged) |
 | SPEC-013 | Hero Starter Weapon (= Lv.1 固定割当) + Picker Rules (= 重複なし / weapon ≥ 1) | Done | Phase 0 / Phase 1 | #15 (merged) |
 | SPEC-014 | Hero Selection Detail Panel + Per-Hero HP/Speed Differentiation | Done | Phase 0 / Phase 1 | #16 (merged) |
 | SPEC-015 | Extension Visual Icons + Weapon Balance + Moai Homing/Shockwave | Done | Phase 0 / Phase 1 | #17 (merged) |
@@ -37,13 +37,16 @@
 | SPEC-029 | Logo Image + OG Thumbnail (= タイトル/スプラッシュ画像化 + X/OGP サムネ) | Done | Phase 0 / Phase 1 | #36 (merged) |
 | SPEC-030 | Three-Stage System (= node : アバカス / ホレリス / トロイ + ファオ / yamap ボス) | Done | Phase 0 / Phase 1 | #38 (merged) |
 | SPEC-031 | Pierce + LaserGun Fix + Pierrot AoE + Horse Tune + Gunbai + Header Date Removal | Done | Phase 0 / Phase 1 | #39 (merged) |
-| SPEC-032 | Changelog Fragments + Auto-Generated SPEC-INDEX | Implementing | Phase 0 / Phase 1 | feat/spec-032-changelog-fragments |
-| SPEC-033 | Rare Enemies + Magic Card + Activity Report + Stage 2/3 Boss Clear Fix | Implementing | Phase 0 / Phase 1 | feat/spec-033-rare-enemies-and-activity-report |
-| SPEC-034 | Rare Size + Weapon Growth × 2 + Reroll 3 + Pause Menu | Implementing | Phase 0 / Phase 1 | feat/spec-034-tunes-and-pause-menu |
-| SPEC-035 | Ranking — GAS Backend + UI | Implementing | Phase 0 / Phase 1 | feat/spec-035-ranking-gas |
-| SPEC-036 | GAS Sample Data Seed + Re-apply Default API URL | Implementing | Phase 0 / Phase 1 | feat/spec-036-gas-seed-sample |
-| SPEC-037 | Game Modes — NORMAL / ABSOLUTE Regulation | Implementing | Phase 0 / Phase 1 | feat/spec-037-game-modes-and-absolute |
-| SPEC-038 | Activity Report Icon Layout + Anonymous Default Name | Implementing | Phase 0 / Phase 1 | feat/spec-038-report-icons-and-anon |
+| SPEC-032 | Changelog Fragments + Auto-Generated SPEC-INDEX | Done | Phase 0 / Phase 1 | #40 (merged) |
+| SPEC-033 | Rare Enemies + Magic Card + Activity Report + Stage 2/3 Boss Clear Fix | Done | Phase 0 / Phase 1 | #41 (merged) |
+| SPEC-034 | Rare Size + Weapon Growth × 2 + Reroll 3 + Pause Menu | Done | Phase 0 / Phase 1 | #42 (merged) |
+| SPEC-035 | Ranking — GAS Backend + UI | Done | Phase 0 / Phase 1 | #43 (merged) |
+| SPEC-036 | GAS Sample Data Seed + Re-apply Default API URL | Done | Phase 0 / Phase 1 | #44 (merged) |
+| SPEC-037 | Game Modes — NORMAL / ABSOLUTE Regulation | Done | Phase 0 / Phase 1 | #46 (merged) |
+| SPEC-038 | Activity Report Icon Layout + Anonymous Default Name | Done | Phase 0 / Phase 1 | #47 (merged) |
+| SPEC-039 | bearko.games Platform Trophies | Done | Phase 3 | #48 (merged) |
+| SPEC-040 | bearko.games Platform RTA | Done | Phase 3 | #49 (merged) |
+| SPEC-041 | bearko.games Platform Total Score | Done | Phase 3 | #50 (merged) |
 <!-- END AUTO-INDEX -->
 
 ## 命名規則
