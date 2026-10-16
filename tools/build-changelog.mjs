@@ -21,6 +21,10 @@
 //
 // CHANGELOG.md の `<!-- BEGIN AUTO-UNRELEASED -->` ... `<!-- END AUTO-UNRELEASED -->`
 // マーカー間を **完全置換**。 過去の `## [SPEC-NNN]` セクション以下は触らない。
+//
+// SPEC-047: 公開版 (= docs/changelog/RELEASES.json) で区切る。
+//   [{ "version": "1.0.0", "date": "2026-10-16", "upTo": "SPEC-047" }, ...]
+//   upTo 以下の断片はその版の `## [版] — 日付` の下へ、 どの版にも入らない断片は [Unreleased] に残る。
 
 import { readFileSync, writeFileSync, readdirSync } from "node:fs";
 import { join, dirname } from "node:path";
@@ -31,6 +35,7 @@ const REPO_ROOT     = join(__dirname, "..");
 const SPECS_DIR     = join(REPO_ROOT, "docs", "specs");
 const CHANGELOG_DIR = join(REPO_ROOT, "docs", "changelog");
 const CHANGELOG     = join(REPO_ROOT, "CHANGELOG.md");
+const RELEASES_JSON = join(CHANGELOG_DIR, "RELEASES.json");
 const BEGIN         = "<!-- BEGIN AUTO-UNRELEASED -->";
 const END           = "<!-- END AUTO-UNRELEASED -->";
 
@@ -111,18 +116,42 @@ function renderHeading(meta, id) {
   return `### ${kind} — ${id} (= ${title})${suffix}`;
 }
 
+function loadReleases() {
+  try {
+    const list = JSON.parse(readFileSync(RELEASES_JSON, "utf8"));
+    return list
+      .map(r => ({ ...r, upToNum: specNumOf(r.upTo) }))
+      .filter(r => r.version && r.upToNum > 0)
+      .sort((a, b) => a.upToNum - b.upToNum);   // 古い版が先
+  } catch (_) {
+    return [];
+  }
+}
+
+/** 断片が入る版 (= upTo 以下で最も古い版)。 どれにも入らなければ null (= Unreleased) */
+function releaseOf(num, releases) {
+  for (const r of releases) if (num <= r.upToNum) return r;
+  return null;
+}
+
 function main() {
   const specMeta  = loadSpecMeta();
   const fragments = loadFragments();
+  const releases  = loadReleases();
 
-  let block = "";
+  const groups = new Map();   // version | "" → text
   for (const frag of fragments) {
     const meta = specMeta.get(frag.id);
     if (!meta) {
       console.warn(`[skip] fragment without spec frontmatter: ${frag.id}`);
       continue;
     }
-    block += `${renderHeading(meta, frag.id)}\n${frag.body}\n\n`;
+    const key = releaseOf(frag.num, releases)?.version ?? "";
+    groups.set(key, (groups.get(key) ?? "") + `${renderHeading(meta, frag.id)}\n${frag.body}\n\n`);
+  }
+  let block = groups.get("") ?? (releases.length ? "- （まだありません）\n\n" : "");
+  for (const r of [...releases].reverse()) {   // 新しい版が上
+    block += `## [${r.version}] — ${r.date ?? ""}\n\n` + (r.summary ? `${r.summary}\n\n` : "") + (groups.get(r.version) ?? "");
   }
   block = block.replace(/\n+$/, "\n");
 

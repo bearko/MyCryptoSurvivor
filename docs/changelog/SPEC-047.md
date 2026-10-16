@@ -1,0 +1,5 @@
+- **v1.0.0** (`js/constants.js`): `APP_VERSION` を 1.0.0 に
+- **変更履歴を公開版で区切る** (`tools/build-changelog.mjs` + `docs/changelog/RELEASES.json` 新規): `upTo` 以下の断片をその版の見出しの下に
+- **アイコンと manifest** (`assets/icons/` + `manifest.json` 新規 + `index.html`): ロゴの紋章のファビコン・apple-touch-icon・192/512px（maskable）。ホーム画面に追加できる。雪山の絵文字 🏔️ のファビコンをやめる
+- **OGP** (`index.html`): 画像を絶対 URL に、説明を日本語の今のゲームに、`og:url`・`description`
+- **ランキングの既定の絞り込みを「全バージョン」に** (`js/ranking-ui.js` + `index.html`): 版を上げてもランキングが空に見えないように

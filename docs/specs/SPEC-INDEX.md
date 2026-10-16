@@ -47,6 +47,12 @@
 | SPEC-039 | bearko.games Platform Trophies | Done | Phase 3 | #48 (merged) |
 | SPEC-040 | bearko.games Platform RTA | Done | Phase 3 | #49 (merged) |
 | SPEC-041 | bearko.games Platform Total Score | Done | Phase 3 | #50 (merged) |
+| SPEC-042 | How to Play — Help Rewrite + First-Run Coach Hint | Done | v1.0 | #60 (merged) |
+| SPEC-043 | UI Foundation — Tokens, Fonts, Buttons, Modals, Safe Area, Reduced Motion | Done | v1.0 | #61 (merged) |
+| SPEC-044 | Settings — BGM/SE Volume, Reduce Effects, Language, Auto-Pause on Tab Switch | Done | v1.0 | #62 (merged) |
+| SPEC-045 | Battle Feel — Shake, Hurt Flash, Kill Burst, Boss Warning, Kill Counter | Done | v1.0 | #63 (merged) |
+| SPEC-046 | Result Reveal — Stage Intro, Stage Clear, Game Over, Activity Report | Done | v1.0 | #64 (merged) |
+| SPEC-047 | v1.0 Release — Version, Changelog Releases, Icons, Manifest, OGP | Done | v1.0 | feat/spec-047-v1-release (merged) |
 <!-- END AUTO-INDEX -->
 
 ## 命名規則

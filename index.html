@@ -4,19 +4,31 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#121018" />
-  <title>MyCryptoSurvivor</title>
+  <title>MyCryptoSurvivor — マイクリのサバイバー系アクション</title>
+  <meta name="description" content="マイクリのヒーローで押し寄せる敵を生き残るサバイバー系アクション。移動するだけ、攻撃は自動。全 3 ステージ、1 プレイ約 15 分。" />
 
-  <!-- OGP -->
+  <!-- OGP (= SPEC-047: 絶対 URL。 X などは相対 URL を読まない) -->
   <meta property="og:title" content="MyCryptoSurvivor" />
-  <meta property="og:description" content="MyCryptoSurvivor — choose a hero and survive the chain. A vanilla JS web game." />
+  <meta property="og:description" content="マイクリのヒーローで押し寄せる敵を生き残るサバイバー系アクション。全 3 ステージ、1 プレイ約 15 分。" />
   <meta property="og:type" content="website" />
-  <meta property="og:image" content="assets/og-image.png" />
+  <meta property="og:url" content="https://survivor.bearko.games/" />
+  <meta property="og:site_name" content="bearko.games" />
+  <meta property="og:image" content="https://survivor.bearko.games/assets/og-image.png" />
   <meta property="og:image:width" content="1280" />
   <meta property="og:image:height" content="720" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:image" content="assets/og-image.png" />
+  <meta name="twitter:title" content="MyCryptoSurvivor" />
+  <meta name="twitter:image" content="https://survivor.bearko.games/assets/og-image.png" />
 
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><text y=%2250%22 font-size=%2256%22>🏔️</text></svg>" />
+  <!-- SPEC-047: アイコンと manifest (= ホーム画面に追加できる) -->
+  <link rel="icon" type="image/png" sizes="48x48" href="assets/icons/favicon-48.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Survivor" />
 
   <!-- SPEC-043: 見出し (Dela Gothic One) と数字 (Chakra Petch)。 読めなくてもシステムフォントで動く -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -198,8 +210,8 @@
       <h2 class="gameover-modal__title" id="rankingTitle">ランキング</h2>
       <div class="ranking-toolbar">
         <select id="rankingFilter" class="ranking-filter">
-          <option value="current" id="rankingFilterCurrent">v 0.1.0 のみ</option>
           <option value="all"     id="rankingFilterAll">全バージョン</option>
+          <option value="current" id="rankingFilterCurrent">v 1.0.0 のみ</option>
         </select>
         <select id="rankingRegFilter" class="ranking-filter">
           <option value="all"      id="rankingRegFilterAll">全レギュレーション</option>
