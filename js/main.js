@@ -37,6 +37,8 @@ import { playSe, unlockAudio } from "./audio.js";
 import { SFX } from "./constants.js";
 import { APP_VERSION } from "./constants.js";
 import { initPlatform } from "./platform.js";
+import { installModalA11y } from "./modal-a11y.js";
+import { img } from "./constants.js";
 
 // ============================================================
 // DOM helpers
@@ -69,6 +71,7 @@ async function init() {
   setupHeroSelectModal();
   installMenu();   // SPEC-034: ヘッダー一時停止メニュー
   installRankingUI();   // SPEC-035: タイトル / メニューから開くランキングモーダル
+  installModalA11y();   // SPEC-043: 開いたモーダルにフォーカス・メニューとランキングは Esc で閉じる
   // SPEC-037: タイトル → モード選択 → ヒーロー選択 の順
   installModeSelect(() => {
     $("#app")?.classList.remove("hidden");
@@ -86,6 +89,9 @@ async function init() {
 // ============================================================
 function setupTitleScreen() {
   $("#btnPressStart")?.addEventListener("click", dismissTitle);
+  // SPEC-043: タイトルの背景にステージ 1 の背景を敷く (= 画像は ASSET_BASE 経由)
+  const bg = $("#titleBg");
+  if (bg) bg.style.backgroundImage = `url("${img("Image/Backgrounds/1001.png")}")`;
 }
 
 function dismissTitle() {

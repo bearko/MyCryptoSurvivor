@@ -41,7 +41,7 @@
 /* ---------- Safe area (iPhone X 系) ---------- */
 @supports (padding: env(safe-area-inset-bottom)) {
   .header {
-    padding-top: max(0.6rem, env(safe-area-inset-top));
+    padding-top: max(0.35rem, env(safe-area-inset-top));
   }
   .stage {
     padding-bottom: max(1rem, env(safe-area-inset-bottom));
@@ -50,7 +50,26 @@
 
 /* ---------- HUD (= SPEC-005): mobile では bar を下段に折り返す ---------- */
 @media (max-width: 640px) {
-  .hud { flex-wrap: wrap; gap: 6px 12px; }
+  /* SPEC-043: Lv・時間・HP を 1 段に。 XP は HUD の下端に貼り付く細い帯 (= サバイバー系の定番) */
+  .hud { gap: 10px; padding-bottom: 9px; }
   .hud__level, .hud__elapsed { min-width: 0; }
-  .hud__bar { flex-basis: calc(50% - 6px); }
+  .hud__bar[data-stat="xp"] {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 4px;
+  }
+  .hud__bar[data-stat="xp"] .hud__bar-label,
+  .hud__bar[data-stat="xp"] .hud__bar-value { display: none; }
+  .hud__bar[data-stat="xp"] .hud__bar-track {
+    height: 4px;
+    border-radius: 0;
+    min-width: 0;
+    background: rgba(255, 255, 255, 0.06);
+  }
+}
+
+/* SPEC-043: スマホでは戦闘中のタイトル名を隠し、 ヒーロー名を 1 行で */
+@media (max-width: 480px) {
+  .header__title { display: none; }
+  .header__hero-badge { margin-left: 0; }
 }
