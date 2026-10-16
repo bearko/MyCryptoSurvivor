@@ -52,7 +52,7 @@
 | SPEC-044 | Settings — BGM/SE Volume, Reduce Effects, Language, Auto-Pause on Tab Switch | Done | v1.0 | #62 (merged) |
 | SPEC-045 | Battle Feel — Shake, Hurt Flash, Kill Burst, Boss Warning, Kill Counter | Done | v1.0 | #63 (merged) |
 | SPEC-046 | Result Reveal — Stage Intro, Stage Clear, Game Over, Activity Report | Done | v1.0 | #64 (merged) |
-| SPEC-047 | v1.0 Release — Version, Changelog Releases, Icons, Manifest, OGP | Done | v1.0 | feat/spec-047-v1-release (merged) |
+| SPEC-047 | v1.0 Release — Version, Changelog Releases, Icons, Manifest, OGP | Done | v1.0 | #65 (merged) |
 <!-- END AUTO-INDEX -->
 
 ## 命名規則

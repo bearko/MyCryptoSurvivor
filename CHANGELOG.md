@@ -11,7 +11,7 @@
 
 最初の公開版。全 3 ステージのサバイバー系アクション、NORMAL / ABSOLUTE / RTA、ランキング、bearko.games 共通基盤（トロフィー・RTA・総合スコア）。v1.0 の仕上げとして、遊び方・UI の土台・設定・戦闘の手ごたえ・結果の見せ方を入れた（SPEC-042〜047）。
 
-### Added — SPEC-047 (= v1.0 Release — Version, Changelog Releases, Icons, Manifest, OGP)
+### Added — SPEC-047 (= v1.0 Release — Version, Changelog Releases, Icons, Manifest, OGP) — merged in #65
 - **v1.0.0** (`js/constants.js`): `APP_VERSION` を 1.0.0 に
 - **変更履歴を公開版で区切る** (`tools/build-changelog.mjs` + `docs/changelog/RELEASES.json` 新規): `upTo` 以下の断片をその版の見出しの下に
 - **アイコンと manifest** (`assets/icons/` + `manifest.json` 新規 + `index.html`): ロゴの紋章のファビコン・apple-touch-icon・192/512px（maskable）。ホーム画面に追加できる。雪山の絵文字 🏔️ のファビコンをやめる

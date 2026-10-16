@@ -2,7 +2,7 @@
 id: SPEC-047
 title: v1.0 Release — Version, Changelog Releases, Icons, Manifest, OGP
 status: Done
-pr: feat/spec-047-v1-release
+pr: 65
 phase: v1.0
 kind: Added
 ---
