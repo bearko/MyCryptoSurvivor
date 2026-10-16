@@ -5,6 +5,72 @@
 ## [Unreleased]
 
 <!-- BEGIN AUTO-UNRELEASED -->
+- （まだありません）
+
+## [1.0.0] — 2026-10-16
+
+最初の公開版。全 3 ステージのサバイバー系アクション、NORMAL / ABSOLUTE / RTA、ランキング、bearko.games 共通基盤（トロフィー・RTA・総合スコア）。v1.0 の仕上げとして、遊び方・UI の土台・設定・戦闘の手ごたえ・結果の見せ方を入れた（SPEC-042〜047）。
+
+### Added — SPEC-047 (= v1.0 Release — Version, Changelog Releases, Icons, Manifest, OGP) — merged in #65
+- **v1.0.0** (`js/constants.js`): `APP_VERSION` を 1.0.0 に
+- **変更履歴を公開版で区切る** (`tools/build-changelog.mjs` + `docs/changelog/RELEASES.json` 新規): `upTo` 以下の断片をその版の見出しの下に
+- **アイコンと manifest** (`assets/icons/` + `manifest.json` 新規 + `index.html`): ロゴの紋章のファビコン・apple-touch-icon・192/512px（maskable）。ホーム画面に追加できる。雪山の絵文字 🏔️ のファビコンをやめる
+- **OGP** (`index.html`): 画像を絶対 URL に、説明を日本語の今のゲームに、`og:url`・`description`
+- **ランキングの既定の絞り込みを「全バージョン」に** (`js/ranking-ui.js` + `index.html`): 版を上げてもランキングが空に見えないように
+
+### Changed — SPEC-046 (= Result Reveal — Stage Intro, Stage Clear, Game Over, Activity Report) — merged in #64
+- **結果の見せ方** (`js/reveal.js` 新規 + `js/battle/stage-transition.js` + `js/battle/gameover.js` + `js/battle/activity-report.js` + `index.html` + `css/components.css`):
+  - ステージの始まりに「STAGE n / ステージ名」の帯（1.6 秒、遊びは止めない）
+  - ステージクリア：金の枠、進み具合の ●●○、そのステージの ⏱ 時間・💀 撃破・Lv のタイル（撃破数をカウントアップ）
+  - ゲームオーバー：「ステージ n / 3 で力尽きた — ステージ名」、⏱・💀・Lv のタイル
+  - 活動レポート：金の枠、ヒーロー → ステージ → 合計の順に出し、スコアを 0 から数え上げる
+  - 演出は 0.8 秒以内、画面を押すと最後の状態まで飛ぶ。演出を減らす / reduced-motion では最初から最後の状態
+  - メニュー・ランキングを金の枠に（失敗の赤はゲームオーバーだけ）
+- **テスト** (`tests/reveal.test.mjs`): カウントアップの値
+
+### Added — SPEC-045 (= Battle Feel — Shake, Hurt Flash, Kill Burst, Boss Warning, Kill Counter) — merged in #63
+- **戦闘の手ごたえ** (`js/battle/fx.js` 新規 + `js/battle/render.js` + `js/battle/damage.js` + `js/battle/enemies.js` + `js/battle/boss-attack.js`):
+  - 敵に当たると一瞬白く光る。倒すと敵の色の粒が散り（雑魚 6・レア 14・ボス 32、同時に 240 粒まで）、撃破音
+  - 被弾で画面の縁が赤く光り、小さく揺れる（ボスの攻撃は大きく）。スマホは短く震える
+  - HP 30% 以下のあいだ、画面の縁がうっすら赤く脈打つ
+  - ボスを倒すと大きく揺れて白く光る
+  - ボスが出る 30 秒前（3:30）に「⚠ WARNING ボス接近」の帯と音
+- **HUD に撃破数** (`index.html` + `js/survival.js`): 💀 n。増えると小さく弾む。被弾・撃破のときは HP の帯と撃破数をすぐ描き直す（1 秒の tick を待たない）
+- **演出を減らす / reduced-motion** : 揺れ・粒・閃光・震えを止め、被弾と HP 低下は動かない薄い縁だけ出す
+- **テスト** (`tests/fx.test.mjs`): 粒の数・上限・減衰
+
+### Added — SPEC-044 (= Settings — BGM/SE Volume, Reduce Effects, Language, Auto-Pause on Tab Switch) — merged in #62
+- **設定を追加** (`js/settings.js` + `js/settings-ui.js` 新規 + `index.html` + `css/components.css`):
+  - タイトル・メニュー・戦闘中ヘッダーの ⚙ から開く。BGM と効果音の音量（0% ＝ OFF）、演出を減らす、言語
+  - `mcs.settings` に保存。100% で今までと同じ音量。BGM が 0% のときは読み込まない
+  - 戦闘中ヘッダーの「JP/EN」は ⚙ に置き換え（言語は設定とタイトルで切り替え）
+- **音** (`js/audio.js`): 音量は「呼び出し側 × 設定」。SE はパスごとに 1 つ読み込んで `cloneNode()` で鳴らす
+- **タブを離れたら一時停止** (`js/main.js`): 戦闘中ならメニューを開いて止め、BGM も止める。戻ると BGM を再開
+- **演出を減らす** (`js/motion.js`): `prefersReducedMotion()` が OS の設定か「演出を減らす」で true
+- **テスト** (`tests/settings.test.mjs`): 設定の正規化と音量の掛け算
+
+### Changed — SPEC-043 (= UI Foundation — Tokens, Fonts, Buttons, Modals, Safe Area, Reduced Motion) — merged in #61
+- **UI の土台をそろえる** (`css/base.css` + `css/components.css` + `css/layout.css` + `css/responsive.css` + `index.html`):
+  - `:root` に角・余白・文字・フォント・z-index・動き・safe-area のトークン。使っていない `--temp` `--food` などを削除
+  - 見出しに Dela Gothic One、数字（HUD・モードの倍率）に Chakra Petch（DeckBattle と同じ組み合わせ）
+  - ボタンとカードに押した感じ（縮む）。hover はマウスの端末だけ。`focus-visible` の枠、タップのハイライトを消す
+  - 全モーダルを safe-area の内側に。高さがはみ出すときはカードの中だけスクロール
+  - `prefers-reduced-motion` を全体に（`js/motion.js` の `prefersReducedMotion()` を新設）
+- **戦闘の画面を広く** : ヘッダーを 36px のボタンに詰め、スマホではタイトル名を隠してヒーロー名を 1 行に。XP を HUD の下端の細い帯にして HUD を 1 段に（390×844 でヘッダー＋HUD 117px → 81px）
+- **ヒーロー選択** : 名前を 2 行まで出す（「コナン・ドイル」「ピタゴラス」が切れていた）
+- **タイトル** : ステージ 1 の背景をゆっくり動かして敷く
+- **モーダルの操作** (`js/modal-a11y.js` 新規): メニュー・ランキングを Esc で閉じる。キーボードで開いたときは最初のボタンにフォーカス
+- **テスト** (`tests/modal-a11y.test.mjs`): Esc で押すボタンの選び方
+
+### Changed — SPEC-042 (= How to Play — Help Rewrite + First-Run Coach Hint) — merged in #60
+- **遊び方のヘルプを今のゲームに書き直し** (`index.html` + `data/i18n/ui.json` + `js/main.js` + `css/components.css`):
+  - 旧テーマ（雪山サバイバル・資源管理）の文言を消し、操作・ステージ・強くなり方・モードの 4 つの節に（ja/en）
+  - タイトル画面に「遊び方」ボタン。ヘルプはタイトルやモーダルの上にも出る。✕・閉じる・背景・Esc で閉じる
+- **はじめての操作ガイド** (`js/battle/coach.js` 新規 + `js/battle/index.js`):
+  - 初回のステージ 1 だけ、戦闘の上に「ドラッグで移動／攻撃は自動」→「ジェムで Lv アップ」の帯を出す。遊びは止めない
+  - 見終えたら `mcs.coachSeen` を保存し、2 回目からは出ない
+- **テスト** (`tests/coach.test.mjs`): ガイドの進み方（純関数 `nextCoach`）
+
 ### Added — SPEC-041 (= bearko.games Platform Total Score) — merged in #50
 - **bearko.games 共通基盤の総合スコアに参加** (`js/platform.js` + `js/battle/activity-report.js` + `js/battle/gameover.js` + `js/menu.js` + `js/battle/index.js`):
   - 全クリア・倒れた・タイトルに戻ったときに 1 回の挑戦の成績を送る（計算は共通基盤。自己ベスト更新の通知は SDK が出す）

@@ -118,7 +118,7 @@ async function _load() {
   if (cfgEl) cfgEl.classList.add("hidden");
   if (_msg()) _msg().textContent = t("ranking.loading", "読み込み中…");
 
-  const filterMode = _filter()?.value ?? "current";
+  const filterMode = _filter()?.value ?? "all";   // SPEC-047: 既定は全バージョン (= v1.0 でスコアの式は変えていない)
   const regMode    = _regFilter()?.value ?? "all";   // SPEC-037: regulation filter (= all/NORMAL/ABSOLUTE)
   const opts = { limit: 20 };
   if (filterMode === "current") opts.version = APP_VERSION;

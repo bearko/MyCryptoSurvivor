@@ -1,0 +1,17 @@
+{
+  "name": "MyCryptoSurvivor",
+  "short_name": "Survivor",
+  "description": "マイクリのヒーローで押し寄せる敵を生き残るサバイバー系アクション。全 3 ステージ、1 プレイ約 15 分。",
+  "lang": "ja",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#121018",
+  "theme_color": "#121018",
+  "icons": [
+    { "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
