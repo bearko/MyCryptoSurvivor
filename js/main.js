@@ -131,7 +131,9 @@ function setupHelpOverlay() {
   if (!overlay) return;
 
   $("#btnHelpOpen")?.addEventListener("click", openHelp);
+  $("#btnTitleHelp")?.addEventListener("click", openHelp);   // SPEC-042: タイトルからも
   $("#btnHelpClose")?.addEventListener("click", closeHelp);
+  $("#btnHelpCloseX")?.addEventListener("click", closeHelp);
   overlay.addEventListener("click", (e) => {
     if (e.target.id === "helpOverlay") closeHelp();
   });
@@ -143,12 +145,15 @@ function setupHelpOverlay() {
 }
 
 function openHelp() {
+  if (!$("#helpOverlay")?.classList.contains("hidden")) return;   // 二重に開いて pause が漏れないように
   pauseTime();
   $("#helpOverlay")?.classList.remove("hidden");
+  $("#btnHelpClose")?.focus({ preventScroll: true });
   document.body.style.overflow = "hidden";
 }
 
 function closeHelp() {
+  if ($("#helpOverlay")?.classList.contains("hidden")) return;
   $("#helpOverlay")?.classList.add("hidden");
   document.body.style.overflow = "";
   resumeTime();

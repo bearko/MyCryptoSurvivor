@@ -125,6 +125,7 @@ export const LS_LANG = `${LS_PREFIX}.lang`;
 export const LS_PLAYER_NAME = `${LS_PREFIX}.playerName`;
 export const LS_RANKING_API_URL = `${LS_PREFIX}.rankingApiUrl`;
 export const LS_SAVE = `${LS_PREFIX}.save.v1`;
+export const LS_COACH_SEEN = `${LS_PREFIX}.coachSeen`;   // SPEC-042: はじめての操作ガイドを見終えた
 
 // ============================================================
 // バージョン (= ranking version filter に使う)

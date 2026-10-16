@@ -280,26 +280,112 @@
 .help-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(10, 8, 16, 0.78);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1rem;
-  z-index: 130;
+  padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right))
+           max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+  /* SPEC-042: タイトル画面 (z 200) やモーダル (z 320/330) の上にも出す */
+  z-index: 340;
 }
 .help-card {
-  background: var(--panel);
+  background: linear-gradient(180deg, var(--panel-2) 0%, var(--panel) 100%);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 1.4rem;
+  border-radius: 14px;
+  padding: 1.1rem 1.2rem 1rem;
   max-width: 520px;
   width: 100%;
-  max-height: 85vh;
+  max-height: min(85vh, 85dvh);
   overflow-y: auto;
+  overscroll-behavior: contain;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.help-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 .help-card h2 {
-  margin-top: 0;
+  margin: 0;
   color: var(--accent);
+  font-size: 1.2rem;
+}
+.help-card__close-x {
+  appearance: none;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 1.5rem;
+  line-height: 1;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.help-card__close-x:hover { color: var(--text); background: rgba(255, 255, 255, 0.06); }
+.help-sec {
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  padding: 0.6rem 0.8rem;
+}
+.help-sec__title {
+  margin: 0 0 0.3rem;
+  font-size: 0.92rem;
+  color: var(--text);
+}
+.help-sec__list {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.84rem;
+  color: #cfc6e4;
+  display: grid;
+  gap: 0.2rem;
+}
+.help-card__close { align-self: center; min-width: 8rem; }
+
+/* ---------- SPEC-042: はじめての操作ガイド ---------- */
+.coach {
+  position: absolute;
+  left: 50%;
+  bottom: max(12%, calc(env(safe-area-inset-bottom) + 1rem));
+  transform: translateX(-50%);
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: max-content;
+  max-width: min(calc(100vw - 2rem), 420px);
+  padding: 0.6rem 1rem;
+  border-radius: 999px;
+  background: rgba(18, 16, 24, 0.82);
+  border: 1px solid rgba(196, 163, 90, 0.6);
+  box-shadow: var(--shadow-md);
+  color: var(--text);
+  font-weight: 700;
+  font-size: 0.9rem;
+  pointer-events: none;   /* 遊びを止めない: スティックのドラッグは下の canvas へ通す */
+  animation: coach-in 280ms ease-out both;
+}
+.coach__icon { font-size: 1.3rem; display: inline-block; width: 1.6rem; text-align: center; }
+.coach__finger { display: inline-block; animation: coach-drag 1.4s ease-in-out infinite; }
+.coach[data-step="1"] .coach__finger { animation: none; }
+.coach[data-step="1"] .coach__icon::before { content: "💎"; }
+.coach[data-step="1"] .coach__finger { display: none; }
+@keyframes coach-in {
+  from { opacity: 0; transform: translate(-50%, 8px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
+@keyframes coach-drag {
+  0%, 100% { transform: translateX(-6px); }
+  50%      { transform: translateX(6px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .coach, .coach__finger { animation: none; }
 }
 
 /* ---------- Notification tile ---------- */
@@ -886,8 +972,15 @@
 .ranking-card {
   max-width: 520px;
 }
-.title-screen__ranking {
+.title-screen__links {
+  display: flex;
+  gap: 0.6rem;
+  justify-content: center;
+  flex-wrap: wrap;
   margin-top: 0.4rem;
+}
+.title-screen__ranking,
+.title-screen__help {
   font-size: 0.86rem;
   letter-spacing: 0.04em;
 }
