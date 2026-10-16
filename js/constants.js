@@ -126,6 +126,7 @@ export const LS_PLAYER_NAME = `${LS_PREFIX}.playerName`;
 export const LS_RANKING_API_URL = `${LS_PREFIX}.rankingApiUrl`;
 export const LS_SAVE = `${LS_PREFIX}.save.v1`;
 export const LS_COACH_SEEN = `${LS_PREFIX}.coachSeen`;   // SPEC-042: はじめての操作ガイドを見終えた
+export const LS_SETTINGS = `${LS_PREFIX}.settings`;     // SPEC-044: 音量・演出を減らす
 
 // ============================================================
 // バージョン (= ranking version filter に使う)

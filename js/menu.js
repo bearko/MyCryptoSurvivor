@@ -114,6 +114,7 @@ function _onToTitle() {
 
 function _renderLabels() {
   const trk = _btnRanking(); if (trk) trk.textContent = t("menu.ranking", "ランキング");
+  const ts = document.getElementById("pauseMenuSettings"); if (ts) ts.textContent = t("settings.title", "設定");   // SPEC-044
   const tr = _btnRestart(); if (tr) tr.textContent = t("menu.restart", "ステージをはじめからやり直す");
   const tt = _btnTitle();   if (tt) tt.textContent = t("menu.toTitle", "タイトルに戻る");
   const tc = _btnClose();   if (tc) tc.textContent = t("menu.close",   "閉じる");

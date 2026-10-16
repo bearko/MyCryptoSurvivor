@@ -1,0 +1,8 @@
+- **設定を追加** (`js/settings.js` + `js/settings-ui.js` 新規 + `index.html` + `css/components.css`):
+  - タイトル・メニュー・戦闘中ヘッダーの ⚙ から開く。BGM と効果音の音量（0% ＝ OFF）、演出を減らす、言語
+  - `mcs.settings` に保存。100% で今までと同じ音量。BGM が 0% のときは読み込まない
+  - 戦闘中ヘッダーの「JP/EN」は ⚙ に置き換え（言語は設定とタイトルで切り替え）
+- **音** (`js/audio.js`): 音量は「呼び出し側 × 設定」。SE はパスごとに 1 つ読み込んで `cloneNode()` で鳴らす
+- **タブを離れたら一時停止** (`js/main.js`): 戦闘中ならメニューを開いて止め、BGM も止める。戻ると BGM を再開
+- **演出を減らす** (`js/motion.js`): `prefersReducedMotion()` が OS の設定か「演出を減らす」で true
+- **テスト** (`tests/settings.test.mjs`): 設定の正規化と音量の掛け算
