@@ -2,7 +2,7 @@
 id: SPEC-045
 title: Battle Feel — Shake, Hurt Flash, Kill Burst, Boss Warning, Kill Counter
 status: Done
-pr: feat/spec-045-battle-feel
+pr: 63
 phase: v1.0
 kind: Added
 ---
