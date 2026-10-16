@@ -13,6 +13,7 @@ import { STAGE_TABLE } from "../constants.js";
 import { triggerGameOver } from "./gameover.js";
 import { triggerActivityReport } from "./activity-report.js";
 import { t, tpl, onLangChange } from "../i18n.js";
+import { reportStageEnd } from "../platform.js";
 
 let _wired = false;
 
@@ -47,6 +48,9 @@ export function triggerStageEndOrTransition() {
 
   // SPEC-033: 終了直前にステージ snapshot を保存 (= activity report 用)
   _captureStageSnapshot();
+
+  // SPEC-039: 共通基盤のトロフィー（最初のステージ・全ステージクリア）
+  reportStageEnd(state.currentStageIdx ?? 0, STAGE_TABLE.length);
 
   const isLast = (state.currentStageIdx ?? 0) >= STAGE_TABLE.length - 1;
   if (isLast) {
