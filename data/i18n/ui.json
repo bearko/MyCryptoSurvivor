@@ -168,5 +168,13 @@
   "coach.move":          { "ja": "ドラッグで移動（PC は WASD）。攻撃は自動！",
                            "en": "Drag to move (WASD on PC). Attacks are automatic!" },
   "coach.gems":          { "ja": "敵が落とすジェムを拾うと Lv アップ",
-                           "en": "Collect the gems enemies drop to level up" }
+                           "en": "Collect the gems enemies drop to level up" },
+  "settings.title":      { "ja": "設定",                           "en": "Settings" },
+  "settings.bgm":        { "ja": "BGM",                            "en": "Music" },
+  "settings.se":         { "ja": "効果音",                         "en": "Sound FX" },
+  "settings.off":        { "ja": "OFF",                            "en": "OFF" },
+  "settings.reduceFx":   { "ja": "演出を減らす",                   "en": "Reduce effects" },
+  "settings.reduceFxNote": { "ja": "揺れ・粒・画面の光を止める",   "en": "No shake, particles or flashes" },
+  "settings.reduceFxOs": { "ja": "端末の設定で動きを減らしています", "en": "Reduced by your device settings" },
+  "settings.lang":       { "ja": "言語",                           "en": "Language" }
 }

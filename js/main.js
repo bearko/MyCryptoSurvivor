@@ -4,7 +4,8 @@
 
 import { state, pauseTime, resumeTime } from "./state.js";
 import { initI18n, setLang, getLang, t, tpl, onLangChange } from "./i18n.js";
-import { installMenu } from "./menu.js";
+import { installMenu, openMenu } from "./menu.js";
+import { installSettingsUI } from "./settings-ui.js";
 import { installRankingUI } from "./ranking-ui.js";
 import { installModeSelect, showModeSelect } from "./mode-select.js";
 import {
@@ -33,7 +34,7 @@ import { loadExtensions } from "./extensions.js";
 import { loadEnemies } from "./enemies.js";
 import { tickStatsDecay, renderHud } from "./survival.js";
 import { startBattle } from "./battle/index.js";
-import { playSe, unlockAudio } from "./audio.js";
+import { playSe, unlockAudio, suspendBgm, resumeBgm } from "./audio.js";
 import { SFX } from "./constants.js";
 import { APP_VERSION } from "./constants.js";
 import { initPlatform } from "./platform.js";
@@ -72,6 +73,8 @@ async function init() {
   installMenu();   // SPEC-034: ヘッダー一時停止メニュー
   installRankingUI();   // SPEC-035: タイトル / メニューから開くランキングモーダル
   installModalA11y();   // SPEC-043: 開いたモーダルにフォーカス・メニューとランキングは Esc で閉じる
+  installSettingsUI();  // SPEC-044: 音量・演出を減らす・言語
+  installAutoPause();   // SPEC-044: タブを離れたら一時停止
   // SPEC-037: タイトル → モード選択 → ヒーロー選択 の順
   installModeSelect(() => {
     $("#app")?.classList.remove("hidden");
@@ -82,6 +85,22 @@ async function init() {
 
   // タイトル画面表示中は時間が進むが、 onTick は state.activeXxx が無いので何も起きない
   startTimeLoop();
+}
+
+// ============================================================
+// SPEC-044: タブを離れたら一時停止
+// ============================================================
+// 戦闘中で、 ほかのモーダルで止まっていなければメニューを開く (= 戻ったらメニューから再開)。
+// BGM はどの画面でも止め、 戻ったら再開する (= 背景のタブで鳴り続けない)。
+function installAutoPause() {
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      if (state.battle.active && state.pauseFlags === 0) openMenu();
+      suspendBgm();
+    } else {
+      resumeBgm();
+    }
+  });
 }
 
 // ============================================================
