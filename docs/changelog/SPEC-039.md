@@ -1,0 +1,4 @@
+- **bearko.games 共通基盤のトロフィーに参加** (`js/platform.js` + `js/battle/stage-transition.js` + `index.html`):
+  - 最初のステージを終えると `survivor.stage1`（スノーフォール）、全 3 ステージクリアで `survivor.clear`（幻の生存者）
+  - 未ログインでも獲得でき、ログインするとまとめて登録（通知とログイン案内は共通基盤の SDK が出す）
+  - SDK が読めなくても何もしない（ゲームの進行は変わらない）

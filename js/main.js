@@ -35,6 +35,8 @@ import { tickStatsDecay, renderHud } from "./survival.js";
 import { startBattle } from "./battle/index.js";
 import { playSe, unlockAudio } from "./audio.js";
 import { SFX } from "./constants.js";
+import { APP_VERSION } from "./constants.js";
+import { initPlatform } from "./platform.js";
 
 // ============================================================
 // DOM helpers
@@ -446,6 +448,8 @@ function renderHeader() {
 // Boot
 // ============================================================
 window.addEventListener("DOMContentLoaded", () => {
+  // SPEC-039: bearko.games 共通基盤（トロフィー）。SDK がなければ何もしない
+  initPlatform(APP_VERSION);
   init().catch((e) => console.error("init failed", e));
 });
 
