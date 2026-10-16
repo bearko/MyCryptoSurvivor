@@ -2,7 +2,7 @@
 id: SPEC-044
 title: Settings — BGM/SE Volume, Reduce Effects, Language, Auto-Pause on Tab Switch
 status: Done
-pr: feat/spec-044-settings
+pr: 62
 phase: v1.0
 kind: Added
 ---
