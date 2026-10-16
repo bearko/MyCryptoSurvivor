@@ -16,11 +16,12 @@ import {
   getExtSprite, getGemSprite, getEnemySprite, getBackgroundSprite,
   getMagicCardSprite,
 } from "./sprites.js";
+import { shakeOffset, renderFxWorld, renderFxScreen } from "./fx.js";
 
 /**
  * 1 frame 描画。 ctx は dpr 反映済の transform で渡される前提。
  */
-export function renderBattle(ctx) {
+export function renderBattle(ctx, nowMs = 0) {
   const { player, camera, viewport, enemies, gems, projectiles, orbits, beams, bombs, shockwaves, damageNumbers, bossProjectiles, bossOrbits, magicCards } = state.battle;
   const w = viewport.w, h = viewport.h;
   if (w <= 0 || h <= 0) return;
@@ -28,6 +29,10 @@ export function renderBattle(ctx) {
   // SPEC-026: ステージ外は黒、 ステージ内は背景画像 + 半透明ダーク overlay
   ctx.fillStyle = "#0e0c14";
   ctx.fillRect(0, 0, w, h);
+  // SPEC-045: 揺れ (= 世界の描画をずらす。 画面の縁と数字の後で戻す)
+  const shk = shakeOffset();
+  ctx.save();
+  ctx.translate(shk.x, shk.y);
   _drawBackground(ctx, camera, w, h);
 
   // グリッド (= ステージ全体に薄く重ねて方向感覚補助)
@@ -217,6 +222,15 @@ export function renderBattle(ctx) {
     ctx.beginPath();
     ctx.arc(sx, sy, e.r, 0, Math.PI * 2);
     ctx.stroke();
+    // SPEC-045: 当たった瞬間に白く光る
+    if ((e.hitFlashMs ?? 0) > 0) {
+      ctx.globalAlpha = 0.55 * (e.hitFlashMs / 80);
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.arc(sx, sy, e.r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
     // HP バー (= 満タン以外で表示)
     if (e.hp < e.hpMax) {
       _drawHpBar(ctx, sx, sy + e.r + 4, HP_BAR_WIDTH, HP_BAR_HEIGHT, e.hp / e.hpMax);
@@ -314,8 +328,11 @@ export function renderBattle(ctx) {
                state.stats.hp / state.statsMax.hp);
   }
 
+  // SPEC-045: 撃破の粒
+  renderFxWorld(ctx, camera, w, h);
+
   // SPEC-016: ダメージ数字 floater (= 一番上の layer)
-  ctx.font = "700 14px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+  ctx.font = "700 14px 'Chakra Petch', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
   ctx.textAlign = "center";
   ctx.textBaseline = "alphabetic";
   for (const d of damageNumbers) {
@@ -332,6 +349,10 @@ export function renderBattle(ctx) {
     ctx.fillText(d.value, dx, dy);
   }
   ctx.globalAlpha = 1;
+  ctx.restore();
+
+  // SPEC-045: 画面の縁の赤 (= 被弾・HP 低下) と閃光。 揺らさない
+  renderFxScreen(ctx, w, h, nowMs);
 }
 
 /**

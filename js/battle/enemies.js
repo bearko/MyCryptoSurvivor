@@ -8,7 +8,7 @@ import {
   ENEMY_SPAWN_INTERVAL_MS, ENEMY_SPAWN_MARGIN_PX,
   ENEMY_COLOR, MAX_ENEMIES,
   CONTACT_COOLDOWN_MS,
-  STAGE_DURATION_MS, BOSS_SPAWN_AT_MS,
+  STAGE_DURATION_MS, BOSS_SPAWN_AT_MS, BOSS_WARNING_LEAD_MS,
   WAVE_TABLE, ENEMY_SPECS, STAGE_TABLE,
   WORLD_W, WORLD_H,
   RARE_ENEMY_IDS, RARE_SPAWN_INTERVAL_MS,
@@ -18,6 +18,7 @@ import { triggerStageEndOrTransition } from "./stage-transition.js";
 import { triggerGameOver } from "./gameover.js";
 import { pushDamageNumber } from "./damage.js";
 import { playSe } from "../audio.js";
+import { fxPlayerHurt, fxBossIncoming, fxBossSpawned } from "./fx.js";
 
 const DEFAULT_SPEC = { hp: 25, dmg: 10, speed: 80, radius: 12, xpValue: 1 };
 
@@ -48,9 +49,14 @@ export function tickEnemies(dt, nowMs) {
   const stage = _currentStage();
 
   // SPEC-022 / SPEC-030: ボス時刻到達で 1 度だけスポーン (= ボス id はステージ別)
+  // SPEC-045: 出る 30 秒前に予告 (= 1 ステージ 1 回。 fx 側で 2 回目を弾く)
+  if (!b.bossSpawned && b.stageElapsedMs >= BOSS_SPAWN_AT_MS - BOSS_WARNING_LEAD_MS) {
+    fxBossIncoming();
+  }
   if (!b.bossSpawned && b.stageElapsedMs >= BOSS_SPAWN_AT_MS) {
     spawnEnemyAtRing(stage.bossEnemyId);
     b.bossSpawned = true;
+    fxBossSpawned();
   }
 
   // SPEC-022 / SPEC-030: 5 分経過 or ボス撃破で **ステージ終了** (= 次ステージ or 全クリア)
@@ -105,6 +111,7 @@ export function tickEnemies(dt, nowMs) {
       b.contactCooldownMs = CONTACT_COOLDOWN_MS;
       pushDamageNumber(b.player.x, b.player.y - b.player.r - 4, takenInt, "#ff7676");
       playSe(SFX.PLAYER_DAMAGED, 200, 0.55);
+      fxPlayerHurt(!!e.isBoss);   // SPEC-045: 縁の赤・揺れ
       if (state.stats.hp <= 0 && !b.gameOver) {
         triggerGameOver();
       }

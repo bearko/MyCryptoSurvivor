@@ -176,5 +176,6 @@
   "settings.reduceFx":   { "ja": "演出を減らす",                   "en": "Reduce effects" },
   "settings.reduceFxNote": { "ja": "揺れ・粒・画面の光を止める",   "en": "No shake, particles or flashes" },
   "settings.reduceFxOs": { "ja": "端末の設定で動きを減らしています", "en": "Reduced by your device settings" },
-  "settings.lang":       { "ja": "言語",                           "en": "Language" }
+  "settings.lang":       { "ja": "言語",                           "en": "Language" },
+  "boss.warning":        { "ja": "ボス接近",                       "en": "Boss incoming" }
 }

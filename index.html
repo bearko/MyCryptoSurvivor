@@ -133,6 +133,7 @@
     <section class="hud" id="hud" aria-live="polite">
       <span class="hud__level num"   id="hudLevel">Lv.1</span>
       <span class="hud__elapsed num" id="hudElapsed" aria-label="elapsed time">00:00</span>
+      <span class="hud__kills num" id="hudKills" aria-label="kills"><span aria-hidden="true">💀</span><span id="hudKillsValue">0</span></span>
       <div class="hud__bar" id="hudHp" data-stat="hp" role="meter"
            aria-valuemin="0" aria-valuemax="100" aria-valuenow="100">
         <span class="hud__bar-label" data-i18n="hud.stats.hp">HP</span>
@@ -152,6 +153,11 @@
       <div id="joystick" class="joystick hidden" aria-hidden="true">
         <div class="joystick__base"  id="joystickBase"></div>
         <div class="joystick__stick" id="joystickStick"></div>
+      </div>
+      <!-- SPEC-045: ボスの予告 (= 3:30 に 1 回) -->
+      <div id="bossBanner" class="boss-banner hidden" aria-live="assertive">
+        <span class="boss-banner__mark">⚠ WARNING</span>
+        <span class="boss-banner__text" data-i18n="boss.warning">ボス接近</span>
       </div>
       <!-- SPEC-042: はじめての操作ガイド (= 遊びを止めない、 pointer-events: none) -->
       <div id="coachHint" class="coach hidden" data-step="0" aria-live="polite">

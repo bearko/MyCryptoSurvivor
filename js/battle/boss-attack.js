@@ -24,6 +24,7 @@ import {
 import { pushDamageNumber } from "./damage.js";
 import { triggerGameOver } from "./gameover.js";
 import { playSe } from "../audio.js";
+import { fxPlayerHurt } from "./fx.js";
 
 /**
  * 1 frame: 各ボス (= state.battle.enemies の isBoss=true) の攻撃を更新。
@@ -137,6 +138,7 @@ function _tickPlayerCollision(nowMs) {
     b.contactCooldownMs = CONTACT_COOLDOWN_MS;
     pushDamageNumber(px, py - pr - 4, taken, "#ff7676");
     playSe(SFX.PLAYER_DAMAGED, 200, 0.55);
+    fxPlayerHurt(true);   // SPEC-045: ボスの攻撃は大きく揺らす
     if (state.stats.hp <= 0 && !b.gameOver) triggerGameOver();
   };
 
