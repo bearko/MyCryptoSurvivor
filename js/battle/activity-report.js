@@ -24,6 +24,7 @@ import { stopBgm, playSe } from "../audio.js";
 import { scoreMetrics, reportRunScore, defaultPlayerName, platformUserName } from "../platform.js";
 import { returnToTitle } from "./gameover.js";
 import { countUp, revealIn } from "../reveal.js";
+import { presentResult } from "../result-telop.js";
 import {
   getPlayerName, setPlayerName, submitScore, getRankingApiUrl,
 } from "../ranking-client.js";
@@ -49,10 +50,15 @@ export function triggerActivityReport() {
   _renderReport();
   const modal = document.getElementById("activityReportModal");
   modal?.classList.remove("hidden");
-  // SPEC-046: ヒーロー → ステージ → 合計の順に出し、 スコアを 0 から数え上げる
-  revealIn(modal);
-  const scoreEl = document.getElementById("activityReportScore");
-  if (scoreEl) countUp(scoreEl, Number(scoreEl.dataset.score) || 0, { durMs: 800, delayMs: 450 });
+  // SPEC-058: テロップのあと、 SPEC-046: ヒーロー → ステージ → 合計の順に出し、 スコアを 0 から数え上げる
+  presentResult(modal, "allClear", {
+    heroId: state.ownedHero?.heroId ?? null,
+    then: () => {
+      revealIn(modal);
+      const scoreEl = document.getElementById("activityReportScore");
+      if (scoreEl) countUp(scoreEl, Number(scoreEl.dataset.score) || 0, { durMs: 800, delayMs: 450 });
+    },
+  });
 }
 
 function _wireOnce() {

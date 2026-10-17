@@ -28,6 +28,9 @@ function _render() {
   const se = $("settingsSe");
   if (bgm) bgm.value = String(Math.round(s.bgm * 100));
   if (se) se.value = String(Math.round(s.se * 100));
+  // SPEC-058: つまみの帯を、 いまの値まで金で埋める (= css/result-ui.css の --val)
+  bgm?.style.setProperty("--val", `${bgm.value}%`);
+  se?.style.setProperty("--val", `${se.value}%`);
   const bgmVal = $("settingsBgmValue"); if (bgmVal) bgmVal.textContent = _pctLabel(s.bgm);
   const seVal = $("settingsSeValue");   if (seVal) seVal.textContent = _pctLabel(s.se);
 

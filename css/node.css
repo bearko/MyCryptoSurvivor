@@ -48,7 +48,14 @@
     /* 縁: 金属の光 (= 左上は明るく、 右下はシアン) */
     linear-gradient(135deg, var(--node-gold-hi), var(--edge-c) 28%, color-mix(in srgb, var(--edge-c) 35%, transparent) 62%, var(--node-cyan)) border-box;
   box-shadow: none;
-  animation: modal-pop-in 0.22s var(--ease-out), node-sheen 5.5s linear 0.4s infinite;
+  animation: node-boot 420ms var(--ease-out), node-sheen 5.5s linear 0.6s infinite;
+}
+/* 開く: 端末の電源が入るように、 細い光の線から縦に開く (= SPEC-058) */
+@keyframes node-boot {
+  0%   { opacity: 0; transform: scale(1.04, 0.02); filter: brightness(3); }
+  30%  { opacity: 1; transform: scale(1, 0.02); filter: brightness(3); }
+  68%  { transform: scale(1, 1.012); filter: brightness(1.2); }
+  100% { opacity: 1; transform: none; filter: none; }
 }
 @keyframes node-sheen {
   0%   { background-position: 0 0, 0 0, -60% 0, 0 0, 0 0, 0 0, 0 0; }

@@ -1,0 +1,646 @@
+/* ============================================================
+   result-ui.css — 結果とメニュー (= SPEC-058)
+   ============================================================
+   - 結果のテロップ: 斜めの帯が飛びこみ (= MCH の battle_result_cutin の写し)、 前にヒーローとアインが重なる
+   - 結果の中身: 数字のタイル・ステージの節 (= ノードの鎖)・活動レポートのカード・スコア
+   - メニュー・設定・ランキング・遊び方: 番号の付いた行が順に入ってくる、 端末のつまみとスイッチ
+   このファイルは node.css・battle-ui.css のあとに読む。
+   ============================================================ */
+
+/* ------------------------------------------------------------
+   1. 結果のテロップ (= js/result-telop.js)
+   ------------------------------------------------------------ */
+.result-telop {
+  --tone: var(--accent);
+  --tone2: var(--node-cyan);
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--z-modal-top) + 6);
+  overflow: hidden;
+  cursor: pointer;
+}
+.result-telop.hidden { display: none; }
+.result-telop[data-tone="lose"] { --tone: var(--ifrit); --tone2: #7a2232; }
+.result-telop__flash {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 46%, rgba(255, 250, 230, 0.9), rgba(255, 250, 230, 0) 65%);
+  opacity: 0;
+}
+.result-telop[data-tone="lose"] .result-telop__flash {
+  background: radial-gradient(ellipse at 50% 46%, rgba(140, 20, 34, 0.75), rgba(40, 6, 12, 0.6) 70%);
+}
+/* 帯 (= MCH: 幅 150%・-10° に傾けた暗い帯。 外側の箱ごと jack-in で飛びこむ) */
+.result-telop__label {
+  position: absolute;
+  inset: 0;
+}
+.result-telop__band {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: 150%;
+  padding: 0.85rem 0 0.75rem;
+  transform: translate(-50%, -50%) rotate(-10deg);
+  text-align: center;
+  overflow: hidden;
+  background:
+    repeating-linear-gradient(115deg, transparent 0 46px, rgba(255, 255, 255, 0.045) 46px 50px),
+    var(--node-scan),
+    linear-gradient(180deg, #30333d, #22252c 60%, #1b1d23);
+  box-shadow: 0 -3px 0 var(--tone), 0 3px 0 var(--tone2), 0 0 44px color-mix(in srgb, var(--tone) 45%, transparent);
+}
+/* 帯を光が一度だけ走る */
+.result-telop__band::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 0 40%, rgba(255, 255, 255, 0.4) 50%, transparent 60%) -120% 0 / 45% 100% no-repeat;
+}
+.result-telop__text {
+  position: relative;
+  display: block;
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 9.5vw, 3.6rem);
+  line-height: 1.05;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  color: #fff;
+  background: linear-gradient(180deg, #ffffff 30%, var(--node-gold-hi) 62%, var(--tone));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.65));
+}
+/* 長い見出し (= ALL NODES CLEAR) は小さく。 縦長の画面でも端で切れない */
+.result-telop[data-kind="allClear"] .result-telop__text { font-size: clamp(1.5rem, 7vw, 3.2rem); }
+.result-telop[data-tone="lose"] .result-telop__text {
+  background: linear-gradient(180deg, #ffffff 30%, #ffc2c2 60%, var(--tone));
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+.result-telop__sub {
+  position: relative;
+  display: block;
+  margin-top: 0.2rem;
+  font-weight: 800;
+  font-size: 0.85rem;
+  letter-spacing: 0.32em;
+  color: var(--tone);
+}
+/* ヒーロー (= 帯の上の縁に立つ。 原本 64px の 3 倍。 文字にはかぶせない) */
+.result-telop__hero {
+  position: absolute;
+  left: max(0px, calc(50% - 236px));
+  top: calc(46% - 214px);
+  width: 192px;
+  height: 192px;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 6px 0 rgba(0, 0, 0, 0.45)) drop-shadow(0 0 18px color-mix(in srgb, var(--tone) 60%, transparent));
+  opacity: 0;
+}
+.result-telop[data-tone="lose"] .result-telop__hero {
+  rotate: -14deg;
+  filter: grayscale(0.85) brightness(0.75) drop-shadow(0 6px 0 rgba(0, 0, 0, 0.45));
+}
+/* ナビのアイン (= 帯の下の縁から顔を出す。 96x128 の 2 倍) と吹き出し (= 帯の下) */
+.result-telop__navi {
+  position: absolute;
+  right: max(0px, calc(50% - 236px));
+  top: calc(46% - 4px);
+  width: 192px;
+  height: 256px;
+  opacity: 0;
+}
+.result-telop__ain {
+  display: block;
+  width: 192px;
+  height: 256px;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 6px 0 rgba(0, 0, 0, 0.4));
+}
+.result-telop__bubble {
+  --cut: 8px;
+  position: absolute;
+  right: calc(100% - 40px);
+  top: 84px;
+  padding: 0.4rem 0.75rem;
+  white-space: nowrap;
+  font-weight: 800;
+  font-size: 0.9rem;
+  color: #1a1420;
+  background: linear-gradient(180deg, #ffffff, #f1ecdf);
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+  transform-origin: 100% 50%;
+  opacity: 0;
+}
+.result-telop--run .result-telop__flash  { animation: telop-flash 520ms ease-out both; }
+.result-telop--run .result-telop__label  { animation: telop-jack-in 750ms both, telop-out 240ms ease-in 1360ms forwards; }
+.result-telop--run .result-telop__band::after { animation: telop-sheen 900ms var(--ease-out) 560ms both; }
+.result-telop--run .result-telop__hero   { animation: telop-hero 1600ms var(--ease-out) both; }
+.result-telop--run .result-telop__navi   { animation: telop-navi 1600ms var(--ease-out) both; }
+.result-telop--run .result-telop__bubble { animation: telop-bubble 1600ms var(--ease-spring) both; }
+@keyframes telop-flash {
+  0%   { opacity: 0.95; }
+  100% { opacity: 0; }
+}
+/* MCH の mch-battle-result-jack-in をそのまま */
+@keyframes telop-jack-in {
+  0%   { opacity: 0; transform: scale(0.1) rotate(30deg); transform-origin: center bottom; }
+  50%  { transform: rotate(-10deg); }
+  70%  { transform: rotate(3deg); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes telop-out {
+  to { opacity: 0; transform: translateX(-12%) scale(1.04); }
+}
+@keyframes telop-sheen {
+  from { background-position: -120% 0; }
+  to   { background-position: 220% 0; }
+}
+@keyframes telop-hero {
+  0%, 14% { opacity: 0; translate: -70% 10%; scale: 1.3; }
+  30%     { opacity: 1; translate: 0 0; scale: 1; }
+  86%     { opacity: 1; translate: 5% 0; }
+  100%    { opacity: 0; translate: -25% 0; }
+}
+@keyframes telop-navi {
+  0%, 18% { opacity: 0; translate: 60% 4%; }
+  34%     { opacity: 1; translate: 0 0; }
+  40%     { translate: 0 -3%; }
+  46%     { translate: 0 0; }
+  86%     { opacity: 1; translate: 0 0; }
+  100%    { opacity: 0; translate: 25% 0; }
+}
+@keyframes telop-bubble {
+  0%, 34% { opacity: 0; scale: 0.4; }
+  42%     { opacity: 1; scale: 1.08; }
+  48%     { scale: 1; }
+  86%     { opacity: 1; scale: 1; }
+  100%    { opacity: 0; scale: 1; }
+}
+/* テロップのあいだは結果の中身を隠す。 終わると開く動き (= node-boot) から */
+.result-hold .gameover-modal__card { visibility: hidden; animation: none; }
+
+/* ------------------------------------------------------------
+   2. 結果の中身
+   ------------------------------------------------------------ */
+/* ステージの節 (= ノードの鎖)。 終えた節は金、 次の節はシアンで点滅 */
+.stage-pips {
+  gap: 22px;
+  padding: 4px 0;
+  background: linear-gradient(90deg, transparent, rgba(196, 163, 90, 0.7) 18%, rgba(196, 163, 90, 0.7) 82%, transparent) center / 112px 1px no-repeat;
+}
+.stage-pip {
+  width: 11px;
+  height: 11px;
+  border-radius: 0;
+  transform: rotate(45deg);
+  background: #17131f;
+}
+.stage-pip--done {
+  background: linear-gradient(135deg, var(--node-gold-hi), var(--accent));
+  box-shadow: 0 0 10px rgba(246, 226, 160, 0.75);
+}
+.stage-pip--done + .stage-pip:not(.stage-pip--done) {
+  border-color: var(--node-cyan);
+  animation: pip-next 1.1s ease-in-out infinite;
+}
+@keyframes pip-next {
+  50% { background: rgba(86, 204, 242, 0.45); box-shadow: 0 0 12px rgba(86, 204, 242, 0.9); }
+}
+.result-stage-name {
+  font-family: var(--font-num);
+  letter-spacing: 0.06em;
+  color: #bfe3f2;
+}
+.result-stage-name::before { content: "› "; color: var(--node-cyan); }
+
+/* 数字のタイル: 角を切った小さな端末 */
+.result-tile {
+  --cut: 8px;
+  position: relative;
+  border: 1px solid transparent;
+  border-radius: 0;
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+  background:
+    linear-gradient(135deg, var(--node-gold-hi) 0 calc(var(--cut) * 0.7071 + 1px), transparent 0) border-box,
+    var(--node-scan) padding-box,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(0, 0, 0, 0.2)) padding-box,
+    linear-gradient(#17131f, #17131f) padding-box,
+    linear-gradient(160deg, rgba(246, 226, 160, 0.75), rgba(196, 163, 90, 0.15) 50%, rgba(86, 204, 242, 0.55)) border-box;
+}
+.result-tile__icon { font-size: 0.95rem; opacity: 0.9; }
+.result-tile__value {
+  font-size: 1.35rem;
+  color: #fff;
+  letter-spacing: 0.02em;
+  text-shadow: 0 0 10px rgba(246, 226, 160, 0.45);
+}
+.result-tile__label { font-size: 0.64rem; letter-spacing: 0.2em; }
+/* タイルは 1 枚ずつ、 下から起き上がる */
+.result-tile:nth-child(2) { --t: 1; }
+.result-tile:nth-child(3) { --t: 2; }
+.reveal--run .result-tile {
+  animation: tile-flip 440ms var(--ease-page) both;
+  animation-delay: calc(var(--i, 0) * 90ms + var(--t, 0) * 70ms);
+}
+.reveal--done .result-tile { animation: none; }
+@keyframes tile-flip {
+  0%   { opacity: 0; transform: perspective(500px) rotateX(-80deg); }
+  100% { opacity: 1; transform: perspective(500px) rotateX(0); }
+}
+/* 次のステージ: NEXT の札 */
+.result-next {
+  --cut: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.45rem 0.8rem;
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+  background: linear-gradient(90deg, rgba(86, 204, 242, 0.2), rgba(86, 204, 242, 0.04));
+  box-shadow: inset 3px 0 0 var(--node-cyan);
+}
+.result-next::before {
+  content: "NEXT";
+  padding: 1px 6px;
+  font-family: var(--font-num);
+  font-weight: 700;
+  font-size: 0.62rem;
+  letter-spacing: 0.3em;
+  color: #0e1a20;
+  background: var(--node-cyan);
+}
+/* 結果の主ボタンは光がときどき走る (= 押してほしい場所がいつも生きている) */
+.gameover-modal__retry { animation: node-press-sheen 3.2s var(--ease-out) 1.4s infinite; }
+
+/* 名前の入力: 角を切った端末の欄 */
+.gameover-form__label { font-size: 0.72rem; letter-spacing: 0.12em; }
+.gameover-form__input {
+  --cut: 8px;
+  border: 1.5px solid transparent;
+  border-radius: 0;
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+  background:
+    linear-gradient(135deg, var(--accent) 0 calc(var(--cut) * 0.7071 + 1px), transparent 0) border-box,
+    var(--node-scan) padding-box,
+    linear-gradient(#120f19, #120f19) padding-box,
+    linear-gradient(135deg, var(--accent), rgba(196, 163, 90, 0.3) 60%, rgba(86, 204, 242, 0.6)) border-box;
+  caret-color: var(--node-cyan);
+}
+.gameover-form__input:focus {
+  outline: none;
+  background:
+    linear-gradient(135deg, var(--node-cyan) 0 calc(var(--cut) * 0.7071 + 1px), transparent 0) border-box,
+    var(--node-scan) padding-box,
+    linear-gradient(#16121f, #16121f) padding-box,
+    linear-gradient(135deg, var(--node-cyan), var(--node-gold-hi)) border-box;
+}
+
+/* ------------------------------------------------------------
+   3. 活動レポート
+   ------------------------------------------------------------ */
+.report-hero__inner {
+  --cut: 10px;
+  --fc: var(--accent);
+  position: relative;
+  border: 0;
+  border-radius: 0;
+  padding: 0.5rem 0.8rem;
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--fc) 38%, transparent), transparent 60%),
+    var(--node-scan),
+    linear-gradient(180deg, #261f37, #17131f);
+  box-shadow: inset 3px 0 0 var(--fc);
+}
+.report-hero__inner[data-faction="SEIRYU"] { --fc: var(--seiryu); }
+.report-hero__inner[data-faction="SUZAKU"] { --fc: var(--suzaku); }
+.report-hero__inner[data-faction="BYAKKO"] { --fc: var(--byakko); }
+.report-hero__inner[data-faction="GENBU"]  { --fc: var(--genbu); }
+.report-hero__inner[data-faction="KOURYU"] { --fc: var(--kouryu); }
+.report-hero__inner::after {
+  content: "HERO";
+  position: absolute;
+  right: 0.7rem;
+  top: 0.35rem;
+  font-family: var(--font-num);
+  font-weight: 700;
+  font-size: 0.58rem;
+  letter-spacing: 0.32em;
+  color: var(--fc);
+}
+.report-hero__portrait {
+  width: 64px;
+  height: 64px;
+  border-radius: 0;
+  object-fit: contain;
+  image-rendering: pixelated;
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+}
+.report-hero__name { font-family: var(--font-display); font-weight: 400; font-size: 1.15rem; }
+
+/* ステージのカード: 番号と、 カードをつなぐ線 (= ノードの鎖) */
+.report-stages { position: relative; counter-reset: rstage; }
+.report-stages::before {
+  content: "";
+  position: absolute;
+  left: 1.2rem;
+  top: 0.4rem;
+  bottom: 0.4rem;
+  width: 2px;
+  background: linear-gradient(180deg, var(--node-cyan), var(--accent));
+  opacity: 0.6;
+}
+.report-stage {
+  --cut: 8px;
+  position: relative;
+  z-index: 1;
+  counter-increment: rstage;
+  padding: 0.45rem 0.55rem 0.5rem 2.5rem;
+  border: 1px solid transparent;
+  border-radius: 0;
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+  background:
+    linear-gradient(135deg, var(--accent) 0 calc(var(--cut) * 0.7071 + 1px), transparent 0) border-box,
+    var(--node-scan) padding-box,
+    linear-gradient(#1c1728, #1c1728) padding-box,
+    linear-gradient(160deg, rgba(196, 163, 90, 0.6), rgba(196, 163, 90, 0.1) 55%, rgba(86, 204, 242, 0.45)) border-box;
+}
+.report-stage::before {
+  content: counter(rstage, decimal-leading-zero);
+  position: absolute;
+  left: 0.55rem;
+  top: 0.42rem;
+  font-family: var(--font-num);
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--node-cyan);
+  text-shadow: 0 0 8px rgba(86, 204, 242, 0.6);
+}
+.report-stage__stats { font-family: var(--font-num); }
+.report-ext {
+  border-radius: 0;
+  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+  background: linear-gradient(160deg, #2a2340, #15111d);
+}
+.report-ext__lv { border-top-left-radius: 0; font-family: var(--font-num); }
+
+/* 合計とスコア */
+.report-meta {
+  --cut: 5px;
+  padding: 2px 8px;
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+  background: rgba(86, 204, 242, 0.1);
+  color: #cde8f4;
+  font-family: var(--font-num);
+  font-size: 0.74rem;
+}
+.report-score-big {
+  font-family: var(--font-num);
+  font-weight: 700;
+  text-shadow: none;
+  background:
+    linear-gradient(100deg, transparent 0 40%, rgba(255, 255, 255, 0.95) 50%, transparent 60%) 150% 0 / 250% 100% no-repeat,
+    linear-gradient(180deg, #fff6d6 10%, var(--node-gold-hi) 45%, var(--accent) 72%, #a8863f);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 14px rgba(196, 163, 90, 0.45)) drop-shadow(0 3px 0 rgba(0, 0, 0, 0.55));
+  animation: score-sheen 3.6s var(--ease-out) 1.8s infinite;
+}
+@keyframes score-sheen {
+  0%, 50%   { background-position: 150% 0, 0 0; }
+  80%, 100% { background-position: -150% 0, 0 0; }
+}
+.report-score-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  font-family: var(--font-num);
+  color: var(--node-cyan);
+}
+.report-score-label::before,
+.report-score-label::after {
+  content: "";
+  flex: 0 0 3rem;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--node-cyan));
+}
+.report-score-label::after { background: linear-gradient(90deg, var(--node-cyan), transparent); }
+
+/* ------------------------------------------------------------
+   4. メニュー: 番号の付いた行が、 1 行ずつ入ってくる
+   ------------------------------------------------------------ */
+.pause-menu__buttons { counter-reset: prow; }
+.pause-menu__buttons .btn--secondary {
+  position: relative;
+  counter-increment: prow;
+  padding-left: 3.1rem;
+  padding-right: 2rem;
+  text-align: left;
+}
+.pause-menu__buttons .btn--secondary::before {
+  content: counter(prow, decimal-leading-zero);
+  position: absolute;
+  left: 0.95rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--font-num);
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  color: var(--node-cyan);
+}
+.pause-menu__buttons .btn--secondary::after {
+  content: "›";
+  position: absolute;
+  right: 0.95rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.15rem;
+  line-height: 1;
+  transition: transform 180ms var(--ease-out);
+}
+@media (hover: hover) {
+  .pause-menu__buttons .btn--secondary:hover { transform: translateX(4px); }
+  .pause-menu__buttons .btn--secondary:hover::after { transform: translate(3px, -50%); }
+}
+/* 入ってくる (= fill は backwards だけ。 押したときの縮みを消さない) */
+.pause-menu__buttons .btn { animation: menu-row-in 380ms var(--ease-out) backwards; }
+.pause-menu__buttons .btn:nth-child(1) { animation-delay: 140ms; }
+.pause-menu__buttons .btn:nth-child(2) { animation-delay: 190ms; }
+.pause-menu__buttons .btn:nth-child(3) { animation-delay: 240ms; }
+.pause-menu__buttons .btn:nth-child(4) { animation-delay: 290ms; }
+.pause-menu__buttons .btn:nth-child(5) { animation-delay: 340ms; }
+@keyframes menu-row-in {
+  from { opacity: 0; transform: translateX(-24px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ------------------------------------------------------------
+   5. 設定: 角を切った行、 マスに区切ったつまみ、 端末のスイッチ
+   ------------------------------------------------------------ */
+.settings-row {
+  --cut: 8px;
+  border: 1px solid transparent;
+  border-radius: 0;
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+  background:
+    linear-gradient(135deg, var(--accent) 0 calc(var(--cut) * 0.7071 + 1px), transparent 0) border-box,
+    var(--node-scan) padding-box,
+    linear-gradient(#1a1525, #1a1525) padding-box,
+    linear-gradient(160deg, rgba(196, 163, 90, 0.45), rgba(255, 255, 255, 0.06) 55%, rgba(86, 204, 242, 0.35)) border-box;
+  animation: menu-row-in 380ms var(--ease-out) backwards;
+}
+.settings-card > .settings-row:nth-child(2) { animation-delay: 140ms; }
+.settings-card > .settings-row:nth-child(3) { animation-delay: 190ms; }
+.settings-card > .settings-row:nth-child(4) { animation-delay: 240ms; }
+.settings-card > .settings-row:nth-child(5) { animation-delay: 290ms; }
+.settings-row__value { font-family: var(--font-num); color: var(--node-gold-hi); }
+/* つまみ: 金で埋まる 10 マスの帯と、 菱形の頭 (= --val は settings-ui.js が入れる) */
+.settings-row__range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 28px;
+  background: transparent;
+  cursor: pointer;
+}
+.settings-row__range::-webkit-slider-runnable-track {
+  height: 8px;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 calc(10% - 2px), rgba(12, 10, 18, 0.95) calc(10% - 2px) 10%),
+    linear-gradient(90deg, var(--node-gold-hi), var(--accent) var(--val, 50%), rgba(255, 255, 255, 0.1) var(--val, 50%));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+.settings-row__range::-moz-range-track {
+  height: 8px;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 calc(10% - 2px), rgba(12, 10, 18, 0.95) calc(10% - 2px) 10%),
+    rgba(255, 255, 255, 0.1);
+}
+.settings-row__range::-moz-range-progress { height: 8px; background: linear-gradient(90deg, var(--node-gold-hi), var(--accent)); }
+.settings-row__range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  margin-top: -4px;
+  border: 2px solid #1b1626;
+  background: linear-gradient(135deg, #ffffff, var(--node-gold-hi) 40%, var(--accent));
+  transform: rotate(45deg);
+  box-shadow: 0 0 8px rgba(246, 226, 160, 0.75);
+}
+.settings-row__range::-moz-range-thumb {
+  width: 13px;
+  height: 13px;
+  border: 2px solid #1b1626;
+  border-radius: 0;
+  background: linear-gradient(135deg, #ffffff, var(--node-gold-hi) 40%, var(--accent));
+  transform: rotate(45deg);
+}
+.settings-row__range:focus-visible { outline: 1px solid var(--node-cyan); outline-offset: 2px; }
+/* スイッチ: 角を切った端末のつまみ */
+.settings-switch {
+  border-radius: 0;
+  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+  background: #120f19;
+}
+.settings-switch::after {
+  border-radius: 0;
+  clip-path: polygon(4px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 4px);
+}
+.settings-switch:checked { background: linear-gradient(90deg, rgba(196, 163, 90, 0.55), rgba(196, 163, 90, 0.2)); }
+.settings-switch:checked::after { background: linear-gradient(135deg, #ffffff, var(--node-gold-hi) 40%, var(--accent)); }
+/* 言語: 角を切った切り替え */
+.settings-row__langs .lang-btn {
+  border-radius: 0;
+  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+}
+.settings-row__langs .lang-btn--active { background: linear-gradient(180deg, #f3dc95, var(--accent) 55%, #a8863f); }
+
+/* ------------------------------------------------------------
+   6. ランキング: 上位 3 つは金・銀・銅の札
+   ------------------------------------------------------------ */
+.ranking-filter {
+  border-radius: 0;
+  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+  background: #17131f;
+}
+.ranking-table-wrap {
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+  background: var(--node-scan), rgba(0, 0, 0, 0.22);
+}
+.ranking-table th {
+  font-family: var(--font-num);
+  font-size: 0.64rem;
+  letter-spacing: 0.16em;
+  color: var(--node-cyan);
+  background: rgba(86, 204, 242, 0.07);
+}
+.ranking-table td { border-bottom-color: rgba(255, 255, 255, 0.06); }
+.ranking-table .ranking-rank { text-align: center; font-family: var(--font-num); }
+.ranking-table .ranking-score { font-family: var(--font-num); }
+.ranking-table tbody tr { transition: background 160ms; }
+@media (hover: hover) {
+  .ranking-table tbody tr:hover { background: rgba(86, 204, 242, 0.08); }
+}
+.ranking-table tbody tr:nth-child(-n+3) { background: linear-gradient(90deg, rgba(196, 163, 90, 0.14), transparent 60%); }
+.ranking-table tbody tr:nth-child(1) .ranking-rank { color: #1a1420; background: linear-gradient(135deg, #fff1b8, #e0b84a); }
+.ranking-table tbody tr:nth-child(2) .ranking-rank { color: #1a1420; background: linear-gradient(135deg, #f4f7fb, #aab4c3); }
+.ranking-table tbody tr:nth-child(3) .ranking-rank { color: #1a1420; background: linear-gradient(135deg, #f6d2b0, #b97a46); }
+
+/* ------------------------------------------------------------
+   7. 遊び方: 番号の付いた節が順に入ってくる
+   ------------------------------------------------------------ */
+.help-card { counter-reset: hsec; }
+.help-sec {
+  --cut: 8px;
+  position: relative;
+  counter-increment: hsec;
+  border: 0;
+  border-radius: 0;
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+  background:
+    linear-gradient(90deg, rgba(86, 204, 242, 0.12), transparent 45%),
+    var(--node-scan),
+    rgba(0, 0, 0, 0.25);
+  box-shadow: inset 2px 0 0 var(--node-cyan);
+  animation: menu-row-in 380ms var(--ease-out) backwards;
+}
+.help-sec:nth-of-type(1) { animation-delay: 140ms; }
+.help-sec:nth-of-type(2) { animation-delay: 200ms; }
+.help-sec:nth-of-type(3) { animation-delay: 260ms; }
+.help-sec:nth-of-type(4) { animation-delay: 320ms; }
+.help-sec__title::before {
+  content: counter(hsec, decimal-leading-zero);
+  margin-right: 0.45rem;
+  font-family: var(--font-num);
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  color: var(--node-cyan);
+}
+.help-sec__list { list-style: none; padding-left: 0.2rem; }
+.help-sec__list li { position: relative; padding-left: 0.95rem; }
+.help-sec__list li::before {
+  content: "";
+  position: absolute;
+  left: 0.1rem;
+  top: 0.55em;
+  width: 5px;
+  height: 5px;
+  background: var(--accent);
+  transform: rotate(45deg);
+}
+
+/* ------------------------------------------------------------
+   8. 動きを減らす
+   ------------------------------------------------------------ */
+:root[data-reduce-fx] .result-telop { display: none !important; }
+:root[data-reduce-fx] .result-tile,
+:root[data-reduce-fx] .stage-pip,
+:root[data-reduce-fx] .gameover-modal__retry,
+:root[data-reduce-fx] .report-score-big,
+:root[data-reduce-fx] .pause-menu__buttons .btn,
+:root[data-reduce-fx] .settings-row,
+:root[data-reduce-fx] .help-sec { animation: none; }

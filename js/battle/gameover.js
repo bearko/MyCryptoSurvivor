@@ -18,6 +18,7 @@ import { abortRtaRun, scoreMetrics, reportRunScore, defaultPlayerName, platformU
 import { STAGE_TABLE } from "../constants.js";
 import { countUp, revealIn } from "../reveal.js";
 import { naviTitle } from "../navi.js";
+import { presentResult } from "../result-telop.js";
 
 let _wired = false;
 
@@ -46,9 +47,14 @@ export function triggerGameOver(reason = "lose") {
   _renderGameOverModal();
   const modal = document.getElementById("gameOverModal");
   modal?.classList.remove("hidden");
-  // SPEC-046: 上から順に出し、 撃破数を数え上げる
-  revealIn(modal);
-  countUp(document.getElementById("gameOverKills"), state.lastRunStats.kills ?? 0, { durMs: 600, delayMs: 250 });
+  // SPEC-058: テロップのあと、 SPEC-046: 上から順に出し、 撃破数を数え上げる
+  presentResult(modal, reason === "clear" ? "allClear" : "lose", {
+    heroId: state.ownedHero?.heroId ?? null,
+    then: () => {
+      revealIn(modal);
+      countUp(document.getElementById("gameOverKills"), state.lastRunStats?.kills ?? 0, { durMs: 600, delayMs: 250 });
+    },
+  });
   // 残っていた Level-up モーダルが有れば閉じる (= 同フレームで LV up と死亡が起きる場合)
   const lv = document.getElementById("levelUpModal");
   if (lv && !lv.classList.contains("hidden")) {
@@ -186,6 +192,8 @@ function _renderGameOverModal() {
     titleEl.textContent = (stats.reason === "clear")
       ? t("gameover.titleClear", "Clear!")
       : t("gameover.title", "Game Over");
+    // SPEC-058: 英字の小見出しも結果に合わせる
+    titleEl.dataset.kicker = (stats.reason === "clear") ? "ALL CLEAR" : "SIGNAL LOST";
   }
   const elapsedEl = document.getElementById("gameOverElapsed");
   const levelEl   = document.getElementById("gameOverLevel");
