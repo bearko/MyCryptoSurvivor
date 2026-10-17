@@ -2,7 +2,7 @@
 id: SPEC-070
 title: Logo Remake — Transparent, Centered Stack
 status: Done
-pr: TBD
+pr: 96
 phase: v1.2 UI
 kind: Changed
 ---
