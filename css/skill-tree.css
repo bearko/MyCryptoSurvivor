@@ -1,0 +1,264 @@
+/* ============================================================
+   skill-tree.css — スキルツリー (= SPEC-090)。 参考作の木の画面を、 ノード端末 (SPEC-055) の色で
+   ============================================================
+   タイトルの上に重ねる全画面。 上から 頭 / 道の帯 / 木 (つまんで動かす) / 下の欄。
+   節は絶対配置の <button>、 線は 1 枚の SVG。
+   ============================================================ */
+
+.tree-screen {
+  --t-surface: #1c1727;
+  --t-raised:  #2b2342;
+  --t-line:    #3d3550;
+  --t-strong:  #56496e;
+  --t-ink:     #e6e0f0;
+  --t-ink2:    #a89cc4;
+  --t-ink3:    #6f6488;
+  --t-ok:      #5ecf8a;
+  --t-ng:      #e76060;
+  --t-gold:    #c4a35a;
+  --t-gold-hi: #f6e2a0;
+  position: fixed; inset: 0;
+  z-index: 260;   /* タイトル (200) の上、 モーダル (320) の下 */
+  display: flex; flex-direction: column;
+  color: var(--t-ink);
+  background: #0f0c15;
+  overflow: hidden;
+}
+/* 背景: ステージ 1 の背景を暗くしたもの (= 絵は JS が style に入れる) */
+.tree-bg {
+  position: absolute; inset: 0;
+  background-position: center; background-size: cover;
+  opacity: 0.22;
+  filter: saturate(0.6) blur(1px);
+  pointer-events: none;
+}
+.tree-bg::after {
+  content: ""; position: absolute; inset: 0;
+  background: var(--node-scan), radial-gradient(ellipse at 50% 45%, transparent 30%, rgba(8, 6, 12, 0.75) 100%);
+}
+
+/* ---- 頭 ---- */
+.tree-head {
+  position: relative; z-index: 2;
+  display: flex; align-items: center; gap: 10px;
+  padding: max(6px, var(--safe-t, 0px)) 12px 6px;
+  background: rgba(12, 9, 18, 0.88);
+  border-bottom: 1px solid var(--t-line);
+}
+.tree-back {
+  width: 36px; height: 36px; flex: none;
+  border-radius: var(--r-sm);
+  background: var(--t-raised); border: 1px solid var(--t-strong);
+  color: var(--t-ink); font-size: 18px; cursor: pointer;
+}
+.tree-title { display: flex; align-items: baseline; gap: 8px; line-height: 1.1; flex: 1; min-width: 0; }
+.tree-title b { font-family: var(--font-display); font-weight: 400; font-size: 17px; color: var(--t-gold-hi); letter-spacing: 0.04em; }
+.tree-title small { font-family: var(--font-num); font-size: 9px; letter-spacing: 0.22em; color: var(--node-cyan); }
+@media (max-width: 420px) { .tree-title small { display: none; } }
+/* 残高 (= 頭の右。 選んだ節の費用を「−40」と並べる) */
+.tree-bals { display: flex; gap: 6px; flex: none; }
+.tree-bal {
+  display: inline-flex; align-items: center; gap: 4px; height: 28px; padding: 0 8px 0 5px;
+  border-radius: 99px; background: var(--t-surface); border: 1px solid var(--t-line);
+  font-size: 12px; white-space: nowrap;
+}
+.tree-bal img { width: 18px; height: 18px; image-rendering: pixelated; object-fit: contain; }
+.tree-bal b { font-weight: 500; color: #fff; }
+.tree-bal.dust b { color: var(--t-gold-hi); }
+.tree-bal i { font-style: normal; font-size: 11px; font-weight: bold; }
+.tree-bal.ok { border-color: rgba(94, 207, 138, 0.6); }
+.tree-bal.ok i { color: var(--t-ok); }
+.tree-bal.ng { border-color: rgba(231, 96, 96, 0.7); }
+.tree-bal.ng i, .tree-bal.ng b { color: var(--t-ng); }
+
+/* ---- 道の帯 ---- */
+.tree-routebar {
+  position: relative; z-index: 2;
+  display: grid; grid-template-columns: repeat(6, 1fr); gap: 3px;
+  padding: 4px 10px 5px;
+  background: rgba(12, 9, 18, 0.72);
+  border-bottom: 1px solid var(--t-line);
+}
+.route-pip {
+  position: relative; height: 24px; display: flex; align-items: center; justify-content: center; gap: 4px;
+  border-radius: 4px; background: var(--t-surface); border: 1px solid var(--t-line);
+  color: var(--t-ink2); font-size: 10px; padding: 0 2px; cursor: pointer; overflow: hidden; white-space: nowrap;
+}
+.route-pip em { font-style: normal; font-size: 9px; color: var(--c); }
+.route-pip.on { border-color: var(--c); color: var(--t-ink); box-shadow: 0 0 8px color-mix(in srgb, var(--c) 45%, transparent); }
+
+/* ---- 木 ---- */
+.tree-viewport { position: relative; flex: 1; overflow: hidden; touch-action: none; cursor: grab; }
+.tree-viewport:active { cursor: grabbing; }
+.tree-world { position: absolute; left: 0; top: 0; transform-origin: 0 0; will-change: transform; }
+.tree-world.glide { transition: transform 0.42s cubic-bezier(0.2, 0, 0.2, 1); }
+.tree-links { position: absolute; inset: 0; overflow: visible; pointer-events: none; }
+.tree-links .link { fill: none; stroke-width: 2.5; opacity: 0.28; }
+.tree-links .link.on { opacity: 0.9; stroke-width: 3; }
+.tree-links .link.teaser { stroke-dasharray: 4 6; opacity: 0.5; }
+.tree-links .link-flow { fill: none; stroke-width: 3; stroke-dasharray: 3 22; stroke-linecap: round; animation: tree-flow 1.6s linear infinite; opacity: 0.95; }
+.tree-links .link.grow { animation: tree-grow 0.52s cubic-bezier(0.2, 0, 0.2, 1) forwards; }
+.tree-links .route-label { font: 400 22px var(--font-display); opacity: 0.5; letter-spacing: 0.1em; }
+@keyframes tree-flow { to { stroke-dashoffset: -25; } }
+@keyframes tree-grow { to { stroke-dashoffset: 0; } }
+
+.tnode {
+  position: absolute; transform: translate(-50%, -50%);
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  width: 96px; padding: 0; margin: 0;
+  background: none; border: 0; color: var(--t-ink); cursor: pointer;
+  font-family: var(--font-body);
+}
+.tnode-panel {
+  position: relative; width: 58px; height: 58px;
+  display: grid; place-items: center;
+  --cut: 9px;
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+  background: var(--t-surface);
+  box-shadow: inset 0 0 0 2px var(--t-strong);
+  transition: transform 0.12s;
+}
+@media (hover: hover) { .tnode:hover .tnode-panel { transform: scale(1.06); } }
+.tnode-panel img { width: 42px; height: 42px; image-rendering: pixelated; pointer-events: none; }
+.tnode-q { font-size: 26px; color: var(--t-ink3); }
+.tnode-lv {
+  position: relative; margin-top: -10px;
+  font-size: 10px; font-weight: 700; padding: 1px 7px;
+  border-radius: 99px; background: var(--t-raised); border: 1px solid var(--t-strong);
+}
+.tnode-name { font-size: 11px; line-height: 1.2; text-align: center; text-shadow: 0 1px 3px #000; max-width: 96px; }
+
+/* 状態: 取れる＝緑 (脈打つ) / 足りない＝赤 / 条件が合わない＝点線 / その先＝灰の「？」 / 取った＝白 */
+.tnode.can .tnode-panel { box-shadow: inset 0 0 0 2px var(--t-ok), 0 0 14px rgba(94, 207, 138, 0.45); animation: tree-pulse 1.4s ease-in-out infinite; }
+.tnode.can .tnode-lv { border-color: var(--t-ok); color: var(--t-ok); }
+.tnode.short .tnode-panel { box-shadow: inset 0 0 0 2px var(--t-ng), 0 0 10px rgba(231, 96, 96, 0.35); }
+.tnode.short .tnode-panel img { opacity: 0.75; }
+.tnode.short .tnode-lv { border-color: var(--t-ng); color: var(--t-ng); }
+.tnode.locked .tnode-panel { box-shadow: inset 0 0 0 2px var(--t-line); opacity: 0.7; }
+.tnode.locked .tnode-panel img { filter: grayscale(1) brightness(0.6); }
+.tnode.teaser .tnode-panel { background: #15111d; box-shadow: inset 0 0 0 2px #3a3350; }
+.tnode.teaser .tnode-q { color: #4f4866; font-size: 24px; font-weight: bold; }
+.tnode.teaser .tnode-name { color: #5d5577; }
+.tnode.has .tnode-panel { box-shadow: inset 0 0 0 2px #fff, 0 0 12px rgba(255, 255, 255, 0.35); background: color-mix(in srgb, var(--c) 22%, var(--t-surface)); }
+.tnode.has .tnode-lv { border-color: #fff; color: #fff; }
+.tnode.max .tnode-panel img { opacity: 0.85; }
+.tnode.max .tnode-lv { color: var(--t-gold-hi); border-color: var(--t-gold-hi); }
+.tnode.sel .tnode-panel { outline: 2px solid #fff; outline-offset: 3px; }
+@keyframes tree-pulse { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.25); } }
+
+/* 根: 金の円 */
+.tnode.k-root .tnode-panel {
+  width: 76px; height: 76px; clip-path: none; border-radius: 50%;
+  background: radial-gradient(circle, #3a2f10, var(--t-surface));
+  box-shadow: 0 0 0 3px var(--t-gold), 0 0 22px rgba(196, 163, 90, 0.55);
+}
+.tnode.k-root .tnode-panel img { width: 50px; height: 50px; }
+.tnode.k-root.can .tnode-panel { box-shadow: 0 0 0 3px var(--t-ok), 0 0 26px rgba(94, 207, 138, 0.6); }
+.tnode.k-root.has .tnode-panel { box-shadow: 0 0 0 3px #fff, 0 0 22px rgba(246, 226, 160, 0.55); }
+/* 奥義: ひし形・道の色の太字 */
+.tnode.k-capstone .tnode-panel { width: 66px; height: 66px; --cut: 11px; transform: rotate(45deg); }
+.tnode.k-capstone .tnode-panel img { transform: rotate(-45deg); width: 44px; height: 44px; }
+@media (hover: hover) { .tnode.k-capstone:hover .tnode-panel { transform: rotate(45deg) scale(1.06); } }
+.tnode.k-capstone .tnode-lv { margin-top: -2px; }
+.tnode.k-capstone .tnode-name { font-weight: 700; color: var(--c); }
+
+/* 新しく見えた節: 飛び出す。 根を取ったときは中心から */
+.tnode.pop { animation: tree-popin 0.42s cubic-bezier(0.2, 1.4, 0.4, 1) both; }
+@keyframes tree-popin { from { opacity: 0; transform: translate(-50%, -50%) scale(0.3); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+.tnode.burst { animation: tree-burst 0.7s cubic-bezier(0.18, 1.3, 0.4, 1) both; }
+@keyframes tree-burst {
+  from { opacity: 0; transform: translate(calc(-50% + var(--fx)), calc(-50% + var(--fy))) scale(0.2); }
+  60% { opacity: 1; }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+.tree-shock {
+  position: absolute; width: 80px; height: 80px; margin: -40px 0 0 -40px; border-radius: 50%;
+  border: 3px solid var(--t-gold-hi);
+  box-shadow: 0 0 24px var(--t-gold-hi), inset 0 0 24px rgba(246, 226, 160, 0.5);
+  pointer-events: none; animation: tree-shock 1.4s ease-out both;
+}
+@keyframes tree-shock { from { transform: scale(0.4); opacity: 1; } to { transform: scale(9); opacity: 0; } }
+
+/* ---- 通知 (= 買った・足りない) ---- */
+.tree-notice {
+  position: absolute; left: 50%; top: 10px; transform: translateX(-50%); z-index: 4;
+  max-width: calc(100% - 32px); padding: 6px 12px;
+  background: rgba(12, 9, 18, 0.92); border: 1px solid var(--t-line); border-radius: var(--r-sm);
+  font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  pointer-events: none; animation: tree-popin-y 0.25s ease-out both;
+}
+.tree-notice.good { border-color: var(--t-ok); color: var(--t-ok); }
+.tree-notice.bad { border-color: var(--t-ng); color: var(--t-ng); }
+@keyframes tree-popin-y { from { opacity: 0; transform: translate(-50%, -6px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+/* ---- 下の欄 ---- */
+.tree-sheet {
+  position: relative; z-index: 2;
+  background: rgba(12, 9, 18, 0.96); border-top: 1px solid var(--t-line);
+  padding: 10px 14px calc(12px + var(--safe-b, 0px));
+  max-height: 46dvh; overflow-y: auto;
+}
+.sheet-top { display: flex; align-items: flex-start; gap: 8px; }
+.sheet-top > div:first-child { flex: 1; min-width: 0; }
+.sheet-name { font-size: 16px; font-weight: 700; }
+.sheet-meta { display: flex; gap: 8px; flex-wrap: wrap; font-size: 11px; color: var(--t-ink2); margin-top: 2px; }
+.route-tag { color: var(--c); border: 1px solid var(--c); border-radius: 4px; padding: 0 5px; }
+.sheet-lv { color: var(--t-gold-hi); font-size: 13px; white-space: nowrap; }
+.sheet-x { background: none; border: 0; color: var(--t-ink2); font-size: 22px; cursor: pointer; line-height: 1; padding: 0 2px; }
+.sheet-desc { margin: 6px 0; font-size: 13px; line-height: 1.55; }
+.sheet-block { color: #f08a8a; font-size: 12px; margin: 4px 0; }
+.sheet-note { color: var(--t-ink2); font-size: 12px; margin: 4px 0; }
+.sheet-go {
+  width: 100%; text-align: left; margin-bottom: 6px;
+  background: var(--t-surface); border: 1px solid var(--t-line); color: var(--t-ink2);
+  border-radius: var(--r-sm); padding: 7px 10px; font: inherit; font-size: 12px; cursor: pointer;
+}
+.sheet-go.ok { color: var(--t-ok); border-color: rgba(94, 207, 138, 0.45); }
+.sheet-btns { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.sheet-btns.two { grid-template-columns: repeat(2, 1fr); }
+.tree-btn {
+  width: 100%; min-height: 46px; margin-top: 6px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  border-radius: var(--r-sm); border: 1px solid var(--t-strong);
+  background: var(--t-raised); color: var(--t-ink);
+  font: inherit; font-size: 15px; font-weight: 700; cursor: pointer;
+}
+.tree-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.tree-btn.gold { background: linear-gradient(180deg, var(--t-gold-hi), var(--t-gold)); color: #221a00; border-color: rgba(255, 255, 255, 0.25); }
+.tree-btn.sub { min-height: 40px; font-size: 13px; margin-top: 0; }
+.tree-btn.danger { border-color: var(--t-ng); color: var(--t-ng); }
+.cost-row { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; font-size: 11px; font-weight: 600; }
+.cost-chip { display: inline-flex; align-items: center; gap: 3px; background: rgba(0, 0, 0, 0.18); border-radius: 4px; padding: 0 6px; }
+.cost-chip img { width: 14px; height: 14px; image-rendering: pixelated; object-fit: contain; }
+.tree-btn:disabled .cost-chip { background: rgba(0, 0, 0, 0.35); }
+@media (min-width: 900px) { .tree-sheet { max-height: 34dvh; } }
+
+/* ---- 入口: タイトルのボタンの数の札 / 結果の画面のボタン ---- */
+.title-screen__tree { position: relative; }
+.tree-badge {
+  position: absolute; top: -6px; right: -4px;
+  min-width: 18px; height: 18px; padding: 0 5px;
+  display: grid; place-items: center;
+  border-radius: 99px; background: var(--t-ok, #5ecf8a); color: #0a1a10;
+  font-size: 10px; font-weight: 800; line-height: 1;
+  box-shadow: 0 0 10px rgba(94, 207, 138, 0.6);
+}
+.result-tree-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
+  width: 100%; margin: 0.1rem 0 0.4rem;
+}
+.result-tree-btn img { width: 20px; height: 20px; image-rendering: pixelated; object-fit: contain; }
+
+/* 動きを減らす: 飛び出す・流れる・脈打つを止める */
+:root[data-reduce-fx] .tnode.pop,
+:root[data-reduce-fx] .tnode.burst,
+:root[data-reduce-fx] .tnode.can .tnode-panel,
+:root[data-reduce-fx] .tree-links .link-flow,
+:root[data-reduce-fx] .tree-links .link.grow,
+:root[data-reduce-fx] .tree-shock,
+:root[data-reduce-fx] .tree-notice { animation: none; }
+:root[data-reduce-fx] .tree-world.glide { transition: none; }
+@media (prefers-reduced-motion: reduce) {
+  .tnode.pop, .tnode.burst, .tnode.can .tnode-panel, .tree-links .link-flow, .tree-links .link.grow, .tree-shock, .tree-notice { animation: none; }
+  .tree-world.glide { transition: none; }
+}
