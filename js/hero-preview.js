@@ -6,6 +6,7 @@
 // Common → Uncommon → Rare (= 1〜3 段目) の順に 3 秒ずつ、 敵と戦う。 流し終えたら大きな絵に戻り、 3 秒してまた流す。
 // 本番の武器のコード (= weapons.js・archetypes.js・projectiles.js・damage.js・render.js) を、 別の小さな戦場で動かす:
 //   動かすあいだだけ state.battle と state.buffs をプレビューのものに差し替え、 すぐ戻す。
+//   敵はいちばん弱い雑魚 (= 101) を、 2 秒ごとに段の数だけ (= Common 1 体・Uncommon 2 体・Rare 3 体) 出す (= SPEC-086)。
 //   撃破数は元に戻し、 CE は捨て、 レベルアップは起きない (= CE を拾わない)。 効果音は鳴らさない。
 // ヒーロー選択を閉じたら止める。
 
@@ -31,8 +32,8 @@ export const PREVIEW_TIMING = { firstShowMs: 1000, tierMs: 3000, showMs: 3000 };
 /** 見せる段 (= Common・Uncommon・Rare) */
 export const PREVIEW_TIERS = [1, 2, 3];
 export const PREVIEW_RARITY = { 1: "Common", 2: "Uncommon", 3: "Rare" };
-/** 戦場に置く敵の数・敵 (= ステージ 1 の雑魚)・見える広さ */
-export const PREVIEW_ENEMIES = { count: 9, ids: [101, 124], speed: 34, viewW: 380 };
+/** 敵 (= いちばん弱い雑魚)・出す間隔・見える広さ (= SPEC-086) */
+export const PREVIEW_ENEMIES = { id: 101, everyMs: 2000, viewW: 380 };
 
 /**
  * いま見せるもの (= 純関数)。 t: そのヒーローを選んでからの ms
@@ -48,9 +49,9 @@ export function previewPhase(tMs) {
   return { mode: "preview", tier: PREVIEW_TIERS[idx], idx, tierT: c - idx * tierMs };
 }
 
-/** プレビューの敵の HP (= 1 段目の武器なら 2〜3 回で倒れる。 段が上がるほど早く倒れて見える)。 純関数 */
-export function previewEnemyHp(tier1Dmg) {
-  return Math.max(10, Math.round((tier1Dmg ?? 10) * 2.2));
+/** 1 回に出す敵の数 (= 段の数。 Common 1・Uncommon 2・Rare 3)。 純関数 */
+export function previewWaveSize(tier) {
+  return Math.max(1, Math.min(3, tier | 0));
 }
 
 // ------------------------------------------------------------ 状態
@@ -60,8 +61,8 @@ let _raf = 0;
 let _last = 0;
 let _pb = null;          // プレビューの戦場 (= state.battle と同じ形)
 let _pbTier = 0;
-let _clock = 0;          // プレビューの時計 (= 武器の間隔に使う)
-let _enemyHp = 20;
+let _clock = 0;          // プレビューの時計 (= 武器の間隔・敵を出す間隔に使う)
+let _nextWaveMs = 0;
 const _buffs = {};       // 強化なし (= ?? 1 の既定値が使われる)
 
 const $ = (id) => globalThis.document?.getElementById(id);
@@ -73,26 +74,27 @@ function _vw() {
   return { w, h, k, vw: w / k, vh: h / k };
 }
 
-function _spawnEnemy(b, near) {
-  const id = PREVIEW_ENEMIES.ids[Math.floor(Math.random() * PREVIEW_ENEMIES.ids.length)];
+/** 見えている縁のあたりから 1 体 (= 自分のほうへ歩いてくる) */
+function _spawnEnemy(b) {
+  const id = PREVIEW_ENEMIES.id;
   const spec = ENEMY_SPECS[id];
   const a = Math.random() * Math.PI * 2;
-  const far = Math.hypot(b.viewport.w, b.viewport.h) / 2 + 20;
-  const d = near ? 70 + Math.random() * (far - 90) : far;
   b.enemies.push({
     id: b.nextEntityId++, enemyId: id,
-    x: Math.cos(a) * d, y: Math.sin(a) * d * 0.8,
+    x: Math.cos(a) * b.viewport.w * 0.45, y: Math.sin(a) * b.viewport.h * 0.45,
     r: Math.round((spec?.radius ?? 12) * CHAR_SCALE),
-    hp: _enemyHp, hpMax: _enemyHp, dmg: 0, speed: PREVIEW_ENEMIES.speed,
+    hp: spec?.hp ?? 25, hpMax: spec?.hp ?? 25, dmg: 0, speed: spec?.speed ?? 80,
     color: ENEMY_COLOR, hitFreezeMs: 0, isBoss: false, isRare: false, xpValue: 1,
   });
+}
+
+function _spawnWave(b, tier) {
+  for (let i = 0; i < previewWaveSize(tier); i++) _spawnEnemy(b);
 }
 
 function _makeBattle(hero, tier) {
   const extId = HERO_STARTING_WEAPON[hero.heroId] ?? HERO_STARTING_WEAPON_DEFAULT;
   const w = weaponFromExt(extId, tier);
-  const w1 = weaponFromExt(extId, 1);
-  _enemyHp = previewEnemyHp(w1?.dmg);
   const v = _vw();
   const b = {
     active: false,
@@ -109,7 +111,8 @@ function _makeBattle(hero, tier) {
     stageElapsedMs: 0, bossSpawned: false, gimmick: null, arena: null, contactCooldownMs: 0, gameOver: false,
     fastForwardMs: 0,
   };
-  for (let i = 0; i < PREVIEW_ENEMIES.count; i++) _spawnEnemy(b, true);
+  _spawnWave(b, tier);   // 段が替わったらすぐ 1 回目
+  _nextWaveMs = PREVIEW_ENEMIES.everyMs;
   return b;
 }
 
@@ -157,7 +160,7 @@ function _step(dt) {
     tickFx(dt);
     b.gems.length = 0;           // CE は拾わない (= レベルアップしない)
     b.magicCards.length = 0;
-    while (b.enemies.length < PREVIEW_ENEMIES.count) _spawnEnemy(b, false);
+    if (_clock >= _nextWaveMs) { _nextWaveMs += PREVIEW_ENEMIES.everyMs; _spawnWave(b, _pbTier); }
   });
 }
 
