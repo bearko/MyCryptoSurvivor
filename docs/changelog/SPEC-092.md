@@ -1,0 +1,1 @@
+- **bearko.games 共通のアイコンへの入口** (`js/platform.js` + `js/settings-ui.js` + `index.html` + `data/i18n/ui.json`): 設定に「🙂 アイコン — 変える」。 押すと共通基盤の選ぶ窓（SDK 1.7.0）が開き、 すべてのゲームとチャットで同じ絵になる。 SDK が読めていないときは行を出さない

@@ -42,7 +42,7 @@ test("SDK があれば unlockTrophy を呼び、失敗してもゲームを止�
 });
 
 // ---------------------------------------------------------------- SPEC-091: 全体チャット
-import { setChatVisible } from "../js/platform.js";
+import { setChatVisible, canPickAvatar, openAvatarPicker } from "../js/platform.js";
 
 test("チャット：SDK がない・古い (= chat が無い) なら何もしない", () => {
   assert.doesNotThrow(() => setChatVisible(true));
@@ -75,6 +75,23 @@ test("チャット：init で右上に置いて読み込み中は隠し、出す
     const warn = console.warn;
     console.warn = () => {};
     try { assert.doesNotThrow(() => setChatVisible(true)); } finally { console.warn = warn; }
+  } finally {
+    delete globalThis.window;
+  }
+});
+
+// ---------------------------------------------------------------- SPEC-092: 共通のアイコン
+test("アイコン：SDK がない・古いときは出さず例外も出さない。あれば窓を開く", () => {
+  assert.equal(canPickAvatar(), false);
+  assert.equal(openAvatarPicker(), false);
+  let opened = 0;
+  globalThis.window = { BearkoGames: { init: async () => ({ ok: true }) } };
+  try {
+    assert.equal(canPickAvatar(), false);
+    globalThis.window.BearkoGames.openAvatarPicker = () => { opened++; };
+    assert.equal(canPickAvatar(), true);
+    assert.equal(openAvatarPicker(), true);
+    assert.equal(opened, 1);
   } finally {
     delete globalThis.window;
   }

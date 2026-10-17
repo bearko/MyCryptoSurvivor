@@ -13,6 +13,7 @@ import { SFX } from "./constants.js";
 import { t, getLang, setLang, onLangChange } from "./i18n.js";
 import { resetNaviTips, seenNaviTipCount } from "./navi-tips.js";
 import { playVoice } from "./voice.js";
+import { canPickAvatar, openAvatarPicker } from "./platform.js";   // SPEC-092
 
 /** SPEC-085: ボイスの音量を確かめるときのセリフ */
 const VOICE_SAMPLE = "tap.2";
@@ -29,6 +30,8 @@ function _pctLabel(v) {
 }
 
 function _render() {
+  const avatarRow = $("settingsAvatarRow");
+  if (avatarRow) avatarRow.hidden = !canPickAvatar();   // SPEC-092
   const s = getSettings();
   const bgm = $("settingsBgm");
   const se = $("settingsSe");
@@ -101,6 +104,8 @@ export function installSettingsUI() {
     _tipsJustReset = true;
     _render();
   });
+  // SPEC-092: bearko.games 共通のアイコン (= 窓は SDK。 SDK が読めていないときは行ごと出さない)
+  $("settingsAvatar")?.addEventListener("click", () => { openAvatarPicker(); });
   $("settingsModal")?.addEventListener("click", (e) => {
     const b = e.target.closest?.("[data-lang]");
     if (b) setLang(b.getAttribute("data-lang"));
