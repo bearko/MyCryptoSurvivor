@@ -2,7 +2,7 @@
 id: SPEC-069
 title: Screen BGM (Title craft.mp3), Tap-to-start Gate and Reliable Sound Start
 status: Done
-pr: TBD
+pr: 95
 phase: v1.2 UI
 kind: Changed
 ---
