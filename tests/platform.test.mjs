@@ -124,8 +124,13 @@ import { scoreMetrics, reportRunScore } from "../js/platform.js";
 
 test("総合スコア：送る成績の形", () => {
   const run = { stages: [{}, {}, {}] };
-  assert.deepEqual(scoreMetrics({ run, cleared: true, reportScore: 150000.4, regulation: "NORMAL", regulationMul: 1 }),
-    { stagesCleared: 3, cleared: true, reportScore: 150000, regulationMul: 1, regulation: "NORMAL", absolute: null });
+  assert.deepEqual(scoreMetrics({ run, cleared: true, reportScore: 150000.4, regulation: "NORMAL", absolute: { spawnMul: 3 } }),
+    { stagesCleared: 3, cleared: true, reportScore: 150000, difficulty: "normal" }, "NORMAL では 4 軸を送らない");
+  // SPEC-051: ABSOLUTE は名前と 4 軸だけ。 倍率 (= regulationMul) は送らない
+  assert.deepEqual(scoreMetrics({ run, cleared: true, reportScore: 1, regulation: "ABSOLUTE", absolute: { spawnMul: 2, hpMul: 2.5, dmgMul: 1, speedMul: 0.5 } }),
+    { stagesCleared: 3, cleared: true, reportScore: 1, difficulty: "absolute", absolute: { spawnMul: 2, hpMul: 2.5, dmgMul: 1, speedMul: 0.5 } });
+  assert.deepEqual(scoreMetrics({ run, cleared: false, regulation: "ABSOLUTE", absolute: { hpMul: 2 } }).absolute,
+    { spawnMul: 1, hpMul: 2, dmgMul: 1, speedMul: 1 }, "足りない軸は 1.0");
   const lost = scoreMetrics({ run: { stages: [{}] }, cleared: false, reportScore: 999 });
   assert.deepEqual([lost.stagesCleared, lost.cleared, lost.reportScore], [1, false, 0], "倒れたら活動レポートのスコアは入れない");
 });

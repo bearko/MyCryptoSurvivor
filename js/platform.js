@@ -116,17 +116,20 @@ export function abortRtaRun() {
  * 1 回の挑戦の成績 (= 共通基盤に送る形)。 純関数 (= tests/platform.test.mjs)
  *   run: state.run、 cleared: 全ステージクリアか、 reportScore: 活動レポートのスコア (= 倍率の前)
  */
-export function scoreMetrics({ run, cleared, reportScore, regulation, regulationMul, absolute }) {
+export function scoreMetrics({ run, cleared, reportScore, regulation, absolute }) {
   const stagesCleared = Math.min(3, (run?.stages ?? []).length);
-  return {
+  const out = {
     stagesCleared,
     cleared: !!cleared && stagesCleared === 3,
     reportScore: cleared ? Math.max(0, Math.round(reportScore || 0)) : 0,
-    regulationMul: regulationMul || 1,
-    // 将来の「難易度ごとのレギュレーション」用 (= 今は点に効かない)
-    regulation: regulation || "NORMAL",
-    absolute: absolute || null,
+    // SPEC-051: 難易度は名前だけ送る。 係数 (= ABSOLUTE は 4 軸の平均・上限 2.0) は共通基盤が決める
+    difficulty: regulation === "ABSOLUTE" ? "absolute" : "normal",
   };
+  if (out.difficulty === "absolute") {
+    const a = absolute || {};
+    out.absolute = { spawnMul: a.spawnMul ?? 1, hpMul: a.hpMul ?? 1, dmgMul: a.dmgMul ?? 1, speedMul: a.speedMul ?? 1 };
+  }
+  return out;
 }
 
 /** 挑戦が終わったとき (= 全クリア・倒れた・タイトルに戻った)。 ステージを 1 つも終えていなければ送らない */
