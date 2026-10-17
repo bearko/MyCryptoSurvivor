@@ -10,12 +10,13 @@ test("SPEC-078: 大群はどのステージにも。 中盤から湧きが速ま
     const f = s.flood;
     assert.equal(floodMul(f, 0), 1);
     assert.equal(floodMul(f, f.fromMs), 1);
-    assert.ok(Math.abs(floodMul(f, (f.fromMs + f.fullMs) / 2) - (1 + (f.maxMul - 1) / 2)) < 1e-9);
+    assert.ok(Math.abs(floodMul(f, (f.fromMs + f.fullMs) / 2) - (1 + (f.maxMul - 1) * Math.pow(0.5, f.pow ?? 1))) < 1e-9);
     assert.equal(floodMul(f, f.fullMs), f.maxMul);
     assert.equal(floodMul(f, BOSS_SPAWN_AT_MS), f.maxMul);
     assert.ok(f.packFromMs >= f.fromMs && f.packFromMs < BOSS_SPAWN_AT_MS);
   }
   assert.equal(floodMul(null, 200000), 1);
+  assert.equal(floodMul({ fromMs: 0, fullMs: 100, maxMul: 3 }, 50), 2, "pow がなければまっすぐ");
   // 後のステージほど激しい
   const mul = STAGE_TABLE.map((s) => s.flood.maxMul);
   assert.ok(mul[0] < mul[1] && mul[1] < mul[2]);
@@ -53,4 +54,13 @@ test("レベルアップは約 2 倍速い (= Lv15 までの経験値が 710 →
   let need = XP_TO_NEXT_INITIAL, total = 0;
   for (let lv = 1; lv < 15; lv++) { total += need; need = Math.ceil(need * XP_TO_NEXT_GROWTH); }
   assert.ok(total >= 280 && total <= 340, `Lv15 まで ${total}`);
+});
+
+test("SPEC-084: 湧きの速まりは、 はじめはゆるく、 ボスの前に急に (= 1:10 では 1.7 倍まで。 3:30 では半分より上)", () => {
+  for (const s of STAGE_TABLE) {
+    const f = s.flood;
+    assert.ok(f.pow > 1);
+    assert.ok(floodMul(f, 70000) <= 1.7, `stage ${s.idx}: ${floodMul(f, 70000)}`);
+    assert.ok(floodMul(f, 210000) >= 1 + (f.maxMul - 1) / 2);
+  }
 });

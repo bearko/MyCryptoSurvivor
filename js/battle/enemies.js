@@ -25,7 +25,7 @@ import { tickShooter, nextFireMs } from "./enemy-shots.js";
 import {
   floodMul, packAngles, separateEnemies, stageMaxEnemies, spawnBudget,
   densityTarget, screenDensity, densityShortfall, DENSITY_CHECK_MS, DENSITY_GAIN, DENSITY_MAX_PER_CHECK,
-  isLeftBehind, canRecycle, RECYCLE_CHECK_MS, RECYCLE_MAX,
+  isLeftBehind, canRecycle, recycleActive, RECYCLE_CHECK_MS, RECYCLE_MAX,
 } from "./horde.js";
 
 const DEFAULT_SPEC = { hp: 25, dmg: 10, speed: 80, radius: 12, xpValue: 1 };
@@ -109,7 +109,8 @@ export function tickEnemies(dt, nowMs) {
 
   // SPEC-078: 置いていかれた敵 (= 自分が走り去って、 画面から遠く離れた敵) を、 画面のすぐ外へ寄せ直す。
   //   上限まで湧いた敵の多くが画面の外に残ると、 画面が埋まらないため。 HP はそのまま (= 撃破にも数えない)
-  if (dn) {
+  //   SPEC-084: ボスの前 (= 密度の目標が上がりきるころ) だけ。 序盤は逃げ回れば敵を置いていける
+  if (recycleActive(dn, b.stageElapsedMs)) {
     b.recycleCheckMs = (b.recycleCheckMs ?? 0) - dms;
     if (b.recycleCheckMs <= 0) {
       b.recycleCheckMs = RECYCLE_CHECK_MS;
