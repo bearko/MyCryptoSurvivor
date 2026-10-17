@@ -19,6 +19,7 @@ import { STAGE_TABLE } from "../constants.js";
 import { countUp, revealIn } from "../reveal.js";
 import { naviTitle } from "../navi.js";
 import { presentResult } from "../result-telop.js";
+import { startMenuBgm, startMenuBgmAfterJingle } from "../ui-sound.js";
 
 let _wired = false;
 
@@ -67,6 +68,9 @@ export function triggerGameOver(reason = "lose") {
   stopBgm();
   const sfx = (reason === "clear") ? SFX.GAME_OVER_CLEAR : SFX.GAME_OVER_LOSE;
   playSe(sfx, 0, 0.7);
+  // SPEC-060: ジングルが鳴り終わってから、 メニューの BGM (= まだこの画面にいれば)
+  startMenuBgmAfterJingle(reason === "clear" ? "win" : "lose",
+    () => !document.getElementById("gameOverModal")?.classList.contains("hidden"));
 }
 
 export async function applyRetry() {
@@ -132,6 +136,7 @@ export async function returnToTitle() {
   document.getElementById("app")?.classList.add("hidden");
   document.getElementById("titleScreen")?.classList.remove("hidden");
   naviTitle({ greet: false });   // SPEC-056
+  startMenuBgm();   // SPEC-060
 }
 
 async function _onSubmitClick() {

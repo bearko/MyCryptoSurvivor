@@ -190,8 +190,10 @@ export const SFX = {
   PICK_HEAL:       "Audio/SE/Battle/3_heal_resurrection.mp3",
   GAME_OVER_LOSE:  "Audio/SE/Jingles/lose.mp3",
   GAME_OVER_CLEAR: "Audio/SE/Jingles/win.mp3",
+  UI_CLICK:        "Audio/SE/Actions/crash.mp3",   // SPEC-060: ボタンを押したとき
 };
 export const BGM_BATTLE = "Audio/BGM/pvp.mp3";
+export const BGM_MENU   = "Audio/BGM/land.mp3";   // SPEC-060: タイトル・モード選択・ヒーロー選択・結果の画面
 
 // ============================================================
 // SPEC-019: XP gem アイコン (= MCH 公式 CE icon)
