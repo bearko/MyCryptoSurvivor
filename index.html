@@ -281,6 +281,8 @@
       <div class="gameover-modal__choices">
         <button class="btn btn--secondary" id="gameOverToTitle" data-i18n="gameover.toTitle">タイトルに戻る</button>
         <button class="btn gameover-modal__retry" id="gameOverRetry" data-i18n="gameover.retryCurrent">今のレギュレーションで再走</button>
+        <!-- SPEC-052: RTA のときだけ -->
+        <a class="btn btn--ghost result-portal hidden" id="gameOverPortal" href="https://bearko.games/" data-i18n="result.toPortal">bearko.games に戻る</a>
       </div>
     </div>
   </div>
@@ -356,7 +358,12 @@
         <p class="gameover-form__msg" id="activityReportMsg" aria-live="polite"></p>
       </div>
       <button class="btn btn--ghost hidden" id="activityReportViewRanking">ランキングを見る</button>
-      <button class="btn gameover-modal__retry" id="activityReportRetry">リトライ</button>
+      <!-- SPEC-052: リトライ・タイトルに戻る・(RTA なら) bearko.games に戻る -->
+      <div class="gameover-modal__choices">
+        <button class="btn gameover-modal__retry" id="activityReportRetry">リトライ</button>
+        <button class="btn btn--secondary" id="activityReportToTitle">タイトルに戻る</button>
+        <a class="btn btn--ghost result-portal hidden" id="activityReportPortal" href="https://bearko.games/">bearko.games に戻る</a>
+      </div>
     </div>
   </div>
 

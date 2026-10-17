@@ -104,6 +104,9 @@
   "ranking.reg.absolute":{ "ja": "ABSOLUTE のみ",                 "en": "ABSOLUTE only" },
 
   "gameover.toTitle":      { "ja": "タイトルに戻る",               "en": "Back to title" },
+  "gameover.nameRequired": { "ja": "名前を入れてください",         "en": "Please enter a name" },
+  "gameover.namePlaceholder": { "ja": "名前を入れる",              "en": "Your name" },
+  "result.toPortal":       { "ja": "bearko.games に戻る",          "en": "Back to bearko.games" },
   "gameover.retryCurrent": { "ja": "今のレギュレーションで再走",   "en": "Retry with this regulation" },
 
   "menu.title":          { "ja": "メニュー",                       "en": "Menu" },

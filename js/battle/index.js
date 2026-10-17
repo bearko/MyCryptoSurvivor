@@ -37,7 +37,7 @@ import { tickBossAttack } from "./boss-attack.js";
 import { startCoachIfFirst, tickCoach, hideCoach } from "./coach.js";
 import { resetFx, tickFx } from "./fx.js";
 import { startBgm } from "../audio.js";
-import { startRtaRun, rtaRegulationFor } from "../platform.js";
+import { startRtaRun, rtaRegulationFor, placePlatformToasts } from "../platform.js";
 import { BGM_BATTLE, STAGE_TABLE } from "../constants.js";
 import { t, tpl } from "../i18n.js";
 
@@ -153,11 +153,19 @@ export function startBattle(hero) {
   startCoachIfFirst();   // SPEC-042: 初回のステージ 1 だけ操作ガイド
   _showStageIntro();     // SPEC-046: 「STAGE n / ステージ名」の帯
   resizeCanvas();
+  _placeToasts();        // SPEC-052: 通知は HUD (と RTA の時計) の下に出す
   _lastMs = performance.now();
   if (!_raf) _raf = requestAnimationFrame(_loop);
 
   // SPEC-017: 戦闘 BGM (= retry でも startBgm 内 stopBgm が掛かるので 1 トラックに収束)
   startBgm(BGM_BATTLE, 0.32);
+}
+
+/** SPEC-052: 共通基盤の通知を画面の上、 HUD の下 (= RTA なら時計のさらに下) に置く */
+function _placeToasts() {
+  const hud = document.getElementById("hud");
+  const bottom = hud ? Math.round(hud.getBoundingClientRect().bottom) : 0;
+  placePlatformToasts(bottom > 0 ? bottom + (state.rtaMode ? 40 : 8) : 0);
 }
 
 /** SPEC-046: ステージの始まりの帯。 CSS のアニメーションで 1.6 秒出て消える (= 遊びは止めない) */

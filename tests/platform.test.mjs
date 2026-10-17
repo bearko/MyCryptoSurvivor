@@ -148,3 +148,51 @@ test("総合スコア：ステージを 1 つも終えていなければ送ら�
     delete globalThis.window;
   }
 });
+
+// ---------------------------------------------------------------- SPEC-052: 結果画面 (= 通知の置き場所・名前の既定)
+import { defaultPlayerName, platformUserName, placePlatformToasts, PORTAL_URL } from "../js/platform.js";
+
+test("名前の既定：ログイン中の名前 → 前に送った名前 → 空 (= anonymous にしない)", () => {
+  assert.equal(defaultPlayerName({ accountName: "くま", saved: "bear" }), "くま");
+  assert.equal(defaultPlayerName({ accountName: null, saved: "bear" }), "bear");
+  assert.equal(defaultPlayerName({ accountName: "  ", saved: " bear " }), "bear");
+  assert.equal(defaultPlayerName({ saved: "anonymous" }), "", "前に送った anonymous は空に");
+  assert.equal(defaultPlayerName({ saved: "Anonymous" }), "");
+  assert.equal(defaultPlayerName({}), "");
+  assert.equal(defaultPlayerName(), "");
+  assert.equal(defaultPlayerName({ accountName: "あ".repeat(40) }).length, 30, "ランキングの名前は 30 文字まで");
+  assert.equal(PORTAL_URL, "https://bearko.games/");
+});
+
+test("SDK がなければ名前は null、 通知の置き場所も何もしない", () => {
+  assert.equal(platformUserName(), null);
+  assert.doesNotThrow(() => placePlatformToasts(100));
+});
+
+test("SDK があればログイン中の名前を読み、 通知を上に置く (= 古い SDK・失敗でも止めない)", () => {
+  const calls = [];
+  globalThis.window = {
+    BearkoGames: {
+      getUser: () => ({ id: "u1", name: " くま " }),
+      setToastPosition: (o) => calls.push(o),
+    },
+  };
+  const warn = console.warn;
+  console.warn = () => {};
+  try {
+    assert.equal(platformUserName(), "くま");
+    placePlatformToasts(120);
+    assert.deepEqual(calls, [{ position: "top", offset: 120 }]);
+    globalThis.window.BearkoGames.getUser = () => null;
+    assert.equal(platformUserName(), null, "ログインしていない");
+    globalThis.window.BearkoGames.getUser = () => { throw new Error("boom"); };
+    assert.equal(platformUserName(), null);
+    delete globalThis.window.BearkoGames.setToastPosition; // SDK 1.4 以前
+    assert.doesNotThrow(() => placePlatformToasts(120));
+    globalThis.window.BearkoGames.setToastPosition = () => { throw new Error("boom"); };
+    assert.doesNotThrow(() => placePlatformToasts(120));
+  } finally {
+    console.warn = warn;
+    delete globalThis.window;
+  }
+});

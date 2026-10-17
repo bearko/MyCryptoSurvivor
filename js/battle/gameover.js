@@ -14,7 +14,7 @@ import {
 import { APP_VERSION, SFX, computeRegulationMul } from "../constants.js";
 import { formatElapsed } from "../survival.js";
 import { stopBgm, playSe } from "../audio.js";
-import { abortRtaRun, scoreMetrics, reportRunScore } from "../platform.js";
+import { abortRtaRun, scoreMetrics, reportRunScore, defaultPlayerName, platformUserName } from "../platform.js";
 import { STAGE_TABLE } from "../constants.js";
 import { countUp, revealIn } from "../reveal.js";
 
@@ -81,7 +81,7 @@ function _wireOnce() {
 
   // SPEC-037: 「タイトルに戻る」 — 戦闘停止 / state リセットして title 画面へ
   document.getElementById("gameOverToTitle")
-    ?.addEventListener("click", _onToTitleClick);
+    ?.addEventListener("click", returnToTitle);
 
   document.getElementById("gameOverSubmit")
     ?.addEventListener("click", _onSubmitClick);
@@ -93,7 +93,8 @@ function _wireOnce() {
   });
 }
 
-async function _onToTitleClick() {
+/** ゲームオーバー・活動レポートから「タイトルに戻る」 (= SPEC-037。 SPEC-052 で活動レポートからも呼ぶ) */
+export async function returnToTitle() {
   document.getElementById("gameOverModal")?.classList.add("hidden");
   // 全 modal close
   for (const id of ["levelUpModal", "stageTransitionModal", "activityReportModal", "rankingModal"]) {
@@ -133,7 +134,8 @@ async function _onSubmitClick() {
 
   const name = (input.value || "").trim().slice(0, 30);
   if (!name) {
-    msg.textContent = t("gameover.namelabel", "Player Name");
+    msg.textContent = t("gameover.nameRequired", "名前を入れてください");
+    input.focus();
     return;
   }
   setPlayerName(name);
@@ -199,8 +201,14 @@ function _renderGameOverModal() {
     stageEl.textContent = cur ? `${line} — ${t(cur.nameKey, cur.nameKey)}` : line;
   }
 
+  // SPEC-052: 名前の既定はログイン中の bearko.games の名前 → 前に送った名前 → 空
   const input = document.getElementById("gameOverName");
-  if (input && !input.value) input.value = getPlayerName();
+  if (input) {
+    if (!input.value) input.value = defaultPlayerName({ accountName: platformUserName(), saved: getPlayerName() });
+    input.placeholder = t("gameover.namePlaceholder", "名前を入れる");
+  }
+  // SPEC-052: RTA のときだけ bearko.games に戻るボタン
+  document.getElementById("gameOverPortal")?.classList.toggle("hidden", !state.rtaMode);
 
   const submitBtn = document.getElementById("gameOverSubmit");
   const msg       = document.getElementById("gameOverMsg");

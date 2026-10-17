@@ -21,7 +21,8 @@ import { getExt, getTierName, extTierImg } from "../extensions.js";
 import { heroImg } from "../heroes.js";
 import { formatElapsed } from "../survival.js";
 import { stopBgm, playSe } from "../audio.js";
-import { scoreMetrics, reportRunScore } from "../platform.js";
+import { scoreMetrics, reportRunScore, defaultPlayerName, platformUserName } from "../platform.js";
+import { returnToTitle } from "./gameover.js";
 import { countUp, revealIn } from "../reveal.js";
 import {
   getPlayerName, setPlayerName, submitScore, getRankingApiUrl,
@@ -59,6 +60,12 @@ function _wireOnce() {
   _wired = true;
   document.getElementById("activityReportRetry")
     ?.addEventListener("click", _onRetryClick);
+  // SPEC-052: タイトルに戻る (= ゲームオーバーと同じ処理)
+  document.getElementById("activityReportToTitle")
+    ?.addEventListener("click", () => {
+      document.getElementById("activityReportModal")?.classList.add("hidden");
+      returnToTitle();
+    });
   document.getElementById("activityReportSubmit")
     ?.addEventListener("click", _onSubmitClick);
   // SPEC-035: 送信成功後に表示される 「ランキングを見る」 ボタン
@@ -93,7 +100,8 @@ async function _onSubmitClick() {
   if (!btn || !input || !msg) return;
   const name = (input.value || "").trim().slice(0, 30);
   if (!name) {
-    msg.textContent = t("gameover.namelabel", "Player Name");
+    msg.textContent = t("gameover.nameRequired", "名前を入れてください");
+    input.focus();
     return;
   }
   setPlayerName(name);
@@ -243,10 +251,22 @@ function _renderReport() {
   if (viewBtn) viewBtn.textContent = t("ranking.openTitle", "ランキングを見る");
   const retryBtn = document.getElementById("activityReportRetry");
   if (retryBtn) retryBtn.textContent = t("gameover.retry", "リトライ");
+  // SPEC-052: タイトルに戻る・(RTA なら) bearko.games に戻る
+  const toTitleBtn = document.getElementById("activityReportToTitle");
+  if (toTitleBtn) toTitleBtn.textContent = t("gameover.toTitle", "タイトルに戻る");
+  const portal = document.getElementById("activityReportPortal");
+  if (portal) {
+    portal.textContent = t("result.toPortal", "bearko.games に戻る");
+    portal.classList.toggle("hidden", !state.rtaMode);
+  }
   const nameLabel = document.getElementById("activityReportNameLabel");
   if (nameLabel) nameLabel.textContent = t("gameover.namelabel", "プレイヤー名");
+  // SPEC-052: 名前の既定はログイン中の bearko.games の名前 → 前に送った名前 → 空
   const input = document.getElementById("activityReportName");
-  if (input && !input.value) input.value = getPlayerName();
+  if (input) {
+    if (!input.value) input.value = defaultPlayerName({ accountName: platformUserName(), saved: getPlayerName() });
+    input.placeholder = t("gameover.namePlaceholder", "名前を入れる");
+  }
 }
 
 function escapeHtml(s) {
