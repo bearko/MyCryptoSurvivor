@@ -9,11 +9,8 @@
 // 弾は state.battle.enemyShots。 ボスの弾 (= bossProjectiles) とは別にする (= ボスの弾は、 ボスが倒れると消すため)
 
 import { state } from "../state.js";
-import { CONTACT_COOLDOWN_MS, SFX, WORLD_W, WORLD_H } from "../constants.js";
-import { pushDamageNumber } from "./damage.js";
-import { playSe } from "../audio.js";
-import { fxPlayerHurt } from "./fx.js";
-import { triggerGameOver } from "./gameover.js";
+import { WORLD_W, WORLD_H } from "../constants.js";
+import { hurtPlayer } from "./hurt.js";   // SPEC-090c
 import { getObstacleRects } from "./field.js";
 import { resolveCircle, circleHitsAnyRect } from "./field-geom.js";
 import { naviTipOnce } from "../navi-tips.js";
@@ -146,13 +143,6 @@ export function tickEnemyShots(dt) {
     const ddx = s.x - px, ddy = s.y - py, sumR = s.r + pr;
     if (ddx * ddx + ddy * ddy > sumR * sumR) continue;
     shots.splice(i, 1);
-    if (b.gameOver || b.contactCooldownMs > 0) continue;
-    const taken = Math.max(1, Math.round(s.dmg * (state.buffs?.dmgTakenMul ?? 1)));
-    state.stats.hp = Math.max(0, state.stats.hp - taken);
-    b.contactCooldownMs = CONTACT_COOLDOWN_MS;
-    pushDamageNumber(px, py - pr - 4, taken, "#ff7676");
-    playSe(SFX.PLAYER_DAMAGED, 200, 0.55);
-    fxPlayerHurt(false);
-    if (state.stats.hp <= 0 && !b.gameOver) triggerGameOver();
+    hurtPlayer(s.dmg, { boss: false, shake: false });   // SPEC-090c: 被弾は 1 か所 (= hurt.js)
   }
 }

@@ -7,6 +7,7 @@
 // 敵の層の下 (= 敵より先) に描く。
 
 import { state } from "../state.js";
+import { windupMs } from "../perks.js";   // SPEC-090c: 見切り (= 予告の長さに合わせて描く)
 import { CHARGE, SLAM } from "./boss-moves.js";
 
 export function renderBossMovesWorld(ctx, camera, w, h, nowMs) {
@@ -32,8 +33,8 @@ export function renderBossMovesWorld(ctx, camera, w, h, nowMs) {
 }
 
 function _drawLane(ctx, boss, act, sx, sy, nowMs) {
-  const locked = act.phase === "dash" || act.t >= CHARGE.windupMs * CHARGE.lockAt;
-  const k = act.phase === "dash" ? 1 : Math.min(1, act.t / CHARGE.windupMs);
+  const locked = act.phase === "dash" || act.t >= windupMs(CHARGE.windupMs) * CHARGE.lockAt;
+  const k = act.phase === "dash" ? 1 : Math.min(1, act.t / windupMs(CHARGE.windupMs));
   const len = act.len - (act.phase === "dash" ? act.run : 0);
   const half = boss.r;
   ctx.save();
@@ -67,7 +68,7 @@ function _drawLane(ctx, boss, act, sx, sy, nowMs) {
 }
 
 function _drawSlam(ctx, act, sx, sy) {
-  const k = Math.min(1, act.t / SLAM.windupMs);
+  const k = Math.min(1, act.t / windupMs(SLAM.windupMs));
   ctx.save();
   ctx.globalAlpha = 0.14;
   ctx.fillStyle = "#ff3048";

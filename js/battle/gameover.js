@@ -22,6 +22,7 @@ import { presentResult } from "../result-telop.js";
 import { startTitleBgm, startMenuBgmAfterJingle } from "../ui-sound.js";
 import { grantRunRewards, runDust } from "../meta.js";
 import { renderRewards } from "../meta-ui.js";
+import { perk } from "../perks.js";   // SPEC-090c
 import { markPlayed } from "../played.js";
 
 let _wired = false;
@@ -47,7 +48,7 @@ export function triggerGameOver(reason = "lose") {
     kills:   state.killCount,
     reason,                  // SPEC-027: "lose" | "clear" でタイトル分岐に使う
     // SPEC-090: 倒れても GUM (= スコアから)。 ゴールドダストはこの挑戦で倒したボスのぶん
-    rewards: reason !== "clear" ? { ...grantRunRewards(false), dust: runDust() } : null,
+    rewards: reason !== "clear" ? { ...grantRunRewards(false, { gumMul: perk("gumMul") }), dust: runDust() } : null,
   };
   pauseTime();
   _wireOnce();

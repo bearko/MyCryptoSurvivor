@@ -19,6 +19,8 @@ import { playSe } from "./audio.js";
 import { ICON_GUM, ICON_DUST } from "./meta-ui.js";
 import { prefersReducedMotion } from "./motion.js";
 import { returnToTitle } from "./battle/gameover.js";
+import { state } from "./state.js";
+import { computePerks, perksSummary } from "./perks.js";   // SPEC-090c: ヒーロー選択の 1 行
 
 const UNIT = 108;                 // 1 マスのピクセル
 const RING_R = 2.6 + 0.9;         // 中心から 1 段目と、 その先の「？」が収まる距離 (マス)
@@ -86,7 +88,7 @@ export function installSkillTree() {
   }
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && _open) closeSkillTree(); });
   onMetaChange(() => { refreshTitleEntry(); });
-  onLangChange(() => { refreshTitleEntry(); if (_open) renderAll(); });
+  onLangChange(() => { refreshTitleEntry(); renderHeroPerks(); if (_open) renderAll(); });
   refreshTitleEntry();
 }
 
@@ -101,6 +103,22 @@ export function refreshTitleEntry() {
     badge.textContent = n > 9 ? "9+" : String(n);
     badge.classList.toggle("hidden", n === 0);
   }
+}
+
+/** SPEC-090c: ヒーロー選択の見せ場の下に、 いま効いている恒久強化を 1 行 (= 無ければ出さない。 RTA では「効かない」と 1 行) */
+export function renderHeroPerks() {
+  const el = document.getElementById("heroPerks");
+  if (!el) return;
+  const m = getMeta();
+  if (state.rtaMode) {
+    const any = owns(m, ROOT_ID);
+    el.textContent = any ? t("hero.perks.rta", "RTA ではスキルツリーの効果は切れる") : "";
+    el.classList.toggle("hidden", !any);
+    return;
+  }
+  const lines = perksSummary(computePerks(m), getLang());
+  el.classList.toggle("hidden", lines.length === 0);
+  el.textContent = lines.length ? `${t("hero.perks.title", "スキルツリー")}：${lines.join("・")}` : "";
 }
 
 // ============================================================

@@ -10,6 +10,7 @@ import {
 } from "../constants.js";
 import { triggerLevelUpPick } from "./levelup.js";
 import { playSe } from "../audio.js";
+import { xpGainMul } from "../perks.js";   // SPEC-090c
 
 export function spawnGem(x, y, value = GEM_VALUE) {
   const b = state.battle;
@@ -45,7 +46,11 @@ export function tickGems(dt) {
     const dx = g.x - px;
     const dy = g.y - py;
     if (dx * dx + dy * dy <= r2) {
-      state.xp += g.value;
+      // SPEC-090c: 学びの速さ (= 端数は貯めて、 整数になったぶんだけ足す)
+      b.xpAcc = (b.xpAcc ?? 0) + g.value * xpGainMul();
+      const whole = Math.floor(b.xpAcc + 1e-9);
+      b.xpAcc -= whole;
+      state.xp += whole;
       b.gems.splice(i, 1);
       pickedAny = true;
     }

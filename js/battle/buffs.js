@@ -8,6 +8,7 @@
 import { state } from "../state.js";
 import { getExt, getCategory } from "../extensions.js";
 import { STATS_INITIAL } from "../constants.js";
+import { perks, perkBuffBase } from "../perks.js";   // SPEC-090c: スキルツリーの土台
 
 /**
  * pick された buff を即時適用。 weapon entry が来た場合は何もしない (= 呼出側で分岐前提)。
@@ -18,25 +19,26 @@ export function applyBuff(extId, level) {
   const params = ext.tierParams?.[Math.max(0, (level | 0) - 1)] ?? {};
   const m = params.magnitude ?? 0;
   const buffs = state.buffs;
+  const base  = perkBuffBase(perks());   // SPEC-090c: スキルツリーの土台に掛ける (= 絶対値ではなく、 土台 × tier)
 
   switch (ext.archetype) {
     case "hpMaxUp": {
       const before = buffs.hpMaxBonus;
       const delta  = m - before;
       buffs.hpMaxBonus  = m;
-      state.statsMax.hp = STATS_INITIAL.hp + m;
+      state.statsMax.hp = (state.battle.baseMaxHp ?? STATS_INITIAL.hp) + m;   // SPEC-090c: 開始 HP (= ヒーロー × 頑丈なからだ) に足す
       state.stats.hp    = Math.min(state.statsMax.hp, state.stats.hp + delta);
       break;
     }
-    case "regen":         buffs.regenPerSec     = m; break;
-    case "speedUp":       buffs.speedMul        = m; break;
-    case "cdDown":        buffs.cdMul           = m; break;
-    case "dmgTakenDown":  buffs.dmgTakenMul     = m; break;
-    case "dmgUp":         buffs.dmgMul          = m; break;
-    case "bulletCount":   buffs.bulletCountBonus = m; break;
-    case "attackRangeUp": buffs.rangeMul         = m; break;   // SPEC-019: 液浸標本
-    case "pickupRangeUp": buffs.pickupMul        = m; break;   // SPEC-019: ギョク
-    case "pierceUp":      buffs.pierceBonus      = m; break;   // SPEC-031: グンバイ
+    case "regen":         buffs.regenPerSec     = base.regenPerSec + m; break;
+    case "speedUp":       buffs.speedMul        = base.speedMul * m; break;
+    case "cdDown":        buffs.cdMul           = base.cdMul * m; break;
+    case "dmgTakenDown":  buffs.dmgTakenMul     = base.dmgTakenMul * m; break;
+    case "dmgUp":         buffs.dmgMul          = base.dmgMul * m; break;
+    case "bulletCount":   buffs.bulletCountBonus = base.bulletCountBonus + m; break;
+    case "attackRangeUp": buffs.rangeMul         = base.rangeMul * m; break;   // SPEC-019: 液浸標本
+    case "pickupRangeUp": buffs.pickupMul        = base.pickupMul * m; break;   // SPEC-019: ギョク
+    case "pierceUp":      buffs.pierceBonus      = base.pierceBonus + m; break;   // SPEC-031: グンバイ
     default:
       console.warn("[buffs] unknown archetype:", ext.archetype);
   }
@@ -58,14 +60,6 @@ export function tickRegen(dt) {
  * startBattle で呼んで buffs を初期値に戻す。
  */
 export function resetBuffs() {
-  state.buffs.hpMaxBonus       = 0;
-  state.buffs.regenPerSec      = 0;
-  state.buffs.speedMul         = 1;
-  state.buffs.cdMul            = 1;
-  state.buffs.dmgTakenMul      = 1;
-  state.buffs.dmgMul           = 1;
-  state.buffs.bulletCountBonus = 0;
-  state.buffs.rangeMul         = 1;   // SPEC-019: 液浸標本
-  state.buffs.pickupMul        = 1;   // SPEC-019: ギョク
-  state.buffs.pierceBonus      = 0;   // SPEC-031: グンバイ
+  // SPEC-090c: 初期値はスキルツリーの土台 (= 何も取っていなければ 0 / 1)
+  Object.assign(state.buffs, perkBuffBase(perks()));
 }

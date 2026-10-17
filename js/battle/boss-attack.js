@@ -12,19 +12,22 @@
 
 import { state } from "../state.js";
 import {
-  CONTACT_COOLDOWN_MS,
-  FAO_FIRE_INTERVAL_MS, FAO_BULLETS,
-  FAO_PROJ_SPEED_PX_S, FAO_PROJ_DMG, FAO_PROJ_LIFE_MS,
-  FAO_PROJ_R, FAO_PROJ_ICON_SIZE,
-  YAMAP_ORBIT_COUNT, YAMAP_ORBIT_RADIUS, YAMAP_ORBIT_HIT_R,
-  YAMAP_ORBIT_DMG, YAMAP_ORBIT_ANG_SPEED, YAMAP_ORBIT_ICON_SIZE,
+  FAO_FIRE_INTERVAL_MS,
+  FAO_BULLETS,
+  FAO_PROJ_SPEED_PX_S,
+  FAO_PROJ_DMG,
+  FAO_PROJ_LIFE_MS,
+  FAO_PROJ_R,
+  FAO_PROJ_ICON_SIZE,
+  YAMAP_ORBIT_COUNT,
+  YAMAP_ORBIT_RADIUS,
+  YAMAP_ORBIT_HIT_R,
+  YAMAP_ORBIT_DMG,
+  YAMAP_ORBIT_ANG_SPEED,
+  YAMAP_ORBIT_ICON_SIZE,
   YAMAP_ORBIT_HIT_COOLDOWN_MS,
-  SFX,
 } from "../constants.js";
-import { pushDamageNumber } from "./damage.js";
-import { triggerGameOver } from "./gameover.js";
-import { playSe } from "../audio.js";
-import { fxPlayerHurt } from "./fx.js";
+import { hurtPlayer } from "./hurt.js";   // SPEC-090c
 import { getObstacleRects } from "./field.js";
 import { circleHitsAnyRect } from "./field-geom.js";
 
@@ -135,17 +138,7 @@ function _tickPlayerCollision(nowMs) {
   const py = b.player.y;
   const pr = b.player.r;
 
-  const applyDmg = (rawDmg) => {
-    if (b.contactCooldownMs > 0) return;
-    const taken = Math.max(1, Math.round(rawDmg * (state.buffs?.dmgTakenMul ?? 1)));
-    state.stats.hp -= taken;
-    if (state.stats.hp < 0) state.stats.hp = 0;
-    b.contactCooldownMs = CONTACT_COOLDOWN_MS;
-    pushDamageNumber(px, py - pr - 4, taken, "#ff7676");
-    playSe(SFX.PLAYER_DAMAGED, 200, 0.55);
-    fxPlayerHurt(true);   // SPEC-045: ボスの攻撃は大きく揺らす
-    if (state.stats.hp <= 0 && !b.gameOver) triggerGameOver();
-  };
+  const applyDmg = (rawDmg) => hurtPlayer(rawDmg, { boss: true });   // SPEC-090c: 被弾は 1 か所 (= hurt.js)。 ボスの攻撃は大きく揺らす
 
   // ファオ projectile (= 当たって消える)
   for (let i = b.bossProjectiles.length - 1; i >= 0; i--) {

@@ -107,6 +107,8 @@ export const state = {
   regulation: "NORMAL",
   // SPEC-040: 「RTA で始める」を選んだ run だけ true (= bearko.games 共通基盤で時間を計る。 ルールは NORMAL)
   rtaMode: false,
+  // SPEC-090c: スキルツリーの効果 (= startBattle が perks.js の perksForRun で置く。 RTA では NO_PERKS)
+  perks: null,
   absolute: {
     spawnMul: 1.0,   // 敵の出現数 (= spawnIntervalMul の逆数として効く)
     hpMul:    1.0,   // 雑魚 hp

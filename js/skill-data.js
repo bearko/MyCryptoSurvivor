@@ -56,7 +56,7 @@ export const NODES = [
   N("mov_pickup",  "mov", "mov_speed", 2, -1, "repeat",   "長い手",       "Long Arms",      "CE を拾う範囲 ＋8%（段ごと）", "CE pickup range +8% per rank",                  { gum: 60 },             1156, { pickupMul: 0.08 }, 5),
   N("mov_item",    "mov", "mov_speed", 2,  1, "perk",     "目ざとい",     "Keen Eye",       "お助けアイテムを拾う範囲 ＋50%", "Item pickup range +50%",                       { gum: 100 },            3102, { itemPickupMul: 0.5 }),
   N("mov_ghost",   "mov", "mov_pickup", 3, -1, "repeat",  "受け身",       "Breakfall",      "被弾のあとの無敵時間 ＋20%（段ごと）", "Invincibility after a hit +20% per rank", { gum: 100 },          1141, { iframeMul: 0.20 }, 3),
-  N("mov_wall",    "mov", "mov_item",  3,  1, "perk",     "壁ぎわ",       "Wall Runner",    "枠の縁・建物に当たっても速度が落ちない", "No slowdown against walls and buildings", { gum: 150 },      1005, { noWallSlow: 1 }),
+  N("mov_dash",    "mov", "mov_item",  3,  1, "perk",     "逃げ足",       "Quick Escape",   "被弾のあとの無敵時間のあいだ、 移動速度 ＋40%", "Move 40% faster during post-hit invincibility", { gum: 150 }, 1005, { dashMul: 0.4 }),
   N("cap_mov",     "mov", "mov_speed", 4,  0, "capstone", "疾風",         "Gale",           "移動速度 ＋8%、 無敵時間 ＋30%", "Move speed +8%, invincibility +30%",          { gum: 300, dust: 3 },   5120, { speedMul: 0.08, iframeMul: 0.30 }),
 
   // ---- 成長 (緑) ----

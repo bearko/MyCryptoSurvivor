@@ -16,6 +16,8 @@ import {
   ITEM_RADIUS, ITEM_PICKUP_RADIUS, HEAL_RATIO, THUNDER_BOSS_RATIO,
   STAGE_TABLE, SFX, BOSS_CHEST, BOSS_CHEST_DROPS,
 } from "../constants.js";
+// SPEC-090c: スキルツリーで変わる定数は、 定数の代わりにここを呼ぶ
+import { chestTimesMs, bossChestCfg, bossChestDrops, potMaxOnField, potDrops, itemPickupMul, healRatio, thunderBossRatio } from "../perks.js";
 import { ARENA } from "./arena.js";
 import { spawnMagicCard } from "./magic-cards.js";
 import { obstacleRect, rollTable, pickSpawnPoint, inView } from "./field-geom.js";
@@ -53,15 +55,15 @@ export function tickField(_dt) {
   const b = state.battle;
   const t = b.stageElapsedMs ?? 0;
   // 宝箱 (= 1 ステージ 4 つ、 決まった時刻)
-  while ((b.nextChestIdx ?? 0) < CHEST_TIMES_MS.length && t >= CHEST_TIMES_MS[b.nextChestIdx]) {
+  while ((b.nextChestIdx ?? 0) < chestTimesMs().length && t >= chestTimesMs()[b.nextChestIdx]) {
     b.nextChestIdx += 1;
     _spawnProp("chest", 220, 420);
   }
   // SPEC-081: ボス戦の宝箱 (= 枠の中に、 ボスが出て少ししてから一定の間隔で)
   if (b.bossSpawned && !b.bossDefeated && b.arena) {
-    if (b.bossChestAtMs == null) b.bossChestAtMs = t + BOSS_CHEST.firstMs;
+    if (b.bossChestAtMs == null) b.bossChestAtMs = t + bossChestCfg().firstMs;
     if (t >= b.bossChestAtMs) {
-      b.bossChestAtMs = t + BOSS_CHEST.everyMs;
+      b.bossChestAtMs = t + bossChestCfg().everyMs;
       const n = b.enemies.reduce((k, e) => k + (e.bossChest ? 1 : 0), 0);
       if (n < BOSS_CHEST.maxOnField) _spawnBossChest();
     }
@@ -70,7 +72,7 @@ export function tickField(_dt) {
   if (t >= (b.nextPotAtMs ?? POT_RESPAWN_MS)) {
     b.nextPotAtMs = t + POT_RESPAWN_MS;
     const pots = b.enemies.reduce((n, e) => n + (e.propKind === "pot" ? 1 : 0), 0);
-    if (pots < POT_MAX_ON_FIELD) _spawnProp("pot", 250, 700);
+    if (pots < potMaxOnField()) _spawnProp("pot", 250, 700);
   }
   _pickupItems();
 }
@@ -136,13 +138,13 @@ export function dropFromProp(e) {
   const gem = Math.max(1, Math.round(xpMul));
   if (e.propKind === "chest") {
     // SPEC-081: ボス戦の宝箱は、 マジックカード (= その場でレベルアップ) も出る
-    const kind = rollTable(e.bossChest ? BOSS_CHEST_DROPS : chestDrops(), Math.random());
+    const kind = rollTable(e.bossChest ? bossChestDrops() : chestDrops(), Math.random());
     if (kind === "card") spawnMagicCard(e.x, e.y);
     else spawnItem(kind, e.x, e.y);
     _scatterGems(e.x, e.y, CHEST_CE_GEMS, gem);
     return;
   }
-  const kind = rollTable(POT_DROPS, Math.random());
+  const kind = rollTable(potDrops(), Math.random());
   if (kind === "ce") _scatterGems(e.x, e.y, POT_CE_GEMS, gem);
   else spawnItem(kind, e.x, e.y);
 }
@@ -168,7 +170,7 @@ export function spawnItem(kind, x, y) {
 function _pickupItems() {
   const b = state.battle;
   if (!b.items || b.items.length === 0) return;
-  const pickupR = ITEM_PICKUP_RADIUS * (state.buffs?.pickupMul ?? 1);
+  const pickupR = ITEM_PICKUP_RADIUS * (state.buffs?.pickupMul ?? 1) * itemPickupMul();
   const r2 = pickupR * pickupR;
   for (let i = b.items.length - 1; i >= 0; i--) {
     const it = b.items[i];
@@ -185,7 +187,7 @@ export function applyItem(kind) {
   if (kind === "heal") {
     const max = state.statsMax.hp;
     const before = state.stats.hp;
-    state.stats.hp = Math.min(max, before + Math.round(max * HEAL_RATIO));
+    state.stats.hp = Math.min(max, before + Math.round(max * healRatio()));
     const healed = Math.round(state.stats.hp - before);
     if (healed > 0) pushDamageNumber(b.player.x, b.player.y - b.player.r - 4, `+${healed}`, "#7ee08a", "lg");
     fxBurst(b.player.x, b.player.y, "#7ee08a", 12, 120);
@@ -222,7 +224,7 @@ export function thunderStrike() {
     const e = b.enemies[i];
     if (e.isProp || !inView(e.x - px, e.y - py, vw, vh, e.r)) continue;
     bolts.push({ x: e.x, y: e.y, seed: Math.random() });
-    hitEnemy(i, e.isBoss ? Math.round(e.hpMax * THUNDER_BOSS_RATIO) : e.hp);
+    hitEnemy(i, e.isBoss ? Math.round(e.hpMax * thunderBossRatio()) : e.hp);
   }
   for (const arr of [b.enemyShots, b.bossProjectiles]) {
     if (!arr) continue;
