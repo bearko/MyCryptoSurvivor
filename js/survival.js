@@ -97,7 +97,12 @@ export function renderHud() {
   if (hpRoot) {
     const fill = hpRoot.querySelector(".hud__bar-fill");
     const val  = hpRoot.querySelector(".hud__bar-value");
-    if (fill) fill.style.width = (getStatRatio("hp") * 100).toFixed(2) + "%";
+    const hpPct = (getStatRatio("hp") * 100).toFixed(2) + "%";
+    if (fill) fill.style.width = hpPct;
+    // SPEC-057: 減ったぶんの残像は CSS が遅れて追う。 少ないと脈打つ
+    const ghost = hpRoot.querySelector(".hud__bar-ghost");
+    if (ghost) ghost.style.width = hpPct;
+    hpRoot.classList.toggle("hud__bar--low", getStatRatio("hp") > 0 && getStatRatio("hp") <= 0.3);
     if (val)  val.textContent  = String(Math.floor(state.stats.hp));
     hpRoot.setAttribute("aria-valuenow", String(Math.floor(state.stats.hp)));
     hpRoot.setAttribute("aria-valuemax", String(state.statsMax?.hp ?? STATS_MAX.hp));

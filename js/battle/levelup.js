@@ -20,6 +20,7 @@ import { rebuildWeaponsFromOwned } from "./extensions-as-weapons.js";
 import { applyBuff } from "./buffs.js";
 import { t, tpl, getLang, onLangChange } from "../i18n.js";
 import { playSe } from "../audio.js";
+import { prefersReducedMotion } from "../motion.js";
 
 let _pendingCount = 0;
 let _isOpen      = false;
@@ -62,8 +63,10 @@ function _openNext() {
 
   pauseTime();
   _wireOnce();
+  _picking = false;
   renderLevelUpModal();
   document.getElementById("levelUpModal")?.classList.remove("hidden");
+  _deal();   // SPEC-057: カードを 1 枚ずつめくって配る
   playSe(SFX.LEVEL_UP, 200, 0.55);   // SPEC-017: open_treasure.mp3
 }
 
@@ -146,6 +149,7 @@ export function rerollPicks() {
   state.battle.rerollsLeft -= 1;
   state.pendingPickOptions = _samplePicks(PICK_OPTIONS_COUNT);
   renderLevelUpModal();
+  _deal();   // SPEC-057: 引き直したカードも配り直す
   playSe(SFX.LEVEL_UP, 100, 0.4);   // SPEC-017: 同じ open_treasure を流用
 }
 
@@ -167,6 +171,36 @@ export function applyPick(extId) {
     playSe(SFX.PICK_WEAPON, 100, 0.55);
   }
   _close();
+}
+
+// ============================================================
+// SPEC-057: 配る・選ぶの演出 (= 選んだカードが光ってから閉じる。 ほかは沈む)
+// ============================================================
+export const PICK_FX_MS = 240;
+let _picking = false;
+
+function _deal() {
+  const modal = document.getElementById("levelUpModal");
+  if (!modal) return;
+  modal.classList.remove("levelup-modal--deal", "levelup-modal--picking");
+  void modal.offsetWidth;   // かけ直す
+  modal.classList.add("levelup-modal--deal");
+}
+
+function _pickWithFx(card, extId) {
+  if (_picking) return;   // 光っているあいだの二度押しを捨てる
+  if (prefersReducedMotion()) { applyPick(extId); return; }
+  _picking = true;
+  card.classList.add("levelup-card--picked");
+  const modal = document.getElementById("levelUpModal");
+  // 配る動き (= 最後の形を保つ) を外さないと、 沈む・光るが効かない
+  modal?.classList.remove("levelup-modal--deal");
+  modal?.classList.add("levelup-modal--picking");
+  setTimeout(() => {
+    _picking = false;
+    document.getElementById("levelUpModal")?.classList.remove("levelup-modal--picking");
+    applyPick(extId);
+  }, PICK_FX_MS);
 }
 
 function _close() {
@@ -284,7 +318,8 @@ export function renderLevelUpModal() {
     main.append(bar, nameEl, skillEl, descEl, lvEl);
 
     card.append(catEl, iconWrap, main);
-    card.addEventListener("click", () => applyPick(opt.extId));
+    card.style.setProperty("--i", String(grid.children.length));   // SPEC-057: 配る順
+    card.addEventListener("click", () => _pickWithFx(card, opt.extId));
     grid.appendChild(card);
   }
 

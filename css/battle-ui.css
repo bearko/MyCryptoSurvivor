@@ -1,0 +1,228 @@
+/* ============================================================
+   battle-ui.css — 戦闘の UI と演出 (= SPEC-057)
+   ============================================================
+   - HUD: 端末の帯。 HP は 10 マスに区切り、 減ったぶんを白い残像が遅れて追う。 少ないと脈打つ
+   - レベルアップ: カードが 1 枚ずつめくれて配られ、 選んだカードが光ってから閉じる
+   - ボス: 予告は警告色の縞、 出た瞬間に斜めの帯のカットイン (= MCH の passive_skill_cutin の写し)
+   色の優先度: UI (= HUD・カード・帯) をいちばん鮮やかに。 戦場の背景は render.js が彩度を落とす。
+   ============================================================ */
+
+/* ------------------------------------------------------------
+   1. ヘッダーと HUD
+   ------------------------------------------------------------ */
+.header {
+  background:
+    var(--node-scan),
+    linear-gradient(180deg, #221c31, #16121f);
+  border-bottom: 0;
+  box-shadow: 0 1px 0 rgba(196, 163, 90, 0.55), 0 2px 0 rgba(86, 204, 242, 0.25);
+}
+.hud {
+  background:
+    linear-gradient(90deg, transparent 0 40%, rgba(255, 255, 255, 0.06) 50%, transparent 60%) -100% 0 / 220% 100% no-repeat,
+    var(--node-scan),
+    linear-gradient(180deg, rgba(20, 16, 28, 0.92), rgba(12, 10, 18, 0.86));
+  border-bottom: 1px solid rgba(86, 204, 242, 0.28);
+  animation: hud-sheen 7s linear infinite;
+}
+@keyframes hud-sheen {
+  0%, 70% { background-position: 120% 0, 0 0, 0 0; }
+  100%    { background-position: -120% 0, 0 0, 0 0; }
+}
+.hud__level {
+  --cut: 6px;
+  padding: 1px 8px;
+  background: linear-gradient(180deg, #f3dc95, var(--accent) 55%, #a8863f);
+  color: var(--on-accent);
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+  text-align: center;
+}
+.hud__bar-track {
+  --cut: 4px;
+  position: relative;
+  height: 10px;
+  border-radius: 0;
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+  background: rgba(255, 255, 255, 0.07);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+/* 10 マスの区切り (= 一番上の層) */
+.hud__bar-track::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(90deg, transparent 0 calc(10% - 1px), rgba(12, 10, 18, 0.85) calc(10% - 1px) 10%);
+  pointer-events: none;
+  z-index: 2;
+}
+.hud__bar-fill { position: relative; z-index: 1; }
+.hud__bar[data-stat="hp"] .hud__bar-fill {
+  background: linear-gradient(180deg, #ff9a9a, var(--hp) 55%, #b23a3a);
+  box-shadow: 0 0 8px rgba(231, 96, 96, 0.55);
+}
+.hud__bar[data-stat="xp"] .hud__bar-fill {
+  background:
+    linear-gradient(90deg, transparent 0 40%, rgba(255, 255, 255, 0.7) 50%, transparent 60%) -100% 0 / 250% 100% no-repeat,
+    linear-gradient(180deg, #ffe9a6, var(--xp) 55%, #b98f2a);
+  animation: xp-shine 2.4s linear infinite;
+}
+@keyframes xp-shine {
+  from { background-position: 150% 0, 0 0; }
+  to   { background-position: -150% 0, 0 0; }
+}
+/* 減ったぶんの残像 (= すぐ減る赤の下で、 白が遅れてついてくる) */
+.hud__bar-ghost {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  background: rgba(255, 244, 214, 0.85);
+  transition: width 520ms var(--ease-out) 260ms;
+}
+/* HP が少ないと脈打つ */
+.hud__bar--low .hud__bar-track { animation: hp-low 0.9s ease-in-out infinite; }
+@keyframes hp-low {
+  50% { box-shadow: inset 0 0 0 1px rgba(255, 120, 120, 0.9), 0 0 10px rgba(231, 60, 60, 0.8); }
+}
+
+/* ------------------------------------------------------------
+   2. レベルアップ: 配られるカード
+   ------------------------------------------------------------ */
+.levelup-card {
+  --cut: 10px;
+  --cat: var(--ifrit);
+  position: relative;
+  border: 1.5px solid transparent;
+  border-radius: 0;
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+  background:
+    linear-gradient(135deg, var(--cat) 0 calc(var(--cut) * 0.7071 + 1px), transparent 0) border-box,
+    linear-gradient(-45deg, var(--node-cyan) 0 calc(var(--cut) * 0.7071 + 1px), transparent 0) border-box,
+    linear-gradient(105deg, transparent 0 40%, rgba(255, 255, 255, 0.35) 50%, transparent 60%) 150% 0 / 250% 100% no-repeat padding-box,
+    var(--node-scan) padding-box,
+    linear-gradient(180deg, color-mix(in srgb, var(--cat) 16%, #2a2340), #17131f 70%) padding-box,
+    linear-gradient(160deg, color-mix(in srgb, var(--cat) 80%, #ffffff), color-mix(in srgb, var(--cat) 40%, transparent) 55%, var(--node-cyan)) border-box;
+  transition: background-position 520ms var(--ease-out), transform var(--dur-fast) var(--ease-out), filter var(--dur-base);
+}
+.levelup-card[data-category="buff"] { --cat: var(--garuda); border-color: transparent; }
+@media (hover: hover) {
+  .levelup-card:hover { background-position: 0 0, 0 0, -150% 0, 0 0, 0 0, 0 0; filter: brightness(1.08); }
+}
+.levelup-card__icon-wrap { border-radius: 0; clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px); }
+/* 配る (= 1 枚ずつめくれて出る。 SPEC-057) */
+.levelup-modal--deal .levelup-card {
+  animation: card-deal 560ms var(--ease-page) both;
+  animation-delay: calc(var(--i, 0) * 90ms + 80ms);
+}
+@keyframes card-deal {
+  0%   { opacity: 0; transform: perspective(700px) translateY(30px) rotateY(-95deg); }
+  60%  { opacity: 1; transform: perspective(700px) translateY(-4px) rotateY(10deg); }
+  100% { opacity: 1; transform: perspective(700px) translateY(0) rotateY(0); }
+}
+.levelup-modal--deal .levelup-modal__title { animation: title-slam 420ms var(--ease-spring) both; }
+@keyframes title-slam {
+  0%   { opacity: 0; transform: scale(1.6); letter-spacing: 0.5em; }
+  100% { opacity: 1; transform: scale(1); }
+}
+/* 選んだ: そのカードが光って前へ、 ほかは沈む */
+.levelup-modal--picking .levelup-card { pointer-events: none; transition: opacity 200ms ease, transform 200ms ease; opacity: 0.25; transform: scale(0.94); }
+.levelup-modal--picking .levelup-card--picked {
+  opacity: 1;
+  transform: scale(1.06);
+  filter: brightness(1.25) drop-shadow(0 0 14px rgba(246, 226, 160, 0.9));
+}
+
+/* ------------------------------------------------------------
+   3. ボス: 予告の警告の縞と、 出た瞬間のカットイン
+   ------------------------------------------------------------ */
+.boss-banner {
+  background:
+    repeating-linear-gradient(-45deg, rgba(255, 196, 0, 0.9) 0 10px, rgba(20, 16, 20, 0.9) 10px 20px) 0 0 / 100% 6px no-repeat,
+    repeating-linear-gradient(-45deg, rgba(255, 196, 0, 0.9) 0 10px, rgba(20, 16, 20, 0.9) 10px 20px) 0 100% / 100% 6px no-repeat,
+    var(--node-scan),
+    linear-gradient(90deg, transparent, rgba(120, 18, 24, 0.88) 12%, rgba(120, 18, 24, 0.88) 88%, transparent);
+  border: 0;
+  padding: 0.9rem 1rem;
+}
+.boss-cutin {
+  position: absolute;
+  inset: 0;
+  z-index: calc(var(--z-stage-ui) + 1);
+  pointer-events: none;
+  overflow: hidden;
+  display: none;
+}
+.boss-cutin--run { display: block; }
+.boss-cutin__band {
+  position: absolute;
+  left: -20%;
+  right: -20%;
+  top: 30%;
+  height: 150px;
+  transform: rotate(-8deg) translateX(110%);
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.0), rgba(255, 255, 255, 0.35) 50%, rgba(255, 255, 255, 0)) -60% 0 / 30% 100% no-repeat,
+    repeating-linear-gradient(115deg, transparent 0 40px, rgba(255, 255, 255, 0.05) 40px 44px),
+    var(--node-scan),
+    linear-gradient(180deg, #5a0f18, #22070c);
+  box-shadow: 0 -3px 0 #ffcf5a, 0 3px 0 #ff5a6a, 0 0 40px rgba(255, 60, 80, 0.55);
+}
+.boss-cutin__sprite {
+  position: absolute;
+  right: 22%;
+  top: -60px;
+  width: 256px;
+  height: 256px;
+  image-rendering: pixelated;
+  transform: rotate(8deg);
+  filter: drop-shadow(0 6px 0 rgba(0, 0, 0, 0.5)) drop-shadow(0 0 20px rgba(255, 80, 90, 0.7));
+}
+.boss-cutin__text {
+  position: absolute;
+  left: 24%;
+  top: 34px;
+  transform: rotate(8deg);
+  color: #fff;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.6);
+}
+.boss-cutin__kicker {
+  display: block;
+  font-family: var(--font-num);
+  font-weight: 700;
+  font-size: 0.7rem;
+  letter-spacing: 0.4em;
+  color: #ffcf5a;
+}
+.boss-cutin__name {
+  display: block;
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 7vw, 2.4rem);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.boss-cutin--run .boss-cutin__band { animation: boss-cutin 1.9s var(--ease-page) both; }
+.boss-cutin--run .boss-cutin__sprite { animation: boss-cutin-sprite 1.9s var(--ease-out) both; }
+@keyframes boss-cutin {
+  0%   { transform: rotate(-8deg) translateX(110%); background-position: -60% 0, 0 0, 0 0, 0 0; }
+  18%  { transform: rotate(-8deg) translateX(0); }
+  80%  { transform: rotate(-8deg) translateX(-4%); background-position: 160% 0, 0 0, 0 0, 0 0; }
+  100% { transform: rotate(-8deg) translateX(-120%); }
+}
+@keyframes boss-cutin-sprite {
+  0%, 10% { opacity: 0; translate: 40% 0; scale: 1.3; }
+  24%     { opacity: 1; translate: 0 0; scale: 1; }
+  80%     { opacity: 1; translate: -6% 0; }
+  100%    { opacity: 0; translate: -30% 0; }
+}
+
+/* ------------------------------------------------------------
+   4. 動きを減らす
+   ------------------------------------------------------------ */
+:root[data-reduce-fx] .hud,
+:root[data-reduce-fx] .hud__bar[data-stat="xp"] .hud__bar-fill,
+:root[data-reduce-fx] .hud__bar--low .hud__bar-track,
+:root[data-reduce-fx] .levelup-modal--deal .levelup-card,
+:root[data-reduce-fx] .levelup-modal--deal .levelup-modal__title { animation: none; }
+:root[data-reduce-fx] .hud__bar-ghost { transition: none; }
+:root[data-reduce-fx] .boss-cutin { display: none !important; }

@@ -6,7 +6,7 @@ import { readFileSync } from "node:fs";
 import { naviLines, NAVI_FRAMES, NAVI_POSES, NAVI_COMM_PLACES, naviFrameUrl } from "../js/navi.js";
 
 const UI = JSON.parse(readFileSync(new URL("../data/i18n/ui.json", import.meta.url), "utf8"));
-const SCENES = ["title", "titleTap", "mode", "hero", "heroPick", "stage"];
+const SCENES = ["title", "titleTap", "mode", "hero", "heroPick", "stage", "boss"];
 
 test("どの場面のセリフも、 日本語と英語の文言とポーズがある", () => {
   for (const scene of SCENES) {
