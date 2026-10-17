@@ -411,12 +411,13 @@
       <h2 class="levelup-modal__title" id="levelUpTitle" data-i18n="levelup.title" data-kicker="LEVEL UP">レベルアップ!</h2>
       <p class="levelup-modal__sub"   id="levelUpSub"   data-i18n="levelup.sub">強化を 1 つ選ぼう</p>
       <div class="levelup-modal__grid" id="levelUpGrid" role="listbox"></div>
-      <!-- SPEC-023: リロール (= 残数表示) / SPEC-067: スキップ (= 取得しない) -->
+      <!-- SPEC-023: リロール (= 残数表示) / SPEC-067: スキップ (= 取得しない)
+           SPEC-072: スキップは左で控えめに、 リロールは右で目立たせる (= スマホは右を押しがち。 序盤に誤ってスキップしない) -->
       <div class="levelup-modal__actions">
-        <button class="btn btn--secondary levelup-modal__reroll" id="levelUpReroll"
-                type="button" data-i18n="levelup.reroll">リロール (残 2)</button>
-        <button class="btn btn--secondary levelup-modal__skip" id="levelUpSkip"
+        <button class="btn btn--ghost levelup-modal__skip" id="levelUpSkip"
                 type="button" data-i18n="levelup.skip">スキップ（取得しない）</button>
+        <button class="btn levelup-modal__reroll" id="levelUpReroll"
+                type="button" data-i18n="levelup.reroll">リロール (残 2)</button>
       </div>
     </div>
   </div>

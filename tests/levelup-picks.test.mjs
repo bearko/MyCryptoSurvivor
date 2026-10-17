@@ -1,6 +1,7 @@
 // SPEC-067: リロールで続けて同じものを出さない・スキップ
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { pickFromPool } from "../js/battle/levelup.js";
 
 const W = (id) => ({ extId: id, category: "weapon" });
@@ -41,4 +42,13 @@ test("候補が足りないときだけ前のものを混ぜ、 直前のもの�
   }
   assert.deepEqual(ids(pickFromPool([W(1), B(2)], 3, { rnd })), [1, 2], "候補が 3 つ未満ならあるだけ");
   assert.deepEqual(pickFromPool([], 3, { rnd }), []);
+});
+
+test("スキップは左で控えめ、 リロールは右で目立つ (= スマホは右を押しがち。 SPEC-072)", () => {
+  const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
+  const skip = html.indexOf('id="levelUpSkip"'), reroll = html.indexOf('id="levelUpReroll"');
+  assert.ok(skip > 0 && reroll > 0 && skip < reroll, "スキップが先 (= 左)");
+  const tag = (id) => html.slice(html.lastIndexOf("<button", html.indexOf(`id="${id}"`)), html.indexOf(">", html.indexOf(`id="${id}"`)));
+  assert.match(tag("levelUpReroll"), /class="btn levelup-modal__reroll"/, "リロールは金の主ボタン");
+  assert.match(tag("levelUpSkip"), /btn--ghost/, "スキップは控えめ");
 });
