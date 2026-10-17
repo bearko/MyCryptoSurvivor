@@ -940,6 +940,17 @@
   letter-spacing: 0.02em;
   white-space: nowrap;
 }
+/* SPEC-072: リロール (= 右・金の主ボタン) を目立たせ、 スキップ (= 左) は灰色で控えめに */
+.levelup-modal__actions .levelup-modal__reroll { flex-grow: 1.25; font-weight: 800; }
+.levelup-modal__actions .levelup-modal__skip {
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  font-weight: 600;
+}
+@media (hover: hover) {
+  .levelup-modal__actions .levelup-modal__skip:hover { color: var(--text); border-color: rgba(255, 255, 255, 0.32); }
+}
 
 /* SPEC-033: 活動レポートモーダル (= 全ステージ clear 時) */
 .report-card {
