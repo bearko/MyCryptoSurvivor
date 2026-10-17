@@ -227,6 +227,8 @@
           data-i18n="stage.clearTitle" data-kicker="NODE CLEAR">Stage Clear!</h2>
       <div class="result-stage-name" id="stageTransitionCurrent" data-reveal></div>
       <div class="result-tiles" id="stageTransitionTiles" data-reveal></div>
+      <!-- SPEC-090: ボスを倒したときのゴールドダスト -->
+      <div class="result-rewards hidden" id="stageTransitionRewards" data-reveal></div>
       <div class="result-next" id="stageTransitionSub" data-reveal></div>
       <button class="btn gameover-modal__retry" id="stageTransitionProceed"
               data-i18n="stage.proceed">次のステージへ</button>
@@ -302,6 +304,8 @@
           <span class="result-tile__value num" id="gameOverLevel"></span>
           <span class="result-tile__label" data-i18n="result.level">レベル</span></div>
       </div>
+      <!-- SPEC-090: この挑戦で得た GUM とゴールドダスト -->
+      <div class="result-rewards hidden" id="gameOverRewards" data-reveal></div>
       <div class="gameover-modal__form">
         <label class="gameover-form__label" for="gameOverName" data-i18n="gameover.namelabel">プレイヤー名</label>
         <input class="gameover-form__input" id="gameOverName" type="text" maxlength="30" autocomplete="off" />
@@ -392,6 +396,8 @@
       <div class="report-hero" id="activityReportHero" data-reveal></div>
       <div class="report-stages" id="activityReportStages"></div>
       <div class="report-totals" id="activityReportTotals" data-reveal></div>
+      <!-- SPEC-090: この挑戦で得た GUM とゴールドダスト -->
+      <div class="result-rewards hidden" id="activityReportRewards" data-reveal></div>
       <div class="gameover-modal__form">
         <label class="gameover-form__label" id="activityReportNameLabel" for="activityReportName">プレイヤー名</label>
         <input class="gameover-form__input" id="activityReportName" type="text" maxlength="30" autocomplete="off" />

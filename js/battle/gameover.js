@@ -20,6 +20,8 @@ import { countUp, revealIn } from "../reveal.js";
 import { naviTitle } from "../navi.js";
 import { presentResult } from "../result-telop.js";
 import { startTitleBgm, startMenuBgmAfterJingle } from "../ui-sound.js";
+import { grantRunRewards, runDust } from "../meta.js";
+import { renderRewards } from "../meta-ui.js";
 
 let _wired = false;
 
@@ -42,6 +44,8 @@ export function triggerGameOver(reason = "lose") {
     level:   state.level,
     kills:   state.killCount,
     reason,                  // SPEC-027: "lose" | "clear" でタイトル分岐に使う
+    // SPEC-090: 倒れても GUM (= スコアから)。 ゴールドダストはこの挑戦で倒したボスのぶん
+    rewards: reason !== "clear" ? { ...grantRunRewards(false), dust: runDust() } : null,
   };
   pauseTime();
   _wireOnce();
@@ -54,6 +58,7 @@ export function triggerGameOver(reason = "lose") {
     then: () => {
       revealIn(modal);
       countUp(document.getElementById("gameOverKills"), state.lastRunStats?.kills ?? 0, { durMs: 600, delayMs: 250 });
+      renderRewards(document.getElementById("gameOverRewards"), state.lastRunStats?.rewards ?? {}, { delayMs: 500 });   // SPEC-090
     },
   });
   // 残っていた Level-up モーダルが有れば閉じる (= 同フレームで LV up と死亡が起きる場合)

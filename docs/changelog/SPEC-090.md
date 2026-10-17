@@ -1,0 +1,1 @@
+- **GUM とゴールドダスト** (`js/meta.js` + `js/meta-ui.js` + `js/battle/stage-transition.js` + `js/battle/gameover.js` + `js/battle/activity-report.js`): 挑戦が終わるたび（全クリア・敗北）、 活動レポートと同じ式のスコアから GUM ＝ √スコア ÷ 2（最低 5）。 ボスを倒すとステージ 1/2/3 で 1/2/3 のゴールドダスト。 結果の画面（ステージクリア・ゲームオーバー・活動レポート）に数え上げで出す。 `localStorage["mcs.meta.v1"]` に貯まる（ツリーは SPEC-090b）
