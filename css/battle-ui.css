@@ -145,6 +145,70 @@
   border: 0;
   padding: 0.9rem 1rem;
 }
+/* SPEC-061: 出るまでの残り。 予告のあいだは帯の下に、 そのあと上の小さな帯にたたんで数える */
+.boss-banner__count {
+  font-family: var(--font-num);
+  font-weight: 700;
+  font-size: 1.5rem;
+  line-height: 1.1;
+  letter-spacing: 0.08em;
+  color: #ffe08a;
+  text-shadow: 0 0 10px rgba(255, 200, 80, 0.75);
+}
+.boss-banner.boss-banner--compact {
+  --cut: 8px;
+  top: 8px;
+  left: 50%;
+  right: auto;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.4rem 0.9rem 0.45rem;
+  opacity: 1;
+  translate: -50% 0;
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+  background:
+    repeating-linear-gradient(-45deg, rgba(255, 196, 0, 0.9) 0 8px, rgba(20, 16, 20, 0.9) 8px 16px) 0 0 / 100% 4px no-repeat,
+    repeating-linear-gradient(-45deg, rgba(255, 196, 0, 0.9) 0 8px, rgba(20, 16, 20, 0.9) 8px 16px) 0 100% / 100% 4px no-repeat,
+    var(--node-scan),
+    linear-gradient(180deg, rgba(140, 22, 30, 0.95), rgba(80, 10, 18, 0.95));
+  animation: boss-banner-compact 360ms var(--ease-spring) both, boss-banner-alarm 1s ease-in-out 360ms infinite;
+}
+.boss-banner--compact > * { white-space: nowrap; }
+.boss-banner--compact .boss-banner__mark { font-size: 0.6rem; letter-spacing: 0.2em; }
+.boss-banner--compact .boss-banner__text { font-size: 0.95rem; }
+.boss-banner--compact .boss-banner__count { font-size: 1.2rem; }
+@keyframes boss-banner-compact {
+  from { opacity: 0; translate: -50% -140%; }
+  to   { opacity: 1; translate: -50% 0; }
+}
+@keyframes boss-banner-alarm {
+  50% { filter: brightness(1.35); }
+}
+/* 最後の 5 秒: 真ん中に大きな数字 */
+.boss-countdown {
+  position: absolute;
+  left: 50%;
+  top: 34%;
+  z-index: var(--z-stage-ui);
+  translate: -50% -50%;
+  font-family: var(--font-display);
+  font-size: clamp(4.5rem, 24vw, 8rem);
+  line-height: 1;
+  color: #fff;
+  -webkit-text-stroke: 3px #b3202c;
+  text-shadow: 0 0 24px rgba(255, 60, 80, 0.8), 0 6px 0 rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+  opacity: 0;
+}
+.boss-countdown--tick { animation: boss-count-tick 900ms var(--ease-out) both; }
+@keyframes boss-count-tick {
+  0%   { opacity: 0; scale: 1.8; }
+  18%  { opacity: 1; scale: 1; }
+  70%  { opacity: 1; scale: 1; }
+  100% { opacity: 0; scale: 0.85; }
+}
+
 .boss-cutin {
   position: absolute;
   inset: 0;
@@ -226,3 +290,5 @@
 :root[data-reduce-fx] .levelup-modal--deal .levelup-modal__title { animation: none; }
 :root[data-reduce-fx] .hud__bar-ghost { transition: none; }
 :root[data-reduce-fx] .boss-cutin { display: none !important; }
+:root[data-reduce-fx] .boss-banner.boss-banner--compact { animation: none; }
+:root[data-reduce-fx] .boss-countdown--tick { animation: none; opacity: 1; }

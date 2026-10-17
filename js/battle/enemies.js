@@ -18,7 +18,7 @@ import { triggerStageEndOrTransition } from "./stage-transition.js";
 import { triggerGameOver } from "./gameover.js";
 import { pushDamageNumber } from "./damage.js";
 import { playSe } from "../audio.js";
-import { fxPlayerHurt, fxBossIncoming, fxBossSpawned } from "./fx.js";
+import { fxPlayerHurt, fxBossIncoming, fxBossSpawned, fxBossCountdown } from "./fx.js";
 import { getObstacleRects } from "./field.js";
 import { resolveCircle, slideAlongWall } from "./field-geom.js";
 
@@ -54,6 +54,8 @@ export function tickEnemies(dt, nowMs) {
   // SPEC-045: 出る 30 秒前に予告 (= 1 ステージ 1 回。 fx 側で 2 回目を弾く)
   if (!b.bossSpawned && b.stageElapsedMs >= BOSS_SPAWN_AT_MS - BOSS_WARNING_LEAD_MS) {
     fxBossIncoming();
+    // SPEC-061: 出るまでの残りを数える (= ゲームの中の時間)
+    fxBossCountdown(BOSS_SPAWN_AT_MS - b.stageElapsedMs, BOSS_WARNING_LEAD_MS);
   }
   if (!b.bossSpawned && b.stageElapsedMs >= BOSS_SPAWN_AT_MS) {
     spawnEnemyAtRing(stage.bossEnemyId);

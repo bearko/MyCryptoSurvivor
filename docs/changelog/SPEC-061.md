@@ -1,0 +1,1 @@
+- **ボスが出るまでのカウントダウン** (`js/battle/fx.js` + `js/battle/enemies.js` + `index.html` + `css/battle-ui.css`): 「ボス接近」の帯に残りの秒（0:30 → 0:01）を出し、予告のあとは上の小さな帯で数え続ける。最後の 5 秒は真ん中に大きな数字

@@ -187,7 +187,11 @@
       <div id="bossBanner" class="boss-banner hidden" aria-live="assertive">
         <span class="boss-banner__mark">⚠ WARNING</span>
         <span class="boss-banner__text" data-i18n="boss.warning">ボス接近</span>
+        <!-- SPEC-061: 出るまでの残り (= 予告のあと、 上の小さな帯で数える) -->
+        <span class="boss-banner__count num" id="bossBannerCount" aria-hidden="true"></span>
       </div>
+      <!-- SPEC-061: 最後の 5 秒は真ん中に大きな数字 -->
+      <div id="bossCountdown" class="boss-countdown num hidden" aria-hidden="true"></div>
       <!-- SPEC-057: ボスが出た瞬間のカットイン (= 遊びは止めない) -->
       <div id="bossCutin" class="boss-cutin" aria-hidden="true">
         <div class="boss-cutin__band">
