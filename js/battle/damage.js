@@ -16,6 +16,7 @@ import { state } from "../state.js";
 import { spawnGem } from "./gems.js";
 import { spawnMagicCard } from "./magic-cards.js";
 import { fxEnemyHit, fxEnemyKilled } from "./fx.js";
+import { dropFromProp } from "./field.js";
 import {
   HIT_FREEZE_MS, DAMAGE_NUMBER_LIFE_MS, DAMAGE_NUMBER_RISE_PX_S,
 } from "../constants.js";
@@ -36,6 +37,13 @@ export function hitEnemy(idx, dmg) {
   e.hitFreezeMs = HIT_FREEZE_MS;
   fxEnemyHit(e);   // SPEC-045: 一瞬白く光る
   pushDamageNumber(e.x, e.y - e.r - 4, dmgInt, "#ffffff");
+  if (e.hp <= 0 && e.isProp) {
+    // SPEC-053: 壺・宝箱は撃破数・経験値に数えず、 お助けアイテムか CE を落とす
+    dropFromProp(e);
+    enemies.splice(idx, 1);
+    fxEnemyKilled(e);
+    return true;
+  }
   if (e.hp <= 0) {
     // SPEC-026: 強敵ほど高 XP を落とす (= ENEMY_SPECS.xpValue 由来、 enemy.xpValue が未設定なら 1)
     spawnGem(e.x, e.y, e.xpValue ?? 1);

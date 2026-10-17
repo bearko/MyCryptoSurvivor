@@ -11,6 +11,8 @@
 
 import { state } from "../state.js";
 import { hitEnemy } from "./damage.js";
+import { getObstacleRects } from "./field.js";
+import { clipRayLength } from "./field-geom.js";
 import {
   PROJECTILE_RADIUS, PROJECTILE_LIFE_MS,
   WEAPON_SIZE_GROWTH_PER_LEVEL,
@@ -66,14 +68,16 @@ function _spawnProjectile(opts) {
 
 function _findNearestEnemy(px, py, range) {
   const arr = state.battle.enemies;
-  let best = null;
-  let bestD2 = (range || Infinity) * (range || Infinity);
+  const lim2 = (range || Infinity) * (range || Infinity);
+  // SPEC-053: 敵を先に狙い、 近くに敵がいないときだけ壺・宝箱を狙う
+  let best = null, bestD2 = lim2, prop = null, propD2 = lim2;
   for (const e of arr) {
     const dx = e.x - px, dy = e.y - py;
     const d2 = dx * dx + dy * dy;
-    if (d2 < bestD2) { bestD2 = d2; best = e; }
+    if (e.isProp) { if (d2 < propD2) { propD2 = d2; prop = e; } }
+    else if (d2 < bestD2) { bestD2 = d2; best = e; }
   }
-  return best;
+  return best ?? prop;
 }
 
 function _nearestDir(px, py, range) {
@@ -156,7 +160,10 @@ export function fireBigHoming(w, dmgMul, bulletBonus) {
 // ============================================================
 
 export function fireDropTarget(w, dmgMul, bulletBonus) {
-  const enemies = state.battle.enemies;
+  // SPEC-053: 敵がいれば敵だけを狙う (= 壺・宝箱は敵がいないときだけ)
+  const all = state.battle.enemies;
+  const foes = all.filter(e => !e.isProp);
+  const enemies = foes.length ? foes : all;
   if (enemies.length === 0) return;
   const total = (w.bullets ?? 1) + bulletBonus;
   const fallH = w.params?.fallH ?? 220;
@@ -458,6 +465,7 @@ export function tickBeams(dt, nowMs) {
   const beams   = state.battle.beams;
   const enemies = state.battle.enemies;
   const player  = state.battle.player;
+  const rects   = getObstacleRects();
   const dms = dt * 1000;
   for (let i = beams.length - 1; i >= 0; i--) {
     const b = beams[i];
@@ -465,6 +473,8 @@ export function tickBeams(dt, nowMs) {
     if (b.age >= b.life) { beams.splice(i, 1); continue; }
     // origin は毎フレーム player に置き直す (= ヒーロー中心)
     b.x = player.x; b.y = player.y;
+    // SPEC-053: レーザーは建物で止まる (= 長さを最初に当たる建物の手前までに)
+    b.hitLen = rects.length ? clipRayLength(b.x, b.y, b.dirX, b.dirY, b.len, rects) : b.len;
     // SPEC-031: dmg は実数で蓄積、 250ms 毎に整数化して dispatch (= 高 fps の丸め損対策)
     const dmgF = b.dmgPerSec * dt;
     const halfThick = b.thick / 2;
@@ -475,7 +485,7 @@ export function tickBeams(dt, nowMs) {
       const ex = e.x - b.x, ey = e.y - b.y;
       // 線分への投影 (= dot)
       const proj = ex * b.dirX + ey * b.dirY;
-      if (proj < 0 || proj > b.len) continue;
+      if (proj < 0 || proj > b.hitLen) continue;
       // 投影点と敵の距離
       const px = b.dirX * proj, py = b.dirY * proj;
       const dx = ex - px, dy = ey - py;

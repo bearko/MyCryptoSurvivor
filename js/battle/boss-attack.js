@@ -25,6 +25,8 @@ import { pushDamageNumber } from "./damage.js";
 import { triggerGameOver } from "./gameover.js";
 import { playSe } from "../audio.js";
 import { fxPlayerHurt } from "./fx.js";
+import { getObstacleRects } from "./field.js";
+import { circleHitsAnyRect } from "./field-geom.js";
 
 /**
  * 1 frame: 各ボス (= state.battle.enemies の isBoss=true) の攻撃を更新。
@@ -120,6 +122,8 @@ function _tickBossProjectiles(dt) {
     if (p.age >= p.life) { b.bossProjectiles.splice(i, 1); continue; }
     p.x += p.vx * dt;
     p.y += p.vy * dt;
+    // SPEC-053: ボスの弾も建物で止まる
+    if (circleHitsAnyRect(p.x, p.y, p.r ?? 12, getObstacleRects())) b.bossProjectiles.splice(i, 1);
   }
 }
 

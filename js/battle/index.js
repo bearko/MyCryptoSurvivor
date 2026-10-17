@@ -24,6 +24,7 @@ import { tickWeapons } from "./weapons.js";
 import { tickProjectiles } from "./projectiles.js";
 import { tickGems } from "./gems.js";
 import { tickMagicCards } from "./magic-cards.js";
+import { resetField, tickField } from "./field.js";
 import { rebuildWeaponsFromOwned } from "./extensions-as-weapons.js";
 import { renderBattle } from "./render.js";
 import { getHeroSprite, getDefaultEnemySprite, getBackgroundSprite } from "./sprites.js";
@@ -123,6 +124,7 @@ export function startBattle(hero) {
   state.killCount       = 0;                    // SPEC-009: 撃破カウンタ
   state.lastRunStats    = null;                 // SPEC-009: snapshot
   resetBuffs();                                 // SPEC-011: 強化系列の効果リセット
+  resetField();                                 // SPEC-053: 建物・壺・アイテム (= プレイヤーを (0, 0) に置いたあと)
 
   // SPEC-014: hero.stats.hp / agi から HP 上限と移動速度を派生 (= hero ごとに性能差)
   const heroHpStat   = hero?.stats?.hp  ?? 0;
@@ -237,6 +239,7 @@ function _loop(now) {
     tickFx(dt);                    // SPEC-045: 揺れ・縁の赤・粒
     tickGems(dt);                  // SPEC-007: 拾う + level up trigger
     tickMagicCards(dt);            // SPEC-033: マジックカード (= 即時 LV up アイテム)
+    tickField(dt);                 // SPEC-053: 壺・宝箱を出す + お助けアイテムを拾う
     tickRegen(dt);                 // SPEC-011: Ramen 系列の HP regen
     tickCoach(dt, v.x !== 0 || v.y !== 0);   // SPEC-042: 操作ガイド
     if (state.battle.contactCooldownMs > 0) {

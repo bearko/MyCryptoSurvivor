@@ -1,0 +1,4 @@
+- **建物** (`js/battle/field.js` + `js/battle/field-geom.js` + `js/constants.js`): 各ステージに 4 つ（持ち運びハウス・お城）。自分・敵は通れず、弾は消え、レーザーは手前で止まる
+- **壺と宝箱** (`js/battle/field.js` + `js/battle/damage.js` + `js/battle/enemies.js` + `js/battle/archetypes.js`): どの武器でも壊せる。壺はいつもあり、宝箱は 1 ステージ 4 つ（0:30・1:30・2:30・3:30）。撃破数には数えない。画面の外の宝箱は縁の矢印で分かる
+- **お助けアイテム** (`js/battle/field.js` + `js/battle/gems.js` + `js/battle/render.js`): 棒磁石（落ちているジェムを全部吸い寄せる）・パンケーキ（HP を 30% 回復）
+- **遊び方** (`index.html` + `data/i18n/ui.json`): 壺・宝箱・アイテム・建物の 2 行
