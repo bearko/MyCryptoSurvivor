@@ -149,6 +149,12 @@ export function resumeBgm() {
 
 onSettingsChange(() => applyAudioSettings());
 
+let _seMuted = false;
+/** SPEC-083: 効果音を止める (= ヒーロー選択の武器のプレビューは音を出さない) */
+export function setSeMuted(on) {
+  _seMuted = !!on;
+}
+
 /**
  * SE 再生 (= throttle 付き)
  * @param {string} relPath - "Audio/se_click.mp3" 等
@@ -156,6 +162,7 @@ onSettingsChange(() => applyAudioSettings());
  * @param {number} volume - 0.0 〜 1.0 (= 設定 100% のときの音量)
  */
 export function playSe(relPath, throttleMs = 80, volume = 0.5) {
+  if (_seMuted) return;
   const vol = mixVolume(volume, getSettings().se);
   if (vol <= 0) return;
   const now = Date.now();

@@ -442,6 +442,13 @@
           <span class="hero-stage__name" id="heroStageName" aria-hidden="true"></span>
           <img class="hero-stage__sprite hidden" id="heroStageSprite" alt="" draggable="false" />
           <span class="hero-stage__empty" id="heroStageEmpty" data-i18n="hero.stage.empty">ヒーローを選んでください</span>
+          <!-- SPEC-083: 選んで 1 秒たつと、 最初の武器で戦うところ (= Common → Uncommon → Rare を 3 秒ずつ) -->
+          <canvas class="hero-stage__preview" id="heroStagePreview" aria-hidden="true"></canvas>
+          <div class="hero-stage__tier" id="heroStageTier">
+            <span class="hero-stage__tier-rarity" id="heroStageTierRarity"></span>
+            <span class="hero-stage__tier-name" id="heroStageTierName"></span>
+            <span class="hero-stage__tier-steps" aria-hidden="true"><i></i><i></i><i></i></span>
+          </div>
         </div>
         <div class="hero-detail__placeholder" id="heroDetailPlaceholder"
              data-i18n="hero.detail.placeholder">ヒーローを選んでください</div>
