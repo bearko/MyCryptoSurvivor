@@ -2,7 +2,7 @@
 id: SPEC-088
 title: First Play Is NORMAL Only — ABSOLUTE and RTA Locked Until One Run Ends
 status: Done
-pr: TBD
+pr: 116
 phase: v1.3 Menu
 kind: Changed
 ---
