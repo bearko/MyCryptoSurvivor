@@ -2,7 +2,7 @@
 id: SPEC-064
 title: Stage Gimmicks — Abacus Beads, Hollerith Punch Cards, Trojan Horse
 status: Done
-pr: TBD
+pr: 90
 phase: v1.2 Battle
 kind: Added
 ---
