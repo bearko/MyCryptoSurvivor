@@ -12,7 +12,7 @@ import { state } from "../state.js";
 import { playSe } from "../audio.js";
 import { prefersReducedMotion } from "../motion.js";
 import { renderHud } from "../survival.js";
-import { STAGE_TABLE } from "../constants.js";
+import { STAGE_TABLE, THUNDER_FX_MS } from "../constants.js";
 import { getEnemy, enemyImg, localizedEnemyName } from "../enemies.js";
 import { getLang } from "../i18n.js";
 import { naviSay, naviLines } from "../navi.js";
@@ -54,7 +54,7 @@ function _fx() {
 }
 
 export function resetFx() {
-  state.battle.fx = { shake: 0, shakeMs: 0, hurt: 0, flash: 0, particles: [], bossWarned: false, countSec: -1 };
+  state.battle.fx = { shake: 0, shakeMs: 0, hurt: 0, flash: 0, particles: [], bossWarned: false, countSec: -1, bolts: [], boltMs: 0 };
   _hideBossBanner();
   clearTimeout(_cutinTimer);
   globalThis.document?.getElementById("bossCutin")?.classList.remove("boss-cutin--run");
@@ -118,6 +118,29 @@ export function fxEnemyKilled(e) {
     });
   }
   capParticles(fx.particles);
+}
+
+/** SPEC-063: 雷鼓 — 雷の線 (= 落ちた場所ごと)・白い閃光・揺れ */
+export function fxThunder(bolts) {
+  const fx = _fx();
+  fx.bolts = bolts ?? [];
+  fx.boltMs = THUNDER_FX_MS;
+  _shake(9, 380);
+  _vibrate(50);
+  if (!prefersReducedMotion()) fx.flash = 1;
+}
+
+/** 稲妻の折れ線 (= 純関数。 上から落ちて (x, y) に届く。 seed で形が決まる) */
+export function boltPoints(x, y, seed, height = 240, segs = 7) {
+  const pts = [];
+  let s = Math.floor(seed * 233280) || 1;
+  const rnd = () => { s = (s * 9301 + 49297) % 233280; return s / 233280; };
+  for (let i = 0; i <= segs; i++) {
+    const t = i / segs;
+    const jitter = i === 0 || i === segs ? 0 : (rnd() - 0.5) * 34;
+    pts.push({ x: x + jitter, y: y - height * (1 - t) });
+  }
+  return pts;
 }
 
 export function fxPlayerHurt(isBoss = false) {
@@ -215,6 +238,7 @@ export function tickFx(dt) {
   }
   fx.hurt = decay(fx.hurt, dms, HURT_MS);
   fx.flash = decay(fx.flash, dms, FLASH_MS);
+  if (fx.boltMs > 0) { fx.boltMs = Math.max(0, fx.boltMs - dms); if (fx.boltMs === 0) fx.bolts = []; }
   const ps = fx.particles;
   for (let i = ps.length - 1; i >= 0; i--) {
     const p = ps[i];
@@ -241,7 +265,9 @@ export function shakeOffset() {
 /** 世界座標の粒 (= render.js が camera を引いて呼ぶ) */
 export function renderFxWorld(ctx, camera, w, h) {
   const fx = state.battle.fx;
-  if (!fx || !fx.particles.length) return;
+  if (!fx) return;
+  if (fx.boltMs > 0 && fx.bolts?.length) _drawBolts(ctx, camera, fx.bolts, fx.boltMs / THUNDER_FX_MS);
+  if (!fx.particles.length) return;
   for (const p of fx.particles) {
     const sx = p.x - camera.x;
     const sy = p.y - camera.y;
@@ -253,6 +279,26 @@ export function renderFxWorld(ctx, camera, w, h) {
     ctx.fillRect(sx - s / 2, sy - s / 2, s, s);
   }
   ctx.globalAlpha = 1;
+}
+
+/** SPEC-063: 稲妻 (= 太い淡い光の上に、 白い芯) */
+function _drawBolts(ctx, camera, bolts, k) {
+  ctx.save();
+  ctx.lineJoin = "round";
+  ctx.lineCap = "round";
+  for (const bo of bolts) {
+    const pts = boltPoints(bo.x - camera.x, bo.y - camera.y, bo.seed);
+    for (const [width, color, alpha] of [[9, "#fff1a0", 0.35], [3, "#ffffff", 0.95]]) {
+      ctx.globalAlpha = alpha * k;
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x, pts[0].y);
+      for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+      ctx.stroke();
+    }
+  }
+  ctx.restore();
 }
 
 function _edge(ctx, w, h, alpha) {

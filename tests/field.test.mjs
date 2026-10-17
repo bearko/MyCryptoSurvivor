@@ -77,7 +77,7 @@ test("ドロップの抽選は重みどおり", () => {
   assert.equal(rollTable([], 0.5), null);
   for (const t of [POT_DROPS, CHEST_DROPS]) {
     assert.ok(t.every((e) => e.w > 0));
-    assert.ok(t.every((e) => ["ce", "heal", "magnet"].includes(e.kind)));
+    assert.ok(t.every((e) => ["ce", "heal", "magnet", "thunder"].includes(e.kind)));   // SPEC-063: 雷鼓
   }
 });
 
