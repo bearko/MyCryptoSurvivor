@@ -2,7 +2,7 @@
 id: SPEC-053
 title: Field — Buildings, Pots, Chests and Helper Items (Bar Magnet / Pancake)
 status: Done
-pr: TBD
+pr: 78
 phase: Phase 3
 kind: Added
 ---
