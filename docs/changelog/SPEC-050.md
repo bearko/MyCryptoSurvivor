@@ -1,0 +1,1 @@
+- **bearko.games の総合ランキングへの導線** (`index.html` + `js/ranking-ui.js`): ランキングのモーダルに「bearko.games の総合ランキング ↗」を置く。新しいタブで共通基盤の Survivor のランキングが開く。前からのランキングはそのまま
