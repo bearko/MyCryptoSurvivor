@@ -17,6 +17,7 @@ import { spawnGem } from "./gems.js";
 import { spawnMagicCard } from "./magic-cards.js";
 import { fxEnemyHit, fxEnemyKilled } from "./fx.js";
 import { dropFromProp } from "./field.js";
+import { breakTrojan } from "./gimmicks.js";
 import {
   HIT_FREEZE_MS, DAMAGE_NUMBER_LIFE_MS, DAMAGE_NUMBER_RISE_PX_S,
 } from "../constants.js";
@@ -42,6 +43,13 @@ export function hitEnemy(idx, dmg) {
   if (e.hp <= 0 && e.isProp) {
     // SPEC-053: 壺・宝箱は撃破数・経験値に数えず、 お助けアイテムか CE を落とす
     dropFromProp(e);
+    enemies.splice(idx, 1);
+    fxEnemyKilled(e);
+    return true;
+  }
+  if (e.hp <= 0 && e.behavior === "trojan") {
+    // SPEC-064: 木馬は開く前に壊すと、 宝箱の中身と CE (= 撃破数には数えない)
+    breakTrojan(e);
     enemies.splice(idx, 1);
     fxEnemyKilled(e);
     return true;

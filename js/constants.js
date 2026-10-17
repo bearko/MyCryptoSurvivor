@@ -192,6 +192,9 @@ export const SFX = {
   GAME_OVER_CLEAR: "Audio/SE/Jingles/win.mp3",
   UI_CLICK:        "Audio/SE/Actions/crash.mp3",   // SPEC-060: ボタンを押したとき
   THUNDER:         "Audio/SE/Battle/2_area_damage.mp3",   // SPEC-063: 雷鼓
+  GIMMICK_WARN:    "Audio/SE/Battle/5_debuff_status_effect.mp3",   // SPEC-064: 仕掛けの予告 (= 珠の列・木馬)
+  PUNCH:           "Audio/SE/Battle/1_single_damage.mp3",          // SPEC-064: パンチカード
+  TROJAN_OPEN:     "Audio/SE/Battle/2_area_damage.mp3",            // SPEC-064: 木馬が開く
 };
 export const BGM_BATTLE = "Audio/BGM/pvp.mp3";
 export const BGM_MENU   = "Audio/BGM/land.mp3";   // SPEC-060: タイトル・モード選択・ヒーロー選択・結果の画面
@@ -349,6 +352,7 @@ export const STAGE_TABLE = [
     spawnIntervalMul:  1.0,
     // SPEC-062: 撃ってくる敵 (= fromMs から everyMs ごとに 1 体。 同時に max 体まで)
     shooters: { fromMs: 90000, everyMs: 10000, max: 3, ids: [166] },
+    gimmick: "beads",    // SPEC-064: そろばんの珠
   },
   {
     idx: 1,
@@ -368,6 +372,7 @@ export const STAGE_TABLE = [
     xpMul:             2.0,
     spawnIntervalMul:  0.85,
     shooters: { fromMs: 45000, everyMs: 7000, max: 6, ids: [166, 136] },   // SPEC-062
+    gimmick: "punch",    // SPEC-064: パンチカード
   },
   {
     idx: 2,
@@ -387,6 +392,7 @@ export const STAGE_TABLE = [
     xpMul:             3.0,
     spawnIntervalMul:  0.7,
     shooters: { fromMs: 30000, everyMs: 5000, max: 9, ids: [166, 136] },   // SPEC-062
+    gimmick: "trojan",   // SPEC-064: トロイの木馬
   },
 ];
 
