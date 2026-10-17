@@ -16,6 +16,7 @@ import { t, tpl, onLangChange } from "../i18n.js";
 import { reportStageEnd, reportRtaStageEnd } from "../platform.js";
 import { formatElapsed } from "../survival.js";
 import { countUp, revealIn } from "../reveal.js";
+import { presentResult } from "../result-telop.js";
 
 let _wired = false;
 
@@ -70,10 +71,15 @@ export function triggerStageEndOrTransition() {
   _renderTransitionModal();
   const modal = document.getElementById("stageTransitionModal");
   modal?.classList.remove("hidden");
-  // SPEC-046: 上から順に出し、 撃破数を数え上げる
-  revealIn(modal);
+  // SPEC-058: テロップ (= 斜めの帯とヒーロー・アイン) のあと、 SPEC-046: 上から順に出し、 撃破数を数え上げる
   const snap = state.run.stages.find(s => s.idx === (state.currentStageIdx ?? 0));
-  countUp(document.getElementById("stageTransitionKills"), snap?.kills ?? 0, { durMs: 600, delayMs: 250 });
+  presentResult(modal, "clear", {
+    heroId: state.ownedHero?.heroId ?? null,
+    then: () => {
+      revealIn(modal);
+      countUp(document.getElementById("stageTransitionKills"), snap?.kills ?? 0, { durMs: 600, delayMs: 250 });
+    },
+  });
 }
 
 /** SPEC-046: ⏱ 時間・💀 撃破・Lv のタイル (= ステージクリアとゲームオーバーで同じ形) */
