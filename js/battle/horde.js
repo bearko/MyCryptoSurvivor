@@ -27,17 +27,19 @@ export const DENSITY_CHECK_MS = 150;
 export const DENSITY_GAIN = 0.4;
 /** 足りない数を数えるときの、 ふつうの敵の半径 (= SPEC-077 の 1.4 倍のあと) */
 export const DENSITY_AVG_R = 20;
+/** 目標の上がり方 (= 時刻の何乗か。 SPEC-084 で 1.6 → 2.2。 序盤はゆるく、 ボスの前に急に濃く) */
+export const DENSITY_POW = 2.2;
 /** 1 回に足す数の上限 (= 強い武器でまとめて倒されても、 すぐ埋め戻す。 1 秒に 200 体ほどまで) */
 export const DENSITY_MAX_PER_CHECK = 32;
 
 /**
- * 密度の目標 (= 0〜1)。 fromMs から fullMs にかけて、 終わりほど急に上がる (= ボスの直前がいちばん濃い)。 純関数
+ * 密度の目標 (= 0〜)。 fromMs から fullMs にかけて、 終わりほど急に上がる (= ボスの直前がいちばん濃い)。 純関数
  *   d: { fromMs, fullMs, max }
  */
 export function densityTarget(d, elapsedMs) {
   if (!d) return 0;
   const k = Math.max(0, Math.min(1, (elapsedMs - d.fromMs) / Math.max(1, d.fullMs - d.fromMs)));
-  return d.max * Math.pow(k, 1.6);
+  return d.max * Math.pow(k, DENSITY_POW);
 }
 
 /** 画面の密度 (= 画面の中にいる敵の円の面積の和 ÷ 画面の面積)。 壺・宝箱・木馬・ボスは数えない。 純関数 */
@@ -79,6 +81,13 @@ export const RECYCLE_CHECK_MS = 250;
 export const RECYCLE_MAX = 24;
 /** 湧く輪 (= 画面の半分 + 余白) の何倍より遠ければ寄せ直すか */
 export const RECYCLE_K = 1.4;
+/** SPEC-084: 寄せ直すのは、 密度の目標が最大のこの割合を超えてから (= ボスの前だけ。 序盤は逃げ回れば敵を置いていける) */
+export const RECYCLE_FROM = 0.5;
+
+/** SPEC-084: いま寄せ直してよいか (= 密度の目標がボスの前の濃さまで上がったか)。 純関数 */
+export function recycleActive(d, elapsedMs) {
+  return !!d && densityTarget(d, elapsedMs) >= d.max * RECYCLE_FROM;
+}
 
 /**
  * 置いていかれたか (= 自分を中心にした湧く輪の楕円の k 倍より外)。 純関数
@@ -99,7 +108,8 @@ export function floodMul(flood, elapsedMs) {
   if (!flood) return 1;
   const t = (elapsedMs - flood.fromMs) / Math.max(1, flood.fullMs - flood.fromMs);
   const k = Math.max(0, Math.min(1, t));
-  return 1 + (flood.maxMul - 1) * k;
+  // SPEC-084: pow > 1 なら、 はじめはゆるく、 ボスの前に急に速まる (= 序盤は v1.2 とほぼ同じ)
+  return 1 + (flood.maxMul - 1) * Math.pow(k, flood.pow ?? 1);
 }
 
 /** 群れの n 体が来る向き (= center のまわりに広がりを持って並べる) */

@@ -2,19 +2,19 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
-  densityTarget, screenDensity, densityShortfall, spawnBudget, isLeftBehind, canRecycle,
+  densityTarget, screenDensity, densityShortfall, spawnBudget, isLeftBehind, canRecycle, recycleActive, RECYCLE_FROM,
   DENSITY_AVG_R, SPAWN_MAX_PER_FRAME, RECYCLE_K,
 } from "../js/battle/horde.js";
 import { STAGE_TABLE, BOSS_SPAWN_AT_MS } from "../js/constants.js";
 
-test("SPEC-078: 密度の目標は fromMs まで 0、 fullMs で max。 終わりほど急に上がる", () => {
+test("SPEC-078: 密度の目標は fromMs まで 0、 fullMs で max。 終わりほど急に上がる (= SPEC-084 でさらに序盤をゆるく)", () => {
   const d = { fromMs: 10000, fullMs: 110000, max: 1 };
   assert.equal(densityTarget(d, 0), 0);
   assert.equal(densityTarget(d, 10000), 0);
   assert.equal(densityTarget(d, 110000), 1);
   assert.equal(densityTarget(d, 200000), 1);
   const mid = densityTarget(d, 60000);
-  assert.ok(mid > 0 && mid < 0.5, "まんなかでは半分より低い");
+  assert.ok(mid > 0 && mid < 0.25, "まんなかでは 1/4 より低い");
   assert.equal(densityTarget(null, 100000), 0);
 });
 
@@ -74,4 +74,15 @@ test("SPEC-078: 置いていかれた敵 (= 湧く輪の K 倍より外) だけ�
   assert.equal(canRecycle({}), true);
   assert.equal(canRecycle({ behavior: "shooter" }), true);
   for (const e of [{ isProp: true }, { isBoss: true }, { isRare: true }, { behavior: "trojan" }]) assert.equal(canRecycle(e), false);
+});
+
+test("SPEC-084: 寄せ直すのはボスの前だけ (= 序盤は逃げ回れば敵を置いていける)", () => {
+  for (const st of STAGE_TABLE) {
+    const d = st.density;
+    assert.equal(recycleActive(d, 60000), false, `stage ${st.idx}: 1:00`);
+    assert.equal(recycleActive(d, 150000), false, `stage ${st.idx}: 2:30`);
+    assert.equal(recycleActive(d, BOSS_SPAWN_AT_MS - 10000), true, `stage ${st.idx}: 3:50`);
+  }
+  assert.equal(recycleActive(null, 200000), false);
+  assert.ok(RECYCLE_FROM > 0 && RECYCLE_FROM < 1);
 });
