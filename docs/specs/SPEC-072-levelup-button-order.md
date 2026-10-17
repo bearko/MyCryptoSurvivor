@@ -2,7 +2,7 @@
 id: SPEC-072
 title: Level-up — Skip on the Left (Muted), Reroll on the Right (Prominent)
 status: Done
-pr: TBD
+pr: 98
 phase: v1.2 Battle
 kind: Changed
 ---
