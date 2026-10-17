@@ -2,7 +2,7 @@
 id: SPEC-085
 title: Mine Full Voice — Title Call, Every Line Voiced, Voice Volume
 status: Done
-pr: TBD
+pr: 111
 phase: v1.3 Menu
 kind: Added
 ---
