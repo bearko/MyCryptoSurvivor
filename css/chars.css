@@ -493,6 +493,25 @@
   80%    { opacity: 1; translate: -6% 0; }
   100%   { opacity: 0; translate: -30% 0; }
 }
+/* SPEC-089: PC では、 帯の中身を真ん中の 560px に寄せる (= 文字は左 9%・ヒーローは右 3% だと、 1280px で離れすぎる)。
+   ヒーローは 192px (= 64 の 3 倍。 半端な倍率はドットがガタつく)。 スマホの並びは変えない。 動きは同じ */
+@media (min-width: 960px) {
+  .stage-intro {
+    --intro-w: 560px;
+    padding-left: max(9%, calc(50% - var(--intro-w) / 2));
+    padding-top: 0.9rem;
+    padding-bottom: 0.9rem;
+    gap: 4px;
+  }
+  .stage-intro__no { font-size: var(--fs-md); letter-spacing: 0.4em; }
+  .stage-intro__name { font-size: 2rem; }
+  .stage-intro__hero {
+    right: max(3%, calc(50% - var(--intro-w) / 2));
+    bottom: -24px;
+    width: 192px;
+    height: 192px;
+  }
+}
 
 /* ------------------------------------------------------------
    4. 動きを減らす
