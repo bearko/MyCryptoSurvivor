@@ -3,6 +3,7 @@
 // ============================================================
 //
 // - ステージ 1 アバカス「そろばんの珠」: 予告の線のあと、 大きな珠の列が画面を横切る。 自分に当たると痛いが、 敵もまとめてはじく
+//   SPEC-075: 珠は 5042 球状黒鉛 (= グラファイトの Legendary) の絵で、 転がって回る。 列は横だけでなく縦・斜めにも走る
 // - ステージ 2 ホレリス「パンチカード」: 床に穴の印が打たれ、 1.2 秒後にパンチ。 自分も敵もダメージ。 1 つは自分の足もとに打たれる
 // - ステージ 3 トロイ「トロイの木馬」: 木馬が現れ、 9 秒後に開いて敵の群れを吐き出す。 開く前に壊すと宝箱の中身が出る
 // 時間はゲームの中の時間 (= stageElapsedMs と dt)。 一時停止で止まり、 懐中時計で速まる。
@@ -34,6 +35,15 @@ export const BEADS = {
   playerDmg: 20,         // 自分に当たったとき (= ステージの攻撃力の倍率がかかる)
   enemyDmg: 120,         // 敵に当たったとき
   knockPx: 70,           // 敵をはじく距離
+  extId: 5042,           // SPEC-075: 珠の絵 (= 球状黒鉛。 グラファイトの Legendary)
+  diagFromMs: 90000,     // SPEC-075: この時刻からは斜めの列も
+  margin: 120,           // 列が画面の外から入って、 外へ抜けるまでの余り
+};
+/** SPEC-075: 列の向き (= 単位ベクトル)。 横 2・縦 2・斜め 4 */
+export const BEAD_DIRS = {
+  h: [[1, 0], [-1, 0]],
+  v: [[0, 1], [0, -1]],
+  d: [[Math.SQRT1_2, Math.SQRT1_2], [-Math.SQRT1_2, -Math.SQRT1_2], [Math.SQRT1_2, -Math.SQRT1_2], [-Math.SQRT1_2, Math.SQRT1_2]],
 };
 export const PUNCH = {
   firstMs: 30000,
@@ -64,21 +74,49 @@ export const TROJAN_EXT_ID = 5179;   // トロイの木馬
 
 // ---- 純関数 (= tests/gimmicks.test.mjs) ----
 
-/** 珠の列の i 番目の珠の x (= 先頭は lead。 後ろへ gap ずつ) */
-export function beadX(lead, dir, i, gap = BEADS.gap) {
-  return lead - dir * i * gap;
-}
+// SPEC-075: 列は 出発点 (x0, y0)・向き (ux, uy)・長さ len で持つ (= 横・縦・斜めを同じ計算で)
 
-/** 列の先頭の x (= 予告のあいだは出発点のまま) */
+/** 列の先頭が出発点から進んだ道のり (= 予告のあいだは 0) */
 export function beadLead(row, tMs) {
   const run = Math.max(0, tMs - BEADS.warnMs);
-  return row.x0 + row.dir * (run / 1000) * BEADS.speed;
+  return (run / 1000) * BEADS.speed;
 }
 
-/** 列が画面を抜けきったか */
+/** 列の i 番目の珠の位置 (= 先頭は lead。 後ろへ gap ずつ) */
+export function beadPos(row, lead, i, gap = BEADS.gap) {
+  const s = lead - i * gap;
+  return { x: row.x0 + row.ux * s, y: row.y0 + row.uy * s, s };
+}
+
+/** 列が抜けきったか (= いちばん後ろの珠が終点を越えた) */
 export function beadRowDone(row, tMs) {
-  const tail = beadX(beadLead(row, tMs), row.dir, BEADS.count - 1);
-  return row.dir > 0 ? tail > row.x1 + BEADS.r : tail < row.x1 - BEADS.r;
+  return beadLead(row, tMs) - (BEADS.count - 1) * BEADS.gap > row.len + BEADS.r;
+}
+
+/** その時刻に出す列の向きの組 (= 最初の列は横。 そのあとは横・縦、 diagFromMs からは斜めも) */
+export function beadDirChoices(elapsedMs, first) {
+  if (first) return BEAD_DIRS.h;
+  return elapsedMs >= BEADS.diagFromMs ? [...BEAD_DIRS.h, ...BEAD_DIRS.v, ...BEAD_DIRS.d] : [...BEAD_DIRS.h, ...BEAD_DIRS.v];
+}
+
+/** 画面 (= vw×vh) を、 向き u で横切るのに要る長さ (= 画面の幅を u の向きに測ったもの + 余り) */
+export function beadSpan(ux, uy, vw, vh, margin = BEADS.margin) {
+  return Math.abs(ux) * vw + Math.abs(uy) * vh + margin * 2;
+}
+
+/**
+ * 線分 (= 出発点 x0,y0 から向き u に長さ len) を、 世界 (= ±halfW, ±halfH) の中に切りつめる。
+ * 戻り値は切りつめた { x0, y0, len }。 世界にかからなければ null
+ */
+export function clipRowToWorld(x0, y0, ux, uy, len, halfW, halfH) {
+  let t0 = 0, t1 = len;
+  for (const [p, q] of [[-ux, x0 + halfW], [ux, halfW - x0], [-uy, y0 + halfH], [uy, halfH - y0]]) {
+    if (Math.abs(p) < 1e-9) { if (q < 0) return null; continue; }
+    const r = q / p;
+    if (p < 0) t0 = Math.max(t0, r); else t1 = Math.min(t1, r);
+    if (t0 > t1) return null;
+  }
+  return { x0: x0 + ux * t0, y0: y0 + uy * t0, len: t1 - t0 };
 }
 
 /** 円 (= 自分・敵) が穴の四角に入っているか (= 半径の 6 割まではみ出してよい) */
@@ -109,7 +147,8 @@ export function resetGimmicks() {
     kind,
     nextMs: kind === "beads" ? BEADS.firstMs : (kind === "punch" ? PUNCH.firstMs : 0),
     trojanIdx: 0,
-    rows: [],      // 珠の列 {y, dir, x0, x1, t, hitPlayer, hitIds}
+    rows: [],      // 珠の列 {x0, y0, ux, uy, len, t, hitPlayer, hitIds} (= SPEC-075)
+    beadRows: 0,   // SPEC-075: 出した列の数 (= 最初の列だけ横)
     punches: [],   // パンチ {holes:[{x,y}], t, done}
   };
 }
@@ -148,15 +187,18 @@ export function tickGimmicks(dt) {
 }
 
 // ---- 1. そろばんの珠 ----
-function _spawnRow(y, dir) {
+/**
+ * 列を 1 本作る。 自分の近く (= 列に直角に off ずらした線) を、 画面の外から外へ横切る (= SPEC-075 で向きは自由)
+ */
+function _spawnRow(ux, uy, off) {
   const b = state.battle;
-  const half = b.viewport.w / 2 + 120;
-  const left = _clampX(b.player.x - half), right = _clampX(b.player.x + half);
+  const nx = -uy, ny = ux;   // 列に直角な向き
+  const cx = _clampX(b.player.x + nx * off, BEADS.r), cy = _clampY(b.player.y + ny * off, BEADS.r);
+  const span = beadSpan(ux, uy, b.viewport.w, b.viewport.h);
+  const clip = clipRowToWorld(cx - ux * span / 2, cy - uy * span / 2, ux, uy, span, WORLD_W / 2, WORLD_H / 2);
+  if (!clip || clip.len < BEADS.gap * 2) return null;
   return {
-    y: _clampY(y, BEADS.r),
-    dir,
-    x0: dir > 0 ? left : right,
-    x1: dir > 0 ? right : left,
+    x0: clip.x0, y0: clip.y0, ux, uy, len: clip.len,
     t: 0,
     hitPlayer: false,
     hitIds: new Set(),
@@ -167,13 +209,16 @@ function _tickBeads(g, dms, el) {
   const b = state.battle;
   if (el >= g.nextMs) {
     g.nextMs = el + BEADS.everyMs;
-    const dir = Math.random() < 0.5 ? 1 : -1;
-    const y = b.player.y + (Math.random() * 2 - 1) * 140;
-    g.rows.push(_spawnRow(y, dir));
+    const choices = beadDirChoices(el, (g.beadRows ?? 0) === 0);
+    const [ux, uy] = choices[Math.floor(Math.random() * choices.length)];
+    const off = (Math.random() * 2 - 1) * 140;
+    const first = _spawnRow(ux, uy, off);
+    if (first) { g.rows.push(first); g.beadRows = (g.beadRows ?? 0) + 1; }
     if (el >= BEADS.doubleFromMs) {
       // 2 列目は 1 列目から離して、 逆向きに
-      const off = (Math.random() < 0.5 ? -1 : 1) * (170 + Math.random() * 90);
-      g.rows.push(_spawnRow(y + off, -dir));
+      const off2 = off + (Math.random() < 0.5 ? -1 : 1) * (170 + Math.random() * 90);
+      const second = _spawnRow(-ux, -uy, -off2);
+      if (second) g.rows.push(second);
     }
     playSe(SFX.GIMMICK_WARN, 0, 0.3);
     naviTipOnce("gimmick.beads");   // SPEC-068: 初めての列だけ
@@ -188,21 +233,28 @@ function _tickBeads(g, dms, el) {
     if (!row.hitPlayer) {
       const p = b.player;
       for (let i = 0; i < BEADS.count; i++) {
-        const dx = beadX(lead, row.dir, i) - p.x, dy = row.y - p.y, rr = BEADS.r + p.r;
+        const q = beadPos(row, lead, i);
+        if (q.s < 0 || q.s > row.len) continue;
+        const dx = q.x - p.x, dy = q.y - p.y, rr = BEADS.r + p.r;
         if (dx * dx + dy * dy <= rr * rr) { row.hitPlayer = true; _hurtPlayer(BEADS.playerDmg); break; }
       }
     }
     // 敵 (= 1 列で 1 体 1 回。 列から離れる向きにはじく)
+    const nx = -row.uy, ny = row.ux;
     for (let j = b.enemies.length - 1; j >= 0; j--) {
       const e = b.enemies[j];
       if (e.isProp || row.hitIds.has(e.id)) continue;
       for (let i = 0; i < BEADS.count; i++) {
-        const dx = beadX(lead, row.dir, i) - e.x, dy = row.y - e.y, rr = BEADS.r + e.r;
+        const q = beadPos(row, lead, i);
+        if (q.s < 0 || q.s > row.len) continue;
+        const dx = q.x - e.x, dy = q.y - e.y, rr = BEADS.r + e.r;
         if (dx * dx + dy * dy > rr * rr) continue;
         row.hitIds.add(e.id);
         const killed = hitEnemy(j, BEADS.enemyDmg);
         if (!killed && !e.isBoss && e.behavior !== "trojan") {
-          e.y = _clampY(e.y + (e.y >= row.y ? 1 : -1) * BEADS.knockPx, e.r);
+          const side = ((e.x - row.x0) * nx + (e.y - row.y0) * ny) >= 0 ? 1 : -1;
+          e.x = _clampX(e.x + nx * side * BEADS.knockPx, e.r);
+          e.y = _clampY(e.y + ny * side * BEADS.knockPx, e.r);
         }
         break;
       }

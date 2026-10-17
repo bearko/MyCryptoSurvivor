@@ -1,0 +1,2 @@
+- **そろばんの珠の絵** (`js/battle/gimmicks.js` + `js/battle/gimmicks-render.js`): 5042 球状黒鉛（グラファイトの Legendary）にし、転がって回る
+- **珠の列の向き** (`js/battle/gimmicks.js` + `js/battle/gimmicks-render.js`): 横だけでなく縦にも、1:30 からは斜めにも走る（最初の列は横）。予告の帯と矢印も列の向きに
