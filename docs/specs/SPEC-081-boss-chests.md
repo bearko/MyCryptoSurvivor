@@ -2,7 +2,7 @@
 id: SPEC-081
 title: Boss Chests — Golden Moai Chests in the Arena with Magic Cards and Helper Items
 status: Done
-pr: TBD
+pr: 109
 phase: v1.3 Battle
 kind: Added
 ---
