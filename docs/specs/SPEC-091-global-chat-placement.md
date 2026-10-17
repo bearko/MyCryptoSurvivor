@@ -2,7 +2,7 @@
 id: SPEC-091
 title: Global Chat Placement — Show on Title and Results, Hide During Battle (Platform SPEC-004)
 status: Done
-pr: TBD
+pr: 121
 phase: v1.4 Meta
 kind: Added
 ---
