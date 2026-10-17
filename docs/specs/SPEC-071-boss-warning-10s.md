@@ -2,7 +2,7 @@
 id: SPEC-071
 title: Boss Warning 10s Ahead and Countdown at the Right Edge in RTA
 status: Done
-pr: TBD
+pr: 97
 phase: v1.2 Battle
 kind: Changed
 ---
