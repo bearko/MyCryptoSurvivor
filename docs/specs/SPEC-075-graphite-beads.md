@@ -2,7 +2,7 @@
 id: SPEC-075
 title: Abacus Beads — Spheroidal Graphite Art and Rows in Any Direction
 status: Done
-pr: TBD
+pr: 101
 phase: v1.2 Battle
 kind: Changed
 ---
