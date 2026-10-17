@@ -2,7 +2,7 @@
 id: SPEC-073
 title: Panjandrum Spins While Rolling Toward Enemies
 status: Done
-pr: TBD
+pr: 99
 phase: v1.2 Battle
 kind: Changed
 ---
