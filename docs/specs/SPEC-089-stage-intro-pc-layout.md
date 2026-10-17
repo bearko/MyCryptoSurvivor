@@ -2,7 +2,7 @@
 id: SPEC-089
 title: Stage Intro Band — PC Layout (Centered Content, 192px Hero)
 status: Done
-pr: TBD
+pr: 117
 phase: v1.3 Battle
 kind: Fixed
 ---
