@@ -10,7 +10,7 @@ import {
   HP_BAR_PLAYER_WIDTH, HP_BAR_PLAYER_HEIGHT,
   DAMAGE_NUMBER_LIFE_MS,
   WORLD_W, WORLD_H, BG_OVERLAY_COLOR,
-  POT_EXT_ID, MAGNET_EXT_ID, HEAL_EXT_ID, WATCH_EXT_ID, THUNDER_EXT_ID, WATCH_SPEED, ITEM_ICON_SIZE, CHEST_SHAPE_PATHS,
+  POT_EXT_ID, CHEST_EXT_ID, MAGNET_EXT_ID, HEAL_EXT_ID, WATCH_EXT_ID, THUNDER_EXT_ID, WATCH_SPEED, ITEM_ICON_SIZE, CHEST_SHAPE_PATHS,
 } from "../constants.js";
 import {
   drawSpriteCircular, drawSpriteRotated,
@@ -479,7 +479,8 @@ function _drawObstacles(ctx, camera, w, h) {
 
 function _drawProp(ctx, e, sx, sy) {
   const chest = e.propKind === "chest";
-  const size = e.r * 2.4;
+  // SPEC-074: オルゴールの絵は枠の 7 割ほど (= 壺は枠いっぱい) なので、 宝箱は大きめに描いて当たりの円にそろえる
+  const size = e.r * 2.4 * (chest ? 1.3 : 1);
   if (chest) {
     // 宝箱は光らせて目立たせる
     ctx.globalAlpha = 0.35;
@@ -489,7 +490,9 @@ function _drawProp(ctx, e, sx, sy) {
     ctx.fill();
     ctx.globalAlpha = 1;
   }
-  const drew = chest ? _drawChestShape(ctx, sx, sy, size) : drawSpriteRotated(ctx, getExtSprite(POT_EXT_ID), sx, sy, size, 0);
+  // SPEC-074: 宝箱もエクステンションの絵 (= 読み込むまでは金の宝箱の形)
+  const drew = drawSpriteRotated(ctx, getExtSprite(chest ? CHEST_EXT_ID : POT_EXT_ID), sx, sy, size, 0)
+    || (chest && _drawChestShape(ctx, sx, sy, size));
   if (!drew) {
     ctx.fillStyle = e.color;
     ctx.beginPath();
