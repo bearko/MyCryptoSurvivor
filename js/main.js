@@ -45,6 +45,7 @@ import { playWipe } from "./transition.js";
 import { naviSay, naviHide, naviLines, naviTitle } from "./navi.js";
 import { installUiSound, startTitleBgm, startMenuBgm, waitAutoplay } from "./ui-sound.js";
 import { startHeroPreview, stopHeroPreview } from "./hero-preview.js";
+import { playVoice, stopVoice } from "./voice.js";
 
 // ============================================================
 // DOM helpers
@@ -105,6 +106,8 @@ function enterTitle() {
   splash?.classList.add("splash--out");   // 0.3 秒で消える (= css/layout.css)
   setTimeout(() => splash?.classList.add("hidden"), 320);
   $("#titleScreen")?.classList.remove("hidden");
+  // SPEC-085: タイトルコール (= ロゴの画面を押したとき。 押さずに進めた環境ではここで)。 鳴り終わるまで、 あいさつのボイスを待たせる
+  playVoice("title.call", { hold: true });
   naviTitle();   // SPEC-056: タイトルでマインちゃんがあいさつ
 }
 
@@ -137,6 +140,7 @@ function installAutoPause() {
     if (document.hidden) {
       if (state.battle.active && state.pauseFlags === 0) openMenu();
       suspendBgm();
+      stopVoice();   // SPEC-085
     } else {
       resumeBgm();
     }
@@ -344,6 +348,7 @@ function pickHero(heroId) {
     const ext = getExt(HERO_STARTING_WEAPON[hero.heroId] ?? HERO_STARTING_WEAPON_DEFAULT);
     _heroPickN += 1;
     naviSay(naviLines("heroPick", {
+      heroId: hero.heroId,   // SPEC-085: ヒーローごとの紹介とボイス
       heroName: localizedHeroName(hero, getLang()),
       weaponName: ext ? getTierName(ext, 1, getLang()) : "",
       n: _heroPickN,

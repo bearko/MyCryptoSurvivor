@@ -2,12 +2,12 @@
 // settings.js — 設定 (= 音量・演出を減らす) の保存と通知 (= SPEC-044)
 // ============================================================
 //
-// localStorage["mcs.settings"] = { v: 1, bgm: 0〜1, se: 0〜1, reduceFx: bool }
+// localStorage["mcs.settings"] = { v: 1, bgm: 0〜1, se: 0〜1, voice: 0〜1 (= SPEC-085 マインちゃんのボイス), reduceFx: bool }
 // 音量は「呼び出し側の音量 × 設定」。 1.0 で今までと同じ大きさ。
 
 import { LS_SETTINGS } from "./constants.js";
 
-export const DEFAULT_SETTINGS = Object.freeze({ v: 1, bgm: 1, se: 1, reduceFx: false });
+export const DEFAULT_SETTINGS = Object.freeze({ v: 1, bgm: 1, se: 1, voice: 1, reduceFx: false });
 
 function _clamp01(x, fallback) {
   const n = Number(x);
@@ -22,6 +22,7 @@ export function normalizeSettings(raw) {
     v: 1,
     bgm: _clamp01(r.bgm, DEFAULT_SETTINGS.bgm),
     se: _clamp01(r.se, DEFAULT_SETTINGS.se),
+    voice: _clamp01(r.voice, DEFAULT_SETTINGS.voice),   // SPEC-085: 前の版の設定 (= voice なし) は 100%
     reduceFx: r.reduceFx === true,
   };
 }

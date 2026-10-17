@@ -12,6 +12,10 @@ import { playSe } from "./audio.js";
 import { SFX } from "./constants.js";
 import { t, getLang, setLang, onLangChange } from "./i18n.js";
 import { resetNaviTips, seenNaviTipCount } from "./navi-tips.js";
+import { playVoice } from "./voice.js";
+
+/** SPEC-085: ボイスの音量を確かめるときのセリフ */
+const VOICE_SAMPLE = "tap.2";
 
 let _wired = false;
 let _opened = false;
@@ -30,6 +34,10 @@ function _render() {
   const se = $("settingsSe");
   if (bgm) bgm.value = String(Math.round(s.bgm * 100));
   if (se) se.value = String(Math.round(s.se * 100));
+  const voice = $("settingsVoice");   // SPEC-085
+  if (voice) voice.value = String(Math.round(s.voice * 100));
+  voice?.style.setProperty("--val", `${voice.value}%`);
+  const voiceVal = $("settingsVoiceValue"); if (voiceVal) voiceVal.textContent = _pctLabel(s.voice);
   // SPEC-058: つまみの帯を、 いまの値まで金で埋める (= css/result-ui.css の --val)
   bgm?.style.setProperty("--val", `${bgm.value}%`);
   se?.style.setProperty("--val", `${se.value}%`);
@@ -80,6 +88,10 @@ export function installSettingsUI() {
   const se = $("settingsSe");
   se?.addEventListener("input", () => { updateSettings({ se: Number(se.value) / 100 }); _render(); });
   se?.addEventListener("change", () => playSe(SFX.GEM_PICKUP, 0, 0.5));   // 離したときに 1 回鳴らして確かめる
+  // SPEC-085: マインちゃんのボイス (= 離したときに 1 つ言って確かめる)
+  const voice = $("settingsVoice");
+  voice?.addEventListener("input", () => { updateSettings({ voice: Number(voice.value) / 100 }); _render(); });
+  voice?.addEventListener("change", () => playVoice(VOICE_SAMPLE));
   $("settingsReduceFx")?.addEventListener("change", (e) => {
     updateSettings({ reduceFx: !!e.target.checked });
     _render();
