@@ -1,0 +1,2 @@
+- **ロゴの作り直し** (`assets/logo.png` + `css/layout.css`): 暗い四角の帯をやめ、背景の透けたロゴを縦に積んで中央にそろえた（エンブレム・MYCRYPTO・SURVIVORS・点線）。縦の短い画面では小さく
+- **ロゴの元** (`tools/logo/logo.html` + `tools/logo/emblem.png`): HTML から書き出して作り直せる
