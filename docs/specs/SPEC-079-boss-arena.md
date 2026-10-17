@@ -2,7 +2,7 @@
 id: SPEC-079
 title: Boss Arena — Swarm Vanishes, a 1/4 Ring Closes In, Boss Spawns at the Center
 status: Done
-pr: TBD
+pr: 107
 phase: v1.3 Battle
 kind: Changed
 ---
