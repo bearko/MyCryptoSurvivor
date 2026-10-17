@@ -2,7 +2,7 @@
 id: SPEC-066
 title: Measure v1.2 on New Versions — Total Score v4 (balance 2) and RTA v3
 status: Done
-pr: TBD
+pr: 92
 phase: v1.2 Battle
 kind: Changed
 ---
