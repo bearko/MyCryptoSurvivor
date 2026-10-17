@@ -2,7 +2,7 @@
 id: SPEC-083
 title: Hero Select — Preview of the Starting Weapon (Common → Uncommon → Rare)
 status: Done
-pr: TBD
+pr: 104
 phase: v1.3 Menu
 kind: Added
 ---
