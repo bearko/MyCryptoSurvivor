@@ -45,6 +45,13 @@
   "levelup.cat.buff":    { "ja": "強化エクステ",                   "en": "Buff" },
   "levelup.delta":       { "ja": "Lv.{cur} → Lv.{next}",            "en": "Lv.{cur} → Lv.{next}" },
   "levelup.weaponEffect":{ "ja": "DMG {dmg} · CD {cd}s · {range}px", "en": "DMG {dmg} · CD {cd}s · {range}px" },
+  "levelup.rankUp":      { "ja": "ランクアップ",                    "en": "RANK UP" },
+  "levelup.rankUpMax":   { "ja": "ランクアップ MAX",                "en": "RANK UP MAX" },
+  "levelup.owned":       { "ja": "装備中",                          "en": "Equipped" },
+  "levelup.owned.weapon":{ "ja": "武器",                            "en": "Weapon" },
+  "levelup.owned.buff":  { "ja": "強化",                            "en": "Buff" },
+  "levelup.owned.lv":    { "ja": "Lv.{n}",                          "en": "Lv.{n}" },
+  "levelup.owned.max":   { "ja": "MAX",                             "en": "MAX" },
   "ext.new":             { "ja": "NEW",                             "en": "NEW" },
 
   "gameover.title":      { "ja": "ゲームオーバー",                  "en": "Game Over" },

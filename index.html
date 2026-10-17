@@ -416,6 +416,11 @@
     <div class="levelup-modal__card">
       <h2 class="levelup-modal__title" id="levelUpTitle" data-i18n="levelup.title" data-kicker="LEVEL UP">レベルアップ!</h2>
       <p class="levelup-modal__sub"   id="levelUpSub"   data-i18n="levelup.sub">強化を 1 つ選ぼう</p>
+      <!-- SPEC-087: 装備中 (= いま持っているエクステと、 上限までの空き枠)。 何も持っていなければ隠す -->
+      <div class="levelup-modal__owned hidden" id="levelUpOwned" role="group" aria-labelledby="levelUpOwnedHead">
+        <span class="levelup-owned__head" id="levelUpOwnedHead" data-i18n="levelup.owned">装備中</span>
+        <div class="levelup-owned__rows" id="levelUpOwnedRows"></div>
+      </div>
       <div class="levelup-modal__grid" id="levelUpGrid" role="listbox"></div>
       <!-- SPEC-023: リロール (= 残数表示) / SPEC-067: スキップ (= 取得しない)
            SPEC-072: スキップは左で控えめに、 リロールは右で目立たせる (= スマホは右を押しがち。 序盤に誤ってスキップしない) -->

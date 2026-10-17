@@ -117,6 +117,38 @@ export function pickFromPool(eligible, n, { exclude = new Set(), last = new Set(
   return shuffle(result);
 }
 
+/**
+ * SPEC-087: 装備中の帯の中身 (= 純関数。 tests/levelup-owned.test.mjs)。
+ *   武器 → 強化の順に、 持っているもの (= 持った順) と、 上限までの空き枠の数を返す。
+ *   categoryOf が "weapon" / "buff" 以外を返すもの (= 図鑑に無い) は数えない
+ * @returns {Array<{category:"weapon"|"buff", limit:number, items:Array<{extId, level:number, isMax:boolean}>, empty:number}>}
+ */
+export function ownedStripGroups(owned, categoryOf, {
+  weaponLimit = STOCK_LIMIT_WEAPON, buffLimit = STOCK_LIMIT_BUFF, maxLevel = EXT_MAX_LEVEL,
+} = {}) {
+  const groups = [
+    { category: "weapon", limit: weaponLimit, items: [], empty: 0 },
+    { category: "buff",   limit: buffLimit,   items: [], empty: 0 },
+  ];
+  for (const o of owned ?? []) {
+    const g = groups.find((x) => x.category === categoryOf(o));
+    if (!g) continue;
+    const level = Math.max(0, o.level | 0);
+    g.items.push({ extId: o.extId, level, isMax: level >= maxLevel });
+  }
+  for (const g of groups) g.empty = Math.max(0, g.limit - g.items.length);
+  return groups;
+}
+
+/**
+ * SPEC-087: 候補の札に付ける印 (= 純関数)。
+ *   null = 新しいもの (NEW) / "rankUp" = 持っているものが上がる / "rankUpMax" = 次で上限に届く
+ */
+export function rankUpKind(opt, maxLevel = EXT_MAX_LEVEL) {
+  if (!opt || opt.isNew) return null;
+  return (opt.nextLevel >= maxLevel) ? "rankUpMax" : "rankUp";
+}
+
 function _samplePicks(n, exclude = new Set(), last = new Set()) {
   const ownedById = new Map(state.ownedExtensions.map(o => [String(o.extId), o]));
 
@@ -278,6 +310,8 @@ export function renderLevelUpModal() {
       : t("levelup.sub", "Choose one upgrade");
   }
 
+  _renderOwned();   // SPEC-087: 装備中の帯
+
   grid.innerHTML = "";
   const lang = getLang();
   const newLabel = t("ext.new", "NEW");
@@ -290,6 +324,12 @@ export function renderLevelUpModal() {
     card.setAttribute("data-ext-id", String(opt.extId));
     card.setAttribute("data-series", opt.ext.series ?? "");
     card.setAttribute("data-category", opt.ext.category ?? "weapon");
+    // SPEC-087: 持っているものの札は「ランクアップ」(= 金の縁と、 アイコンの上の金の帯)
+    const rankUp = rankUpKind(opt);
+    if (rankUp) {
+      card.classList.add("levelup-card--rankup");
+      if (rankUp === "rankUpMax") card.classList.add("levelup-card--rankup-max");
+    }
 
     // SPEC-011: 「次に到達する tier」 の名前 / 効果を見せる (= ピック前のプレビュー)
     const tierName  = getTierName(opt.ext, opt.nextLevel, lang);
@@ -322,6 +362,14 @@ export function renderLevelUpModal() {
       iconImg.removeAttribute("src");
     };
     iconWrap.appendChild(iconImg);
+    if (rankUp) {
+      const badge = document.createElement("div");
+      badge.className = "levelup-card__rankup";
+      badge.textContent = (rankUp === "rankUpMax")
+        ? t("levelup.rankUpMax", "ランクアップ MAX")
+        : t("levelup.rankUp", "ランクアップ");
+      iconWrap.appendChild(badge);
+    }
 
     // 右カラム: 系列バー + tier 名 + スキル名 + 効果説明 + Lv
     const main = document.createElement("div");
@@ -370,5 +418,74 @@ export function renderLevelUpModal() {
   if (skipBtn) {
     skipBtn.textContent = t("levelup.skip", "スキップ（取得しない）");
     skipBtn.classList.toggle("hidden", !!state.pendingPickIsStarter);
+  }
+}
+
+/**
+ * SPEC-087: 装備中の帯 (= 武器の行と強化の行。 それぞれ、 持っているものの絵と Lv、 上限までの空き枠)。
+ * 何も持っていなければ (= 最初の武器を選ぶとき) 隠す。 候補の札より上に置く
+ */
+function _renderOwned() {
+  const wrap = document.getElementById("levelUpOwned");
+  const rows = document.getElementById("levelUpOwnedRows");
+  if (!wrap || !rows) return;
+  const owned = state.ownedExtensions ?? [];
+  rows.innerHTML = "";
+  if (owned.length === 0) { wrap.classList.add("hidden"); return; }
+  wrap.classList.remove("hidden");
+
+  const head = document.getElementById("levelUpOwnedHead");
+  if (head) head.textContent = t("levelup.owned", "装備中");
+  const lang = getLang();
+  const groups = ownedStripGroups(owned, (o) => getCategory(getExt(o.extId)));
+  for (const g of groups) {
+    const row = document.createElement("div");
+    row.className = "levelup-owned__row";
+    row.setAttribute("data-category", g.category);
+
+    const label = document.createElement("div");
+    label.className = "levelup-owned__label";
+    const catEl = document.createElement("span");
+    catEl.textContent = (g.category === "buff")
+      ? t("levelup.owned.buff",   "強化")
+      : t("levelup.owned.weapon", "武器");
+    const countEl = document.createElement("span");
+    countEl.className = "levelup-owned__count num";
+    countEl.textContent = `${g.items.length}/${g.limit}`;
+    label.append(catEl, countEl);
+    const tiles = document.createElement("div");
+    tiles.className = "levelup-owned__tiles";
+    row.append(label, tiles);
+
+    for (const it of g.items) {
+      const ext  = getExt(it.extId);
+      const tile = document.createElement("div");
+      tile.className = "levelup-owned__tile";
+      tile.style.setProperty("--series", ext?.seriesColor ?? SERIES_COLOR_DEFAULT);
+      const tierName = getTierName(ext, it.level, lang);
+      const lvText = it.isMax
+        ? t("levelup.owned.max", "MAX")
+        : tpl(t("levelup.owned.lv", "Lv.{n}"), { n: String(it.level) });
+      tile.title = `${tierName} ${lvText}`;
+      const icon = document.createElement("img");
+      icon.className = "levelup-owned__icon";
+      icon.alt = tierName;
+      icon.src = extTierImg(ext, it.level);
+      icon.loading = "lazy";
+      icon.onerror = () => { icon.classList.add("levelup-owned__icon--missing"); icon.removeAttribute("src"); };
+      const lv = document.createElement("span");
+      lv.className = "levelup-owned__lv num";
+      if (it.isMax) lv.classList.add("levelup-owned__lv--max");
+      lv.textContent = lvText;
+      tile.append(icon, lv);
+      tiles.appendChild(tile);
+    }
+    for (let i = 0; i < g.empty; i++) {
+      const empty = document.createElement("div");
+      empty.className = "levelup-owned__tile levelup-owned__tile--empty";
+      empty.setAttribute("aria-hidden", "true");
+      tiles.appendChild(empty);
+    }
+    rows.appendChild(row);
   }
 }

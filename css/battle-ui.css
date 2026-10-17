@@ -92,17 +92,19 @@
 .levelup-card {
   --cut: 10px;
   --cat: var(--ifrit);
+  /* SPEC-087: 縁の色。 ふだんは種類の色 (--cat)、 ランクアップの札は金 (= components.css が --edge を立てる) */
+  --edge: var(--cat);
   position: relative;
   border: 1.5px solid transparent;
   border-radius: 0;
   clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
   background:
-    linear-gradient(135deg, var(--cat) 0 calc(var(--cut) * 0.7071 + 1px), transparent 0) border-box,
+    linear-gradient(135deg, var(--edge) 0 calc(var(--cut) * 0.7071 + 1px), transparent 0) border-box,
     linear-gradient(-45deg, var(--node-cyan) 0 calc(var(--cut) * 0.7071 + 1px), transparent 0) border-box,
     linear-gradient(105deg, transparent 0 40%, rgba(255, 255, 255, 0.35) 50%, transparent 60%) 150% 0 / 250% 100% no-repeat padding-box,
     var(--node-scan) padding-box,
     linear-gradient(180deg, color-mix(in srgb, var(--cat) 16%, #2a2340), #17131f 70%) padding-box,
-    linear-gradient(160deg, color-mix(in srgb, var(--cat) 80%, #ffffff), color-mix(in srgb, var(--cat) 40%, transparent) 55%, var(--node-cyan)) border-box;
+    linear-gradient(160deg, color-mix(in srgb, var(--edge) 80%, #ffffff), color-mix(in srgb, var(--edge) 40%, transparent) 55%, var(--node-cyan)) border-box;
   transition: background-position 520ms var(--ease-out), transform var(--dur-fast) var(--ease-out), filter var(--dur-base);
 }
 .levelup-card[data-category="buff"] { --cat: var(--garuda); border-color: transparent; }
