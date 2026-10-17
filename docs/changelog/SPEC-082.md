@@ -1,0 +1,1 @@
+- **v1.3 を新しい版で計る** (`js/platform.js` + `index.html`): 総合スコアに `balance: 3` を送る（共通基盤が 1/560 で割る。 ふつうの全クリア約 280 万点 → 5,000）。 RTA は `survivor-normal-v4`・`survivor-absolute-2x-v4` で計る（最短時間は v3 と同じ）。 古い記録は古い版のまま
