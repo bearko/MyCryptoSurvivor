@@ -366,6 +366,11 @@ export const STAGE_TABLE = [
     // SPEC-062: 撃ってくる敵 (= fromMs から everyMs ごとに 1 体。 同時に max 体まで)
     shooters: { fromMs: 90000, everyMs: 10000, max: 3, ids: [166] },
     gimmick: "beads",    // SPEC-064: そろばんの珠
+    // SPEC-078: 0:30 からボスの直前 (= 3:50) にかけて湧きを速め、 画面の敵の密度を目標 (= density) に保つ。
+    //   ボスの直前に画面の半分を敵が埋める
+    flood: { fromMs: 30000, fullMs: 230000, maxMul: 12, packFromMs: 120000, packEveryMs: 12000, packSize: 16 },
+    density: { fromMs: 20000, fullMs: 230000, max: 0.85 },
+    maxEnemies: 320,
   },
   {
     idx: 1,
@@ -386,6 +391,10 @@ export const STAGE_TABLE = [
     spawnIntervalMul:  0.85,
     shooters: { fromMs: 45000, everyMs: 7000, max: 6, ids: [166, 136] },   // SPEC-062
     gimmick: "punch",    // SPEC-064: パンチカード
+    // SPEC-078: ボスの直前に画面の 3/4 を敵が埋める
+    flood: { fromMs: 20000, fullMs: 230000, maxMul: 16, packFromMs: 90000, packEveryMs: 10000, packSize: 20 },
+    density: { fromMs: 15000, fullMs: 230000, max: 1.45 },
+    maxEnemies: 440,
   },
   {
     idx: 2,
@@ -406,9 +415,10 @@ export const STAGE_TABLE = [
     spawnIntervalMul:  0.7,
     shooters: { fromMs: 30000, everyMs: 5000, max: 9, ids: [166, 136] },   // SPEC-062
     gimmick: "trojan",   // SPEC-064: トロイの木馬
-    // SPEC-065: 中盤から大群 (= 1:30 → 3:30 で湧きが 6 倍まで速まり、 2:30 から 8 秒ごとに 24 体の群れ)。 敵の上限も 320 に
-    flood: { fromMs: 90000, fullMs: 210000, maxMul: 6, packFromMs: 150000, packEveryMs: 8000, packSize: 24 },
-    maxEnemies: 320,
+    // SPEC-065: 中盤から大群。 SPEC-078: ボスの直前に画面の 9 割を敵が埋める (= 湧きを大きく速め、 上限も上げる)
+    flood: { fromMs: 15000, fullMs: 230000, maxMul: 20, packFromMs: 60000, packEveryMs: 8000, packSize: 28 },
+    density: { fromMs: 10000, fullMs: 230000, max: 1.65 },
+    maxEnemies: 600,
   },
 ];
 

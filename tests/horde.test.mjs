@@ -1,26 +1,32 @@
-// SPEC-065: トロイの大群・押し分け・レベルアップの速さ
+// SPEC-065: トロイの大群・押し分け・レベルアップの速さ (= SPEC-078 で大群はどのステージにも)
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { floodMul, packAngles, separateEnemies, stageMaxEnemies, PACK_SPREAD_RAD } from "../js/battle/horde.js";
 import { STAGE_TABLE, MAX_ENEMIES, XP_TO_NEXT_INITIAL, XP_TO_NEXT_GROWTH, BOSS_SPAWN_AT_MS } from "../js/constants.js";
 
-test("大群はトロイだけ。 中盤から湧きが速まり、 上がりきったらそのまま", () => {
-  assert.deepEqual(STAGE_TABLE.map((s) => !!s.flood), [false, false, true]);
-  const f = STAGE_TABLE[2].flood;
-  assert.equal(floodMul(f, 0), 1);
-  assert.equal(floodMul(f, f.fromMs), 1);
-  assert.ok(Math.abs(floodMul(f, (f.fromMs + f.fullMs) / 2) - (1 + (f.maxMul - 1) / 2)) < 1e-9);
-  assert.equal(floodMul(f, f.fullMs), f.maxMul);
-  assert.equal(floodMul(f, BOSS_SPAWN_AT_MS), f.maxMul);
+test("SPEC-078: 大群はどのステージにも。 中盤から湧きが速まり、 上がりきったらそのまま", () => {
+  assert.deepEqual(STAGE_TABLE.map((s) => !!s.flood), [true, true, true]);
+  for (const s of STAGE_TABLE) {
+    const f = s.flood;
+    assert.equal(floodMul(f, 0), 1);
+    assert.equal(floodMul(f, f.fromMs), 1);
+    assert.ok(Math.abs(floodMul(f, (f.fromMs + f.fullMs) / 2) - (1 + (f.maxMul - 1) / 2)) < 1e-9);
+    assert.equal(floodMul(f, f.fullMs), f.maxMul);
+    assert.equal(floodMul(f, BOSS_SPAWN_AT_MS), f.maxMul);
+    assert.ok(f.packFromMs >= f.fromMs && f.packFromMs < BOSS_SPAWN_AT_MS);
+  }
   assert.equal(floodMul(null, 200000), 1);
-  assert.ok(f.packFromMs >= f.fromMs && f.packFromMs < BOSS_SPAWN_AT_MS);
+  // 後のステージほど激しい
+  const mul = STAGE_TABLE.map((s) => s.flood.maxMul);
+  assert.ok(mul[0] < mul[1] && mul[1] < mul[2]);
 });
 
-test("敵の上限はトロイだけ大きい (= 画面を埋める)", () => {
-  assert.equal(stageMaxEnemies(STAGE_TABLE[0]), MAX_ENEMIES);
-  assert.equal(stageMaxEnemies(STAGE_TABLE[1]), MAX_ENEMIES);
-  assert.ok(stageMaxEnemies(STAGE_TABLE[2]) > MAX_ENEMIES);
-  assert.ok(stageMaxEnemies(STAGE_TABLE[2]) <= 400, "重くなりすぎない");
+test("SPEC-078: 敵の上限は後のステージほど大きい (= 画面を埋める)。 重くなりすぎない", () => {
+  const caps = STAGE_TABLE.map((s) => stageMaxEnemies(s));
+  assert.ok(caps[0] > MAX_ENEMIES);
+  assert.ok(caps[0] < caps[1] && caps[1] < caps[2]);
+  assert.ok(caps[2] <= 600, "重くなりすぎない");
+  assert.equal(stageMaxEnemies({}), MAX_ENEMIES);
 });
 
 test("群れは 1 方向から、 広がりを持って来る", () => {

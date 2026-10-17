@@ -1,22 +1,97 @@
 // ============================================================
-// battle/horde.js — 大群 (= SPEC-065)
+// battle/horde.js — 大群 (= SPEC-065 / SPEC-078)
 // ============================================================
 //
-// - トロイは中盤から湧きが速まり (= 1:30 → 3:00 で 3.5 倍まで)、 2:00 からは群れが 1 方向からまとまって押し寄せる
-// - 出ていられる敵の上限はステージごと (= トロイだけ 320。 ほかは 200 のまま)
+// - どのステージも湧きが速まり、 群れが 1 方向からまとまって押し寄せる (= SPEC-078 で全ステージに。 値は STAGE_TABLE[].flood)
+// - 画面の敵の密度を時刻ごとの目標に保ち、 置いていかれた敵は画面のすぐ外へ寄せ直す (= SPEC-078)
+// - 出ていられる敵の上限はステージごと (= SPEC-078 で 320 / 440 / 600)
 // - 敵どうしは重なりすぎないよう押し分ける (= 群れが 1 点に固まらず、 画面を埋める)。 格子に分けて近いものだけ比べる
-// どれも純関数 (= tests/horde.test.mjs)。 敵の配列だけを触る。
+// どれも純関数 (= tests/horde.test.mjs・tests/density.test.mjs)。 敵の配列だけを触る。
 
 import { MAX_ENEMIES } from "../constants.js";
 
-export const SEP_CELL_PX = 36;          // 押し分けの格子の大きさ
-export const SEP_MAX_PER_CELL = 10;     // 1 マスで比べる数の上限 (= 固まりすぎても重くならない)
+export const SEP_CELL_PX = 56;          // 押し分けの格子の大きさ (= SPEC-077 で敵が大きくなったので 36 → 56)
+export const SEP_MAX_PER_CELL = 12;     // 1 マスで比べる数の上限 (= 固まりすぎても重くならない)
 export const SEP_STRENGTH = 0.5;        // 重なりの何割を 1 コマで戻すか
 export const PACK_SPREAD_RAD = 0.7;     // 群れが来る向きの広がり
 
 /** ステージの敵の上限 */
 export function stageMaxEnemies(stage) {
   return stage?.maxEnemies ?? MAX_ENEMIES;
+}
+
+// ---- SPEC-078: 画面の敵の密度を、 ステージの時刻ごとの目標に保つ ----
+/** 密度を見る間隔 */
+export const DENSITY_CHECK_MS = 150;
+/** 足りない数のうち、 1 回に湧かせる割合 (= 画面の外から歩いてくるので、 少しずつ) */
+export const DENSITY_GAIN = 0.4;
+/** 足りない数を数えるときの、 ふつうの敵の半径 (= SPEC-077 の 1.4 倍のあと) */
+export const DENSITY_AVG_R = 20;
+/** 1 回に足す数の上限 (= 強い武器でまとめて倒されても、 すぐ埋め戻す。 1 秒に 200 体ほどまで) */
+export const DENSITY_MAX_PER_CHECK = 32;
+
+/**
+ * 密度の目標 (= 0〜1)。 fromMs から fullMs にかけて、 終わりほど急に上がる (= ボスの直前がいちばん濃い)。 純関数
+ *   d: { fromMs, fullMs, max }
+ */
+export function densityTarget(d, elapsedMs) {
+  if (!d) return 0;
+  const k = Math.max(0, Math.min(1, (elapsedMs - d.fromMs) / Math.max(1, d.fullMs - d.fromMs)));
+  return d.max * Math.pow(k, 1.6);
+}
+
+/** 画面の密度 (= 画面の中にいる敵の円の面積の和 ÷ 画面の面積)。 壺・宝箱・木馬・ボスは数えない。 純関数 */
+export function screenDensity(enemies, camX, camY, vw, vh) {
+  let a = 0;
+  for (const e of enemies) {
+    if (e.isProp || e.isBoss || e.behavior === "trojan") continue;
+    const sx = e.x - camX, sy = e.y - camY;
+    if (sx < 0 || sx > vw || sy < 0 || sy > vh) continue;
+    a += Math.PI * e.r * e.r;
+  }
+  return a / Math.max(1, vw * vh);
+}
+
+/** 目標まで、 ふつうの大きさの敵があと何体足りないか。 純関数 */
+export function densityShortfall(target, density, vw, vh, avgR = DENSITY_AVG_R) {
+  if (target <= density) return 0;
+  return Math.ceil(((target - density) * vw * vh) / (Math.PI * avgR * avgR));
+}
+
+/** SPEC-078: 1 コマに湧くのは多くてもこの数 (= 湧きが速くても、 1 コマに固まらない) */
+export const SPAWN_MAX_PER_FRAME = 12;
+
+/**
+ * SPEC-078: 湧く数を、 経った時間から数える (= 1 コマに 1 体までだと、 湧きの速さに上限ができる)。 純関数
+ *   acc: 前のコマの余り (= 0〜1)。 戻り値 { n: このコマに湧かせる数, acc: 次の余り }
+ */
+export function spawnBudget(acc, dms, intervalMs, room, maxPerFrame = SPAWN_MAX_PER_FRAME) {
+  let a = (acc ?? 0) + dms / Math.max(1, intervalMs);
+  const n = Math.max(0, Math.min(Math.floor(a), room, maxPerFrame));
+  a -= n;
+  if (n >= room) a = Math.min(a, 1);   // 上限に届いたら、 余りをためこまない
+  return { n, acc: Math.min(a, maxPerFrame) };
+}
+
+// ---- SPEC-078: 置いていかれた敵を、 画面のすぐ外へ寄せ直す ----
+/** 寄せ直しを見る間隔・1 回に寄せ直す数の上限 */
+export const RECYCLE_CHECK_MS = 250;
+export const RECYCLE_MAX = 24;
+/** 湧く輪 (= 画面の半分 + 余白) の何倍より遠ければ寄せ直すか */
+export const RECYCLE_K = 1.4;
+
+/**
+ * 置いていかれたか (= 自分を中心にした湧く輪の楕円の k 倍より外)。 純関数
+ *   dx, dy: 自分から敵まで / halfW, halfH: 湧く輪の半径
+ */
+export function isLeftBehind(dx, dy, halfW, halfH, k = RECYCLE_K) {
+  const u = dx / Math.max(1, halfW), v = dy / Math.max(1, halfH);
+  return u * u + v * v > k * k;
+}
+
+/** 寄せ直してよい敵か (= 壺・宝箱・木馬・ボス・レアは動かさない)。 純関数 */
+export function canRecycle(e) {
+  return !e.isProp && !e.isBoss && !e.isRare && e.behavior !== "trojan";
 }
 
 /** 湧きの速さの倍率 (= fromMs から fullMs まで 1 → maxMul に上がる。 flood がなければ 1) */
