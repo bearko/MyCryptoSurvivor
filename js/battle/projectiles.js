@@ -4,10 +4,13 @@
 
 import { state } from "../state.js";
 import { hitEnemy } from "./damage.js";
+import { getObstacleRects } from "./field.js";
+import { circleHitsAnyRect } from "./field-geom.js";
 
 export function tickProjectiles(dt) {
   const b = state.battle;
   const dms = dt * 1000;
+  const rects = getObstacleRects();   // SPEC-053: 建物
 
   for (let i = b.projectiles.length - 1; i >= 0; i--) {
     const p = b.projectiles[i];
@@ -31,6 +34,12 @@ export function tickProjectiles(dt) {
       if (p.kind === "moaiDrop" && p.moaiAoeR > 0) {
         _spawnMoaiShockwave(p);
       }
+      b.projectiles.splice(i, 1);
+      continue;
+    }
+
+    // SPEC-053: 弾は建物で止まる (= モアイは頭上から落ちてくるので止まらない)
+    if (p.kind !== "moaiDrop" && rects.length && circleHitsAnyRect(p.x, p.y, p.r, rects)) {
       b.projectiles.splice(i, 1);
       continue;
     }

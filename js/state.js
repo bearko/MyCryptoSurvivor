@@ -77,6 +77,12 @@ export const state = {
     bossLastFireMs:  0,    // ファオ攻撃の throttle
     // SPEC-033: マジックカード (= 取得で即時レベルアップ)、 レアエネミー撃破でドロップ
     magicCards:      [],   // {id, x, y, r}
+    // SPEC-053: 建物・お助けアイテム (= 壺・宝箱は enemies に isProp で入る)
+    obstacles:       [],   // {x, y, size, extId}  - 絵
+    obstacleRects:   [],   // {x, y, w, h}  - 当たり (= x, y は中心)
+    items:           [],   // {id, kind: "heal" | "magnet" | "watch", x, y, r}
+    nextChestIdx:    0,
+    nextPotAtMs:     0,
     lastRareSpawnMs: 0,    // 1 分に 1 回の throttle
   },
 

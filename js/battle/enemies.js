@@ -19,6 +19,8 @@ import { triggerGameOver } from "./gameover.js";
 import { pushDamageNumber } from "./damage.js";
 import { playSe } from "../audio.js";
 import { fxPlayerHurt, fxBossIncoming, fxBossSpawned } from "./fx.js";
+import { getObstacleRects } from "./field.js";
+import { resolveCircle, slideAlongWall } from "./field-geom.js";
 
 const DEFAULT_SPEC = { hp: 25, dmg: 10, speed: 80, radius: 12, xpValue: 1 };
 
@@ -88,8 +90,10 @@ export function tickEnemies(dt, nowMs) {
 
   const px = b.player.x;
   const py = b.player.y;
+  const rects = getObstacleRects();   // SPEC-053: 建物
 
   for (const e of b.enemies) {
+    if (e.isProp) continue;   // SPEC-053: 壺・宝箱は動かず、 ぶつかっても痛くない
     if ((e.hitFreezeMs ?? 0) > 0) {
       e.hitFreezeMs -= dms;
       if (e.hitFreezeMs < 0) e.hitFreezeMs = 0;
@@ -101,6 +105,15 @@ export function tickEnemies(dt, nowMs) {
     if ((e.hitFreezeMs ?? 0) <= 0) {
       e.x += (dx / d) * e.speed * dt;
       e.y += (dy / d) * e.speed * dt;
+      // SPEC-053: 建物にめりこんだら押し出し、 壁に沿ってプレイヤーへ回りこむ
+      if (rects.length) {
+        let res = resolveCircle(e.x, e.y, e.r, rects);
+        if (res.hit) {
+          const s = slideAlongWall(res.nx, res.ny, px - res.x, py - res.y);
+          res = resolveCircle(res.x + s.x * e.speed * dt, res.y + s.y * e.speed * dt, e.r, rects);
+          e.x = res.x; e.y = res.y;
+        }
+      }
     }
 
     if (b.contactCooldownMs <= 0 && d < e.r + b.player.r) {

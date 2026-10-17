@@ -246,6 +246,41 @@ export const MAGIC_CARD_PICKUP_RADIUS = 32;
 export const MAGIC_CARD_ICON_SIZE    = 32;
 
 // ============================================================
+// SPEC-053: ステージの建物・壺・宝箱・お助けアイテム
+// ============================================================
+// 建物 (= 自分・敵・弾を止める四角)。 ステージごとの置き場所は STAGE_TABLE[].obstacles (= 絵は 3182 持ち運びハウス・5182 お城)
+export const OBSTACLE_HITBOX_RATIO = 0.8;     // 絵の大きさに対する当たりの四角の割合 (= 絵の縁の透明ぶん)
+// 壺 (= 1 発で割れる)。 ステージの始めに置き、 ゲーム内の時間で少しずつ足す
+export const POT_EXT_ID         = 4600;       // ぴっぴ教 一攫千金壺
+export const POT_RADIUS         = 14;
+export const POT_HP             = 1;
+export const POT_INITIAL        = 4;
+export const POT_MAX_ON_FIELD   = 6;
+export const POT_RESPAWN_MS     = 20000;
+// 宝箱 (= 何発か当てて開ける)。 1 ステージ 4 つ、 決まった時刻に出る (= 共通基盤の RTA の最短時間の根拠。 SPEC-054)
+// 形は mycryptoheroes の Data/Effects/GoldChest/treasure-chest.svg (= CC0)。 塗りが currentColor (= 黒) なので、 同じ形を canvas で金色に塗る
+export const CHEST_SHAPE_PATHS  = [
+  "M8 24c0-4.4 3.6-8 8-8h32c4.4 0 8 3.6 8 8v4H8v-4zm0 8h20v6h8v-6h20v20c0 2.2-1.8 4-4 4H12c-2.2 0-4-1.8-4-4V32zm22 4v4h4v-4h-4z",
+  "M16 16V12c0-2.2 1.8-4 4-4h24c2.2 0 4 1.8 4 4v4h-4v-4H20v4h-4z",
+];
+export const CHEST_RADIUS       = 18;
+export const CHEST_HP           = 60;         // × ステージの enemyHpMul
+export const CHEST_TIMES_MS     = [30000, 90000, 150000, 210000];
+export const CHEST_CE_GEMS      = 6;          // 宝箱はお助けアイテムと一緒に CE も少し出す
+// お助けアイテム
+export const ITEM_RADIUS        = 12;
+export const ITEM_PICKUP_RADIUS = 30;
+export const ITEM_ICON_SIZE     = 30;
+export const MAGNET_EXT_ID      = 1156;       // 棒磁石: 落ちている CE を全部吸い寄せる
+export const MAGNET_SPEED_PX_S  = 900;
+export const HEAL_EXT_ID        = 1129;       // パンケーキ: HP を回復
+export const HEAL_RATIO         = 0.3;        // 最大 HP の 30%
+export const POT_CE_GEMS        = 5;          // 壺の「CE の小山」
+// 壊したときに出るもの (= 重み)。 ce は CE の小山
+export const POT_DROPS   = [{ kind: "ce", w: 55 }, { kind: "heal", w: 30 }, { kind: "magnet", w: 15 }];
+export const CHEST_DROPS = [{ kind: "heal", w: 50 }, { kind: "magnet", w: 50 }];
+
+// ============================================================
 // SPEC-023: ピッカーストック上限 + リロール
 // ============================================================
 export const STOCK_LIMIT_WEAPON = 5;   // 武器系列の最大装備数
@@ -280,6 +315,13 @@ export const STAGE_TABLE = [
     nameKey: "stage.akabasu",
     bgPath: "Image/Backgrounds/1001.png",
     bossEnemyId: 171,
+    // SPEC-053: 建物 (= 中心の座標と絵の大きさ。 ヒーローは (0, 0) から始まる)
+    obstacles: [
+      { x: -300, y: -420, size: 96, extId: 3182 },
+      { x:  300, y: -180, size: 96, extId: 3182 },
+      { x: -300, y:  260, size: 96, extId: 3182 },
+      { x:  280, y:  520, size: 96, extId: 3182 },
+    ],
     bossAttack: null,
     bossAttackExtId: null,
     enemyHpMul:        1.0,
@@ -292,6 +334,12 @@ export const STAGE_TABLE = [
     nameKey: "stage.horeris",
     bgPath: "Image/Backgrounds/1038.png",
     bossEnemyId: 373,                 // 覚醒魔王ファオ
+    obstacles: [
+      { x:    0, y: -440, size: 128, extId: 5182 },
+      { x: -320, y:   80, size: 96,  extId: 3182 },
+      { x:  320, y:  120, size: 96,  extId: 3182 },
+      { x:    0, y:  480, size: 96,  extId: 3182 },
+    ],
     bossAttack: "fao",
     bossAttackExtId: 5055,            // とっておきのフルーツパフェ
     enemyHpMul:        1.5,
@@ -304,6 +352,12 @@ export const STAGE_TABLE = [
     nameKey: "stage.troy",
     bgPath: "Image/Backgrounds/1060.png",
     bossEnemyId: 1189,                // yamap
+    obstacles: [
+      { x: -300, y: -420, size: 128, extId: 5182 },
+      { x:  300, y: -420, size: 128, extId: 5182 },
+      { x: -300, y:  420, size: 128, extId: 5182 },
+      { x:  300, y:  420, size: 128, extId: 5182 },
+    ],
     bossAttack: "yamap",
     bossAttackExtId: 5002,            // グランダルメ
     enemyHpMul:        2.0,

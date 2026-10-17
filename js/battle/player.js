@@ -4,6 +4,8 @@
 
 import { state } from "../state.js";
 import { WORLD_W, WORLD_H } from "../constants.js";
+import { getObstacleRects } from "./field.js";
+import { resolveCircle } from "./field-geom.js";
 
 const HALF_W = WORLD_W / 2;
 const HALF_H = WORLD_H / 2;
@@ -26,6 +28,12 @@ export function tickPlayer(dt, input) {
   if (p.x >  HALF_W - r) p.x =  HALF_W - r;
   if (p.y < -HALF_H + r) p.y = -HALF_H + r;
   if (p.y >  HALF_H - r) p.y =  HALF_H - r;
+  // SPEC-053: 建物は通れない
+  const rects = getObstacleRects();
+  if (rects.length) {
+    const res = resolveCircle(p.x, p.y, r, rects);
+    if (res.hit) { p.x = res.x; p.y = res.y; }
+  }
 }
 
 /**

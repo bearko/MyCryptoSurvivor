@@ -10,6 +10,7 @@ import {
   HP_BAR_PLAYER_WIDTH, HP_BAR_PLAYER_HEIGHT,
   DAMAGE_NUMBER_LIFE_MS,
   WORLD_W, WORLD_H, BG_OVERLAY_COLOR,
+  POT_EXT_ID, MAGNET_EXT_ID, HEAL_EXT_ID, ITEM_ICON_SIZE, CHEST_SHAPE_PATHS,
 } from "../constants.js";
 import {
   drawSpriteCircular, drawSpriteRotated,
@@ -37,6 +38,9 @@ export function renderBattle(ctx, nowMs = 0) {
 
   // グリッド (= ステージ全体に薄く重ねて方向感覚補助)
   _drawGrid(ctx, camera, w, h);
+
+  // SPEC-053: 建物 (= 足もとに影を落として、 通れないことを見せる)
+  _drawObstacles(ctx, camera, w, h);
 
   // SPEC-012 / SPEC-015 / SPEC-031: bombs (= 赤い半透明円で当たり判定を可視化 + icon + 点滅)
   for (const b of bombs) {
@@ -79,8 +83,9 @@ export function renderBattle(ctx, nowMs = 0) {
   for (const beam of beams) {
     const sx0 = beam.x - camera.x;
     const sy0 = beam.y - camera.y;
-    const sx1 = sx0 + beam.dirX * beam.len;
-    const sy1 = sy0 + beam.dirY * beam.len;
+    const len = beam.hitLen ?? beam.len;   // SPEC-053: 建物で止まる
+    const sx1 = sx0 + beam.dirX * len;
+    const sy1 = sy0 + beam.dirY * len;
     const t = beam.age / beam.life;
     ctx.globalAlpha = Math.max(0.25, 1 - t);
     ctx.strokeStyle = beam.color;
@@ -152,6 +157,9 @@ export function renderBattle(ctx, nowMs = 0) {
     }
   }
 
+  // SPEC-053: お助けアイテム (= ふわっと上下に揺れる)
+  _drawItems(ctx, camera, w, h, nowMs);
+
   // SPEC-015: projectiles を extension icon で描画 (= 進行方向に rotate、 系列ごと iconRotOffset)
   for (const p of projectiles) {
     const sx = p.x - camera.x;
@@ -207,6 +215,7 @@ export function renderBattle(ctx, nowMs = 0) {
     const sx = e.x - camera.x;
     const sy = e.y - camera.y;
     if (sx + e.r < 0 || sx - e.r > w || sy + e.r < 0 || sy - e.r > h) continue;
+    if (e.isProp) { _drawProp(ctx, e, sx, sy); continue; }   // SPEC-053: 壺・宝箱
     const sp = (e.enemyId != null)
       ? (getEnemySprite(e.enemyId) || state.battle.defaultEnemySprite)
       : state.battle.defaultEnemySprite;
@@ -351,8 +360,147 @@ export function renderBattle(ctx, nowMs = 0) {
   ctx.globalAlpha = 1;
   ctx.restore();
 
+  // SPEC-053: 画面の外の宝箱の向き (= 縁に小さな矢印)
+  _drawChestPointers(ctx, camera, w, h, enemies);
+
   // SPEC-045: 画面の縁の赤 (= 被弾・HP 低下) と閃光。 揺らさない
   renderFxScreen(ctx, w, h, nowMs);
+}
+
+// ============================================================
+// SPEC-053: 建物・壺・宝箱・お助けアイテム
+// ============================================================
+const ITEM_EXT_ID = { heal: HEAL_EXT_ID, magnet: MAGNET_EXT_ID };
+
+/** アイテムの絵の ID (= SPEC-054 の懐中時計はここに足す) */
+export function itemExtId(kind) {
+  return ITEM_EXT_ID[kind] ?? null;
+}
+
+function _drawObstacles(ctx, camera, w, h) {
+  for (const o of state.battle.obstacles ?? []) {
+    const sx = o.x - camera.x;
+    const sy = o.y - camera.y;
+    const half = o.size / 2;
+    if (sx + half < 0 || sx - half > w || sy + half < 0 || sy - half > h) continue;
+    ctx.globalAlpha = 0.35;
+    ctx.fillStyle = "#000000";
+    ctx.beginPath();
+    ctx.ellipse(sx, sy + half * 0.78, half * 0.85, half * 0.22, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    const drew = drawSpriteRotated(ctx, getExtSprite(o.extId), sx, sy, o.size, 0);
+    if (!drew) {
+      const s = o.size * 0.8;
+      ctx.fillStyle = "#5b4a6e";
+      ctx.fillRect(sx - s / 2, sy - s / 2, s, s);
+      ctx.strokeStyle = "rgba(0,0,0,0.6)";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(sx - s / 2, sy - s / 2, s, s);
+    }
+  }
+}
+
+function _drawProp(ctx, e, sx, sy) {
+  const chest = e.propKind === "chest";
+  const size = e.r * 2.4;
+  if (chest) {
+    // 宝箱は光らせて目立たせる
+    ctx.globalAlpha = 0.35;
+    ctx.fillStyle = "#fff1a8";
+    ctx.beginPath();
+    ctx.arc(sx, sy, e.r * 1.6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+  const drew = chest ? _drawChestShape(ctx, sx, sy, size) : drawSpriteRotated(ctx, getExtSprite(POT_EXT_ID), sx, sy, size, 0);
+  if (!drew) {
+    ctx.fillStyle = e.color;
+    ctx.beginPath();
+    ctx.arc(sx, sy, e.r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "rgba(0,0,0,0.5)";
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  }
+  if ((e.hitFlashMs ?? 0) > 0) {
+    ctx.globalAlpha = 0.5 * (e.hitFlashMs / 80);
+    ctx.fillStyle = "#ffffff";
+    ctx.beginPath();
+    ctx.arc(sx, sy, e.r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+  if (chest && e.hp < e.hpMax) _drawHpBar(ctx, sx, sy + e.r + 6, HP_BAR_WIDTH, HP_BAR_HEIGHT, e.hp / e.hpMax);
+}
+
+let _chestPaths = null;
+/** 宝箱の形 (= 64x64 の SVG の path) を金色に塗る。 Path2D がなければ false */
+function _drawChestShape(ctx, cx, cy, size) {
+  if (typeof Path2D === "undefined") return false;
+  if (!_chestPaths) _chestPaths = CHEST_SHAPE_PATHS.map((d) => new Path2D(d));
+  const k = size / 64;
+  ctx.save();
+  ctx.translate(cx - size / 2, cy - size / 2);
+  ctx.scale(k, k);
+  ctx.lineWidth = 3 / k;
+  ctx.strokeStyle = "#5a3a10";
+  ctx.fillStyle = "#f0c14b";
+  for (const p of _chestPaths) { ctx.stroke(p); ctx.fill(p); }
+  ctx.restore();
+  return true;
+}
+
+function _drawItems(ctx, camera, w, h, nowMs) {
+  for (const it of state.battle.items ?? []) {
+    const sx = it.x - camera.x;
+    const sy = it.y - camera.y + Math.sin(nowMs / 260 + it.id) * 3;
+    const size = ITEM_ICON_SIZE;
+    if (sx + size < 0 || sx - size > w || sy + size < 0 || sy - size > h) continue;
+    ctx.globalAlpha = 0.4;
+    ctx.fillStyle = it.kind === "heal" ? "#b8f5c0" : "#cfe3ff";
+    ctx.beginPath();
+    ctx.arc(sx, sy, size * 0.7, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    const drew = drawSpriteRotated(ctx, getExtSprite(itemExtId(it.kind)), sx, sy, size, 0);
+    if (!drew) {
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.arc(sx, sy, it.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+}
+
+function _drawChestPointers(ctx, camera, w, h, enemies) {
+  const cx = w / 2, cy = h / 2;
+  for (const e of enemies) {
+    if (e.propKind !== "chest") continue;
+    const sx = e.x - camera.x, sy = e.y - camera.y;
+    if (sx >= 0 && sx <= w && sy >= 0 && sy <= h) continue;
+    const a = Math.atan2(sy - cy, sx - cx);
+    // 画面の縁 (= 内側 18px) と、 中心から宝箱への線の交点
+    const m = 18;
+    const kx = Math.abs(Math.cos(a)) > 1e-6 ? (w / 2 - m) / Math.abs(Math.cos(a)) : Infinity;
+    const ky = Math.abs(Math.sin(a)) > 1e-6 ? (h / 2 - m) / Math.abs(Math.sin(a)) : Infinity;
+    const k = Math.min(kx, ky);
+    const ax = cx + Math.cos(a) * k, ay = cy + Math.sin(a) * k;
+    ctx.save();
+    ctx.translate(ax, ay);
+    ctx.rotate(a);
+    ctx.fillStyle = "#f0c14b";
+    ctx.strokeStyle = "rgba(0,0,0,0.6)";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(10, 0);
+    ctx.lineTo(-6, -7);
+    ctx.lineTo(-6, 7);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+  }
 }
 
 /**

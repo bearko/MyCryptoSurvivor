@@ -4,7 +4,7 @@
 
 import { state } from "../state.js";
 import {
-  GEM_VALUE, GEM_RADIUS, GEM_COLOR, GEM_PICKUP_RADIUS,
+  GEM_VALUE, GEM_RADIUS, GEM_COLOR, GEM_PICKUP_RADIUS, MAGNET_SPEED_PX_S,
   XP_TO_NEXT_GROWTH,
   SFX,
 } from "../constants.js";
@@ -22,7 +22,7 @@ export function spawnGem(x, y, value = GEM_VALUE) {
 /**
  * 1 frame: プレイヤー周囲の gem を吸収 → XP 加算 → 必要なら level up を繰り返す。
  */
-export function tickGems(_dt) {
+export function tickGems(dt) {
   const b = state.battle;
   const px = b.player.x;
   const py = b.player.y;
@@ -34,6 +34,14 @@ export function tickGems(_dt) {
   let pickedAny = false;
   for (let i = b.gems.length - 1; i >= 0; i--) {
     const g  = b.gems[i];
+    // SPEC-053: 棒磁石を拾ったあとの CE はプレイヤーへ飛んでくる
+    if (g.magnet) {
+      const mx = px - g.x, my = py - g.y;
+      const md = Math.hypot(mx, my) || 1;
+      const step = Math.min(md, MAGNET_SPEED_PX_S * dt);
+      g.x += (mx / md) * step;
+      g.y += (my / md) * step;
+    }
     const dx = g.x - px;
     const dy = g.y - py;
     if (dx * dx + dy * dy <= r2) {
