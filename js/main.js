@@ -43,7 +43,7 @@ import { img } from "./constants.js";
 import { installReduceFxAttr } from "./motion.js";
 import { playWipe } from "./transition.js";
 import { naviSay, naviHide, naviLines, naviTitle } from "./navi.js";
-import { installUiSound } from "./ui-sound.js";
+import { installUiSound, startTitleBgm, startMenuBgm, waitAutoplay } from "./ui-sound.js";
 
 // ============================================================
 // DOM helpers
@@ -64,14 +64,9 @@ async function init() {
     loadEnemies().catch((e) => console.error("loadEnemies failed", e)),
   ]);
 
-  // ロード完了 → splash dismiss
-  $("#splash")?.classList.add("hidden");
-  $("#titleScreen")?.classList.remove("hidden");
-
-  resumeTime();   // ← splash 終了
+  resumeTime();   // ← 読み込み終了
 
   setupTitleScreen();
-  naviTitle();   // SPEC-056: タイトルでマインちゃんがあいさつ
   setupHelpOverlay();
   setupLangToggle();
   setupHeroSelectModal();
@@ -80,7 +75,7 @@ async function init() {
   installModalA11y();   // SPEC-043: 開いたモーダルにフォーカス・メニューとランキングは Esc で閉じる
   installSettingsUI();  // SPEC-044: 音量・演出を減らす・言語
   installAutoPause();   // SPEC-044: タブを離れたら一時停止
-  installUiSound({ inMenu: () => !state.battle.active });   // SPEC-060: ボタンの音・メニューの BGM
+  installUiSound();   // SPEC-060: ボタンの音。 SPEC-069: 止められた BGM を次の操作で鳴らし直す
   installReduceFxAttr(); // SPEC-055: 「演出を減らす」で CSS の常に動く演出も止める
   // SPEC-037: タイトル → モード選択 → ヒーロー選択 の順
   installModeSelect(() => {
@@ -92,6 +87,43 @@ async function init() {
 
   // タイトル画面表示中は時間が進むが、 onTick は state.activeXxx が無いので何も起きない
   startTimeLoop();
+
+  // SPEC-069: タイトルの BGM (= craft.mp3)。 ブラウザが止めたら「タップしてはじめる」を挟んで、 その操作で鳴らす
+  if (await waitAutoplay(startTitleBgm())) enterTitle();
+  else showSplashTap();
+}
+
+// ============================================================
+// SPEC-069: 読み込みのあと → タイトル (= 鳴らせないときだけ「タップしてはじめる」)
+// ============================================================
+let _titleEntered = false;
+function enterTitle() {
+  if (_titleEntered) return;
+  _titleEntered = true;
+  const splash = $("#splash");
+  splash?.classList.add("splash--out");   // 0.3 秒で消える (= css/layout.css)
+  setTimeout(() => splash?.classList.add("hidden"), 320);
+  $("#titleScreen")?.classList.remove("hidden");
+  naviTitle();   // SPEC-056: タイトルでマインちゃんがあいさつ
+}
+
+function showSplashTap() {
+  const splash = $("#splash");
+  const tap = $("#splashTap");
+  $("#splash .splash__loading")?.classList.add("hidden");
+  tap?.classList.remove("hidden");
+  splash?.classList.add("splash--tap");   // キーボードは Enter・Space (= 下の onKey。 枠を出さないよう focus はしない)
+  const go = (e) => {
+    e?.preventDefault?.();
+    splash?.removeEventListener("click", go);
+    document.removeEventListener("keydown", onKey, true);
+    unlockAudio();
+    startTitleBgm();   // 操作の中で鳴らす (= 止められていた曲を鳴らし直す)
+    enterTitle();
+  };
+  const onKey = (e) => { if (e.key === "Enter" || e.key === " ") go(e); };
+  splash?.addEventListener("click", go);   // 画面のどこを押してもよい
+  document.addEventListener("keydown", onKey, true);
 }
 
 // ============================================================
@@ -122,6 +154,7 @@ function setupTitleScreen() {
 
 function dismissTitle() {
   unlockAudio();   // SPEC-017: 初回 user gesture で audio policy 解除
+  startMenuBgm();  // SPEC-069: モード選択・ヒーロー選択は land.mp3 (= 押した操作の中で替える。 ワイプのあとだと iOS で止められる)
   // SPEC-037: タイトル → モード選択画面 (= 旧来は直接 hero 選択モーダルだった)
   // SPEC-055: ワイプで切り替える
   playWipe(() => {

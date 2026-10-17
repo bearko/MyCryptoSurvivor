@@ -14,7 +14,7 @@
 
 import { state, pauseTime, resumeTime } from "./state.js";
 import { stopBgm } from "./audio.js";
-import { startMenuBgm } from "./ui-sound.js";
+import { startTitleBgm } from "./ui-sound.js";
 import { onLangChange, t } from "./i18n.js";
 import { abortRtaRun, scoreMetrics, reportRunScore } from "./platform.js";
 import { naviTitle } from "./navi.js";
@@ -113,7 +113,7 @@ function _onToTitle() {
   document.getElementById("app")?.classList.add("hidden");
   document.getElementById("titleScreen")?.classList.remove("hidden");
   naviTitle({ greet: false });   // SPEC-056
-  startMenuBgm();   // SPEC-060
+  startTitleBgm();   // SPEC-069: タイトルの曲 (= craft.mp3)
 }
 
 function _renderLabels() {

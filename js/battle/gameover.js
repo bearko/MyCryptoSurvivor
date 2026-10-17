@@ -19,7 +19,7 @@ import { STAGE_TABLE } from "../constants.js";
 import { countUp, revealIn } from "../reveal.js";
 import { naviTitle } from "../navi.js";
 import { presentResult } from "../result-telop.js";
-import { startMenuBgm, startMenuBgmAfterJingle } from "../ui-sound.js";
+import { startTitleBgm, startMenuBgmAfterJingle } from "../ui-sound.js";
 
 let _wired = false;
 
@@ -106,6 +106,7 @@ function _wireOnce() {
 
 /** ゲームオーバー・活動レポートから「タイトルに戻る」 (= SPEC-037。 SPEC-052 で活動レポートからも呼ぶ) */
 export async function returnToTitle() {
+  startTitleBgm();   // SPEC-069: タイトルの曲 (= craft.mp3)。 押した操作の中で替える (= 下の await のあとだと iOS で止められる)
   document.getElementById("gameOverModal")?.classList.add("hidden");
   // 全 modal close
   for (const id of ["levelUpModal", "stageTransitionModal", "activityReportModal", "rankingModal"]) {
@@ -113,10 +114,9 @@ export async function returnToTitle() {
   }
   // pauseFlags を 0 にリセット (= タイトル画面では時間停止扱い)
   while (state.pauseFlags > 0) resumeTime();
-  // 戦闘停止 + BGM 停止
+  // 戦闘停止 (= BGM は上で タイトルの曲に替えた)
   const m = await import("./index.js");
   m.stopBattle?.();
-  stopBgm();
   // run / hero / regulation を reset
   state.currentStageIdx = 0;
   state.ownedHero       = null;
@@ -136,7 +136,6 @@ export async function returnToTitle() {
   document.getElementById("app")?.classList.add("hidden");
   document.getElementById("titleScreen")?.classList.remove("hidden");
   naviTitle({ greet: false });   // SPEC-056
-  startMenuBgm();   // SPEC-060
 }
 
 async function _onSubmitClick() {

@@ -1,5 +1,7 @@
 {
   "splash.loading":      { "ja": "読み込み中…",                   "en": "Loading…" },
+  "splash.tap":          { "ja": "タップしてはじめる",             "en": "Tap to start" },
+  "splash.sound":        { "ja": "🔊 音が出ます",                  "en": "🔊 Sound on" },
 
   "lang.toggle.label":   { "ja": "言語 / Language",               "en": "Language / 言語" },
 
