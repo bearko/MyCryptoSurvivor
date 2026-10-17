@@ -2,7 +2,7 @@
 id: SPEC-074
 title: Treasure Chest Uses an MCH Extension Art (Music Box)
 status: Done
-pr: TBD
+pr: 100
 phase: v1.2 Battle
 kind: Changed
 ---
