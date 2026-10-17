@@ -48,6 +48,8 @@
   <link rel="stylesheet" href="css/battle-ui.css" />
   <!-- SPEC-058: 結果とメニュー (= 結果のテロップ・タイル・活動レポート・メニュー・設定・ランキング・遊び方) -->
   <link rel="stylesheet" href="css/result-ui.css" />
+  <!-- SPEC-090: スキルツリー (= タイトルの上に重ねる木の画面) -->
+  <link rel="stylesheet" href="css/skill-tree.css" />
 </head>
 <body>
 
@@ -83,6 +85,8 @@
       <button id="btnTitleHelp" class="btn btn--ghost title-screen__help" data-i18n="help.open">遊び方</button>
       <button id="btnTitleRanking" class="btn btn--ghost title-screen__ranking" data-i18n="ranking.openTitle">ランキング</button>
       <button id="btnTitleSettings" class="btn btn--ghost title-screen__settings" data-i18n="settings.title">設定</button>
+      <!-- SPEC-090: 1 回も遊んでいなければ出さない。 買える節があれば数の札 -->
+      <button id="btnTitleSkillTree" class="btn btn--ghost title-screen__tree hidden"><span data-i18n="tree.open">スキルツリー</span><span class="tree-badge hidden" id="titleSkillTreeBadge" aria-hidden="true"></span></button>
     </div>
 
     <div class="lang-toggle" id="langToggle">
@@ -93,6 +97,11 @@
       </div>
     </div>
   </section>
+
+  <!-- ============================================================ -->
+  <!-- SPEC-090: スキルツリー (= 中身は js/skill-tree.js が開くたびに組む)   -->
+  <!-- ============================================================ -->
+  <section id="skillTreeScreen" class="tree-screen hidden" role="dialog" aria-modal="true" data-i18n-attr-aria-label="tree.title"></section>
 
   <!-- ============================================================ -->
   <!-- 2.5 Game Mode select (= SPEC-037)                              -->
@@ -310,6 +319,7 @@
       </div>
       <!-- SPEC-090: この挑戦で得た GUM とゴールドダスト -->
       <div class="result-rewards hidden" id="gameOverRewards" data-reveal></div>
+      <button class="btn gameover-modal__retry result-tree-btn" id="gameOverSkillTree" data-reveal><img alt="" aria-hidden="true" /><span data-i18n="tree.openResult">スキルツリーへ</span></button>
       <div class="gameover-modal__form">
         <label class="gameover-form__label" for="gameOverName" data-i18n="gameover.namelabel">プレイヤー名</label>
         <input class="gameover-form__input" id="gameOverName" type="text" maxlength="30" autocomplete="off" />
@@ -402,6 +412,7 @@
       <div class="report-totals" id="activityReportTotals" data-reveal></div>
       <!-- SPEC-090: この挑戦で得た GUM とゴールドダスト -->
       <div class="result-rewards hidden" id="activityReportRewards" data-reveal></div>
+      <button class="btn gameover-modal__retry result-tree-btn" id="activityReportSkillTree" data-reveal><img alt="" aria-hidden="true" /><span data-i18n="tree.openResult">スキルツリーへ</span></button>
       <div class="gameover-modal__form">
         <label class="gameover-form__label" id="activityReportNameLabel" for="activityReportName">プレイヤー名</label>
         <input class="gameover-form__input" id="activityReportName" type="text" maxlength="30" autocomplete="off" />

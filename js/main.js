@@ -46,6 +46,7 @@ import { naviSay, naviHide, naviLines, naviTitle } from "./navi.js";
 import { installUiSound, startTitleBgm, startMenuBgm, waitAutoplay } from "./ui-sound.js";
 import { startHeroPreview, stopHeroPreview } from "./hero-preview.js";
 import { playVoice, stopVoice } from "./voice.js";
+import { installSkillTree } from "./skill-tree.js";   // SPEC-090
 
 // ============================================================
 // DOM helpers
@@ -76,6 +77,7 @@ async function init() {
   installRankingUI();   // SPEC-035: タイトル / メニューから開くランキングモーダル
   installModalA11y();   // SPEC-043: 開いたモーダルにフォーカス・メニューとランキングは Esc で閉じる
   installSettingsUI();  // SPEC-044: 音量・演出を減らす・言語
+  installSkillTree();   // SPEC-090: スキルツリー (= タイトルと結果の画面の入口)
   installAutoPause();   // SPEC-044: タブを離れたら一時停止
   installUiSound();   // SPEC-060: ボタンの音。 SPEC-069: 止められた BGM を次の操作で鳴らし直す
   installReduceFxAttr(); // SPEC-055: 「演出を減らす」で CSS の常に動く演出も止める
