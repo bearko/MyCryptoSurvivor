@@ -2,7 +2,7 @@
 id: SPEC-080
 title: Stronger Bosses — More HP, a Telegraphed Charge, Slam, Burst and Spiral
 status: Done
-pr: TBD
+pr: 108
 phase: v1.3 Battle
 kind: Changed
 ---
