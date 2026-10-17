@@ -18,6 +18,7 @@ import {
 } from "../constants.js";
 import { obstacleRect, rollTable, pickSpawnPoint, inView } from "./field-geom.js";
 import { spawnGem } from "./gems.js";
+import { naviTipOnce } from "../navi-tips.js";
 import { pushDamageNumber, hitEnemy } from "./damage.js";
 import { fxBurst, fxThunder } from "./fx.js";
 import { playSe } from "../audio.js";
@@ -165,6 +166,7 @@ export function applyItem(kind) {
     fxBurst(b.player.x, b.player.y, "#56ccf2", 14, 200);
     playSe(SFX.GEM_PICKUP, 80, 0.6);
   }
+  naviTipOnce(`item.${kind}`);   // SPEC-068: 初めて拾ったときだけ、 マインちゃんがひとこと
 }
 
 /**

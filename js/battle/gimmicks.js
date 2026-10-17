@@ -19,6 +19,7 @@ import { getObstacleRects, spawnItem } from "./field.js";
 import { pickSpawnPoint, rollTable } from "./field-geom.js";
 import { spawnEnemyAtRing, currentPool } from "./enemies.js";
 import { spawnGem } from "./gems.js";
+import { naviTipOnce } from "../navi-tips.js";
 
 // ---- チューニング ----
 export const BEADS = {
@@ -175,6 +176,7 @@ function _tickBeads(g, dms, el) {
       g.rows.push(_spawnRow(y + off, -dir));
     }
     playSe(SFX.GIMMICK_WARN, 0, 0.3);
+    naviTipOnce("gimmick.beads");   // SPEC-068: 初めての列だけ
   }
   for (let k = g.rows.length - 1; k >= 0; k--) {
     const row = g.rows[k];
@@ -220,6 +222,7 @@ function _tickPunch(g, dms, el) {
       if (holes.every((h) => Math.abs(h.x - x) > PUNCH.w + 8 || Math.abs(h.y - y) > PUNCH.h + 8)) holes.push({ x, y });
     }
     g.punches.push({ holes, t: 0, done: false });
+    naviTipOnce("gimmick.punch");   // SPEC-068: 初めての印だけ
   }
   for (let k = g.punches.length - 1; k >= 0; k--) {
     const pu = g.punches[k];
@@ -278,6 +281,7 @@ function _spawnTrojan() {
   });
   pushDamageNumber(at.x, at.y - TROJAN.r - 8, "TROJAN!", "#ffb38a", "lg");
   playSe(SFX.GIMMICK_WARN, 0, 0.4);
+  naviTipOnce("gimmick.trojan");   // SPEC-068: 初めての木馬だけ
 }
 
 /** 開く: 敵の群れを吐き出す (= 木馬のまわりから、 出現の上限まで) */

@@ -1,0 +1,2 @@
+- **マインちゃんの「初めて」のひとこと** (`js/navi-tips.js` + `js/battle/field.js` + `js/battle/magic-cards.js` + `js/battle/gimmicks.js` + `js/battle/enemy-shots.js`): 初めて拾ったアイテム・初めて動いた仕掛け・初めて狙ってきた撃つ敵で、画面の上でひとこと補足する。端末に覚えて、次からは黙る
+- **設定「マインちゃんの補足」** (`index.html` + `js/settings-ui.js`): 「もう一度聞く」で、また初めてのときに話す

@@ -78,6 +78,13 @@ export function naviLines(scene, ctx = {}) {
       if (i === 0 && ctx.rta) lines.push({ key: "navi.stage.rta", pose: "wink" });
       return lines;
     }
+    case "tip": {
+      // SPEC-068: 初めてのアイテム・仕掛け・敵のひとこと。 key は navi-tips.js の TIP_KEYS
+      const key = String(ctx.key ?? "");
+      if (!key) return [];
+      const pose = key.startsWith("item.") ? "sparkle" : (key === "gimmick.trojan" ? "cross" : "pointer");
+      return [{ key: `navi.tip.${key}`, pose }];
+    }
     default:
       return [];
   }
@@ -276,6 +283,11 @@ export function naviSay(lines, { place = "title", autoHideMs = 0, onTapNavi = nu
     const total = lines.reduce((a, l) => a + tpl(t(l.key, l.key), l.vars ?? {}).length * NAVI_TYPE_MS, 0) + autoHideMs;
     _hideTimer = setTimeout(naviHide, total);
   }
+}
+
+/** いま出ているか (= 引っこむ途中は出ていないとみなす。 SPEC-068 の補足が前のセリフを消さないため) */
+export function naviIsShown() {
+  return !!_el && !_el.classList.contains("hidden") && !_el.classList.contains("navi--out");
 }
 
 /** 引っこめる */

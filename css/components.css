@@ -1455,6 +1455,10 @@
   cursor: pointer;
 }
 .settings-row__langs { grid-column: 2 / 4; justify-content: flex-end; }
+/* SPEC-068: 1 つのボタンで済む行 (= マインちゃんの補足をもう一度) */
+.settings-row--action { grid-template-columns: 1fr auto; }
+.settings-row__btn { white-space: nowrap; }
+.settings-row__btn:disabled { opacity: 0.55; cursor: default; }
 
 /* スイッチ (= checkbox を見た目だけ差し替え) */
 .settings-switch {
