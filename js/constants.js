@@ -279,9 +279,10 @@ export const CHEST_SHAPE_PATHS  = [
   "M8 24c0-4.4 3.6-8 8-8h32c4.4 0 8 3.6 8 8v4H8v-4zm0 8h20v6h8v-6h20v20c0 2.2-1.8 4-4 4H12c-2.2 0-4-1.8-4-4V32zm22 4v4h4v-4h-4z",
   "M16 16V12c0-2.2 1.8-4 4-4h24c2.2 0 4 1.8 4 4v4h-4v-4H20v4h-4z",
 ];
-// SPEC-074: 宝箱の絵はマイクリのエクステンション (= 作者の依頼。 宝箱でなくてよい)。 木の箱に見える 1165 オルゴール
+// SPEC-074: 宝箱の絵はマイクリのエクステンション (= 作者の依頼。 宝箱でなくてよい)
+// SPEC-076: 5106 財宝ゴールデンモアイ (= 作者の指定)。 モアイの武器の 5 段目の弾も同じ絵だが、 宝箱は止まっていて光の円と HP の帯がある
 //   上の形 (= CHEST_SHAPE_PATHS) は、 絵を読み込むまでの代わり
-export const CHEST_EXT_ID       = 1165;       // オルゴール
+export const CHEST_EXT_ID       = 5106;       // 財宝ゴールデンモアイ
 export const CHEST_RADIUS       = 18;
 export const CHEST_HP           = 60;         // × ステージの enemyHpMul
 export const CHEST_TIMES_MS     = [30000, 90000, 150000, 210000];

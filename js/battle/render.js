@@ -479,8 +479,7 @@ function _drawObstacles(ctx, camera, w, h) {
 
 function _drawProp(ctx, e, sx, sy) {
   const chest = e.propKind === "chest";
-  // SPEC-074: オルゴールの絵は枠の 7 割ほど (= 壺は枠いっぱい) なので、 宝箱は大きめに描いて当たりの円にそろえる
-  const size = e.r * 2.4 * (chest ? 1.3 : 1);
+  const size = e.r * 2.4;   // SPEC-076: ゴールデンモアイの絵は壺と同じく枠いっぱい
   if (chest) {
     // 宝箱は光らせて目立たせる
     ctx.globalAlpha = 0.35;
