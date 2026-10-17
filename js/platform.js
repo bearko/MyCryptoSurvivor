@@ -46,16 +46,17 @@ export function reportStageEnd(stageIdx, stageCount) {
 // SPEC-040: RTA (= 共通基盤の SDK が時間を計る。 公式タイムはサーバーの受信時刻の差)
 // ============================================================
 // SPEC-054: 宝箱から懐中時計 (= 10 秒 2 倍速) が出るようになったので、 懐中時計ありのレギュレーション (-v2) で計った。
-// SPEC-066: v1.2 (= 撃ってくる敵・雷鼓・ステージの仕掛け・トロイの大群・レベルアップの速さ) で遊びの中身が変わったので、 -v3 で計る。
-// それより前の記録 (= -v2・懐中時計なし) は、 過去の記録として共通基盤に残る
-export const RTA_REGULATION = "survivor-normal-v3";
+// SPEC-066: v1.2 (= 撃ってくる敵・雷鼓・ステージの仕掛け・トロイの大群・レベルアップの速さ) で遊びの中身が変わったので、 -v3 で計った。
+// SPEC-082: v1.3 (= 敵の大群・ボス戦の枠・ボスの強化・ボス戦の宝箱) で遊びの中身が変わったので、 -v4 で計る。
+// それより前の記録 (= -v3・-v2・懐中時計なし) は、 過去の記録として共通基盤に残る
+export const RTA_REGULATION = "survivor-normal-v4";
 // SPEC-048: ABSOLUTE の 4 軸をすべて ×2.0 に固定した RTA
-export const RTA_REGULATION_ABSOLUTE_2X = "survivor-absolute-2x-v3";
+export const RTA_REGULATION_ABSOLUTE_2X = "survivor-absolute-2x-v4";
 export const RTA_ABSOLUTE_MUL = 2.0;
 
 /**
  * 今のルールで走る RTA のレギュレーション ID。 決まったルールでなければ null (= 計測しない)。 純関数 (= tests/platform.test.mjs)
- *   NORMAL → survivor-normal-v3、 ABSOLUTE で 4 軸すべて ×2.0 → survivor-absolute-2x-v3
+ *   NORMAL → survivor-normal-v4、 ABSOLUTE で 4 軸すべて ×2.0 → survivor-absolute-2x-v4
  */
 export function rtaRegulationFor(regulation, absolute) {
   if (regulation == null || regulation === "NORMAL") return RTA_REGULATION;
@@ -118,10 +119,11 @@ export function abortRtaRun() {
 
 /**
  * SPEC-066: ゲームのバランスの版 (= 共通基盤の総合スコア v4 が、 版ごとに「ふつうの全クリア」を 5,000 にそろえる係数を使う)。
- *   1: v1.1 まで (= 送らない)、 2: v1.2 (= 撃ってくる敵・雷鼓・ステージの仕掛け・トロイの大群・レベルアップの速さ)
+ *   1: v1.1 まで (= 送らない)、 2: v1.2 (= 撃ってくる敵・雷鼓・ステージの仕掛け・トロイの大群・レベルアップの速さ)、
+ *   3: v1.3 (= SPEC-082。 敵の大群・ボス戦の枠・ボスの強化・ボス戦の宝箱。 撃破が 2 万体を超え、 点が v1.2 の約 9 倍)
  * 遊びの中身を変えて点の出方が変わったら、 ここを上げて、 共通基盤に新しい係数を足す
  */
-export const SCORE_BALANCE = 2;
+export const SCORE_BALANCE = 3;
 
 /**
  * 1 回の挑戦の成績 (= 共通基盤に送る形)。 純関数 (= tests/platform.test.mjs)
@@ -135,7 +137,7 @@ export function scoreMetrics({ run, cleared, reportScore, regulation, absolute }
     reportScore: cleared ? Math.max(0, Math.round(reportScore || 0)) : 0,
     // SPEC-051: 難易度は名前だけ送る。 係数 (= ABSOLUTE は 4 軸の平均・上限 2.0) は共通基盤が決める
     difficulty: regulation === "ABSOLUTE" ? "absolute" : "normal",
-    balance: SCORE_BALANCE,   // SPEC-066
+    balance: SCORE_BALANCE,   // SPEC-066 / SPEC-082
   };
   if (out.difficulty === "absolute") {
     const a = absolute || {};
