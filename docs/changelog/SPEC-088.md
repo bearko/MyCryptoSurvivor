@@ -1,0 +1,1 @@
+- **初プレイは NORMAL だけ** (`js/played.js` + `js/mode-select.js` + `js/battle/gameover.js` + `js/battle/activity-report.js` + `index.html` + `css/components.css`): この端末で 1 回も挑戦を終えていないあいだ、 ABSOLUTE と RTA の札を薄くして押せなくし、 「🔒 NORMAL を 1 回遊ぶと選べるようになる」 の 1 行を出す。 クリアかゲームオーバーで `mcs.played` に記録し、 次にモード選択を開いたときから選べる

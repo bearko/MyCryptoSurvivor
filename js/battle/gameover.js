@@ -22,6 +22,7 @@ import { presentResult } from "../result-telop.js";
 import { startTitleBgm, startMenuBgmAfterJingle } from "../ui-sound.js";
 import { grantRunRewards, runDust } from "../meta.js";
 import { renderRewards } from "../meta-ui.js";
+import { markPlayed } from "../played.js";
 
 let _wired = false;
 
@@ -33,6 +34,7 @@ let _wired = false;
 export function triggerGameOver(reason = "lose") {
   if (state.battle.gameOver) return;
   state.battle.gameOver = true;
+  markPlayed();   // SPEC-088: 1 回遊び終えた (= 次から ABSOLUTE・RTA が選べる)
   // SPEC-040: 倒れたら RTA の計測は中断 (= 再走は startBattle で新しい計測になる)。
   // "clear" は最後の区切りを送ったあとなので触らない
   if (reason !== "clear") abortRtaRun();

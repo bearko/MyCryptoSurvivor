@@ -18,6 +18,7 @@ import { isRtaAvailable, RTA_ABSOLUTE_MUL } from "./platform.js";
 import { playWipe } from "./transition.js";
 import { naviTitle } from "./navi.js";
 import { startTitleBgm } from "./ui-sound.js";
+import { hasPlayed, isModeLocked } from "./played.js";
 
 let _wired   = false;
 let _onPick  = null;   // (regulation) => void、 hero select に進む callback
@@ -36,9 +37,33 @@ export function showModeSelect() {
   _$("titleScreen")?.classList.add("hidden");
   // SPEC-040: RTA の card は共通基盤の SDK が読めたときだけ出す
   _$("modeCardRta")?.classList.toggle("hidden", !isRtaAvailable());
+  _applyLocks();   // SPEC-088: 初プレイは NORMAL だけ (= 開くたびに見直す。 1 回遊び終えたら開く)
   _$("gameModeSelectScreen")?.classList.remove("hidden");
   _renderLabels();
   _renderMul();
+}
+
+/** SPEC-088: ロックの札。 カードは見せたまま薄くし、 ボタン・スライダー・リンクを押せなくして、 開く条件を 1 行 */
+const _LOCKABLE = [
+  { mode: "ABSOLUTE", cardId: "modeCardAbsolute", lockId: "modeCardAbsoluteLock" },
+  { mode: "RTA",      cardId: "modeCardRta",      lockId: "modeCardRtaLock" },
+];
+
+function _applyLocks() {
+  const played = hasPlayed();
+  for (const { mode, cardId, lockId } of _LOCKABLE) {
+    const card = _$(cardId);
+    if (!card) continue;
+    const locked = isModeLocked(mode, played);
+    card.classList.toggle("mode-card--locked", locked);
+    card.setAttribute("aria-disabled", String(locked));
+    card.querySelectorAll("button, input").forEach((el) => { el.disabled = locked; });
+    card.querySelectorAll("a").forEach((a) => {
+      if (locked) { a.setAttribute("aria-disabled", "true"); a.setAttribute("tabindex", "-1"); }
+      else { a.removeAttribute("aria-disabled"); a.removeAttribute("tabindex"); }
+    });
+    _$(lockId)?.classList.toggle("hidden", !locked);
+  }
 }
 
 export function hideModeSelect() {
@@ -74,6 +99,8 @@ function _wireOnce() {
 }
 
 function _pick(regulation, { rta = false, absolute = null } = {}) {
+  // SPEC-088: 初プレイは NORMAL だけ (= ボタンは disabled にしてあるが、 ここでも止める)
+  if (isModeLocked(rta ? "RTA" : regulation, hasPlayed())) return;
   state.regulation = regulation;
   state.rtaMode = rta;
   if (regulation === REGULATION_NORMAL) {
@@ -143,6 +170,10 @@ function _renderLabels() {
   // SPEC-048: ABSOLUTE ×2.0 の RTA
   const bRA = _$("btnModeRtaAbs");     if (bRA) bRA.textContent = t("mode.startRtaAbs", "ABSOLUTE ×2.0 で RTA");
   const rlA = _$("modeRtaRankingAbs"); if (rlA) rlA.textContent = t("mode.rtaRankingAbs", "RTA ランキング（ABSOLUTE ×2.0）");
+  // SPEC-088: ロックの 1 行 (= ABSOLUTE と RTA で同じ文)
+  document.querySelectorAll(".mode-card__lock").forEach((el) => {
+    el.textContent = t("mode.locked", "🔒 NORMAL を 1 回遊ぶと選べるようになる");
+  });
   // slider のラベル
   document.querySelectorAll('#absoluteSliders .abs-slider__label').forEach(el => {
     const ax = el.dataset.axis;
