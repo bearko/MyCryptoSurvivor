@@ -16,6 +16,7 @@ import {
 import { onLangChange, t } from "./i18n.js";
 import { isRtaAvailable, RTA_ABSOLUTE_MUL } from "./platform.js";
 import { playWipe } from "./transition.js";
+import { naviTitle } from "./navi.js";
 
 let _wired   = false;
 let _onPick  = null;   // (regulation) => void、 hero select に進む callback
@@ -61,6 +62,7 @@ function _wireOnce() {
     playWipe(() => {
       hideModeSelect();
       _$("titleScreen")?.classList.remove("hidden");
+      naviTitle({ greet: false });   // SPEC-056
     });
   });
   onLangChange(() => {

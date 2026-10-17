@@ -42,6 +42,7 @@ import { installModalA11y } from "./modal-a11y.js";
 import { img } from "./constants.js";
 import { installReduceFxAttr } from "./motion.js";
 import { playWipe } from "./transition.js";
+import { naviSay, naviHide, naviLines, naviTitle } from "./navi.js";
 
 // ============================================================
 // DOM helpers
@@ -69,6 +70,7 @@ async function init() {
   resumeTime();   // ← splash 終了
 
   setupTitleScreen();
+  naviTitle();   // SPEC-056: タイトルでアインがあいさつ
   setupHelpOverlay();
   setupLangToggle();
   setupHeroSelectModal();
@@ -120,7 +122,10 @@ function dismissTitle() {
   unlockAudio();   // SPEC-017: 初回 user gesture で audio policy 解除
   // SPEC-037: タイトル → モード選択画面 (= 旧来は直接 hero 選択モーダルだった)
   // SPEC-055: ワイプで切り替える
-  playWipe(showModeSelect, { label: "NODE // CONNECT" });
+  playWipe(() => {
+    showModeSelect();
+    naviSay(naviLines("mode"), { place: "mode", quietMs: 3500 });   // SPEC-056: 言い終えたらたたむ (= カードのボタンを隠さない)
+  }, { label: "NODE // CONNECT" });
 }
 
 // ============================================================
@@ -229,6 +234,7 @@ function openHeroSelectModal() {
   renderHeroSelectModal();
   renderHeroDetail(null);   // SPEC-014: 詳細パネルを placeholder 状態にリセット
   modal.classList.remove("hidden");
+  naviSay(naviLines("hero"), { place: "hero", host: $("#heroStage") });   // SPEC-056: 大きな絵の左上の通信窓
 }
 
 function closeHeroSelectModal() {
@@ -236,6 +242,7 @@ function closeHeroSelectModal() {
   if (!modal || modal.classList.contains("hidden")) return;
   modal.classList.add("hidden");
   state.pendingHeroPick = null;
+  naviHide();   // SPEC-056
   resumeTime();
 }
 
@@ -289,18 +296,66 @@ function renderHeroSelectModal() {
 
 function pickHero(heroId) {
   if (!getHero(heroId)) return;
+  const changed = state.pendingHeroPick !== heroId;
   state.pendingHeroPick = heroId;
   renderHeroSelectModal();
   renderHeroDetail(heroId);   // SPEC-014: 詳細パネルに反映
+  // SPEC-056: アインが選んだヒーローに反応する (= 同じヒーローを押し直しても喋り直さない)
+  const hero = getHero(heroId);
+  if (hero && changed) {
+    const ext = getExt(HERO_STARTING_WEAPON[hero.heroId] ?? HERO_STARTING_WEAPON_DEFAULT);
+    _heroPickN += 1;
+    naviSay(naviLines("heroPick", {
+      heroName: localizedHeroName(hero, getLang()),
+      weaponName: ext ? getTierName(ext, 1, getLang()) : "",
+      n: _heroPickN,
+    }), { place: "hero", host: $("#heroStage") });
+  }
 }
+let _heroPickN = 0;
 
 // ============================================================
 // SPEC-014: ヒーロー詳細パネル (= portrait + 名前 + 派閥 + ステータス + 担当 ext)
 // ============================================================
+/**
+ * SPEC-056: 大きなドット絵と、 その裏の名前。 選ぶたびに構図 (= data-shot) が変わる (= 前と同じ構図にはしない)
+ */
+const HERO_STAGE_SHOTS = 5;
+let _heroStageShot = 0;
+function renderHeroStage(hero) {
+  const stage  = $("#heroStage");
+  const sprite = $("#heroStageSprite");
+  const nameEl = $("#heroStageName");
+  const empty  = $("#heroStageEmpty");
+  if (!stage || !sprite || !nameEl) return;
+  if (!hero) {
+    sprite.classList.add("hidden");
+    sprite.removeAttribute("src");
+    nameEl.textContent = "";
+    empty?.classList.remove("hidden");
+    delete stage.dataset.faction;
+    return;
+  }
+  empty?.classList.add("hidden");
+  _heroStageShot = (_heroStageShot + 1 + Math.floor(Math.random() * (HERO_STAGE_SHOTS - 1))) % HERO_STAGE_SHOTS;
+  stage.dataset.shot = String(_heroStageShot);
+  stage.dataset.faction = hero.faction;
+  sprite.src = heroImg(hero.heroId);
+  sprite.alt = localizedHeroName(hero, getLang());
+  sprite.classList.remove("hidden");
+  const bigName = localizedHeroName(hero, "en").toUpperCase();
+  nameEl.textContent = bigName;
+  nameEl.style.setProperty("--len", String(Math.max(6, bigName.length)));
+  stage.classList.remove("hero-stage--in");
+  void stage.offsetWidth;   // 選び直すたびに最初から
+  stage.classList.add("hero-stage--in");
+}
+
 function renderHeroDetail(heroId) {
   const placeholder = $("#heroDetailPlaceholder");
   const content     = $("#heroDetailContent");
   const hero        = getHero(heroId);
+  renderHeroStage(hero);   // SPEC-056
   if (!hero) {
     placeholder?.classList.remove("hidden");
     content?.classList.add("hidden");
@@ -391,6 +446,7 @@ function applyHeroPick() {
   // SPEC-055: ワイプで覆ってから戦闘を始める (= ステージの始まりの帯がワイプの抜けたあとに出る)
   playWipe(() => {
     closeHeroSelectModal();
+    naviHide();   // SPEC-056: 戦闘ではステージの始まりにだけ出る
     startBattle(state.ownedHero);   // SPEC-006: 戦闘ステージ開始
   }, { label: "NODE // DEPLOY" });
 }
