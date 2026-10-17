@@ -22,7 +22,11 @@ export function initPlatform(version) {
   if (!bg) return;
   try {
     // SPEC-052: 通知は画面の上に出す (= 結果画面のボタンを隠さない。 SDK 1.5.0 から。 古い SDK は無視する)
-    Promise.resolve(bg.init({ game: "survivor", version, toast: "top" })).catch((e) => console.warn("[platform] init", e));
+    // SPEC-091: 全体チャットの 💬 は右上 (= 下はマインちゃんの帯と通知が使う。 SDK 1.6.0 から)。
+    //           読み込みの画面には出さない (= タイトルに入ったとき setChatVisible(true))
+    Promise.resolve(bg.init({ game: "survivor", version, toast: "top", chat: { position: "top-right", offset: { x: 12, y: 12 } } }))
+      .then(() => setChatVisible(false))
+      .catch((e) => console.warn("[platform] init", e));
   } catch (e) {
     console.warn("[platform] init", e);
   }
@@ -173,6 +177,24 @@ export function placePlatformToasts(offset = 0) {
     bg.setToastPosition({ position: "top", offset });
   } catch (e) {
     console.warn("[platform] toast", e);
+  }
+}
+
+// ============================================================
+// SPEC-091: 全体チャット (= 共通基盤 SPEC-004。 窓は SDK が描く。 ここでは出す・隠すだけ)
+// ============================================================
+
+/**
+ * 💬 を出す (true) / 隠す (false)。 戦闘中は隠し、 タイトル・結果の画面で出す。
+ * SDK がない・古い (= chat が無い) ときは何もしない
+ */
+export function setChatVisible(on) {
+  const bg = _sdk();
+  if (!bg || !bg.chat || typeof bg.chat.setVisible !== "function") return;
+  try {
+    bg.chat.setVisible(!!on);
+  } catch (e) {
+    console.warn("[platform] chat", e);
   }
 }
 

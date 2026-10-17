@@ -41,6 +41,45 @@ test("SDK があれば unlockTrophy を呼び、失敗してもゲームを止�
   }
 });
 
+// ---------------------------------------------------------------- SPEC-091: 全体チャット
+import { setChatVisible } from "../js/platform.js";
+
+test("チャット：SDK がない・古い (= chat が無い) なら何もしない", () => {
+  assert.doesNotThrow(() => setChatVisible(true));
+  globalThis.window = { BearkoGames: { init: async () => ({ ok: true }) } };
+  try {
+    assert.doesNotThrow(() => setChatVisible(false));
+  } finally {
+    delete globalThis.window;
+  }
+});
+
+test("チャット：init で右上に置いて読み込み中は隠し、出す・隠すを SDK に渡す", async () => {
+  const calls = [];
+  let initOpts = null;
+  globalThis.window = {
+    BearkoGames: {
+      init: async (o) => { initOpts = o; return { ok: true }; },
+      chat: { setVisible: (on) => { calls.push(on); } },
+    },
+  };
+  try {
+    initPlatform("0.1.0");
+    await new Promise((r) => setTimeout(r, 0));
+    assert.equal(initOpts.chat.position, "top-right");
+    assert.deepEqual(calls, [false]);
+    setChatVisible(true);
+    setChatVisible(0);
+    assert.deepEqual(calls, [false, true, false]);
+    globalThis.window.BearkoGames.chat.setVisible = () => { throw new Error("boom"); };
+    const warn = console.warn;
+    console.warn = () => {};
+    try { assert.doesNotThrow(() => setChatVisible(true)); } finally { console.warn = warn; }
+  } finally {
+    delete globalThis.window;
+  }
+});
+
 // ---------------------------------------------------------------- SPEC-040: RTA
 import { rtaCheckpointForStageEnd, isRtaAvailable, startRtaRun, reportRtaStageEnd, abortRtaRun, RTA_REGULATION } from "../js/platform.js";
 

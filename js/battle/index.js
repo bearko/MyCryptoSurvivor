@@ -44,7 +44,7 @@ import { tickBossMoves } from "./boss-moves.js";
 import { startCoachIfFirst, tickCoach, hideCoach } from "./coach.js";
 import { resetFx, tickFx } from "./fx.js";
 import { startBgm } from "../audio.js";
-import { startRtaRun, rtaRegulationFor, placePlatformToasts } from "../platform.js";
+import { startRtaRun, rtaRegulationFor, placePlatformToasts, setChatVisible } from "../platform.js";
 import { BGM_BATTLE, STAGE_TABLE, WATCH_SPEED } from "../constants.js";
 import { t, tpl } from "../i18n.js";
 import { heroImg } from "../heroes.js";
@@ -75,6 +75,8 @@ export function startBattle(hero) {
     _installed = true;
   }
 
+  // SPEC-091: 戦闘中は全体チャットの 💬 を隠す (= 結果の画面とタイトルで戻す)
+  setChatVisible(false);
   // SPEC-040: RTA で始めた run は、 ステージ 1 の開始で計測を始める (= 再走も同じ。 前の計測は中断になる)
   // SPEC-048: レギュレーションは今のルールから決める (= NORMAL か ABSOLUTE ×2.0 固定)
   if (state.rtaMode && (state.currentStageIdx ?? 0) === 0) {
