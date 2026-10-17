@@ -2,7 +2,7 @@
 id: SPEC-068
 title: Mine's First-time Tips
 status: Done
-pr: TBD
+pr: 94
 phase: v1.2 Battle
 kind: Added
 ---
