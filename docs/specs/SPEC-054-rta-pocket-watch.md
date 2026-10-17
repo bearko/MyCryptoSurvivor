@@ -2,7 +2,7 @@
 id: SPEC-054
 title: RTA Pocket Watch — 2x Game Speed for 10 Seconds (RTA only)
 status: Done
-pr: TBD
+pr: 79
 phase: Phase 3
 kind: Added
 ---
