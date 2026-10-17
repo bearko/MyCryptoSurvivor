@@ -2,7 +2,7 @@
 id: SPEC-048
 title: bearko.games Platform RTA — ABSOLUTE ×2.0
 status: Done
-pr: 66
+pr: 71
 phase: Phase 3
 kind: Added
 ---
@@ -47,7 +47,7 @@ SPEC-040 の RTA は NORMAL だけで、ABSOLUTE は非目標にしていた。A
 ### 3.4 依存
 
 - npm 依存・ビルドステップは増えない。localStorage は使わない
-- 共通基盤（bearko/mycryptoportfolio #35）を先にマージする（レギュレーションを API が知らないと 400 になる）
+- 共通基盤（bearko/MyCryptoPortfolio#35。マージ済み）を先にマージする（レギュレーションを API が知らないと 400 になる）
 
 ## 4. 受け入れ基準
 
