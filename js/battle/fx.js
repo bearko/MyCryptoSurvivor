@@ -54,7 +54,7 @@ function _fx() {
 }
 
 export function resetFx() {
-  state.battle.fx = { shake: 0, shakeMs: 0, hurt: 0, flash: 0, particles: [], bossWarned: false };
+  state.battle.fx = { shake: 0, shakeMs: 0, hurt: 0, flash: 0, particles: [], bossWarned: false, countSec: -1 };
   _hideBossBanner();
   clearTimeout(_cutinTimer);
   globalThis.document?.getElementById("bossCutin")?.classList.remove("boss-cutin--run");
@@ -134,6 +134,51 @@ export function fxBossIncoming() {
   fx.bossWarned = true;
   playSe(SE_BOSS_WARN, 0, 0.6);
   _showBossBanner();
+}
+
+// ---- SPEC-061: ボスが出るまでのカウントダウン ----
+/** 予告の帯が大きく出ている長さ。 そのあと上の小さな帯にたたみ、 残りの秒を数える */
+export const BOSS_BANNER_INTRO_MS = 3200;
+/** 最後のこの秒数は、 画面の真ん中に大きな数字 */
+export const BOSS_COUNTDOWN_BIG_SEC = 5;
+
+/** 残りの時間の表示 (= 純関数)。 0:30 → 0:01。 端数は切り上げ (= 0.2 秒残りは 0:01) */
+export function bossCountdownText(remainMs) {
+  const sec = Math.max(0, Math.ceil(remainMs / 1000));
+  return `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`;
+}
+
+/**
+ * 予告からボスが出るまで、 毎フレーム呼ぶ。 remainMs: 出るまでの残り (= ゲームの中の時間。 一時停止で止まり、 懐中時計で速まる)
+ * leadMs: 予告から出るまでの長さ (= 予告が出てからの経過で、 帯をたたむ時を決める)
+ */
+export function fxBossCountdown(remainMs, leadMs) {
+  const fx = _fx();
+  const doc = globalThis.document;
+  if (!doc) return;
+  const sec = Math.max(0, Math.ceil(remainMs / 1000));
+  if (fx.countSec === sec) return;   // 表示が変わるときだけ DOM を触る
+  fx.countSec = sec;
+  const banner = doc.getElementById("bossBanner");
+  const count = doc.getElementById("bossBannerCount");
+  if (count) count.textContent = bossCountdownText(remainMs);
+  if (banner && !banner.classList.contains("boss-banner--compact") && leadMs - remainMs >= BOSS_BANNER_INTRO_MS) {
+    banner.classList.remove("boss-banner--in");
+    banner.classList.add("boss-banner--compact");
+  }
+  const big = doc.getElementById("bossCountdown");
+  if (big && sec >= 1 && sec <= BOSS_COUNTDOWN_BIG_SEC) {
+    big.textContent = String(sec);
+    big.classList.remove("hidden", "boss-countdown--tick");
+    void big.offsetWidth;   // アニメーションをかけ直す
+    big.classList.add("boss-countdown--tick");
+  }
+}
+
+function _hideBossCountdown() {
+  const big = globalThis.document?.getElementById("bossCountdown");
+  big?.classList.add("hidden");
+  big?.classList.remove("boss-countdown--tick");
 }
 
 export function fxBossSpawned() {
@@ -251,7 +296,10 @@ function _showBossBanner() {
 }
 
 function _hideBossBanner() {
-  globalThis.document?.getElementById("bossBanner")?.classList.add("hidden");
+  const el = globalThis.document?.getElementById("bossBanner");
+  el?.classList.add("hidden");
+  el?.classList.remove("boss-banner--in", "boss-banner--compact");
+  _hideBossCountdown();   // SPEC-061
 }
 
 // ---- SPEC-057: ボスが出た瞬間のカットイン (= DOM。 #bossCutin。 遊びは止めない) ----
