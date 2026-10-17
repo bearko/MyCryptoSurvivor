@@ -19,6 +19,7 @@ import {
 } from "./sprites.js";
 import { shakeOffset, renderFxWorld, renderFxScreen } from "./fx.js";
 import { renderArenaWorld, renderBossMarkerPointer } from "./arena-render.js";
+import { renderBossMovesWorld } from "./boss-moves-render.js";
 import { renderGimmicksUnder, renderGimmicksOver, drawTrojan } from "./gimmicks-render.js";
 
 /** SPEC-057: ダメージ数字の文字の大きさ (= size ごと) */
@@ -78,6 +79,8 @@ export function renderBattle(ctx, nowMs = 0) {
 
   // SPEC-079: ボスの出る場所 (= 予告の赤い丸) と、 ボス戦の枠
   renderArenaWorld(ctx, camera, w, h, nowMs);
+  // SPEC-080: ボスの型の予告 (= 突進の通り道・叩きつけの円。 敵より下)
+  renderBossMovesWorld(ctx, camera, w, h, nowMs);
 
   // SPEC-012 / SPEC-015 / SPEC-031: bombs (= 赤い半透明円で当たり判定を可視化 + icon + 点滅)
   for (const b of bombs) {
@@ -270,7 +273,8 @@ export function renderBattle(ctx, nowMs = 0) {
     const isShooter = e.behavior === "shooter";
     drawHitDisc(ctx, sx, sy, e.r, e.isBoss ? "boss" : (isShooter ? "shooter" : (e.isRare ? "rare" : "enemy")));
     const bob = e.isBoss ? 0 : Math.sin(nowMs / 140 + e.id) * e.r * 0.06;
-    const drew = drawSprite(ctx, sp, sx, sy - e.r * 0.12 + bob, e.r * CHAR_SPRITE_RATIO);
+    const shx = e.isBoss ? (e.mv?.shake ?? 0) : 0;   // SPEC-080: 予備動作で震える
+    const drew = drawSprite(ctx, sp, sx + shx, sy - e.r * 0.12 + bob, e.r * CHAR_SPRITE_RATIO);
     if (!drew) {
       ctx.fillStyle = e.color;
       ctx.beginPath();

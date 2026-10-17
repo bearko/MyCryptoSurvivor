@@ -20,6 +20,7 @@ import { pushDamageNumber } from "./damage.js";
 import { playSe } from "../audio.js";
 import { fxPlayerHurt, fxBossIncoming, fxBossSpawned, fxBossCountdown, fxBurst } from "./fx.js";
 import { startArena, BOSS_SPAWN_POS } from "./arena.js";
+import { BOSS_MOVES, bossHoldsStill } from "./boss-moves.js";
 import { getObstacleRects } from "./field.js";
 import { resolveCircle, slideAlongWall } from "./field-geom.js";
 import { tickShooter, nextFireMs } from "./enemy-shots.js";
@@ -181,6 +182,8 @@ export function tickEnemies(dt, nowMs) {
     const d  = Math.hypot(dx, dy) || 1;
     if (e.behavior === "shooter") {
       tickShooter(e, dt, px, py);   // SPEC-062: 距離を保って撃つ (= まっすぐ追わない)
+    } else if (e.isBoss && bossHoldsStill(e)) {
+      // SPEC-080: 型の最中 (= 予備動作・突進・立て直し) は boss-moves.js が動かす
     } else if ((e.hitFreezeMs ?? 0) <= 0) {
       e.x += (dx / d) * e.speed * dt;
       e.y += (dy / d) * e.speed * dt;
@@ -291,7 +294,8 @@ export function spawnEnemyAtRing(enemyId = 101, at = null) {
   const dmgMul = isBoss ? 1 : (stage.enemyDmgMul ?? 1) * absDmg;
   const xpMul  = isBoss ? 1 : (stage.xpMul       ?? 1);
 
-  const hp     = Math.max(1, Math.round(spec.hp  * hpMul));
+  // SPEC-080: ボスは型を増やしたぶん HP も増やす (= BOSS_MOVES の hpMul)
+  const hp     = Math.max(1, Math.round(spec.hp  * hpMul * (isBoss ? (BOSS_MOVES[enemyId]?.hpMul ?? 1) : 1)));
   const dmg    = Math.max(1, Math.round(spec.dmg * dmgMul));
   const xpVal  = Math.max(1, Math.round((spec.xpValue ?? 1) * xpMul));
   const speed  = Math.max(10, spec.speed * absSpeed);

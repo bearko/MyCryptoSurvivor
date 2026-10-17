@@ -56,6 +56,7 @@ export function tickBossAttack(dt, nowMs) {
 }
 
 function _tickFaoFire(boss, nowMs) {
+  if (boss.mv?.act?.kind === "charge") return;   // SPEC-080: 突進のあいだは撃たない (= 通り道を見やすく)
   const last = boss._lastFaoFireMs ?? 0;
   if (nowMs - last < FAO_FIRE_INTERVAL_MS) return;
   boss._lastFaoFireMs = nowMs;

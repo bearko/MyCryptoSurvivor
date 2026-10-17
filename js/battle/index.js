@@ -38,6 +38,7 @@ import { tickBossAttack } from "./boss-attack.js";
 import { tickEnemyShots } from "./enemy-shots.js";
 import { resetGimmicks, tickGimmicks } from "./gimmicks.js";
 import { resetArena, tickArena } from "./arena.js";
+import { tickBossMoves } from "./boss-moves.js";
 import { startCoachIfFirst, tickCoach, hideCoach } from "./coach.js";
 import { resetFx, tickFx } from "./fx.js";
 import { startBgm } from "../audio.js";
@@ -131,6 +132,7 @@ export function startBattle(hero) {
   // SPEC-062: 撃ってくる敵の弾と、 出す間隔の時計
   b.enemyShots         = b.enemyShots ?? [];
   b.enemyShots.length  = 0;
+  b.bossRings          = [];                    // SPEC-080: 叩きつけの衝撃の輪
   b.lastShooterSpawnMs = performance.now();
   b.nextPackMs         = 0;                     // SPEC-065: 大群の群れ
   // SPEC-033: マジックカード + レアエネミーカウンタも各ステージ開始でリセット
@@ -259,6 +261,7 @@ function _step(dt, now) {
   tickPlayer(dt, v);
   centerCameraOnPlayer();
   tickEnemies(dt, now);          // SPEC-007: スポーン + 追跡 + 接触ダメージ
+  tickBossMoves(dt);             // SPEC-080: ボスの型 (= 突進・叩きつけ・放射・渦)
   tickGimmicks(dt);              // SPEC-064: ステージの仕掛け (= 珠の列・パンチカード・トロイの木馬)
   tickSeparation();              // SPEC-065: 敵どうしを押し分ける (= 群れが画面を埋める)
   tickArena(dt);                 // SPEC-079: ボス戦の枠 (= 自分・ボスを中に入れる)
