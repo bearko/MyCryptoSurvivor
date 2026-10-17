@@ -2,7 +2,7 @@
 id: SPEC-078
 title: Dense Swarm — the Screen Fills Before the Boss (50% / 75% / 90%)
 status: Done
-pr: TBD
+pr: 105
 phase: v1.3 Battle
 kind: Changed
 ---
