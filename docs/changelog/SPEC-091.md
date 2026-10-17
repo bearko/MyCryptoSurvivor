@@ -1,0 +1,1 @@
+- **全体チャットの置き場所** (`js/platform.js` + `js/main.js` + `js/menu.js` + `js/battle/index.js` + `js/battle/gameover.js` + `js/battle/activity-report.js`): 共通基盤の全体チャット（SPEC-004・SDK 1.6.0）の 💬 を右上に置き、 タイトル・難易度・ヒーロー選択・結果の画面で出して、 戦闘中と読み込みの画面では隠す。 SDK がない・古いときは何もしない

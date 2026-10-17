@@ -14,7 +14,7 @@ import {
 import { APP_VERSION, SFX, computeRegulationMul } from "../constants.js";
 import { formatElapsed } from "../survival.js";
 import { stopBgm, playSe } from "../audio.js";
-import { abortRtaRun, scoreMetrics, reportRunScore, defaultPlayerName, platformUserName } from "../platform.js";
+import { abortRtaRun, scoreMetrics, reportRunScore, defaultPlayerName, platformUserName, setChatVisible } from "../platform.js";
 import { STAGE_TABLE } from "../constants.js";
 import { countUp, revealIn } from "../reveal.js";
 import { naviTitle } from "../navi.js";
@@ -55,6 +55,7 @@ export function triggerGameOver(reason = "lose") {
   _renderGameOverModal();
   const modal = document.getElementById("gameOverModal");
   modal?.classList.remove("hidden");
+  setChatVisible(true);   // SPEC-091: 結果の画面では全体チャットを出す
   // SPEC-058: テロップのあと、 SPEC-046: 上から順に出し、 撃破数を数え上げる
   presentResult(modal, reason === "clear" ? "allClear" : "lose", {
     heroId: state.ownedHero?.heroId ?? null,
@@ -143,6 +144,7 @@ export async function returnToTitle() {
   // app を隠して title 表示 (= regulation は state.regulation のまま、 mode select で再選択)
   document.getElementById("app")?.classList.add("hidden");
   document.getElementById("titleScreen")?.classList.remove("hidden");
+  setChatVisible(true);   // SPEC-091
   naviTitle({ greet: false });   // SPEC-056
 }
 

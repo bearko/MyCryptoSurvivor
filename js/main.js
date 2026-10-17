@@ -37,7 +37,7 @@ import { startBattle } from "./battle/index.js";
 import { playSe, unlockAudio, suspendBgm, resumeBgm } from "./audio.js";
 import { SFX } from "./constants.js";
 import { APP_VERSION } from "./constants.js";
-import { initPlatform } from "./platform.js";
+import { initPlatform, setChatVisible } from "./platform.js";
 import { installModalA11y } from "./modal-a11y.js";
 import { img } from "./constants.js";
 import { installReduceFxAttr } from "./motion.js";
@@ -108,6 +108,7 @@ function enterTitle() {
   splash?.classList.add("splash--out");   // 0.3 秒で消える (= css/layout.css)
   setTimeout(() => splash?.classList.add("hidden"), 320);
   $("#titleScreen")?.classList.remove("hidden");
+  setChatVisible(true);   // SPEC-091: 全体チャットの 💬 はタイトルから (= 読み込みの画面には出さない)
   // SPEC-085: タイトルコール (= ロゴの画面を押したとき。 押さずに進めた環境ではここで)。 鳴り終わるまで、 あいさつのボイスを待たせる
   playVoice("title.call", { hold: true });
   naviTitle();   // SPEC-056: タイトルでマインちゃんがあいさつ

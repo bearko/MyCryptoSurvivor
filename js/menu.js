@@ -16,7 +16,7 @@ import { state, pauseTime, resumeTime } from "./state.js";
 import { stopBgm } from "./audio.js";
 import { startTitleBgm } from "./ui-sound.js";
 import { onLangChange, t } from "./i18n.js";
-import { abortRtaRun, scoreMetrics, reportRunScore } from "./platform.js";
+import { abortRtaRun, scoreMetrics, reportRunScore, setChatVisible } from "./platform.js";
 import { naviTitle } from "./navi.js";
 
 let _wired = false;
@@ -112,6 +112,7 @@ function _onToTitle() {
   // app を隠して title 表示
   document.getElementById("app")?.classList.add("hidden");
   document.getElementById("titleScreen")?.classList.remove("hidden");
+  setChatVisible(true);   // SPEC-091: タイトルでは全体チャットを出す
   naviTitle({ greet: false });   // SPEC-056
   startTitleBgm();   // SPEC-069: タイトルの曲 (= craft.mp3)
 }

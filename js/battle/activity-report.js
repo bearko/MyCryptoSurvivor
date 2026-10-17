@@ -21,7 +21,7 @@ import { getExt, getTierName, extTierImg } from "../extensions.js";
 import { heroImg } from "../heroes.js";
 import { formatElapsed } from "../survival.js";
 import { stopBgm, playSe } from "../audio.js";
-import { scoreMetrics, reportRunScore, defaultPlayerName, platformUserName } from "../platform.js";
+import { scoreMetrics, reportRunScore, defaultPlayerName, platformUserName, setChatVisible } from "../platform.js";
 import { returnToTitle } from "./gameover.js";
 import { countUp, revealIn } from "../reveal.js";
 import { presentResult } from "../result-telop.js";
@@ -61,6 +61,7 @@ export function triggerActivityReport() {
   _renderReport();
   const modal = document.getElementById("activityReportModal");
   modal?.classList.remove("hidden");
+  setChatVisible(true);   // SPEC-091: 結果の画面では全体チャットを出す
   // SPEC-058: テロップのあと、 SPEC-046: ヒーロー → ステージ → 合計の順に出し、 スコアを 0 から数え上げる
   presentResult(modal, "allClear", {
     heroId: state.ownedHero?.heroId ?? null,
