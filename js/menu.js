@@ -16,6 +16,7 @@ import { state, pauseTime, resumeTime } from "./state.js";
 import { stopBgm } from "./audio.js";
 import { onLangChange, t } from "./i18n.js";
 import { abortRtaRun, scoreMetrics, reportRunScore } from "./platform.js";
+import { naviTitle } from "./navi.js";
 
 let _wired = false;
 let _opened = false;
@@ -110,6 +111,7 @@ function _onToTitle() {
   // app を隠して title 表示
   document.getElementById("app")?.classList.add("hidden");
   document.getElementById("titleScreen")?.classList.remove("hidden");
+  naviTitle({ greet: false });   // SPEC-056
 }
 
 function _renderLabels() {

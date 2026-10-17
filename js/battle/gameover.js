@@ -17,6 +17,7 @@ import { stopBgm, playSe } from "../audio.js";
 import { abortRtaRun, scoreMetrics, reportRunScore, defaultPlayerName, platformUserName } from "../platform.js";
 import { STAGE_TABLE } from "../constants.js";
 import { countUp, revealIn } from "../reveal.js";
+import { naviTitle } from "../navi.js";
 
 let _wired = false;
 
@@ -124,6 +125,7 @@ export async function returnToTitle() {
   // app を隠して title 表示 (= regulation は state.regulation のまま、 mode select で再選択)
   document.getElementById("app")?.classList.add("hidden");
   document.getElementById("titleScreen")?.classList.remove("hidden");
+  naviTitle({ greet: false });   // SPEC-056
 }
 
 async function _onSubmitClick() {

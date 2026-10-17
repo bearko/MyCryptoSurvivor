@@ -41,6 +41,8 @@ import { startBgm } from "../audio.js";
 import { startRtaRun, rtaRegulationFor, placePlatformToasts } from "../platform.js";
 import { BGM_BATTLE, STAGE_TABLE, WATCH_SPEED } from "../constants.js";
 import { t, tpl } from "../i18n.js";
+import { heroImg } from "../heroes.js";
+import { naviSay, naviLines } from "../navi.js";
 
 let _canvas = null;
 let _ctx = null;
@@ -167,6 +169,13 @@ export function startBattle(hero) {
   startBgm(BGM_BATTLE, 0.32);
 }
 
+/** SPEC-056: 戦闘の通信窓は HUD の下 (= RTA なら時計のさらに下) */
+function _commTop() {
+  const hud = document.getElementById("hud");
+  const bottom = hud ? Math.round(hud.getBoundingClientRect().bottom) : 0;
+  return bottom + (state.rtaMode ? 40 : 8);
+}
+
 /** SPEC-052: 共通基盤の通知を画面の上、 HUD の下 (= RTA なら時計のさらに下) に置く */
 function _placeToasts() {
   const hud = document.getElementById("hud");
@@ -174,7 +183,7 @@ function _placeToasts() {
   placePlatformToasts(bottom > 0 ? bottom + (state.rtaMode ? 40 : 8) : 0);
 }
 
-/** SPEC-046: ステージの始まりの帯。 CSS のアニメーションで 1.6 秒出て消える (= 遊びは止めない) */
+/** SPEC-046: ステージの始まりの帯。 CSS のアニメーションで 2.2 秒出て消える (= 遊びは止めない。 SPEC-056 で延ばした) */
 function _showStageIntro() {
   const el = document.getElementById("stageIntro");
   if (!el) return;
@@ -184,11 +193,19 @@ function _showStageIntro() {
   const name = document.getElementById("stageIntroName");
   if (no) no.textContent = tpl(t("stage.introNo", "STAGE {n}"), { n: String(idx + 1) });
   if (name) name.textContent = stage ? t(stage.nameKey, stage.nameKey) : "";
+  // SPEC-056: 帯の手前にヒーロー
+  const heroEl = document.getElementById("stageIntroHero");
+  if (heroEl && state.ownedHero) heroEl.src = heroImg(state.ownedHero.heroId);
   el.classList.remove("hidden", "stage-intro--in");
   void el.offsetWidth;
   el.classList.add("stage-intro--in");
   clearTimeout(_introTimer);
-  _introTimer = setTimeout(() => el.classList.add("hidden"), 1700);
+  _introTimer = setTimeout(() => el.classList.add("hidden"), 2300);
+  // SPEC-056: アインがステージを告げる (= 戦闘では押せない。 言い終えると引っこむ)
+  naviSay(naviLines("stage", {
+    stageIdx: idx, stageCount: STAGE_TABLE.length, rta: !!state.rtaMode,
+    stageName: stage ? t(stage.nameKey, stage.nameKey) : "",
+  }), { place: "battle", autoHideMs: 1600, top: _commTop() });
 }
 let _introTimer = 0;
 
