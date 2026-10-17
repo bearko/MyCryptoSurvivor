@@ -85,7 +85,7 @@ export const GEM_RADIUS              = 6;
 export const GEM_COLOR               = "#f0c14b";
 export const GEM_PICKUP_RADIUS       = 28;
 
-export const XP_TO_NEXT_GROWTH       = 1.3;     // SPEC-026: 1.5 → 1.3 に緩和 (= 後半のレベル間隔を短縮)
+export const XP_TO_NEXT_GROWTH = 1.2;   // SPEC-065: 1.3 → 1.2 (= Lv15 までの経験値 710 → 約 310。 作者の決定「約 2 倍速く」)
 
 // ============================================================
 // Extensions as weapons + Level-up pick (= SPEC-008)
@@ -393,6 +393,9 @@ export const STAGE_TABLE = [
     spawnIntervalMul:  0.7,
     shooters: { fromMs: 30000, everyMs: 5000, max: 9, ids: [166, 136] },   // SPEC-062
     gimmick: "trojan",   // SPEC-064: トロイの木馬
+    // SPEC-065: 中盤から大群 (= 1:30 → 3:30 で湧きが 6 倍まで速まり、 2:30 から 8 秒ごとに 24 体の群れ)。 敵の上限も 320 に
+    flood: { fromMs: 90000, fullMs: 210000, maxMul: 6, packFromMs: 150000, packEveryMs: 8000, packSize: 24 },
+    maxEnemies: 320,
   },
 ];
 
