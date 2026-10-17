@@ -26,6 +26,7 @@ let _pendingCount = 0;
 let _isOpen      = false;
 let _isStarter   = false;
 let _wired       = false;
+let _shown       = new Set();   // SPEC-067: このレベルアップで出したもの (= リロールで続けて出さない)
 
 /**
  * 通常 Level up trigger。 多重 LV up は count に蓄積して連鎖。
@@ -48,6 +49,7 @@ function _openNext() {
   if (_pendingCount <= 0) { _isStarter = false; return; }
   _pendingCount -= 1;
   _isOpen = true;
+  _shown = new Set();
 
   let opts = _samplePicks(PICK_OPTIONS_COUNT);
   if (opts.length === 0) {
@@ -70,7 +72,52 @@ function _openNext() {
   playSe(SFX.LEVEL_UP, 200, 0.55);   // SPEC-017: open_treasure.mp3
 }
 
-function _samplePicks(n) {
+/**
+ * SPEC-067: 候補から n 個を選ぶ (= 純関数。 tests/levelup-picks.test.mjs)。
+ *   - 武器を 1 つ優先し、 残りを重ならないように埋める (= SPEC-013)
+ *   - exclude (= このレベルアップで出したもの) は避ける。 足りないときだけ、 前に出したものから埋める
+ *     (= 直前に出したもの (last) は最後)
+ */
+export function pickFromPool(eligible, n, { exclude = new Set(), last = new Set(), rnd = Math.random } = {}) {
+  const id = (e) => String(e.extId);
+  const shuffle = (arr) => {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(rnd() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  };
+  const fresh = eligible.filter((e) => !exclude.has(id(e)));
+  const used = new Set();
+  const result = [];
+  // 1) 武器を 1 枠優先 (= 避けるものの外から)
+  const weaponPool = fresh.filter((e) => e.category === "weapon");
+  if (weaponPool.length > 0 && n > 0) {
+    const w = weaponPool[Math.floor(rnd() * weaponPool.length)];
+    result.push(w);
+    used.add(id(w));
+  }
+  // 2) 残りを避けるものの外から、 重ならないように
+  for (const e of shuffle(fresh.filter((x) => !used.has(id(x))))) {
+    if (result.length >= n) break;
+    result.push(e);
+    used.add(id(e));
+  }
+  // 3) 足りないときだけ、 前に出したもの (= 直前のものは最後)
+  if (result.length < n) {
+    const older = shuffle(eligible.filter((e) => exclude.has(id(e)) && !last.has(id(e)) && !used.has(id(e))));
+    const lastOnes = shuffle(eligible.filter((e) => last.has(id(e)) && !used.has(id(e))));
+    for (const e of [...older, ...lastOnes]) {
+      if (result.length >= n) break;
+      result.push(e);
+      used.add(id(e));
+    }
+  }
+  // 4) 表示順をばらす (= 武器が常に先頭にならないよう)
+  return shuffle(result);
+}
+
+function _samplePicks(n, exclude = new Set(), last = new Set()) {
   const ownedById = new Map(state.ownedExtensions.map(o => [String(o.extId), o]));
 
   // SPEC-023: stock 上限到達後は新規系列を候補から除外 (= 既所持の lv up のみ)
@@ -90,36 +137,9 @@ function _samplePicks(n) {
     return true;
   });
 
-  // SPEC-013: 重複防止 (= Set)、 最低 1 weapon (= weapon eligible が 0 件のときは buff のみ)
-  const used   = new Set();
-  const result = [];
-
-  // 1) weapon を 1 枠優先確保
-  const weaponPool = eligible.filter(e => e.category === "weapon");
-  if (weaponPool.length > 0 && n > 0) {
-    const w = weaponPool[Math.floor(Math.random() * weaponPool.length)];
-    result.push(w);
-    used.add(String(w.extId));
-  }
-
-  // 2) 残り枠を eligible 全体から重複なく fill
-  const restPool = eligible.filter(e => !used.has(String(e.extId)));
-  for (let i = restPool.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [restPool[i], restPool[j]] = [restPool[j], restPool[i]];
-  }
-  for (const e of restPool) {
-    if (result.length >= n) break;
-    if (used.has(String(e.extId))) continue;   // 防御 (= eligible が同 extId 重複しない前提だが念のため)
-    result.push(e);
-    used.add(String(e.extId));
-  }
-
-  // 3) 表示順をランダム化 (= weapon が常に先頭にならないよう)
-  for (let i = result.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [result[i], result[j]] = [result[j], result[i]];
-  }
+  // SPEC-013: 重複防止、 最低 1 weapon。 SPEC-067: このレベルアップで出したものは避ける
+  const result = pickFromPool(eligible, n, { exclude, last });
+  for (const e of result) _shown.add(String(e.extId));
 
   return result.map(e => {
     const o   = ownedById.get(String(e.extId));
@@ -147,10 +167,20 @@ export function rerollPicks() {
   if (!_isOpen) return;
   if ((state.battle.rerollsLeft ?? 0) <= 0) return;
   state.battle.rerollsLeft -= 1;
-  state.pendingPickOptions = _samplePicks(PICK_OPTIONS_COUNT);
+  // SPEC-067: リロール前に出ていたもの (= このレベルアップで出したもの全部) は、 足りるかぎり続けて出さない
+  const last = new Set((state.pendingPickOptions ?? []).map((o) => String(o.extId)));
+  state.pendingPickOptions = _samplePicks(PICK_OPTIONS_COUNT, new Set(_shown), last);
   renderLevelUpModal();
   _deal();   // SPEC-057: 引き直したカードも配り直す
   playSe(SFX.LEVEL_UP, 100, 0.4);   // SPEC-017: 同じ open_treasure を流用
+}
+
+/**
+ * SPEC-067: スキップ (= どれも取らずに閉じる)。 選んだカードが光っているあいだは押せない。 最初の武器を選ぶときは出さない
+ */
+export function skipPick() {
+  if (!_isOpen || _picking || state.pendingPickIsStarter) return;
+  _close();
 }
 
 export function applyPick(extId) {
@@ -218,6 +248,8 @@ function _wireOnce() {
   _wired = true;
   // SPEC-023: リロールボタン
   document.getElementById("levelUpReroll")?.addEventListener("click", rerollPicks);
+  // SPEC-067: スキップ (= 取得しない)
+  document.getElementById("levelUpSkip")?.addEventListener("click", skipPick);
   // 言語切替で再描画
   onLangChange(() => {
     if (!document.getElementById("levelUpModal")?.classList.contains("hidden")) {
@@ -332,5 +364,11 @@ export function renderLevelUpModal() {
       : t("levelup.rerollNone", "リロール不可");
     rerollBtn.textContent = lbl;
     rerollBtn.disabled = left <= 0;
+  }
+  // SPEC-067: スキップ (= 最初の武器を選ぶときは出さない)
+  const skipBtn = document.getElementById("levelUpSkip");
+  if (skipBtn) {
+    skipBtn.textContent = t("levelup.skip", "スキップ（取得しない）");
+    skipBtn.classList.toggle("hidden", !!state.pendingPickIsStarter);
   }
 }
