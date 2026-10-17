@@ -99,6 +99,66 @@ export function drawSpriteCircular(ctx, entry, cx, cy, r) {
 }
 
 /**
+ * SPEC-077: 絵を切り抜かずに描く (= 正方形の size。 絵の縁は透明)。 まだ読込中 or 失敗なら false
+ */
+export function drawSprite(ctx, entry, cx, cy, size) {
+  if (!entry || !entry.ready || entry.failed) return false;
+  ctx.drawImage(entry.img, cx - size / 2, cy - size / 2, size, size);
+  return true;
+}
+
+/**
+ * SPEC-077: 当たりの目安の薄い円 (= 太い黒い縁の代わり)。 種類と半径ごとに 1 度だけ作って使い回す
+ *   kind: "hero" (= シアン) / "enemy" (= 白く薄い) / "rare" (= 金) / "shooter" (= 赤い縁) / "boss" (= 赤)
+ */
+export const HIT_DISC_STYLE = {
+  hero:    { fill: [86, 204, 242], a0: 0.30, a1: 0.08, rim: "rgba(150, 230, 255, 0.55)", rimW: 1.2 },
+  enemy:   { fill: [255, 255, 255], a0: 0.13, a1: 0.04, rim: "rgba(255, 255, 255, 0.16)", rimW: 1 },
+  rare:    { fill: [255, 214, 120], a0: 0.26, a1: 0.06, rim: "rgba(255, 220, 140, 0.6)", rimW: 1.2 },
+  shooter: { fill: [255, 96, 112], a0: 0.18, a1: 0.05, rim: "rgba(255, 96, 112, 0.9)", rimW: 1.6 },
+  boss:    { fill: [255, 80, 90], a0: 0.22, a1: 0.05, rim: "rgba(255, 120, 130, 0.5)", rimW: 1.6 },
+};
+const _discCache = new Map();
+function _discCanvas(r, kind) {
+  const doc = globalThis.document;
+  if (!doc) return null;
+  const key = `${kind}:${Math.max(1, Math.round(r))}`;
+  let c = _discCache.get(key);
+  if (c) return c;
+  const st = HIT_DISC_STYLE[kind] ?? HIT_DISC_STYLE.enemy;
+  const R = Math.max(1, Math.round(r));
+  const s = Math.min(3, Math.max(1, Math.round(globalThis.devicePixelRatio || 1)));
+  c = doc.createElement("canvas");
+  c.width = c.height = (R * 2 + 4) * s;
+  const x = c.getContext("2d");
+  if (!x) return null;
+  x.scale(s, s);
+  const m = R + 2;
+  const [cr, cg, cb] = st.fill;
+  const g = x.createRadialGradient(m, m, R * 0.15, m, m, R);
+  g.addColorStop(0, `rgba(${cr}, ${cg}, ${cb}, ${st.a0})`);
+  g.addColorStop(1, `rgba(${cr}, ${cg}, ${cb}, ${st.a1})`);
+  x.fillStyle = g;
+  x.beginPath();
+  x.arc(m, m, R, 0, Math.PI * 2);
+  x.fill();
+  x.strokeStyle = st.rim;
+  x.lineWidth = st.rimW;
+  x.beginPath();
+  x.arc(m, m, R - st.rimW / 2, 0, Math.PI * 2);
+  x.stroke();
+  _discCache.set(key, c);
+  return c;
+}
+export function drawHitDisc(ctx, cx, cy, r, kind = "enemy") {
+  const c = _discCanvas(r, kind);
+  if (!c) return false;
+  const m = Math.round(r) + 2;
+  ctx.drawImage(c, cx - m, cy - m, m * 2, m * 2);
+  return true;
+}
+
+/**
  * SPEC-019: 経験値 gem のアイコン (= MCH 公式 CE icon)。
  */
 export function getGemSprite() {

@@ -12,7 +12,7 @@ import {
   WAVE_TABLE, ENEMY_SPECS, STAGE_TABLE,
   WORLD_W, WORLD_H,
   RARE_ENEMY_IDS, RARE_SPAWN_INTERVAL_MS,
-  SFX,
+  SFX, CHAR_SCALE, BOSS_CHAR_SCALE,
 } from "../constants.js";
 import { triggerStageEndOrTransition } from "./stage-transition.js";
 import { triggerGameOver } from "./gameover.js";
@@ -198,7 +198,8 @@ export function spawnEnemyAtRing(enemyId = 101, at = null) {
     y = b.player.y + Math.sin(angle) * halfH;
   }
   // SPEC-026: 世界端でクランプ (= 半径分だけ内側に収める)
-  const r = spec.radius;
+  // SPEC-077: キャラを大きく (= 絵も当たりも。 ボスはもともと大きいので控えめに)
+  const r = Math.round(spec.radius * (isBoss ? BOSS_CHAR_SCALE : CHAR_SCALE));
   const HW = WORLD_W / 2 - r;
   const HH = WORLD_H / 2 - r;
   if (x < -HW) x = -HW;
@@ -224,7 +225,7 @@ export function spawnEnemyAtRing(enemyId = 101, at = null) {
     id: b.nextEntityId++,
     enemyId,
     x, y,
-    r: spec.radius,
+    r,
     hp, hpMax: hp,
     dmg,
     speed,

@@ -10,10 +10,10 @@ import {
   HP_BAR_PLAYER_WIDTH, HP_BAR_PLAYER_HEIGHT,
   DAMAGE_NUMBER_LIFE_MS,
   WORLD_W, WORLD_H, BG_OVERLAY_COLOR,
-  POT_EXT_ID, CHEST_EXT_ID, MAGNET_EXT_ID, HEAL_EXT_ID, WATCH_EXT_ID, THUNDER_EXT_ID, WATCH_SPEED, ITEM_ICON_SIZE, CHEST_SHAPE_PATHS,
+  POT_EXT_ID, CHEST_EXT_ID, MAGNET_EXT_ID, HEAL_EXT_ID, WATCH_EXT_ID, THUNDER_EXT_ID, WATCH_SPEED, ITEM_ICON_SIZE, CHEST_SHAPE_PATHS, CHAR_SPRITE_RATIO,
 } from "../constants.js";
 import {
-  drawSpriteCircular, drawSpriteRotated,
+  drawSpriteCircular, drawSpriteRotated, drawSprite, drawHitDisc,
   getExtSprite, getGemSprite, getEnemySprite, getBackgroundSprite,
   getMagicCardSprite,
 } from "./sprites.js";
@@ -261,20 +261,18 @@ export function renderBattle(ctx, nowMs = 0) {
     const sp = (e.enemyId != null)
       ? (getEnemySprite(e.enemyId) || state.battle.defaultEnemySprite)
       : state.battle.defaultEnemySprite;
-    const drew = drawSpriteCircular(ctx, sp, sx, sy, e.r);
+    // SPEC-077: 足もとに当たりの目安の薄い円 (= 太い黒い縁はやめた)、 その上に絵を切り抜かずに大きく。 少し弾ませる
+    // SPEC-062: 撃ってくる敵は赤い縁 (= 突っこんでくる敵と見分ける)
+    const isShooter = e.behavior === "shooter";
+    drawHitDisc(ctx, sx, sy, e.r, e.isBoss ? "boss" : (isShooter ? "shooter" : (e.isRare ? "rare" : "enemy")));
+    const bob = e.isBoss ? 0 : Math.sin(nowMs / 140 + e.id) * e.r * 0.06;
+    const drew = drawSprite(ctx, sp, sx, sy - e.r * 0.12 + bob, e.r * CHAR_SPRITE_RATIO);
     if (!drew) {
       ctx.fillStyle = e.color;
       ctx.beginPath();
       ctx.arc(sx, sy, e.r, 0, Math.PI * 2);
       ctx.fill();
     }
-    // SPEC-062: 撃ってくる敵は赤い縁 (= 突っこんでくる敵と見分ける)
-    const isShooter = e.behavior === "shooter";
-    ctx.strokeStyle = isShooter ? "rgba(255, 96, 112, 0.95)" : "rgba(0, 0, 0, 0.45)";
-    ctx.lineWidth = isShooter ? 2.5 : 1.5;
-    ctx.beginPath();
-    ctx.arc(sx, sy, e.r, 0, Math.PI * 2);
-    ctx.stroke();
     if (isShooter && e.aiming) _drawAimLines(ctx, e, sx, sy, nowMs);
     // SPEC-045: 当たった瞬間に白く光る
     if ((e.hitFlashMs ?? 0) > 0) {
@@ -386,18 +384,25 @@ export function renderBattle(ctx, nowMs = 0) {
   // SPEC-010: player (sprite で円形クリップ、 fallback は単色円)
   const px = player.x - camera.x;
   const py = player.y - camera.y;
-  const drewPlayer = drawSpriteCircular(ctx, state.battle.playerSprite, px, py, player.r);
+  // SPEC-077: 足もとにシアンの薄い円 (= 当たりの目安)。 絵は切り抜かずに大きく、 動く向きへ少し傾けて弾ませる
+  drawHitDisc(ctx, px, py, player.r, "hero");
+  const lean = (player.face ?? 0) * 0.14;
+  const hop = player.moving ? Math.abs(Math.sin((player.walkT ?? 0) * 11)) * player.r * 0.16 : Math.sin(nowMs / 420) * player.r * 0.03;
+  const sp = state.battle.playerSprite;
+  let drewPlayer = false;
+  if (sp && sp.ready && !sp.failed) {
+    ctx.save();
+    ctx.translate(px, py + player.r * 0.55);   // 足もとを軸に傾ける
+    ctx.rotate(lean);
+    drewPlayer = drawSprite(ctx, sp, 0, -player.r * 0.55 - player.r * 0.12 - hop, player.r * CHAR_SPRITE_RATIO);
+    ctx.restore();
+  }
   if (!drewPlayer) {
     ctx.fillStyle = player.color;
     ctx.beginPath();
     ctx.arc(px, py, player.r, 0, Math.PI * 2);
     ctx.fill();
   }
-  ctx.strokeStyle = "rgba(0, 0, 0, 0.55)";
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.arc(px, py, player.r, 0, Math.PI * 2);
-  ctx.stroke();
   // SPEC-016: プレイヤー HP バー (= 満タン以外)
   if (state.stats.hp < state.statsMax.hp) {
     _drawHpBar(ctx, px, py + player.r + 5,
