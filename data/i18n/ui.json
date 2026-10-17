@@ -115,6 +115,8 @@
   "ranking.title":         { "ja": "ランキング",                          "en": "Ranking" },
   "ranking.openTitle":     { "ja": "ランキングを見る",                    "en": "View Ranking" },
   "ranking.refresh":       { "ja": "更新",                               "en": "Refresh" },
+  "ranking.platform":      { "ja": "bearko.games の総合ランキング ↗",        "en": "bearko.games overall ranking ↗" },
+  "ranking.platformNote":  { "ja": "このランキングとは別の、bearko.games のタイトル共通のランキングです", "en": "A separate ranking shared by all bearko.games titles" },
   "ranking.loading":       { "ja": "読み込み中…",                         "en": "Loading…" },
   "ranking.empty":         { "ja": "まだエントリがありません。 1 番乗りに送信してみよう!",
                              "en": "No entries yet. Be the first to submit!" },

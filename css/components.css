@@ -1068,6 +1068,16 @@
   font-size: 0.8rem;
   color: var(--muted);
 }
+/* SPEC-050: bearko.games の総合ランキングへの導線 */
+.ranking-platform {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin: 0 0 0.5rem;
+  text-align: center;
+}
+.ranking-platform a    { font-size: 0.85rem; color: var(--accent); font-weight: 700; }
+.ranking-platform span { font-size: 0.72rem; color: var(--muted); }
 .ranking-config {
   display: flex;
   flex-direction: column;

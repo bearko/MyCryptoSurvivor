@@ -93,6 +93,9 @@ function _renderShell() {
   const ropt1 = document.getElementById("rankingRegFilterNormal");   if (ropt1) ropt1.textContent = t("ranking.reg.normal",   "NORMAL のみ");
   const ropt2 = document.getElementById("rankingRegFilterAbsolute"); if (ropt2) ropt2.textContent = t("ranking.reg.absolute", "ABSOLUTE のみ");
   const inp   = _input();   if (inp)     inp.placeholder     = t("ranking.urlPlaceholder", "https://script.google.com/macros/s/.../exec");
+  // SPEC-050: bearko.games の総合ランキングへの導線
+  const plink = document.getElementById("rankingPlatformLink"); if (plink) plink.textContent = t("ranking.platform",     "bearko.games の総合ランキング ↗");
+  const pnote = document.getElementById("rankingPlatformNote"); if (pnote) pnote.textContent = t("ranking.platformNote", "このランキングとは別の、bearko.games のタイトル共通のランキングです");
   const cfgL  = document.getElementById("rankingConfigLabel");
   if (cfgL) cfgL.textContent = t("ranking.configLabel", "ランキング API URL (= GAS Web App)");
   const colTh = document.querySelectorAll("#rankingTable th");
