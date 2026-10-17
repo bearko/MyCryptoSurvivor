@@ -1,0 +1,1 @@
+- **v1.2 を新しい版で計る** (`js/platform.js` + `index.html`): 総合スコアに `balance: 2` を送る（共通基盤の v4 が、ふつうの全クリアを 5,000 にそろえる係数 60 で割る）。RTA は `survivor-normal-v3`・`survivor-absolute-2x-v3` で計る

@@ -99,8 +99,8 @@ test("RTA：ルールからレギュレーションを決める", () => {
   assert.equal(rtaRegulationFor("NORMAL", all(1)), RTA_REGULATION);
   assert.equal(rtaRegulationFor(undefined, undefined), RTA_REGULATION);
   assert.equal(rtaRegulationFor("ABSOLUTE", all(2)), RTA_REGULATION_ABSOLUTE_2X);
-  assert.equal(RTA_REGULATION, "survivor-normal-v2", "SPEC-054: 懐中時計あり");
-  assert.equal(RTA_REGULATION_ABSOLUTE_2X, "survivor-absolute-2x-v2");
+  assert.equal(RTA_REGULATION, "survivor-normal-v3", "SPEC-066: v1.2 から");
+  assert.equal(RTA_REGULATION_ABSOLUTE_2X, "survivor-absolute-2x-v3");
   assert.equal(rtaRegulationFor("ABSOLUTE", all(1.5)), null, "×2.0 以外の ABSOLUTE は計測しない");
   assert.equal(rtaRegulationFor("ABSOLUTE", { ...all(2), speedMul: 1.75 }), null, "1 軸でも違えば計測しない");
   assert.equal(rtaRegulationFor("ABSOLUTE", null), null);
@@ -114,26 +114,29 @@ test("RTA：ABSOLUTE ×2.0 のレギュレーションで始める", async () =>
     startRtaRun(RTA_REGULATION_ABSOLUTE_2X);
     startRtaRun();
     await new Promise((r) => setTimeout(r, 0));
-    assert.deepEqual(calls, ["survivor-absolute-2x-v2", "survivor-normal-v2"]);
+    assert.deepEqual(calls, ["survivor-absolute-2x-v3", "survivor-normal-v3"]);
   } finally {
     delete globalThis.window;
   }
 });
 
 // ---------------------------------------------------------------- SPEC-041: 総合スコア
-import { scoreMetrics, reportRunScore } from "../js/platform.js";
+import { scoreMetrics, reportRunScore, SCORE_BALANCE } from "../js/platform.js";
 
 test("総合スコア：送る成績の形", () => {
   const run = { stages: [{}, {}, {}] };
   assert.deepEqual(scoreMetrics({ run, cleared: true, reportScore: 150000.4, regulation: "NORMAL", absolute: { spawnMul: 3 } }),
-    { stagesCleared: 3, cleared: true, reportScore: 150000, difficulty: "normal" }, "NORMAL では 4 軸を送らない");
+    { stagesCleared: 3, cleared: true, reportScore: 150000, difficulty: "normal", balance: 2 }, "NORMAL では 4 軸を送らない");
   // SPEC-051: ABSOLUTE は名前と 4 軸だけ。 倍率 (= regulationMul) は送らない
   assert.deepEqual(scoreMetrics({ run, cleared: true, reportScore: 1, regulation: "ABSOLUTE", absolute: { spawnMul: 2, hpMul: 2.5, dmgMul: 1, speedMul: 0.5 } }),
-    { stagesCleared: 3, cleared: true, reportScore: 1, difficulty: "absolute", absolute: { spawnMul: 2, hpMul: 2.5, dmgMul: 1, speedMul: 0.5 } });
+    { stagesCleared: 3, cleared: true, reportScore: 1, difficulty: "absolute", balance: 2, absolute: { spawnMul: 2, hpMul: 2.5, dmgMul: 1, speedMul: 0.5 } });
   assert.deepEqual(scoreMetrics({ run, cleared: false, regulation: "ABSOLUTE", absolute: { hpMul: 2 } }).absolute,
     { spawnMul: 1, hpMul: 2, dmgMul: 1, speedMul: 1 }, "足りない軸は 1.0");
   const lost = scoreMetrics({ run: { stages: [{}] }, cleared: false, reportScore: 999 });
   assert.deepEqual([lost.stagesCleared, lost.cleared, lost.reportScore], [1, false, 0], "倒れたら活動レポートのスコアは入れない");
+  // SPEC-066: バランスの版 (= 共通基盤の総合スコア v4 が、 版ごとの係数を使う)
+  assert.equal(SCORE_BALANCE, 2);
+  assert.equal(lost.balance, 2);
 });
 
 test("総合スコア：ステージを 1 つも終えていなければ送らず、SDK がなくても例外を出さない", async () => {
