@@ -2,7 +2,7 @@
 id: SPEC-076
 title: Treasure Chest Art — Golden Moai of Treasure
 status: Done
-pr: TBD
+pr: 102
 phase: v1.2 Battle
 kind: Changed
 ---
