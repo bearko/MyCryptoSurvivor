@@ -37,6 +37,7 @@ import { tickDamageNumbers } from "./damage.js";
 import { tickBossAttack } from "./boss-attack.js";
 import { tickEnemyShots } from "./enemy-shots.js";
 import { resetGimmicks, tickGimmicks } from "./gimmicks.js";
+import { resetArena, tickArena } from "./arena.js";
 import { startCoachIfFirst, tickCoach, hideCoach } from "./coach.js";
 import { resetFx, tickFx } from "./fx.js";
 import { startBgm } from "../audio.js";
@@ -142,6 +143,7 @@ export function startBattle(hero) {
   resetBuffs();                                 // SPEC-011: 強化系列の効果リセット
   resetField();                                 // SPEC-053: 建物・壺・アイテム (= プレイヤーを (0, 0) に置いたあと)
   resetGimmicks();                              // SPEC-064: ステージの仕掛け
+  resetArena();                                 // SPEC-079: ボス戦の枠を外す
 
   // SPEC-014: hero.stats.hp / agi から HP 上限と移動速度を派生 (= hero ごとに性能差)
   const heroHpStat   = hero?.stats?.hp  ?? 0;
@@ -259,6 +261,7 @@ function _step(dt, now) {
   tickEnemies(dt, now);          // SPEC-007: スポーン + 追跡 + 接触ダメージ
   tickGimmicks(dt);              // SPEC-064: ステージの仕掛け (= 珠の列・パンチカード・トロイの木馬)
   tickSeparation();              // SPEC-065: 敵どうしを押し分ける (= 群れが画面を埋める)
+  tickArena(dt);                 // SPEC-079: ボス戦の枠 (= 自分・ボスを中に入れる)
   tickWeapons(dt, now);          // SPEC-008/012: archetype dispatcher
   tickHomingProjectiles(dt);     // SPEC-012: bigHoming の弾道補正
   tickProjectiles(dt);           // SPEC-008: 投射体の移動 + 衝突 + 寿命

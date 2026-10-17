@@ -6,6 +6,7 @@ import { state } from "../state.js";
 import { WORLD_W, WORLD_H } from "../constants.js";
 import { getObstacleRects } from "./field.js";
 import { resolveCircle } from "./field-geom.js";
+import { currentBounds } from "./arena.js";
 
 const HALF_W = WORLD_W / 2;
 const HALF_H = WORLD_H / 2;
@@ -47,20 +48,23 @@ export function tickPlayer(dt, input) {
  */
 export function centerCameraOnPlayer() {
   const { player, camera, viewport } = state.battle;
+  // SPEC-079: ボス戦の枠があれば、 世界ではなく枠の中を見せる (= 縁で止める。 枠のほうが小さければ枠を真ん中に)
+  const bd = currentBounds();
+  const cx = (bd.minX + bd.maxX) / 2, cy = (bd.minY + bd.maxY) / 2;
   camera.x = player.x - viewport.w / 2;
   camera.y = player.y - viewport.h / 2;
-  // X 軸クランプ: viewport ≥ world なら world を画面中央に固定、 そうでなければ端で止める
-  if (viewport.w >= WORLD_W) {
-    camera.x = -viewport.w / 2;
+  // X 軸クランプ: viewport ≥ 縁の幅なら真ん中に固定、 そうでなければ端で止める
+  if (viewport.w >= bd.maxX - bd.minX) {
+    camera.x = cx - viewport.w / 2;
   } else {
-    if (camera.x < -HALF_W) camera.x = -HALF_W;
-    if (camera.x >  HALF_W - viewport.w) camera.x = HALF_W - viewport.w;
+    if (camera.x < bd.minX) camera.x = bd.minX;
+    if (camera.x > bd.maxX - viewport.w) camera.x = bd.maxX - viewport.w;
   }
   // Y 軸クランプ
-  if (viewport.h >= WORLD_H) {
-    camera.y = -viewport.h / 2;
+  if (viewport.h >= bd.maxY - bd.minY) {
+    camera.y = cy - viewport.h / 2;
   } else {
-    if (camera.y < -HALF_H) camera.y = -HALF_H;
-    if (camera.y >  HALF_H - viewport.h) camera.y = HALF_H - viewport.h;
+    if (camera.y < bd.minY) camera.y = bd.minY;
+    if (camera.y > bd.maxY - viewport.h) camera.y = bd.maxY - viewport.h;
   }
 }

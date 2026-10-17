@@ -21,6 +21,7 @@ import { pickSpawnPoint, rollTable } from "./field-geom.js";
 import { spawnEnemyAtRing, currentPool } from "./enemies.js";
 import { spawnGem } from "./gems.js";
 import { naviTipOnce } from "../navi-tips.js";
+import { currentBounds } from "./arena.js";
 
 // ---- チューニング ----
 export const BEADS = {
@@ -170,8 +171,9 @@ function _hurtPlayer(raw) {
   if (state.stats.hp <= 0 && !b.gameOver) triggerGameOver();
 }
 
-const _clampX = (x, pad = 0) => Math.max(-WORLD_W / 2 + pad, Math.min(WORLD_W / 2 - pad, x));
-const _clampY = (y, pad = 0) => Math.max(-WORLD_H / 2 + pad, Math.min(WORLD_H / 2 - pad, y));
+// SPEC-079: ボス戦の枠があれば、 その中に収める
+const _clampX = (x, pad = 0) => { const bd = currentBounds(); return Math.max(bd.minX + pad, Math.min(bd.maxX - pad, x)); };
+const _clampY = (y, pad = 0) => { const bd = currentBounds(); return Math.max(bd.minY + pad, Math.min(bd.maxY - pad, y)); };
 
 // ---- 毎フレーム ----
 
@@ -195,7 +197,8 @@ function _spawnRow(ux, uy, off) {
   const nx = -uy, ny = ux;   // 列に直角な向き
   const cx = _clampX(b.player.x + nx * off, BEADS.r), cy = _clampY(b.player.y + ny * off, BEADS.r);
   const span = beadSpan(ux, uy, b.viewport.w, b.viewport.h);
-  const clip = clipRowToWorld(cx - ux * span / 2, cy - uy * span / 2, ux, uy, span, WORLD_W / 2, WORLD_H / 2);
+  const bd = currentBounds();   // SPEC-079: ボス戦の枠があれば、 その中に切りつめる (= 枠は真ん中にある)
+  const clip = clipRowToWorld(cx - ux * span / 2, cy - uy * span / 2, ux, uy, span, bd.maxX, bd.maxY);
   if (!clip || clip.len < BEADS.gap * 2) return null;
   return {
     x0: clip.x0, y0: clip.y0, ux, uy, len: clip.len,
