@@ -66,6 +66,8 @@ export function naviLines(scene, ctx = {}) {
       const poses = ["sparkle", "wink", "smile", "hooray"];
       return [{ key: "navi.hero.pick", vars: { name: ctx.heroName ?? "", weapon: ctx.weaponName ?? "" }, pose: poses[Math.abs(ctx.n | 0) % poses.length] }];
     }
+    case "boss":
+      return [{ key: "navi.boss", pose: "cross", mood: "cross" }];
     case "stage": {
       const i = ctx.stageIdx | 0;
       const last = (ctx.stageCount | 0) > 0 && i === ctx.stageCount - 1;

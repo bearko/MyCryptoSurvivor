@@ -19,6 +19,7 @@ import {
 import { obstacleRect, rollTable, pickSpawnPoint } from "./field-geom.js";
 import { spawnGem } from "./gems.js";
 import { pushDamageNumber } from "./damage.js";
+import { fxBurst } from "./fx.js";
 import { playSe } from "../audio.js";
 
 function _stage() {
@@ -87,6 +88,13 @@ function _spawnProp(kind, minD, maxD) {
 
 /** 壺・宝箱を壊したとき (= damage.js の hitEnemy から)。 何を落とすかは抽選 */
 export function dropFromProp(e) {
+  // SPEC-057: 開けた・割れた手ごたえ (= 宝箱は金の粒と OPEN!)
+  if (e.propKind === "chest") {
+    fxBurst(e.x, e.y, "#f0c14b", 22, 220);
+    pushDamageNumber(e.x, e.y - e.r - 6, "OPEN!", "#ffe39a", "lg");
+  } else {
+    fxBurst(e.x, e.y, "#7fb3ff", 8, 130);
+  }
   const xpMul = _stage().xpMul ?? 1;
   const gem = Math.max(1, Math.round(xpMul));
   if (e.propKind === "chest") {
@@ -139,15 +147,20 @@ export function applyItem(kind) {
     const before = state.stats.hp;
     state.stats.hp = Math.min(max, before + Math.round(max * HEAL_RATIO));
     const healed = Math.round(state.stats.hp - before);
-    if (healed > 0) pushDamageNumber(b.player.x, b.player.y - b.player.r - 4, `+${healed}`, "#7ee08a");
+    if (healed > 0) pushDamageNumber(b.player.x, b.player.y - b.player.r - 4, `+${healed}`, "#7ee08a", "lg");
+    fxBurst(b.player.x, b.player.y, "#7ee08a", 12, 120);
     playSe(SFX.PICK_HEAL, 120, 0.5);
   } else if (kind === "watch") {
     // SPEC-054: 実時間 10 秒、 ゲーム全体が 2 倍速 (= index.js の _loop が 1 コマで 2 回進める)。 続けて拾うと延びる
     b.fastForwardMs = (b.fastForwardMs ?? 0) + WATCH_DURATION_MS;
+    pushDamageNumber(b.player.x, b.player.y - b.player.r - 4, "×2 SPEED!", "#ffe39a", "lg");
+    fxBurst(b.player.x, b.player.y, "#ffe39a", 16, 180);
     playSe(SFX.PICK_BUFF, 120, 0.6);
   } else if (kind === "magnet") {
     // 落ちている CE を全部吸い寄せる (= gems.js が毎フレーム近づける)
     for (const g of b.gems) g.magnet = true;
+    pushDamageNumber(b.player.x, b.player.y - b.player.r - 4, "MAGNET!", "#9fe3ff", "lg");
+    fxBurst(b.player.x, b.player.y, "#56ccf2", 14, 200);
     playSe(SFX.GEM_PICKUP, 80, 0.6);
   }
 }

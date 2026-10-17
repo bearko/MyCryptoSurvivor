@@ -19,6 +19,16 @@ import {
 } from "./sprites.js";
 import { shakeOffset, renderFxWorld, renderFxScreen } from "./fx.js";
 
+/** SPEC-057: ダメージ数字の文字の大きさ (= size ごと) */
+export const DAMAGE_FONT_PX = { "": 14, lg: 18, xl: 24 };
+/** SPEC-057: 出た瞬間に跳ねる (= 0〜140ms で 1.6 倍 → 1 倍。 純関数) */
+export function damagePopScale(ageMs) {
+  if (!(ageMs < 140)) return 1;
+  return 1 + 0.6 * (1 - Math.max(0, ageMs) / 140);
+}
+/** SPEC-057: 戦場の背景の彩度をどれだけ落とすか (= UI と敵を先に目に入れる。 色の優先度) */
+export const BG_DESATURATE = 0.45;
+
 /**
  * 1 frame 描画。 ctx は dpr 反映済の transform で渡される前提。
  */
@@ -341,17 +351,20 @@ export function renderBattle(ctx, nowMs = 0) {
   renderFxWorld(ctx, camera, w, h);
 
   // SPEC-016: ダメージ数字 floater (= 一番上の layer)
-  ctx.font = "700 14px 'Chakra Petch', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+  // SPEC-057: 大きいものほど大きく (= size)、 出た瞬間に跳ねる (= 1.6 倍 → 1 倍)
   ctx.textAlign = "center";
   ctx.textBaseline = "alphabetic";
   for (const d of damageNumbers) {
     const dx = d.x - camera.x;
     const dy = d.y - camera.y;
-    if (dx < -40 || dx > w + 40 || dy < -40 || dy > h + 40) continue;
+    if (dx < -60 || dx > w + 60 || dy < -40 || dy > h + 40) continue;
     const t = d.age / d.life;
     const a = Math.max(0, 1 - t);
+    const base = DAMAGE_FONT_PX[d.size] ?? DAMAGE_FONT_PX[""];
+    const px = Math.round(base * damagePopScale(d.age));
+    ctx.font = `700 ${px}px 'Chakra Petch', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif`;
     ctx.globalAlpha = a;
-    ctx.lineWidth = 3;
+    ctx.lineWidth = d.size ? 4 : 3;
     ctx.strokeStyle = "rgba(0, 0, 0, 0.85)";
     ctx.strokeText(d.value, dx, dy);
     ctx.fillStyle = d.color;
@@ -554,6 +567,13 @@ function _drawBackground(ctx, camera, w, h) {
   const bg = getBackgroundSprite();
   if (bg && bg.ready && !bg.failed) {
     ctx.drawImage(bg.img, x, y, WORLD_W, WORLD_H);
+    // SPEC-057: 背景の彩度を落とす (= 灰色を saturation で重ねる。 Safari でも効く合成)
+    ctx.save();
+    ctx.globalCompositeOperation = "saturation";
+    ctx.globalAlpha = BG_DESATURATE;
+    ctx.fillStyle = "#808080";
+    ctx.fillRect(sx, sy, ex - sx, ey - sy);
+    ctx.restore();
   }
   // 半透明ダーク overlay (= 背景があっても無くても dim する)
   ctx.fillStyle = BG_OVERLAY_COLOR;

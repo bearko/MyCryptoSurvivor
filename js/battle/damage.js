@@ -36,7 +36,9 @@ export function hitEnemy(idx, dmg) {
   e.hp -= dmgInt;
   e.hitFreezeMs = HIT_FREEZE_MS;
   fxEnemyHit(e);   // SPEC-045: 一瞬白く光る
-  pushDamageNumber(e.x, e.y - e.r - 4, dmgInt, "#ffffff");
+  // SPEC-057: 大きいダメージほど大きく、 金色で
+  const big = dmgInt >= 100 ? "xl" : (dmgInt >= 40 ? "lg" : "");
+  pushDamageNumber(e.x, e.y - e.r - 4, dmgInt, big === "xl" ? "#ffd56a" : (big ? "#ffe9c2" : "#ffffff"), big);
   if (e.hp <= 0 && e.isProp) {
     // SPEC-053: 壺・宝箱は撃破数・経験値に数えず、 お助けアイテムか CE を落とす
     dropFromProp(e);
@@ -66,8 +68,9 @@ export function hitEnemy(idx, dmg) {
 /**
  * ダメージ数字 floater を push (= 自動的に上昇 + age で消滅)。
  */
-export function pushDamageNumber(x, y, value, color) {
+export function pushDamageNumber(x, y, value, color, size = "") {
   state.battle.damageNumbers.push({
+    size,   // SPEC-057: "" / "lg" / "xl" (= 文字の大きさ)
     id: state.battle.nextEntityId++,
     x, y,
     value: String(value),

@@ -12,6 +12,10 @@ import { state } from "../state.js";
 import { playSe } from "../audio.js";
 import { prefersReducedMotion } from "../motion.js";
 import { renderHud } from "../survival.js";
+import { STAGE_TABLE } from "../constants.js";
+import { getEnemy, enemyImg, localizedEnemyName } from "../enemies.js";
+import { getLang } from "../i18n.js";
+import { naviSay, naviLines } from "../navi.js";
 
 export const MAX_PARTICLES   = 240;
 export const HIT_FLASH_MS    = 80;
@@ -52,6 +56,8 @@ function _fx() {
 export function resetFx() {
   state.battle.fx = { shake: 0, shakeMs: 0, hurt: 0, flash: 0, particles: [], bossWarned: false };
   _hideBossBanner();
+  clearTimeout(_cutinTimer);
+  globalThis.document?.getElementById("bossCutin")?.classList.remove("boss-cutin--run");
 }
 
 function _shake(mag, ms) {
@@ -134,6 +140,25 @@ export function fxBossSpawned() {
   _shake(8, 420);
   _vibrate(50);
   _hideBossBanner();
+  _showBossCutin();   // SPEC-057
+}
+
+/** SPEC-057: 拾った・開けたときの光の粒 (= 撃破の粒と同じ仕組み)。 動きを減らすときは出さない */
+export function fxBurst(x, y, color = "#f6e2a0", n = 12, speed = 170) {
+  if (prefersReducedMotion()) return;
+  const fx = _fx();
+  for (let i = 0; i < n; i++) {
+    const a = (Math.PI * 2 * i) / n + Math.random() * 0.4;
+    const v = speed * (0.5 + Math.random() * 0.7);
+    fx.particles.push({
+      x, y,
+      vx: Math.cos(a) * v, vy: Math.sin(a) * v,
+      age: 0, life: PARTICLE_LIFE_MS * (0.8 + Math.random() * 0.5),
+      size: 3 + Math.random() * 3,
+      color: i % 3 === 0 ? "#ffffff" : color,
+    });
+  }
+  capParticles(fx.particles);
 }
 
 export function tickFx(dt) {
@@ -227,4 +252,28 @@ function _showBossBanner() {
 
 function _hideBossBanner() {
   globalThis.document?.getElementById("bossBanner")?.classList.add("hidden");
+}
+
+// ---- SPEC-057: ボスが出た瞬間のカットイン (= DOM。 #bossCutin。 遊びは止めない) ----
+let _cutinTimer = 0;
+function _showBossCutin() {
+  const doc = globalThis.document;
+  const el = doc?.getElementById("bossCutin");
+  const stage = STAGE_TABLE[state.currentStageIdx ?? 0];
+  if (!el || !stage) return;
+  const boss = getEnemy(stage.bossEnemyId);
+  const sprite = doc.getElementById("bossCutinSprite");
+  const name = doc.getElementById("bossCutinName");
+  if (sprite) sprite.src = enemyImg(stage.bossEnemyId);
+  if (name) name.textContent = localizedEnemyName(boss, getLang()) || "BOSS";
+  // アインが通信窓で知らせる (= 言い終えると引っこむ)
+  const hud = doc.getElementById("hud");
+  const top = (hud ? Math.round(hud.getBoundingClientRect().bottom) : 0) + (state.rtaMode ? 40 : 8);
+  naviSay(naviLines("boss"), { place: "battle", autoHideMs: 1400, top });
+  if (prefersReducedMotion()) return;
+  el.classList.remove("boss-cutin--run");
+  void el.offsetWidth;
+  el.classList.add("boss-cutin--run");
+  clearTimeout(_cutinTimer);
+  _cutinTimer = setTimeout(() => el.classList.remove("boss-cutin--run"), 1950);
 }
