@@ -1,0 +1,1 @@
+- **ボスを強く** (`js/battle/boss-moves.js` + `js/battle/boss-moves-render.js` + `js/battle/enemies.js`): HP を 20 / 20 / 15 倍にし、 予告つきの型を足した。 突進（自分のほうへ赤い通り道が伸び、 向きが固まってから枠の縁まで走る）・叩きつけ（赤い円が満ちたら衝撃）・放射・渦。 HP が半分を切ると型が速く来る
