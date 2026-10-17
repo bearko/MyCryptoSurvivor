@@ -2,7 +2,7 @@
 id: SPEC-052
 title: Result Screen — Toasts on Top, Back to Title / Portal, Player Name from bearko.games
 status: Done
-pr: TBD
+pr: 77
 phase: Phase 3
 kind: Changed
 ---
