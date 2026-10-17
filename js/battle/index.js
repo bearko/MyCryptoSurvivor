@@ -39,13 +39,15 @@ import { startCoachIfFirst, tickCoach, hideCoach } from "./coach.js";
 import { resetFx, tickFx } from "./fx.js";
 import { startBgm } from "../audio.js";
 import { startRtaRun, rtaRegulationFor, placePlatformToasts } from "../platform.js";
-import { BGM_BATTLE, STAGE_TABLE } from "../constants.js";
+import { BGM_BATTLE, STAGE_TABLE, WATCH_SPEED } from "../constants.js";
 import { t, tpl } from "../i18n.js";
 
 let _canvas = null;
 let _ctx = null;
 let _raf = 0;
 let _lastMs = 0;
+// SPEC-054: 懐中時計の 2 倍速で余分に進めたゲームの時間。 戦闘の時計 (= 武器の間隔・敵の出現) は 実時間 + これ
+let _ffOffsetMs = 0;
 let _installed = false;
 
 /**
@@ -110,6 +112,8 @@ export function startBattle(hero) {
   b.stageElapsedMs     = 0;                     // SPEC-022: ステージ経過リセット
   b.bossSpawned        = false;                 // SPEC-022: ボス multi-spawn 防止
   b.bossDefeated       = false;                 // SPEC-022: ボス撃破フラグ
+  b.fastForwardMs      = 0;                     // SPEC-054: 2 倍速はステージをまたがない
+  _ffOffsetMs          = 0;
   b.rerollsLeft        = REROLL_PER_BATTLE;     // SPEC-023: picker リロール残数
   // SPEC-030: ボス攻撃エンティティを毎戦リセット
   b.bossProjectiles    = b.bossProjectiles ?? [];
@@ -218,33 +222,47 @@ function resizeCanvas() {
   state.battle.viewport.h = h;
 }
 
+/** 1 回ぶんの戦闘の更新 (= SPEC-054 で 2 倍速のときは 1 コマで 2 回呼ぶ) */
+function _step(dt, now) {
+  const v = getInputVector();
+  tickPlayer(dt, v);
+  centerCameraOnPlayer();
+  tickEnemies(dt, now);          // SPEC-007: スポーン + 追跡 + 接触ダメージ
+  tickWeapons(dt, now);          // SPEC-008/012: archetype dispatcher
+  tickHomingProjectiles(dt);     // SPEC-012: bigHoming の弾道補正
+  tickProjectiles(dt);           // SPEC-008: 投射体の移動 + 衝突 + 寿命
+  tickOrbits(dt, now);           // SPEC-012: Book / Blade の周回 + 衝突
+  tickBeams(dt, now);            // SPEC-012/031: LaserGun の持続レーザー (= 250ms 累積 dispatch)
+  tickBombs(dt);                 // SPEC-012: Pierrot の遅延爆発
+  tickShockwaves(dt);            // SPEC-015: Moai 着弾の AoE 衝撃波
+  tickBossAttack(dt, now);       // SPEC-030: ボス攻撃 (= ファオ放射 / yamap 周回) + 衝突
+  tickDamageNumbers(dt);         // SPEC-016: ダメージ数字 floater
+  tickFx(dt);                    // SPEC-045: 揺れ・縁の赤・粒
+  tickGems(dt);                  // SPEC-007: 拾う + level up trigger
+  tickMagicCards(dt);            // SPEC-033: マジックカード (= 即時 LV up アイテム)
+  tickField(dt);                 // SPEC-053: 壺・宝箱を出す + お助けアイテムを拾う
+  tickRegen(dt);                 // SPEC-011: Ramen 系列の HP regen
+  tickCoach(dt, v.x !== 0 || v.y !== 0);   // SPEC-042: 操作ガイド
+  if (state.battle.contactCooldownMs > 0) {
+    state.battle.contactCooldownMs -= dt * 1000;
+  }
+}
+
 function _loop(now) {
   const dt = Math.min(0.05, (now - _lastMs) / 1000);  // タブ復帰時の暴走を防ぐ
   _lastMs = now;
 
-  if (state.battle.active && state.pauseFlags === 0) {
-    const v = getInputVector();
-    tickPlayer(dt, v);
-    centerCameraOnPlayer();
-    tickEnemies(dt, now);          // SPEC-007: スポーン + 追跡 + 接触ダメージ
-    tickWeapons(dt, now);          // SPEC-008/012: archetype dispatcher
-    tickHomingProjectiles(dt);     // SPEC-012: bigHoming の弾道補正
-    tickProjectiles(dt);           // SPEC-008: 投射体の移動 + 衝突 + 寿命
-    tickOrbits(dt, now);           // SPEC-012: Book / Blade の周回 + 衝突
-    tickBeams(dt, now);            // SPEC-012/031: LaserGun の持続レーザー (= 250ms 累積 dispatch)
-    tickBombs(dt);                 // SPEC-012: Pierrot の遅延爆発
-    tickShockwaves(dt);            // SPEC-015: Moai 着弾の AoE 衝撃波
-    tickBossAttack(dt, now);       // SPEC-030: ボス攻撃 (= ファオ放射 / yamap 周回) + 衝突
-    tickDamageNumbers(dt);         // SPEC-016: ダメージ数字 floater
-    tickFx(dt);                    // SPEC-045: 揺れ・縁の赤・粒
-    tickGems(dt);                  // SPEC-007: 拾う + level up trigger
-    tickMagicCards(dt);            // SPEC-033: マジックカード (= 即時 LV up アイテム)
-    tickField(dt);                 // SPEC-053: 壺・宝箱を出す + お助けアイテムを拾う
-    tickRegen(dt);                 // SPEC-011: Ramen 系列の HP regen
-    tickCoach(dt, v.x !== 0 || v.y !== 0);   // SPEC-042: 操作ガイド
-    if (state.battle.contactCooldownMs > 0) {
-      state.battle.contactCooldownMs -= dt * 1000;
-    }
+  // SPEC-054: 懐中時計の 2 倍速のあいだは 1 コマで 2 回進める (= 敵・自分・弾・ステージの時計すべて)。
+  // 残り時間は実時間で減らす。 途中でレベルアップなどで止まったら、 そこで打ち切る
+  const b = state.battle;
+  const steps = (b.fastForwardMs ?? 0) > 0 ? WATCH_SPEED : 1;
+  for (let i = 0; i < steps; i++) {
+    if (!(b.active && state.pauseFlags === 0)) break;
+    if (i > 0) _ffOffsetMs += dt * 1000;
+    _step(dt, now + _ffOffsetMs);
+  }
+  if (steps > 1 && b.active && state.pauseFlags === 0) {
+    b.fastForwardMs = Math.max(0, b.fastForwardMs - dt * 1000);
   }
 
   if (_ctx) renderBattle(_ctx, now);

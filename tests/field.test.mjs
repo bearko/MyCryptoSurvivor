@@ -8,7 +8,7 @@ import {
 } from "../js/battle/field-geom.js";
 import {
   STAGE_TABLE, OBSTACLE_HITBOX_RATIO, WORLD_W, WORLD_H, POT_DROPS, CHEST_DROPS, CHEST_TIMES_MS,
-  BOSS_SPAWN_AT_MS,
+  BOSS_SPAWN_AT_MS, CHEST_DROPS_RTA, WATCH_DURATION_MS, WATCH_SPEED,
 } from "../js/constants.js";
 
 const R = { x: 0, y: 0, w: 100, h: 60 };   // 左 -50 / 右 50 / 上 -30 / 下 30
@@ -113,4 +113,17 @@ test("建物はヒーローの出発点 (0, 0) をふさがず、 世界の中�
 test("宝箱は 1 ステージ 4 つ、 すべてボスより前に出る (= 共通基盤の RTA の最短時間の根拠)", () => {
   assert.equal(CHEST_TIMES_MS.length, 4);
   assert.ok(CHEST_TIMES_MS.every((t) => t < BOSS_SPAWN_AT_MS));
+});
+
+test("SPEC-054: 懐中時計は RTA の宝箱からだけ出る", () => {
+  assert.ok(CHEST_DROPS_RTA.some((e) => e.kind === "watch" && e.w > 0));
+  assert.ok(!CHEST_DROPS.some((e) => e.kind === "watch"), "RTA でないときは出ない");
+  assert.ok(!POT_DROPS.some((e) => e.kind === "watch"), "壺からは出ない");
+});
+
+test("SPEC-054: 懐中時計で縮む実時間は 1 ステージ 40 秒まで (= 共通基盤 survivor-normal-v2 の最短 3 分 15 秒の根拠)", () => {
+  // 2 倍速の実時間 T でゲーム内は 2T 進む → 実時間が T 縮む。 宝箱は 1 ステージ 4 つ
+  const maxSaveMs = CHEST_TIMES_MS.length * WATCH_DURATION_MS * (WATCH_SPEED - 1);
+  assert.equal(maxSaveMs, 40000);
+  assert.ok(BOSS_SPAWN_AT_MS - maxSaveMs >= 195e3, "ボスが出るのは実時間で 3 分 20 秒より前にはならない");
 });

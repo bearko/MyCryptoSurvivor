@@ -10,7 +10,7 @@ import {
   HP_BAR_PLAYER_WIDTH, HP_BAR_PLAYER_HEIGHT,
   DAMAGE_NUMBER_LIFE_MS,
   WORLD_W, WORLD_H, BG_OVERLAY_COLOR,
-  POT_EXT_ID, MAGNET_EXT_ID, HEAL_EXT_ID, ITEM_ICON_SIZE, CHEST_SHAPE_PATHS,
+  POT_EXT_ID, MAGNET_EXT_ID, HEAL_EXT_ID, WATCH_EXT_ID, WATCH_SPEED, ITEM_ICON_SIZE, CHEST_SHAPE_PATHS,
 } from "../constants.js";
 import {
   drawSpriteCircular, drawSpriteRotated,
@@ -362,6 +362,8 @@ export function renderBattle(ctx, nowMs = 0) {
 
   // SPEC-053: 画面の外の宝箱の向き (= 縁に小さな矢印)
   _drawChestPointers(ctx, camera, w, h, enemies);
+  // SPEC-054: 懐中時計の 2 倍速の残り
+  _drawFastForward(ctx, w);
 
   // SPEC-045: 画面の縁の赤 (= 被弾・HP 低下) と閃光。 揺らさない
   renderFxScreen(ctx, w, h, nowMs);
@@ -370,9 +372,9 @@ export function renderBattle(ctx, nowMs = 0) {
 // ============================================================
 // SPEC-053: 建物・壺・宝箱・お助けアイテム
 // ============================================================
-const ITEM_EXT_ID = { heal: HEAL_EXT_ID, magnet: MAGNET_EXT_ID };
+const ITEM_EXT_ID = { heal: HEAL_EXT_ID, magnet: MAGNET_EXT_ID, watch: WATCH_EXT_ID };
 
-/** アイテムの絵の ID (= SPEC-054 の懐中時計はここに足す) */
+/** アイテムの絵の ID */
 export function itemExtId(kind) {
   return ITEM_EXT_ID[kind] ?? null;
 }
@@ -458,7 +460,7 @@ function _drawItems(ctx, camera, w, h, nowMs) {
     const size = ITEM_ICON_SIZE;
     if (sx + size < 0 || sx - size > w || sy + size < 0 || sy - size > h) continue;
     ctx.globalAlpha = 0.4;
-    ctx.fillStyle = it.kind === "heal" ? "#b8f5c0" : "#cfe3ff";
+    ctx.fillStyle = it.kind === "heal" ? "#b8f5c0" : (it.kind === "watch" ? "#ffe39a" : "#cfe3ff");
     ctx.beginPath();
     ctx.arc(sx, sy, size * 0.7, 0, Math.PI * 2);
     ctx.fill();
@@ -471,6 +473,20 @@ function _drawItems(ctx, camera, w, h, nowMs) {
       ctx.fill();
     }
   }
+}
+
+function _drawFastForward(ctx, w) {
+  const left = state.battle.fastForwardMs ?? 0;
+  if (left <= 0) return;
+  const text = `⏩ ×${WATCH_SPEED}  ${(left / 1000).toFixed(1)}s`;
+  ctx.font = "700 13px 'Chakra Petch', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+  ctx.textAlign = "right";
+  ctx.textBaseline = "top";
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = "rgba(0, 0, 0, 0.8)";
+  ctx.strokeText(text, w - 10, 10);
+  ctx.fillStyle = "#ffe39a";
+  ctx.fillText(text, w - 10, 10);
 }
 
 function _drawChestPointers(ctx, camera, w, h, enemies) {

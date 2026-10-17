@@ -45,14 +45,16 @@ export function reportStageEnd(stageIdx, stageCount) {
 // ============================================================
 // SPEC-040: RTA (= 共通基盤の SDK が時間を計る。 公式タイムはサーバーの受信時刻の差)
 // ============================================================
-export const RTA_REGULATION = "survivor-normal";
+// SPEC-054: 宝箱から懐中時計 (= 10 秒 2 倍速) が出るようになったので、 懐中時計ありのレギュレーション (-v2) で計る。
+// 懐中時計なしの survivor-normal・survivor-absolute-2x は過去の記録として共通基盤に残る
+export const RTA_REGULATION = "survivor-normal-v2";
 // SPEC-048: ABSOLUTE の 4 軸をすべて ×2.0 に固定した RTA
-export const RTA_REGULATION_ABSOLUTE_2X = "survivor-absolute-2x";
+export const RTA_REGULATION_ABSOLUTE_2X = "survivor-absolute-2x-v2";
 export const RTA_ABSOLUTE_MUL = 2.0;
 
 /**
  * 今のルールで走る RTA のレギュレーション ID。 決まったルールでなければ null (= 計測しない)。 純関数 (= tests/platform.test.mjs)
- *   NORMAL → survivor-normal、 ABSOLUTE で 4 軸すべて ×2.0 → survivor-absolute-2x
+ *   NORMAL → survivor-normal-v2、 ABSOLUTE で 4 軸すべて ×2.0 → survivor-absolute-2x-v2
  */
 export function rtaRegulationFor(regulation, absolute) {
   if (regulation == null || regulation === "NORMAL") return RTA_REGULATION;

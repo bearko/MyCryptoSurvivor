@@ -99,7 +99,8 @@ test("RTA：ルールからレギュレーションを決める", () => {
   assert.equal(rtaRegulationFor("NORMAL", all(1)), RTA_REGULATION);
   assert.equal(rtaRegulationFor(undefined, undefined), RTA_REGULATION);
   assert.equal(rtaRegulationFor("ABSOLUTE", all(2)), RTA_REGULATION_ABSOLUTE_2X);
-  assert.equal(RTA_REGULATION_ABSOLUTE_2X, "survivor-absolute-2x");
+  assert.equal(RTA_REGULATION, "survivor-normal-v2", "SPEC-054: 懐中時計あり");
+  assert.equal(RTA_REGULATION_ABSOLUTE_2X, "survivor-absolute-2x-v2");
   assert.equal(rtaRegulationFor("ABSOLUTE", all(1.5)), null, "×2.0 以外の ABSOLUTE は計測しない");
   assert.equal(rtaRegulationFor("ABSOLUTE", { ...all(2), speedMul: 1.75 }), null, "1 軸でも違えば計測しない");
   assert.equal(rtaRegulationFor("ABSOLUTE", null), null);
@@ -113,7 +114,7 @@ test("RTA：ABSOLUTE ×2.0 のレギュレーションで始める", async () =>
     startRtaRun(RTA_REGULATION_ABSOLUTE_2X);
     startRtaRun();
     await new Promise((r) => setTimeout(r, 0));
-    assert.deepEqual(calls, ["survivor-absolute-2x", "survivor-normal"]);
+    assert.deepEqual(calls, ["survivor-absolute-2x-v2", "survivor-normal-v2"]);
   } finally {
     delete globalThis.window;
   }

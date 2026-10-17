@@ -1,0 +1,2 @@
+- **RTA の懐中時計** (`js/battle/field.js` + `js/battle/index.js` + `js/battle/render.js` + `js/constants.js`): RTA のときだけ宝箱から出て、拾うと 10 秒間ゲーム全体が 2 倍速（続けて拾うと延びる）。右上に残り時間
+- **RTA は懐中時計ありのレギュレーションで計る** (`js/platform.js` + `index.html`): `survivor-normal-v2`・`survivor-absolute-2x-v2`。懐中時計なしの記録は共通基盤に残る

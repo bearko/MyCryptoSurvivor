@@ -5,14 +5,14 @@
 // - 建物: ステージごとに決まった場所の四角。 自分・敵・弾を止める (= 当たりの計算は field-geom.js)
 // - 壺・宝箱: state.battle.enemies に isProp で入れる (= どの武器でも壊せる)。 動かず、 ぶつかっても痛くない。
 //   撃破数・経験値には数えず、 壊すとお助けアイテムか CE を落とす
-// - お助けアイテム: state.battle.items。 拾うとすぐ効く (= 棒磁石・パンケーキ。 懐中時計は SPEC-054)
+// - お助けアイテム: state.battle.items。 拾うとすぐ効く (= 棒磁石・パンケーキ・懐中時計 (RTA だけ。 SPEC-054))
 // 時刻はステージのゲーム内時間 (= stageElapsedMs) で数える。 一時停止中は進まない。
 
 import { state } from "../state.js";
 import {
   OBSTACLE_HITBOX_RATIO, WORLD_W, WORLD_H,
   POT_RADIUS, POT_HP, POT_INITIAL, POT_MAX_ON_FIELD, POT_RESPAWN_MS, POT_CE_GEMS, POT_DROPS,
-  CHEST_RADIUS, CHEST_HP, CHEST_TIMES_MS, CHEST_CE_GEMS, CHEST_DROPS,
+  CHEST_RADIUS, CHEST_HP, CHEST_TIMES_MS, CHEST_CE_GEMS, CHEST_DROPS, CHEST_DROPS_RTA, WATCH_DURATION_MS,
   ITEM_RADIUS, ITEM_PICKUP_RADIUS, HEAL_RATIO,
   STAGE_TABLE, SFX,
 } from "../constants.js";
@@ -99,9 +99,9 @@ export function dropFromProp(e) {
   else spawnItem(kind, e.x, e.y);
 }
 
-/** 宝箱から出るもの (= SPEC-054 で RTA のときに懐中時計を足す) */
+/** 宝箱から出るもの (= SPEC-054: RTA のときだけ懐中時計も出る) */
 export function chestDrops() {
-  return CHEST_DROPS;
+  return state.rtaMode ? CHEST_DROPS_RTA : CHEST_DROPS;
 }
 
 function _scatterGems(x, y, n, value) {
@@ -141,6 +141,10 @@ export function applyItem(kind) {
     const healed = Math.round(state.stats.hp - before);
     if (healed > 0) pushDamageNumber(b.player.x, b.player.y - b.player.r - 4, `+${healed}`, "#7ee08a");
     playSe(SFX.PICK_HEAL, 120, 0.5);
+  } else if (kind === "watch") {
+    // SPEC-054: 実時間 10 秒、 ゲーム全体が 2 倍速 (= index.js の _loop が 1 コマで 2 回進める)。 続けて拾うと延びる
+    b.fastForwardMs = (b.fastForwardMs ?? 0) + WATCH_DURATION_MS;
+    playSe(SFX.PICK_BUFF, 120, 0.6);
   } else if (kind === "magnet") {
     // 落ちている CE を全部吸い寄せる (= gems.js が毎フレーム近づける)
     for (const g of b.gems) g.magnet = true;

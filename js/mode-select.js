@@ -126,7 +126,7 @@ function _renderLabels() {
   const bN = _$("btnModeNormal");    if (bN) bN.textContent = t("mode.startNormal", "これで始める");
   const bA = _$("btnModeAbsolute");  if (bA) bA.textContent = t("mode.startAbsolute", "これで始める");
   const bb = _$("btnModeBack");      if (bb) bb.textContent = t("mode.back", "タイトルに戻る");
-  const rd = _$("modeCardRtaDesc");  if (rd) rd.textContent = t("mode.rtaDesc", "NORMAL か ABSOLUTE ×2.0（4 軸すべて固定）のルールで、 ステージ 1 の開始から全 3 ステージクリアまでの時間を計る。 15 分以上操作がないと参考記録。");
+  const rd = _$("modeCardRtaDesc");  if (rd) rd.textContent = t("mode.rtaDesc", "NORMAL か ABSOLUTE ×2.0（4 軸すべて固定）のルールで、 ステージ 1 の開始から全 3 ステージクリアまでの時間を計る。 宝箱から懐中時計（10 秒間 2 倍速）が出る。 15 分以上操作がないと参考記録。");
   const bR = _$("btnModeRta");       if (bR) bR.textContent = t("mode.startRta", "RTA で始める");
   const rl = _$("modeRtaRanking");   if (rl) rl.textContent = t("mode.rtaRanking", "RTA ランキング");
   // SPEC-048: ABSOLUTE ×2.0 の RTA
