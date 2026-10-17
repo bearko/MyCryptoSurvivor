@@ -1,0 +1,1 @@
+- **総合スコアに送る難易度を名前と設定に** (`js/platform.js` + `js/battle/activity-report.js`): ゲームが計算した倍率ではなく、難易度の名前（`normal` / `absolute`）と ABSOLUTE の 4 軸を送る。係数は bearko.games 共通基盤が決める（点は今と同じ）
