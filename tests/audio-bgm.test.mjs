@@ -55,3 +55,14 @@ test("止めたら、 鳴らし直しもしない", async () => {
   assert.equal(audio.retryBgm(), null);
   assert.equal(audio.currentBgmPath(), null);
 });
+
+test("SPEC-083: 効果音を止めているあいだは鳴らない (= ヒーロー選択の武器のプレビュー)", () => {
+  allow = true;
+  const before = created.length;
+  audio.setSeMuted(true);
+  audio.playSe("Audio/SE/test-muted.mp3", 0, 0.5);
+  assert.equal(created.length, before, "止めているあいだは Audio を作らない");
+  audio.setSeMuted(false);
+  audio.playSe("Audio/SE/test-muted.mp3", 0, 0.5);
+  assert.equal(created.length, before + 1, "戻すと鳴る");
+});

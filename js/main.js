@@ -44,6 +44,7 @@ import { installReduceFxAttr } from "./motion.js";
 import { playWipe } from "./transition.js";
 import { naviSay, naviHide, naviLines, naviTitle } from "./navi.js";
 import { installUiSound, startTitleBgm, startMenuBgm, waitAutoplay } from "./ui-sound.js";
+import { startHeroPreview, stopHeroPreview } from "./hero-preview.js";
 
 // ============================================================
 // DOM helpers
@@ -277,6 +278,7 @@ function closeHeroSelectModal() {
   if (!modal || modal.classList.contains("hidden")) return;
   modal.classList.add("hidden");
   state.pendingHeroPick = null;
+  stopHeroPreview();   // SPEC-083
   naviHide();   // SPEC-056
   resumeTime();
 }
@@ -335,6 +337,7 @@ function pickHero(heroId) {
   state.pendingHeroPick = heroId;
   renderHeroSelectModal();
   renderHeroDetail(heroId);   // SPEC-014: 詳細パネルに反映
+  startHeroPreview(heroId);   // SPEC-083: 1 秒たつと、 最初の武器で戦うところ (= 押し直すと、 はじめから)
   // SPEC-056: マインちゃんが選んだヒーローに反応する (= 同じヒーローを押し直しても喋り直さない)
   const hero = getHero(heroId);
   if (hero && changed) {
@@ -364,6 +367,7 @@ function renderHeroStage(hero) {
   const empty  = $("#heroStageEmpty");
   if (!stage || !sprite || !nameEl) return;
   if (!hero) {
+    stopHeroPreview();   // SPEC-083
     sprite.classList.add("hidden");
     sprite.removeAttribute("src");
     nameEl.textContent = "";

@@ -398,6 +398,57 @@
   font-size: var(--fs-sm);
   letter-spacing: 0.06em;
 }
+/* SPEC-083: 最初の武器のプレビュー (= 選んで 1 秒たつと、 大きな絵と入れ替わる) */
+.hero-stage__preview,
+.hero-stage__tier {
+  position: absolute;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 220ms var(--ease-out), visibility 0s linear 220ms;
+  pointer-events: none;
+}
+.hero-stage__preview { inset: 0; width: 100%; height: 100%; z-index: 3; }
+.hero-stage__sprite,
+.hero-stage__name { transition: opacity 220ms var(--ease-out); }
+.hero-stage--preview .hero-stage__sprite,
+.hero-stage--preview .hero-stage__name { opacity: 0; }
+.hero-stage--preview .hero-stage__preview,
+.hero-stage--preview .hero-stage__tier { opacity: 1; visibility: visible; transition-delay: 0s; }
+.hero-stage__tier {
+  --rc: var(--muted);
+  z-index: 4;
+  left: 8px;
+  top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: calc(100% - 16px);
+  padding: 3px 8px 3px 4px;
+  background: rgba(14, 12, 20, 0.78);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--rc) 60%, transparent);
+  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+  font-size: var(--fs-xs, 0.72rem);
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.hero-stage__tier[data-rarity="Common"]   { --rc: #b9b9c6; }
+.hero-stage__tier[data-rarity="Uncommon"] { --rc: #6fdc8c; }
+.hero-stage__tier[data-rarity="Rare"]     { --rc: #56b4f2; }
+.hero-stage__tier-rarity {
+  padding: 1px 6px;
+  background: var(--rc);
+  color: #120f19;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+.hero-stage__tier-name { overflow: hidden; text-overflow: ellipsis; color: #f2eefb; }
+.hero-stage__tier-steps { display: flex; gap: 3px; flex-shrink: 0; }
+.hero-stage__tier-steps i { width: 10px; height: 4px; background: rgba(255, 255, 255, 0.22); }
+/* いま何段目か (= Common は 1 つ・Uncommon は 2 つ・Rare は 3 つ灯る) */
+.hero-stage__tier[data-rarity="Common"] .hero-stage__tier-steps i:nth-child(1),
+.hero-stage__tier[data-rarity="Uncommon"] .hero-stage__tier-steps i:nth-child(-n+2),
+.hero-stage__tier[data-rarity="Rare"] .hero-stage__tier-steps i { background: var(--rc); }
+
 /* 大きく出すので、 詳細の行の小さな顔と、 文字だけの「選んでください」は隠す */
 .hero-detail__portrait,
 .hero-detail__placeholder { display: none; }
@@ -454,5 +505,9 @@
 :root[data-reduce-fx] .hero-stage--in .hero-stage__sprite,
 :root[data-reduce-fx] .hero-stage--in .hero-stage__name { animation: none; }
 :root[data-reduce-fx] .navi__bubble { transition: none; }
+:root[data-reduce-fx] .hero-stage__preview,
+:root[data-reduce-fx] .hero-stage__tier,
+:root[data-reduce-fx] .hero-stage__sprite,
+:root[data-reduce-fx] .hero-stage__name { transition: none; }
 :root[data-reduce-fx] .stage-intro--in,
 :root[data-reduce-fx] .stage-intro--in .stage-intro__hero { animation: none; opacity: 1; }
