@@ -1,0 +1,1 @@
+- **ステージごとの仕掛け** (`js/battle/gimmicks.js`・`js/battle/gimmicks-render.js` 新規 + `js/battle/enemies.js` + `js/battle/damage.js` + `js/battle/render.js`): アバカスは予告のあと珠の列が横切る（敵もはじく）、ホレリスは床にパンチの穴（1 つは自分の足もと）、トロイは木馬が現れて 9 秒後に敵の群れを吐き出す（開く前に壊すと宝箱の中身）

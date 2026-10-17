@@ -32,7 +32,7 @@ function _currentStage() {
 /**
  * SPEC-022: stageElapsedMs から該当 wave の pool を返す (= 配列)
  */
-function _currentPool(elapsedMs) {
+export function currentPool(elapsedMs) {
   let pool = WAVE_TABLE[0].pool;
   for (const w of WAVE_TABLE) {
     if (elapsedMs >= w.fromMs) pool = w.pool;
@@ -76,7 +76,7 @@ export function tickEnemies(dt, nowMs) {
   const spawnInterval = ENEMY_SPAWN_INTERVAL_MS * (stage.spawnIntervalMul ?? 1) / Math.max(0.1, absSpawnMul);
   if (b.enemies.length < MAX_ENEMIES &&
       nowMs - b.lastEnemySpawnMs >= spawnInterval) {
-    const pool = _currentPool(b.stageElapsedMs);
+    const pool = currentPool(b.stageElapsedMs);
     const id = pool[Math.floor(Math.random() * pool.length)];
     spawnEnemyAtRing(id);
     b.lastEnemySpawnMs = nowMs;
@@ -106,7 +106,7 @@ export function tickEnemies(dt, nowMs) {
   const rects = getObstacleRects();   // SPEC-053: 建物
 
   for (const e of b.enemies) {
-    if (e.isProp) continue;   // SPEC-053: 壺・宝箱は動かず、 ぶつかっても痛くない
+    if (e.isProp || e.behavior === "trojan") continue;   // SPEC-053: 壺・宝箱 / SPEC-064: 木馬は動かず、 ぶつかっても痛くない
     if ((e.hitFreezeMs ?? 0) > 0) {
       e.hitFreezeMs -= dms;
       if (e.hitFreezeMs < 0) e.hitFreezeMs = 0;
@@ -151,7 +151,7 @@ export function tickEnemies(dt, nowMs) {
  * SPEC-022 / SPEC-030: enemyId 指定でスポーン。 雑魚はステージ mul を hp/dmg/xp に適用、
  * ボス (= 任意 isBoss) は ENEMY_SPECS の絶対値 + ステージ別の bossAttack を持たせる。
  */
-export function spawnEnemyAtRing(enemyId = 101) {
+export function spawnEnemyAtRing(enemyId = 101, at = null) {
   const b = state.battle;
   const stage = _currentStage();
   const spec = ENEMY_SPECS[enemyId] ?? DEFAULT_SPEC;
@@ -160,7 +160,11 @@ export function spawnEnemyAtRing(enemyId = 101) {
   const isBoss = enemyId === stage.bossEnemyId;
 
   let x, y;
-  if (isBoss) {
+  if (at) {
+    // SPEC-064: 決まった場所から (= トロイの木馬が開いたとき)
+    x = at.x;
+    y = at.y;
+  } else if (isBoss) {
     x = b.player.x;
     y = b.player.y - halfH;   // 上から登場
   } else {

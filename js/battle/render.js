@@ -18,6 +18,7 @@ import {
   getMagicCardSprite,
 } from "./sprites.js";
 import { shakeOffset, renderFxWorld, renderFxScreen } from "./fx.js";
+import { renderGimmicksUnder, renderGimmicksOver, drawTrojan } from "./gimmicks-render.js";
 
 /** SPEC-057: ダメージ数字の文字の大きさ (= size ごと) */
 export const DAMAGE_FONT_PX = { "": 14, lg: 18, xl: 24 };
@@ -240,6 +241,9 @@ export function renderBattle(ctx, nowMs = 0) {
     ctx.globalAlpha = 1;
   }
 
+  // SPEC-064: ステージの仕掛け (= 珠の列の予告・レール、 パンチの印・穴。 敵より下)
+  renderGimmicksUnder(ctx, camera, w, h, nowMs);
+
   // SPEC-010: enemies (sprite で円形クリップ、 fallback は単色円)
   // SPEC-016: アイコン下に HP バー (= 満タン非表示)
   // SPEC-022: enemyId 別 sprite を引き当て、 fallback で default
@@ -248,6 +252,11 @@ export function renderBattle(ctx, nowMs = 0) {
     const sy = e.y - camera.y;
     if (sx + e.r < 0 || sx - e.r > w || sy + e.r < 0 || sy - e.r > h) continue;
     if (e.isProp) { _drawProp(ctx, e, sx, sy); continue; }   // SPEC-053: 壺・宝箱
+    if (e.behavior === "trojan") {   // SPEC-064: トロイの木馬
+      drawTrojan(ctx, e, sx, sy, nowMs);
+      if (e.hp < e.hpMax) _drawHpBar(ctx, sx, sy + e.r + 6, HP_BAR_WIDTH * 2, HP_BAR_HEIGHT + 1, e.hp / e.hpMax);
+      continue;
+    }
     const sp = (e.enemyId != null)
       ? (getEnemySprite(e.enemyId) || state.battle.defaultEnemySprite)
       : state.battle.defaultEnemySprite;
@@ -394,6 +403,9 @@ export function renderBattle(ctx, nowMs = 0) {
                HP_BAR_PLAYER_WIDTH, HP_BAR_PLAYER_HEIGHT,
                state.stats.hp / state.statsMax.hp);
   }
+
+  // SPEC-064: そろばんの珠 (= 敵より上)
+  renderGimmicksOver(ctx, camera, w, h);
 
   // SPEC-045: 撃破の粒
   renderFxWorld(ctx, camera, w, h);
@@ -553,7 +565,8 @@ function _drawFastForward(ctx, w) {
 function _drawChestPointers(ctx, camera, w, h, enemies) {
   const cx = w / 2, cy = h / 2;
   for (const e of enemies) {
-    if (e.propKind !== "chest") continue;
+    const isTrojan = e.behavior === "trojan";   // SPEC-064: 木馬も (= 赤)
+    if (e.propKind !== "chest" && !isTrojan) continue;
     const sx = e.x - camera.x, sy = e.y - camera.y;
     if (sx >= 0 && sx <= w && sy >= 0 && sy <= h) continue;
     const a = Math.atan2(sy - cy, sx - cx);
@@ -566,7 +579,7 @@ function _drawChestPointers(ctx, camera, w, h, enemies) {
     ctx.save();
     ctx.translate(ax, ay);
     ctx.rotate(a);
-    ctx.fillStyle = "#f0c14b";
+    ctx.fillStyle = isTrojan ? "#ff7676" : "#f0c14b";
     ctx.strokeStyle = "rgba(0,0,0,0.6)";
     ctx.lineWidth = 1.5;
     ctx.beginPath();
