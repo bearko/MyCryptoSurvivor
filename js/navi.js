@@ -15,6 +15,7 @@
 import { img } from "./constants.js";
 import { t, tpl } from "./i18n.js";
 import { prefersReducedMotion } from "./motion.js";
+import { playVoice, voiceMs, hasVoice } from "./voice.js";
 
 /** コマ (= ファイル名の navi_ain_ のあと) */
 export const NAVI_FRAMES = {
@@ -38,44 +39,50 @@ export function naviFrameUrl(name) {
 }
 
 /**
- * 場面ごとのセリフ (= 純関数。 tests/navi.test.mjs)。 { key, vars, pose, mood } の配列
- *   ctx: { heroName, weaponName, stageName, stageIdx, stageCount, rta, n (= 反応の番号) }
+ * 場面ごとのセリフ (= 純関数。 tests/navi.test.mjs)。 { key, vars, pose, mood, voice } の配列
+ *   ctx: { heroId, heroName, weaponName, stageName, stageIdx, stageCount, rta, n (= 反応の番号) }
+ *   voice: マインちゃんのボイスの名前 (= SPEC-085。 js/voice-lines.js)
  */
 export function naviLines(scene, ctx = {}) {
   switch (scene) {
     case "title":
       return [
-        { key: "navi.title.1", pose: "sparkle", mood: "greet" },
-        { key: "navi.title.2", pose: "pointer" },
+        { key: "navi.title.1", pose: "sparkle", mood: "greet", voice: "title.1" },
+        { key: "navi.title.2", pose: "pointer", voice: "title.2" },
       ];
     case "titleTap": {
       const list = [
-        { key: "navi.tap.1", pose: "wink" },
-        { key: "navi.tap.2", pose: "sparkle" },
-        { key: "navi.tap.3", pose: "shy" },
-        { key: "navi.tap.4", pose: "pointer" },
+        { key: "navi.tap.1", pose: "wink", voice: "tap.1" },
+        { key: "navi.tap.2", pose: "sparkle", voice: "tap.2" },
+        { key: "navi.tap.3", pose: "shy", voice: "tap.3" },
+        { key: "navi.tap.4", pose: "pointer", voice: "tap.4" },
       ];
       return [list[Math.abs(ctx.n | 0) % list.length]];
     }
     case "mode":
       return [
-        { key: "navi.mode.1", pose: "cross", mood: "cross" },
-        { key: "navi.mode.2", pose: "pointer" },
+        { key: "navi.mode.1", pose: "cross", mood: "cross", voice: "mode.1" },
+        { key: "navi.mode.2", pose: "pointer", voice: "mode.2" },
       ];
     case "hero":
-      return [{ key: "navi.hero.open", pose: "hooray" }];
+      return [{ key: "navi.hero.open", pose: "hooray", voice: "hero.open" }];
     case "heroPick": {
       const poses = ["sparkle", "wink", "smile", "hooray"];
-      return [{ key: "navi.hero.pick", vars: { name: ctx.heroName ?? "", weapon: ctx.weaponName ?? "" }, pose: poses[Math.abs(ctx.n | 0) % poses.length] }];
+      const pose = poses[Math.abs(ctx.n | 0) % poses.length];
+      // SPEC-085: ヒーローごとの紹介 (= ボイスつき)。 ボイスのないヒーローは、 いままでのひな形
+      const voice = `hero.${ctx.heroId}`;
+      if (hasVoice(voice)) return [{ key: `navi.hero.pick.${ctx.heroId}`, pose, voice }];
+      return [{ key: "navi.hero.pick", vars: { name: ctx.heroName ?? "", weapon: ctx.weaponName ?? "" }, pose }];
     }
     case "boss":
-      return [{ key: "navi.boss", pose: "cross", mood: "cross" }];
+      return [{ key: "navi.boss", pose: "cross", mood: "cross", voice: "boss" }];
     case "stage": {
       const i = ctx.stageIdx | 0;
       const last = (ctx.stageCount | 0) > 0 && i === ctx.stageCount - 1;
       const key = i === 0 ? "navi.stage.first" : (last ? "navi.stage.last" : "navi.stage.next");
-      const lines = [{ key, vars: { stage: ctx.stageName ?? "" }, pose: last ? "hooray" : "pointer" }];
-      if (i === 0 && ctx.rta) lines.push({ key: "navi.stage.rta", pose: "wink" });
+      const voice = `stage.${i + 1}`;   // SPEC-085: ステージの名前ごとのボイス
+      const lines = [{ key, vars: { stage: ctx.stageName ?? "" }, pose: last ? "hooray" : "pointer", voice: hasVoice(voice) ? voice : null }];
+      if (i === 0 && ctx.rta) lines.push({ key: "navi.stage.rta", pose: "wink", voice: "stage.rta" });
       return lines;
     }
     case "tip": {
@@ -83,7 +90,7 @@ export function naviLines(scene, ctx = {}) {
       const key = String(ctx.key ?? "");
       if (!key) return [];
       const pose = key.startsWith("item.") ? "sparkle" : (key === "gimmick.trojan" ? "cross" : "pointer");
-      return [{ key: `navi.tip.${key}`, pose }];
+      return [{ key: `navi.tip.${key}`, pose, voice: `tip.${key}` }];
     }
     default:
       return [];
@@ -193,6 +200,7 @@ function _fitBubble(text) {
 function _showLine(i, { turn = false } = {}) {
   const line = _lines[i];
   if (!line) return;
+  if (line.voice) playVoice(line.voice);   // SPEC-085: 吹き出しが出たら、 そのセリフのボイス (= 前のボイスは止まる)
   const text = tpl(t(line.key, line.key), line.vars ?? {});
   _mood = line.mood === "cross" ? "cross" : "normal";
   clearInterval(_typing);
@@ -280,7 +288,8 @@ export function naviSay(lines, { place = "title", autoHideMs = 0, onTapNavi = nu
   _idx = 0;
   _showLine(0, { turn: !wasHidden && !kindChanged });
   if (autoHideMs > 0) {
-    const total = lines.reduce((a, l) => a + tpl(t(l.key, l.key), l.vars ?? {}).length * NAVI_TYPE_MS, 0) + autoHideMs;
+    // SPEC-085: ボイスのほうが長ければ、 言い終えるまで待つ
+    const total = lines.reduce((a, l) => a + Math.max(tpl(t(l.key, l.key), l.vars ?? {}).length * NAVI_TYPE_MS, voiceMs(l.voice)), 0) + autoHideMs;
     _hideTimer = setTimeout(naviHide, total);
   }
 }

@@ -22,7 +22,7 @@
 - **HTML 単一エントリ** (`index.html`)
 - **静的ホスティング前提** — Vercel / GitHub Pages / Cloudflare Pages 等で `build:` 不要
 - **データは `data/*.json` から runtime fetch**
-- **外部素材は CDN URL 参照** (= リポジトリにバイナリは置かない)
+- **外部素材は CDN URL 参照** (= リポジトリにバイナリは置かない)。 例外：タイトル固有の音声（マインちゃんのボイス）は `assets/voice/` に置く（作者の決定 2026-10-17。 SPEC-085）
 - **音声・画像は `js/constants.js` の `ASSET_BASE` 経由**
 
 これらは派生プロジェクトでも **基本的に変えないでください**。 変更したい場合は新規 SPEC で合意を取ってからにすること。
@@ -30,7 +30,7 @@
 ## やってはいけないこと
 
 - `package.json` を導入して npm dependency を増やす (= ビルドステップが発生する)
-- 外部画像/音声をリポジトリに直接コミットする (= raw CDN URL を使う)
+- 外部画像/音声をリポジトリに直接コミットする (= raw CDN URL を使う。 タイトル固有の音声は上の例外)
 - `.env` / 認証情報をコミットする
 - `git push --force` を main / prod に行う (= 必ず PR で)
 - コミットメッセージから `Co-Authored-By: Claude` を消す

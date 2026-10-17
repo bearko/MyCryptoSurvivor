@@ -1,0 +1,1 @@
+- **マインちゃんのフルボイス** (`js/voice.js` + `js/voice-lines.js` + `assets/voice/mine/` + `js/navi.js` + `js/main.js` + `js/settings.js`): 全セリフ（35 本）にボイス。 ロゴ画面を押すとタイトルコール「マイクリプト サバイバー！」。 設定に「ボイス」の音量。 ヒーローを選んだときのセリフを、 ヒーローごとの紹介に変えた

@@ -1,0 +1,42 @@
+// ============================================================
+// voice-lines.js — マインちゃんのボイスの一覧 (= SPEC-085)。 tools/voice/build.mjs が書く (= 手で直さない)
+// ============================================================
+// 名前 → { file: MP3 のパス, ms: 長さ }
+
+export const VOICE_LINES = {
+  "title.call": {"file":"assets/voice/mine/title.call.mp3","ms":1881},
+  "title.1": {"file":"assets/voice/mine/title.1.mp3","ms":3605},
+  "title.2": {"file":"assets/voice/mine/title.2.mp3","ms":3709},
+  "tap.1": {"file":"assets/voice/mine/tap.1.mp3","ms":3527},
+  "tap.2": {"file":"assets/voice/mine/tap.2.mp3","ms":1829},
+  "tap.3": {"file":"assets/voice/mine/tap.3.mp3","ms":1724},
+  "tap.4": {"file":"assets/voice/mine/tap.4.mp3","ms":2482},
+  "mode.1": {"file":"assets/voice/mine/mode.1.mp3","ms":3030},
+  "mode.2": {"file":"assets/voice/mine/mode.2.mp3","ms":4780},
+  "hero.open": {"file":"assets/voice/mine/hero.open.mp3","ms":2064},
+  "hero.1001": {"file":"assets/voice/mine/hero.1001.mp3","ms":3605},
+  "hero.1002": {"file":"assets/voice/mine/hero.1002.mp3","ms":3683},
+  "hero.1004": {"file":"assets/voice/mine/hero.1004.mp3","ms":3161},
+  "hero.1006": {"file":"assets/voice/mine/hero.1006.mp3","ms":3579},
+  "hero.2001": {"file":"assets/voice/mine/hero.2001.mp3","ms":3631},
+  "hero.2002": {"file":"assets/voice/mine/hero.2002.mp3","ms":3082},
+  "hero.2005": {"file":"assets/voice/mine/hero.2005.mp3","ms":3396},
+  "hero.2011": {"file":"assets/voice/mine/hero.2011.mp3","ms":3213},
+  "hero.2012": {"file":"assets/voice/mine/hero.2012.mp3","ms":3579},
+  "hero.2013": {"file":"assets/voice/mine/hero.2013.mp3","ms":3474},
+  "stage.1": {"file":"assets/voice/mine/stage.1.mp3","ms":3657},
+  "stage.2": {"file":"assets/voice/mine/stage.2.mp3","ms":4049},
+  "stage.3": {"file":"assets/voice/mine/stage.3.mp3","ms":4415},
+  "stage.rta": {"file":"assets/voice/mine/stage.rta.mp3","ms":4258},
+  "tip.item.heal": {"file":"assets/voice/mine/tip.item.heal.mp3","ms":4206},
+  "tip.item.magnet": {"file":"assets/voice/mine/tip.item.magnet.mp3","ms":3605},
+  "tip.item.watch": {"file":"assets/voice/mine/tip.item.watch.mp3","ms":4519},
+  "tip.item.thunder": {"file":"assets/voice/mine/tip.item.thunder.mp3","ms":4963},
+  "tip.item.card": {"file":"assets/voice/mine/tip.item.card.mp3","ms":3631},
+  "tip.gimmick.beads": {"file":"assets/voice/mine/tip.gimmick.beads.mp3","ms":5590},
+  "tip.gimmick.punch": {"file":"assets/voice/mine/tip.gimmick.punch.mp3","ms":5172},
+  "tip.gimmick.trojan": {"file":"assets/voice/mine/tip.gimmick.trojan.mp3","ms":5721},
+  "tip.enemy.shooter": {"file":"assets/voice/mine/tip.enemy.shooter.mp3","ms":4650},
+  "boss": {"file":"assets/voice/mine/boss.mp3","ms":4702},
+  "tip.item.bossChest": {"file":"assets/voice/mine/tip.item.bossChest.mp3","ms":5799},
+};
