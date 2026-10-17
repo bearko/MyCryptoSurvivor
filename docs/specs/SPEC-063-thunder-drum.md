@@ -2,7 +2,7 @@
 id: SPEC-063
 title: Thunder Drum — Helper Item That Clears Every Enemy on Screen
 status: Done
-pr: TBD
+pr: 89
 phase: v1.2 Battle
 kind: Added
 ---
