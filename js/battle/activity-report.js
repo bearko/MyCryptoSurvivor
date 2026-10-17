@@ -25,6 +25,7 @@ import { scoreMetrics, reportRunScore, defaultPlayerName, platformUserName } fro
 import { returnToTitle } from "./gameover.js";
 import { countUp, revealIn } from "../reveal.js";
 import { presentResult } from "../result-telop.js";
+import { startMenuBgmAfterJingle } from "../ui-sound.js";
 import {
   getPlayerName, setPlayerName, submitScore, getRankingApiUrl,
 } from "../ranking-client.js";
@@ -47,6 +48,8 @@ export function triggerActivityReport() {
   // SPEC-017: BGM 停止 + win SE (= 既存 gameover の clear 分岐と同じ感触に)
   stopBgm();
   playSe(SFX.GAME_OVER_CLEAR, 0, 0.7);
+  // SPEC-060: ジングルが鳴り終わってから、 メニューの BGM (= まだこの画面にいれば)
+  startMenuBgmAfterJingle("win", () => !document.getElementById("activityReportModal")?.classList.contains("hidden"));
   _renderReport();
   const modal = document.getElementById("activityReportModal");
   modal?.classList.remove("hidden");

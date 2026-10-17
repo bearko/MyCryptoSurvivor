@@ -1,0 +1,2 @@
+- **ボタンの音** (`js/ui-sound.js` 新規 + `js/constants.js`): ボタンとスイッチを押すと `crash.mp3` が鳴る。レベルアップのカードと冒険を始めるは、いままでどおり自分の音だけ
+- **メニューの BGM** (`js/ui-sound.js` + `js/audio.js` + `js/menu.js` + `js/battle/gameover.js` + `js/battle/activity-report.js`): タイトル・モード選択・ヒーロー選択に `land.mp3`。タイトルでは最初に触ったときに始まる。ゲームオーバー・活動レポートはジングルが鳴り終わってから流れる

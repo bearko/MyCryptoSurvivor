@@ -65,6 +65,11 @@ export function startBgm(relPath, volume = 0.32) {
   _playBgmElement();
 }
 
+/** いまかけたい BGM のパス (= 設定が 0 で止めていても覚えている。 SPEC-060) */
+export function currentBgmPath() {
+  return _bgmPath;
+}
+
 export function stopBgm() {
   _bgmPath = null;
   if (_bgm) {

@@ -43,6 +43,7 @@ import { img } from "./constants.js";
 import { installReduceFxAttr } from "./motion.js";
 import { playWipe } from "./transition.js";
 import { naviSay, naviHide, naviLines, naviTitle } from "./navi.js";
+import { installUiSound } from "./ui-sound.js";
 
 // ============================================================
 // DOM helpers
@@ -79,6 +80,7 @@ async function init() {
   installModalA11y();   // SPEC-043: 開いたモーダルにフォーカス・メニューとランキングは Esc で閉じる
   installSettingsUI();  // SPEC-044: 音量・演出を減らす・言語
   installAutoPause();   // SPEC-044: タブを離れたら一時停止
+  installUiSound({ inMenu: () => !state.battle.active });   // SPEC-060: ボタンの音・メニューの BGM
   installReduceFxAttr(); // SPEC-055: 「演出を減らす」で CSS の常に動く演出も止める
   // SPEC-037: タイトル → モード選択 → ヒーロー選択 の順
   installModeSelect(() => {
