@@ -185,6 +185,22 @@
 @keyframes boss-banner-alarm {
   50% { filter: brightness(1.35); }
 }
+/* SPEC-071: RTA のときは右端に (= 上の真ん中の RTA の時計と重ねない)。 「ボス接近」と残りを縦に積んで細く */
+.boss-banner.boss-banner--compact.boss-banner--rta {
+  left: auto;
+  right: max(8px, var(--safe-r, 0px));
+  translate: 0 0;
+  flex-direction: column;
+  gap: 0;
+  padding: 0.35rem 0.75rem 0.4rem;
+  animation-name: boss-banner-compact-rta, boss-banner-alarm;
+}
+.boss-banner--compact.boss-banner--rta .boss-banner__mark { display: none; }
+.boss-banner--compact.boss-banner--rta .boss-banner__text { font-size: 0.8rem; }
+@keyframes boss-banner-compact-rta {
+  from { opacity: 0; translate: 0 -140%; }
+  to   { opacity: 1; translate: 0 0; }
+}
 /* 最後の 5 秒: 真ん中に大きな数字 */
 .boss-countdown {
   position: absolute;
