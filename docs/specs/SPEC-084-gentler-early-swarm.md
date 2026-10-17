@@ -2,7 +2,7 @@
 id: SPEC-084
 title: Gentler Early Swarm — the Spawn Ramp Starts Slow, Recycling Only Before the Boss
 status: Done
-pr: TBD
+pr: 106
 phase: v1.3 Battle
 kind: Fixed
 ---
