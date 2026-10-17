@@ -2,7 +2,7 @@
 id: SPEC-065
 title: Troy Horde and Faster Leveling — Flood, Packs, Separation, Sprite Cache
 status: Done
-pr: TBD
+pr: 91
 phase: v1.2 Battle
 kind: Changed
 ---
