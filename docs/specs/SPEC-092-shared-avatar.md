@@ -2,7 +2,7 @@
 id: SPEC-092
 title: Shared Player Avatar — Entry in Settings (Platform SPEC-005)
 status: Done
-pr: TBD
+pr: 122
 phase: v1.4 Meta
 kind: Added
 ---
