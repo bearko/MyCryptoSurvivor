@@ -243,6 +243,8 @@
                            "en": "A pocket watch! Everything runs at 2x speed for 10 seconds." },
   "navi.tip.item.thunder": { "ja": "雷鼓！ 画面の敵をまとめて一掃。ボスにも効くよ！",
                            "en": "The thunder drum wipes out every enemy on screen. It hurts bosses too!" },
+  "navi.tip.item.bossChest": { "ja": "ボス戦の宝箱！ マジックカードや雷鼓が出るよ。壊して強くなろう！",
+                           "en": "A boss-fight chest! It can hold magic cards or a thunder drum. Break it and power up!" },
   "navi.tip.item.card":  { "ja": "マジックカード！ 拾うとその場で 1 レベル上がるよ。",
                            "en": "A magic card! Picking it up gives you a level on the spot." },
   "navi.tip.gimmick.beads": { "ja": "線の上をそろばんの珠が転がるよ！ 列からよけて。敵もはじいてくれる！",

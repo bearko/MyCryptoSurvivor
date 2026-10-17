@@ -14,8 +14,10 @@ import {
   POT_RADIUS, POT_HP, POT_INITIAL, POT_MAX_ON_FIELD, POT_RESPAWN_MS, POT_CE_GEMS, POT_DROPS,
   CHEST_RADIUS, CHEST_HP, CHEST_TIMES_MS, CHEST_CE_GEMS, CHEST_DROPS, CHEST_DROPS_RTA, WATCH_DURATION_MS,
   ITEM_RADIUS, ITEM_PICKUP_RADIUS, HEAL_RATIO, THUNDER_BOSS_RATIO,
-  STAGE_TABLE, SFX,
+  STAGE_TABLE, SFX, BOSS_CHEST, BOSS_CHEST_DROPS,
 } from "../constants.js";
+import { ARENA } from "./arena.js";
+import { spawnMagicCard } from "./magic-cards.js";
 import { obstacleRect, rollTable, pickSpawnPoint, inView } from "./field-geom.js";
 import { spawnGem } from "./gems.js";
 import { naviTipOnce } from "../navi-tips.js";
@@ -41,6 +43,7 @@ export function resetField() {
   b.items = b.items ?? [];
   b.items.length = 0;
   b.nextChestIdx = 0;
+  b.bossChestAtMs = null;   // SPEC-081
   b.nextPotAtMs = POT_RESPAWN_MS;
   for (let i = 0; i < POT_INITIAL; i++) _spawnProp("pot", 200, 600);
 }
@@ -54,6 +57,15 @@ export function tickField(_dt) {
     b.nextChestIdx += 1;
     _spawnProp("chest", 220, 420);
   }
+  // SPEC-081: ボス戦の宝箱 (= 枠の中に、 ボスが出て少ししてから一定の間隔で)
+  if (b.bossSpawned && !b.bossDefeated && b.arena) {
+    if (b.bossChestAtMs == null) b.bossChestAtMs = t + BOSS_CHEST.firstMs;
+    if (t >= b.bossChestAtMs) {
+      b.bossChestAtMs = t + BOSS_CHEST.everyMs;
+      const n = b.enemies.reduce((k, e) => k + (e.bossChest ? 1 : 0), 0);
+      if (n < BOSS_CHEST.maxOnField) _spawnBossChest();
+    }
+  }
   // 壺 (= 一定の間隔で、 場にある数が上限より少なければ 1 つ足す)
   if (t >= (b.nextPotAtMs ?? POT_RESPAWN_MS)) {
     b.nextPotAtMs = t + POT_RESPAWN_MS;
@@ -61,6 +73,23 @@ export function tickField(_dt) {
     if (pots < POT_MAX_ON_FIELD) _spawnProp("pot", 250, 700);
   }
   _pickupItems();
+}
+
+/** SPEC-081: ボス戦の宝箱 (= 枠の中、 自分から少し離れ、 ボスに重ならないところ) */
+function _spawnBossChest() {
+  const b = state.battle;
+  const boss = b.enemies.find((e) => e.isBoss);
+  for (let i = 0; i < 6; i++) {
+    const at = pickSpawnPoint({
+      rnd: Math.random, px: b.player.x, py: b.player.y, minD: BOSS_CHEST.minD, maxD: BOSS_CHEST.maxD,
+      halfW: ARENA.halfW, halfH: ARENA.halfH, rects: getObstacleRects(), r: CHEST_RADIUS,
+    });
+    if (!at) continue;
+    if (boss && Math.hypot(at.x - boss.x, at.y - boss.y) < boss.r + CHEST_RADIUS + 60) continue;
+    _pushProp("chest", at, { bossChest: true });
+    naviTipOnce("item.bossChest");   // SPEC-081: 初めてのときだけ、 マインちゃんがひとこと
+    return;
+  }
 }
 
 function _spawnProp(kind, minD, maxD) {
@@ -71,6 +100,12 @@ function _spawnProp(kind, minD, maxD) {
     halfW: WORLD_W / 2, halfH: WORLD_H / 2, rects: getObstacleRects(), r,
   });
   if (!at) return;
+  _pushProp(kind, at);
+}
+
+function _pushProp(kind, at, extra = {}) {
+  const b = state.battle;
+  const r = kind === "chest" ? CHEST_RADIUS : POT_RADIUS;
   const hp = kind === "chest" ? Math.round(CHEST_HP * (_stage().enemyHpMul ?? 1)) : POT_HP;
   b.enemies.push({
     id: b.nextEntityId++,
@@ -84,6 +119,7 @@ function _spawnProp(kind, minD, maxD) {
     hitFreezeMs: 0,
     isBoss: false, isRare: false,
     xpValue: 0,
+    ...extra,
   });
 }
 
@@ -99,7 +135,10 @@ export function dropFromProp(e) {
   const xpMul = _stage().xpMul ?? 1;
   const gem = Math.max(1, Math.round(xpMul));
   if (e.propKind === "chest") {
-    spawnItem(rollTable(chestDrops(), Math.random()), e.x, e.y);
+    // SPEC-081: ボス戦の宝箱は、 マジックカード (= その場でレベルアップ) も出る
+    const kind = rollTable(e.bossChest ? BOSS_CHEST_DROPS : chestDrops(), Math.random());
+    if (kind === "card") spawnMagicCard(e.x, e.y);
+    else spawnItem(kind, e.x, e.y);
     _scatterGems(e.x, e.y, CHEST_CE_GEMS, gem);
     return;
   }
