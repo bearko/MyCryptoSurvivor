@@ -924,6 +924,22 @@
   opacity: 0.4;
   cursor: not-allowed;
 }
+/* SPEC-067: リロールとスキップを横に並べる */
+.levelup-modal__actions {
+  display: flex;
+  gap: 0.5rem;
+  align-self: stretch;
+  margin-top: 0.4rem;
+}
+.levelup-modal__actions .btn {
+  flex: 1 1 0;
+  min-width: 0;
+  margin-top: 0;
+  padding: 0.55rem 0.4rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
 
 /* SPEC-033: 活動レポートモーダル (= 全ステージ clear 時) */
 .report-card {

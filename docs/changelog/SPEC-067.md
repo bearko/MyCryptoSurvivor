@@ -1,0 +1,2 @@
+- **リロールで同じものを続けて出さない** (`js/battle/levelup.js`): そのレベルアップで出したものは、候補が足りるかぎり出さない
+- **スキップ（取得しない）** (`js/battle/levelup.js` + `index.html` + `css/components.css`): どれも要らなければ、取らずに閉じられる

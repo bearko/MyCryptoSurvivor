@@ -400,9 +400,13 @@
       <h2 class="levelup-modal__title" id="levelUpTitle" data-i18n="levelup.title" data-kicker="LEVEL UP">レベルアップ!</h2>
       <p class="levelup-modal__sub"   id="levelUpSub"   data-i18n="levelup.sub">強化を 1 つ選ぼう</p>
       <div class="levelup-modal__grid" id="levelUpGrid" role="listbox"></div>
-      <!-- SPEC-023: リロール (= 1戦 2 回まで、 残数表示) -->
-      <button class="btn btn--ghost levelup-modal__reroll" id="levelUpReroll"
-              type="button" data-i18n="levelup.reroll">リロール (残 2)</button>
+      <!-- SPEC-023: リロール (= 残数表示) / SPEC-067: スキップ (= 取得しない) -->
+      <div class="levelup-modal__actions">
+        <button class="btn btn--secondary levelup-modal__reroll" id="levelUpReroll"
+                type="button" data-i18n="levelup.reroll">リロール (残 2)</button>
+        <button class="btn btn--secondary levelup-modal__skip" id="levelUpSkip"
+                type="button" data-i18n="levelup.skip">スキップ（取得しない）</button>
+      </div>
     </div>
   </div>
 
@@ -497,7 +501,7 @@
         <h3 class="help-sec__title"><span aria-hidden="true">⬆</span> <span data-i18n="help.grow.title">強くなる</span></h3>
         <ul class="help-sec__list">
           <li data-i18n="help.grow.gems">敵が落とすジェムを拾うと Lv アップ。武器か強化を 1 つ選ぶ</li>
-          <li data-i18n="help.grow.tiers">同じものを選ぶと段階が上がる（最大 5）。リロールは 1 ステージ 3 回</li>
+          <li data-i18n="help.grow.tiers">同じものを選ぶと段階が上がる（最大 5）。リロールは 1 ステージ 3 回（前に出たものは続けて出ない）。どれも要らなければスキップ</li>
           <li data-i18n="help.grow.card">光るカードを拾うと、その場で Lv アップ</li>
           <li data-i18n="help.grow.items">壺や宝箱を壊すと、棒磁石（ジェムを全部吸い寄せる）・パンケーキ（HP 回復）・雷鼓（画面の敵すべてに雷。ボスにも大ダメージ）が出る。宝箱は 1 ステージ 4 回、画面の縁の矢印の先に出る</li>
           <li data-i18n="help.grow.obstacles">建物は通れない。敵も弾も止まる</li>
