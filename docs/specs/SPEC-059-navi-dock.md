@@ -2,7 +2,7 @@
 id: SPEC-059
 title: Navi Dock — Dedicated Band for Mine on Mode Select and Hero Select
 status: Done
-pr: TBD
+pr: 85
 phase: v1.1 UI
 kind: Changed
 ---
