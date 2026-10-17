@@ -2,7 +2,7 @@
 id: SPEC-086
 title: Hero Select Preview — Fewer Enemies (1 / 2 / 3 Every 2 Seconds)
 status: Done
-pr: TBD
+pr: 110
 phase: v1.3 Menu
 kind: Changed
 ---
