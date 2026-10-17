@@ -22,6 +22,10 @@ export function tickPlayer(dt, input) {
   const mul = state.buffs?.speedMul ?? 1;
   p.x += input.x * p.speed * mul * dt;
   p.y += input.y * p.speed * mul * dt;
+  // SPEC-077: 動いている感じ (= 横に動く向きへ少し傾け、 歩くあいだ弾ませる。 見た目だけ)
+  p.face = (p.face ?? 0) + (input.x - (p.face ?? 0)) * Math.min(1, dt * 10);
+  p.moving = Math.hypot(input.x, input.y) > 0.1;
+  if (p.moving) p.walkT = (p.walkT ?? 0) + dt;
   // SPEC-026: 世界端でクランプ
   const r = p.r;
   if (p.x < -HALF_W + r) p.x = -HALF_W + r;

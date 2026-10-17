@@ -1,0 +1,2 @@
+- **キャラを大きく** (`js/constants.js` + `js/battle/index.js` + `js/battle/enemies.js`): 自分・雑魚は 1.4 倍、ボスは 1.2 倍（絵も当たりも）。視界はそのまま
+- **当たりの円を薄く** (`js/battle/sprites.js` + `js/battle/render.js`): 円の切り抜きと黒い縁をやめ、絵を大きく描き、足もとに薄い円（自分はシアン、撃ってくる敵は赤い縁）。自分は動く向きへ少し傾いて弾む

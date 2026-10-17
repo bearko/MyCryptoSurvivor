@@ -9,7 +9,7 @@
 import { state } from "../state.js";
 import {
   FACTION_COLOR, FACTION_COLOR_DEFAULT,
-  PLAYER_RADIUS, PLAYER_SPEED_PX_S,
+  PLAYER_RADIUS, PLAYER_SPEED_PX_S, CHAR_SCALE,
   XP_INITIAL, XP_TO_NEXT_INITIAL, LEVEL_INITIAL,
   STATS_INITIAL, STATS_MAX,
   HERO_STARTING_WEAPON, HERO_STARTING_WEAPON_DEFAULT,
@@ -89,7 +89,8 @@ export function startBattle(hero) {
   const b = state.battle;
   b.player.x = 0;
   b.player.y = 0;
-  b.player.r = PLAYER_RADIUS;
+  b.player.r = Math.round(PLAYER_RADIUS * CHAR_SCALE);   // SPEC-077
+  b.player.face = 0;   // SPEC-077: 傾き (= 動く向きへ少し傾ける)
   b.player.speed = PLAYER_SPEED_PX_S;
   b.player.color = FACTION_COLOR[hero?.faction] ?? FACTION_COLOR_DEFAULT;
   b.camera.x = 0;

@@ -51,7 +51,11 @@ export const LEVEL_INITIAL       = 1;
 // 戦闘ステージ (= SPEC-006)
 // ============================================================
 export const BATTLE_GRID_SIZE   = 64;       // 背景グリッドの 1 マス px
-export const PLAYER_RADIUS      = 14;       // プレイヤー描画半径 px
+export const PLAYER_RADIUS      = 14;       // プレイヤー描画半径 px (= SPEC-077 で CHAR_SCALE 倍して使う)
+// SPEC-077: キャラを大きく (= 作者の依頼。 視界はそのままで、 自分と敵の絵と当たりを大きく)
+export const CHAR_SCALE         = 1.4;      // 自分・雑魚・レア・撃ってくる敵
+export const BOSS_CHAR_SCALE    = 1.2;      // ボス (= もともと大きい)
+export const CHAR_SPRITE_RATIO  = 2.3;      // 絵の大きさ = 当たりの半径 × これ (= 絵は円で切り抜かない。 絵の縁は透明)
 export const PLAYER_SPEED_PX_S  = 180;      // 移動速度 px/sec
 export const JOYSTICK_RADIUS    = 56;       // 仮想スティック最大偏倚 px
 export const JOYSTICK_DEADZONE  = 8;        // 中央デッドゾーン px
