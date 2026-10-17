@@ -1,0 +1,1 @@
+- **パンジャンドラムが回りながら進む** (`js/battle/archetypes.js` + `js/battle/projectiles.js` + `js/battle/render.js`): 転がるように回る（右へは時計回り、左へは反時計回り。1 秒に約 1.6 回転）。当たりや速さは変えない

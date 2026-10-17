@@ -15,7 +15,7 @@ import { getObstacleRects } from "./field.js";
 import { clipRayLength } from "./field-geom.js";
 import {
   PROJECTILE_RADIUS, PROJECTILE_LIFE_MS,
-  WEAPON_SIZE_GROWTH_PER_LEVEL,
+  WEAPON_SIZE_GROWTH_PER_LEVEL, PANJANDRUM_SPIN_RAD_S,
 } from "../constants.js";
 
 const ORBIT_HIT_COOLDOWN_MS = 250;   // 同じ敵を 0.25 sec ごとにしか damage しない
@@ -56,6 +56,9 @@ function _spawnProjectile(opts) {
     iconId:        opts.iconId        ?? null,
     iconRotOffset: opts.iconRotOffset ?? 0,
     iconSize:      opts.iconSize      ?? 18,
+    // SPEC-073: 回る弾 (= spin rad/s。 0 なら進む向きを向く)
+    spin: opts.spin ?? 0,
+    rot:  0,
     // SPEC-015: Moai 専用フィールド (= 着弾衝撃波)
     moaiTargetId: opts.moaiTargetId ?? null,
     moaiAoeR:     opts.moaiAoeR     ?? 0,
@@ -151,6 +154,7 @@ export function fireBigHoming(w, dmgMul, bulletBonus) {
       r: size * lvMul, life: 4000, targetId, kind: "homing",
       iconId: projIcon, iconSize: Math.max(28, size * 1.6) * lvMul,
       pierce: w.pierce ?? 0,                           // SPEC-031: Panjandrum tier 貫通
+      spin: PANJANDRUM_SPIN_RAD_S,                     // SPEC-073: 回りながら敵に向かう
     });
   }
 }

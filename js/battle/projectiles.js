@@ -7,6 +7,11 @@ import { hitEnemy } from "./damage.js";
 import { getObstacleRects } from "./field.js";
 import { circleHitsAnyRect } from "./field-geom.js";
 
+/** SPEC-073: 回る弾の、 1 コマぶんの回転 (= 純関数。 右へ進むときは時計回り、 左へ進むときは反時計回り。 転がるように) */
+export function spinStep(rot, spin, vx, dt) {
+  return rot + spin * (vx < 0 ? -1 : 1) * dt;
+}
+
 export function tickProjectiles(dt) {
   const b = state.battle;
   const dms = dt * 1000;
@@ -28,6 +33,7 @@ export function tickProjectiles(dt) {
     p.x += p.vx * dt;
     p.y += p.vy * dt;
     p.age += dms;
+    if (p.spin) p.rot = spinStep(p.rot ?? 0, p.spin, p.vx, dt);   // SPEC-073: パンジャンドラムは回りながら進む
 
     if (p.age >= p.life) {
       // SPEC-015: Moai 弾は寿命切れ時にも衝撃波を出す (= 着弾失敗の救済)

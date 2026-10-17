@@ -92,6 +92,8 @@ export const XP_TO_NEXT_GROWTH = 1.2;   // SPEC-065: 1.3 → 1.2 (= Lv15 まで�
 // ============================================================
 export const EXT_MAX_LEVEL          = 5;
 export const PROJECTILE_LIFE_MS     = 1500;
+// SPEC-073: パンジャンドラムが転がる速さ (= 1 秒に約 1.6 回転。 進む左右の向きで回る向きが変わる)
+export const PANJANDRUM_SPIN_RAD_S = 10;
 export const PROJECTILE_RADIUS      = 5;
 export const PROJECTILE_DEFAULT_COLOR = "#ffffff";
 export const PICK_OPTIONS_COUNT     = 3;
