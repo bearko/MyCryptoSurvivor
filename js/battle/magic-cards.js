@@ -14,6 +14,7 @@ import {
 } from "../constants.js";
 import { triggerLevelUpPick } from "./levelup.js";
 import { playSe } from "../audio.js";
+import { naviTipOnce } from "../navi-tips.js";
 
 /**
  * マジックカードを (x, y) にドロップ (= CE gem と同位置に重ねて出すことが多い)。
@@ -61,4 +62,5 @@ export function tickMagicCards(_dt) {
   triggerLevelUpPick(picked);
   // open SE は levelup.js が鳴らすが、 拾得感の補強で crash も鳴らす (= 100ms throttle)
   playSe(SFX.GEM_PICKUP, 100, 0.5);
+  naviTipOnce("item.card");   // SPEC-068: 初めてのときだけ (= レベルアップを選び終えてから話す)
 }

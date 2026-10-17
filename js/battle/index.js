@@ -45,6 +45,7 @@ import { BGM_BATTLE, STAGE_TABLE, WATCH_SPEED } from "../constants.js";
 import { t, tpl } from "../i18n.js";
 import { heroImg } from "../heroes.js";
 import { naviSay, naviLines } from "../navi.js";
+import { clearNaviTipQueue } from "../navi-tips.js";
 
 let _canvas = null;
 let _ctx = null;
@@ -220,6 +221,7 @@ let _introTimer = 0;
 export function stopBattle() {
   state.battle.active = false;
   hideCoach();   // SPEC-042
+  clearNaviTipQueue();   // SPEC-068: 戦闘をやめたら、 話す予定のひとことは捨てる
   if (_raf) {
     cancelAnimationFrame(_raf);
     _raf = 0;

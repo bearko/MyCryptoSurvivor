@@ -498,6 +498,7 @@
 .settings-card > .settings-row:nth-child(3) { animation-delay: 190ms; }
 .settings-card > .settings-row:nth-child(4) { animation-delay: 240ms; }
 .settings-card > .settings-row:nth-child(5) { animation-delay: 290ms; }
+.settings-card > .settings-row:nth-child(6) { animation-delay: 340ms; }
 .settings-row__value { font-family: var(--font-num); color: var(--node-gold-hi); }
 /* つまみ: 金で埋まる 10 マスの帯と、 菱形の頭 (= --val は settings-ui.js が入れる) */
 .settings-row__range {

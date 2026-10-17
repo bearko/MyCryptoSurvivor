@@ -16,6 +16,7 @@ import { fxPlayerHurt } from "./fx.js";
 import { triggerGameOver } from "./gameover.js";
 import { getObstacleRects } from "./field.js";
 import { resolveCircle, circleHitsAnyRect } from "./field-geom.js";
+import { naviTipOnce } from "../navi-tips.js";
 
 export const SHOOTER_KEEP_RATIO = 0.72;    // 保つ距離 = 画面の半分 × これ (= 楕円)
 export const SHOOTER_KEEP_MIN_PX = 160;    // 小さい画面でも、 これより近くには寄らない
@@ -102,6 +103,7 @@ export function tickShooter(e, dt, px, py) {
   if (!e.aiming && e.fireCdMs <= SHOOTER_AIM_MS && inRange) {
     e.aiming = true;
     e.aimAngle = Math.atan2(dy, dx);   // 狙う向きは線を出した時に決める (= 線を見て避けられる)
+    naviTipOnce("enemy.shooter");   // SPEC-068: 初めて狙われたときだけ
   }
   if (e.fireCdMs > 0) return;
   if (!e.aiming) {

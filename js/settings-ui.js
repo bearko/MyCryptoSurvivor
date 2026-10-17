@@ -11,9 +11,11 @@ import { osPrefersReducedMotion } from "./motion.js";
 import { playSe } from "./audio.js";
 import { SFX } from "./constants.js";
 import { t, getLang, setLang, onLangChange } from "./i18n.js";
+import { resetNaviTips, seenNaviTipCount } from "./navi-tips.js";
 
 let _wired = false;
 let _opened = false;
+let _tipsJustReset = false;   // SPEC-068: 押した直後だけ「また話すね！」と出す
 
 const $ = (id) => document.getElementById(id);
 
@@ -42,6 +44,14 @@ function _render() {
     fx.disabled = os;
   }
   if (fxNote) fxNote.textContent = os ? t("settings.reduceFxOs", "端末の設定で動きを減らしています") : t("settings.reduceFxNote", "揺れ・粒・画面の光を止める");
+
+  // SPEC-068: マインちゃんの補足をもう一度 (= 見たものがなければ押せない)
+  const tips = $("settingsTipsReset");
+  if (tips) {
+    const none = seenNaviTipCount() === 0;
+    tips.disabled = none;
+    tips.textContent = none && _tipsJustReset ? t("settings.tipsDone", "また話すね！") : t("settings.tipsReset", "もう一度聞く");
+  }
 
   document.querySelectorAll("#settingsModal [data-lang]").forEach((b) => {
     b.classList.toggle("lang-btn--active", b.getAttribute("data-lang") === getLang());
@@ -74,6 +84,11 @@ export function installSettingsUI() {
     updateSettings({ reduceFx: !!e.target.checked });
     _render();
   });
+  $("settingsTipsReset")?.addEventListener("click", () => {
+    resetNaviTips();
+    _tipsJustReset = true;
+    _render();
+  });
   $("settingsModal")?.addEventListener("click", (e) => {
     const b = e.target.closest?.("[data-lang]");
     if (b) setLang(b.getAttribute("data-lang"));
@@ -84,6 +99,7 @@ export function installSettingsUI() {
 export function openSettings() {
   if (_opened) return;
   _opened = true;
+  _tipsJustReset = false;
   pauseTime();
   _render();
   $("settingsModal")?.classList.remove("hidden");
