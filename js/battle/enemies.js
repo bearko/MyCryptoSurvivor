@@ -22,6 +22,7 @@ import { fxPlayerHurt, fxBossIncoming, fxBossSpawned, fxBossCountdown } from "./
 import { getObstacleRects } from "./field.js";
 import { resolveCircle, slideAlongWall } from "./field-geom.js";
 import { tickShooter, nextFireMs } from "./enemy-shots.js";
+import { floodMul, packAngles, separateEnemies, stageMaxEnemies } from "./horde.js";
 
 const DEFAULT_SPEC = { hp: 25, dmg: 10, speed: 80, radius: 12, xpValue: 1 };
 
@@ -73,8 +74,11 @@ export function tickEnemies(dt, nowMs) {
   // 通常 spawn (= wave pool からランダム、 ステージごと spawn 間隔 mul)
   // SPEC-037: ABSOLUTE の spawnMul で出現密度をスケール (= mul=2 → 2 倍出る → interval を 1/2 に)
   const absSpawnMul = state.absolute?.spawnMul ?? 1;
-  const spawnInterval = ENEMY_SPAWN_INTERVAL_MS * (stage.spawnIntervalMul ?? 1) / Math.max(0.1, absSpawnMul);
-  if (b.enemies.length < MAX_ENEMIES &&
+  const cap = stageMaxEnemies(stage);   // SPEC-065: トロイだけ 320
+  // SPEC-065: 大群のステージは、 中盤から湧きが速まる
+  const spawnInterval = ENEMY_SPAWN_INTERVAL_MS * (stage.spawnIntervalMul ?? 1)
+    / Math.max(0.1, absSpawnMul) / floodMul(stage.flood, b.stageElapsedMs);
+  if (b.enemies.length < cap &&
       nowMs - b.lastEnemySpawnMs >= spawnInterval) {
     const pool = currentPool(b.stageElapsedMs);
     const id = pool[Math.floor(Math.random() * pool.length)];
@@ -82,8 +86,24 @@ export function tickEnemies(dt, nowMs) {
     b.lastEnemySpawnMs = nowMs;
   }
 
+  // SPEC-065: 群れ (= 1 方向から、 まとまって押し寄せる)
+  const fl = stage.flood;
+  if (fl && b.stageElapsedMs >= Math.max(fl.packFromMs, b.nextPackMs ?? 0)) {
+    b.nextPackMs = b.stageElapsedMs + fl.packEveryMs;
+    const pool = currentPool(b.stageElapsedMs);
+    const halfW = b.viewport.w / 2 + ENEMY_SPAWN_MARGIN_PX;
+    const halfH = b.viewport.h / 2 + ENEMY_SPAWN_MARGIN_PX;
+    const n = Math.round(fl.packSize * absSpawnMul);
+    for (const a of packAngles(n, Math.random() * Math.PI * 2)) {
+      if (b.enemies.length >= cap) break;
+      const out = 1 + Math.random() * 0.25;   // 少し前後にずらして、 塊にする
+      spawnEnemyAtRing(pool[Math.floor(Math.random() * pool.length)],
+        { x: b.player.x + Math.cos(a) * halfW * out, y: b.player.y + Math.sin(a) * halfH * out });
+    }
+  }
+
   // SPEC-033: レアエネミーを 1 分に 1 回スポーン (= 全ステージ共通、 ボス出現中も並行)
-  if (b.enemies.length < MAX_ENEMIES &&
+  if (b.enemies.length < cap &&
       b.stageElapsedMs >= RARE_SPAWN_INTERVAL_MS &&
       nowMs - b.lastRareSpawnMs >= RARE_SPAWN_INTERVAL_MS) {
     const rid = RARE_ENEMY_IDS[Math.floor(Math.random() * RARE_ENEMY_IDS.length)];
@@ -93,7 +113,7 @@ export function tickEnemies(dt, nowMs) {
 
   // SPEC-062: 撃ってくる敵 (= ステージごとに、 決まった時刻から一定の間隔で。 同時に出ている数に上限)
   const sh = stage.shooters;
-  if (sh && b.stageElapsedMs >= sh.fromMs && b.enemies.length < MAX_ENEMIES &&
+  if (sh && b.stageElapsedMs >= sh.fromMs && b.enemies.length < cap &&
       nowMs - (b.lastShooterSpawnMs ?? 0) >= sh.everyMs / Math.max(0.1, absSpawnMul)) {
     let alive = 0;
     for (const e of b.enemies) if (e.behavior === "shooter") alive++;
@@ -145,6 +165,11 @@ export function tickEnemies(dt, nowMs) {
       }
     }
   }
+}
+
+/** SPEC-065: 敵どうしを押し分ける (= tickEnemies の最後に呼ぶ) */
+export function tickSeparation() {
+  separateEnemies(state.battle.enemies);
 }
 
 /**

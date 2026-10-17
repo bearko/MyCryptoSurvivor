@@ -9,7 +9,8 @@
 // 予告 (= 線・印・残り秒) を必ず先に見せる (= 見てから避けられる)。
 
 import { state } from "../state.js";
-import { STAGE_TABLE, WORLD_W, WORLD_H, CONTACT_COOLDOWN_MS, MAX_ENEMIES, CHEST_DROPS, SFX } from "../constants.js";
+import { STAGE_TABLE, WORLD_W, WORLD_H, CONTACT_COOLDOWN_MS, CHEST_DROPS, SFX } from "../constants.js";
+import { stageMaxEnemies } from "./horde.js";
 import { hitEnemy, pushDamageNumber } from "./damage.js";
 import { fxBurst, fxPlayerHurt } from "./fx.js";
 import { playSe } from "../audio.js";
@@ -285,7 +286,8 @@ function _openTrojan(e) {
   const pool = currentPool(b.stageElapsedMs);
   const base = TROJAN.swarm[Math.min(e.wave ?? 0, TROJAN.swarm.length - 1)];
   const n = Math.round(base * (state.absolute?.spawnMul ?? 1));
-  for (let i = 0; i < n && b.enemies.length < MAX_ENEMIES; i++) {
+  const cap = stageMaxEnemies(_stage());   // SPEC-065: トロイは 320
+  for (let i = 0; i < n && b.enemies.length < cap; i++) {
     const a = (Math.PI * 2 * i) / n + Math.random() * 0.4;
     const d = 10 + Math.random() * 46;
     spawnEnemyAtRing(pool[Math.floor(Math.random() * pool.length)], { x: e.x + Math.cos(a) * d, y: e.y + Math.sin(a) * d });

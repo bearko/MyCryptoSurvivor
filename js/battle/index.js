@@ -19,7 +19,7 @@ import {
 import { getExt, getCategory } from "../extensions.js";
 import { installInput, getInputVector } from "./input.js";
 import { tickPlayer, centerCameraOnPlayer } from "./player.js";
-import { tickEnemies } from "./enemies.js";
+import { tickEnemies, tickSeparation } from "./enemies.js";
 import { tickWeapons } from "./weapons.js";
 import { tickProjectiles } from "./projectiles.js";
 import { tickGems } from "./gems.js";
@@ -128,6 +128,7 @@ export function startBattle(hero) {
   b.enemyShots         = b.enemyShots ?? [];
   b.enemyShots.length  = 0;
   b.lastShooterSpawnMs = performance.now();
+  b.nextPackMs         = 0;                     // SPEC-065: 大群の群れ
   // SPEC-033: マジックカード + レアエネミーカウンタも各ステージ開始でリセット
   b.magicCards         = b.magicCards ?? [];
   b.magicCards.length  = 0;
@@ -253,6 +254,7 @@ function _step(dt, now) {
   centerCameraOnPlayer();
   tickEnemies(dt, now);          // SPEC-007: スポーン + 追跡 + 接触ダメージ
   tickGimmicks(dt);              // SPEC-064: ステージの仕掛け (= 珠の列・パンチカード・トロイの木馬)
+  tickSeparation();              // SPEC-065: 敵どうしを押し分ける (= 群れが画面を埋める)
   tickWeapons(dt, now);          // SPEC-008/012: archetype dispatcher
   tickHomingProjectiles(dt);     // SPEC-012: bigHoming の弾道補正
   tickProjectiles(dt);           // SPEC-008: 投射体の移動 + 衝突 + 寿命

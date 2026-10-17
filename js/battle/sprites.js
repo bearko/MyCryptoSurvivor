@@ -53,11 +53,42 @@ export function getEnemySprite(enemyId) {
 }
 
 /**
+ * SPEC-065: 円で切り抜いた絵を、 絵と半径ごとに 1 度だけ作って使い回す (= 敵が数百体でも、 毎回 clip しない)。
+ * 画面の画素の倍率 (= 最大 3) で作るので、 にじまない。 作れない環境 (= テスト) では null
+ */
+const _circleCache = new WeakMap();   // entry -> Map(半径 -> canvas)
+function _circleCanvas(entry, r) {
+  const doc = globalThis.document;
+  if (!doc) return null;
+  let byR = _circleCache.get(entry);
+  if (!byR) { byR = new Map(); _circleCache.set(entry, byR); }
+  const key = Math.max(1, Math.round(r));
+  let c = byR.get(key);
+  if (c) return c;
+  const s = Math.min(3, Math.max(1, Math.round(globalThis.devicePixelRatio || 1)));
+  c = doc.createElement("canvas");
+  c.width = c.height = key * 2 * s;
+  const x = c.getContext("2d");
+  if (!x) return null;
+  x.beginPath();
+  x.arc(key * s, key * s, key * s, 0, Math.PI * 2);
+  x.clip();
+  x.drawImage(entry.img, 0, 0, c.width, c.height);
+  byR.set(key, c);
+  return c;
+}
+
+/**
  * 円形クリップして画像を描画。 まだ読込中 or 失敗なら false を返し、
  * 呼出側に fallback 描画 (= 単色円) を任せる。
  */
 export function drawSpriteCircular(ctx, entry, cx, cy, r) {
   if (!entry || !entry.ready || entry.failed) return false;
+  const c = _circleCanvas(entry, r);
+  if (c) {
+    ctx.drawImage(c, cx - r, cy - r, r * 2, r * 2);
+    return true;
+  }
   ctx.save();
   ctx.beginPath();
   ctx.arc(cx, cy, r, 0, Math.PI * 2);
