@@ -2,7 +2,7 @@
 id: SPEC-087
 title: Level-up Screen — Equipped Strip and "Rank Up" Highlight on Owned Candidates
 status: Done
-pr: TBD
+pr: 115
 phase: v1.3 Battle
 kind: Added
 ---
