@@ -201,7 +201,7 @@ function _showStageIntro() {
   el.classList.add("stage-intro--in");
   clearTimeout(_introTimer);
   _introTimer = setTimeout(() => el.classList.add("hidden"), 2300);
-  // SPEC-056: アインがステージを告げる (= 戦闘では押せない。 言い終えると引っこむ)
+  // SPEC-056: マインちゃんがステージを告げる (= 戦闘では押せない。 言い終えると引っこむ)
   naviSay(naviLines("stage", {
     stageIdx: idx, stageCount: STAGE_TABLE.length, rta: !!state.rtaMode,
     stageName: stage ? t(stage.nameKey, stage.nameKey) : "",

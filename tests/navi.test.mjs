@@ -1,9 +1,9 @@
-// SPEC-056: ナビのアインの場面ごとのセリフ (= js/navi.js の naviLines。 純関数)
+// SPEC-056: ナビのマインちゃんの場面ごとのセリフ (= js/navi.js の naviLines。 純関数)
 // 実行: node --test tests/navi.test.mjs
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { naviLines, NAVI_FRAMES, NAVI_POSES, NAVI_COMM_PLACES, naviFrameUrl } from "../js/navi.js";
+import { naviLines, NAVI_FRAMES, NAVI_POSES, NAVI_COMM_PLACES, NAVI_DOCK_PLACES, naviFrameUrl } from "../js/navi.js";
 
 const UI = JSON.parse(readFileSync(new URL("../data/i18n/ui.json", import.meta.url), "utf8"));
 const SCENES = ["title", "titleTap", "mode", "hero", "heroPick", "stage", "boss"];
@@ -40,7 +40,7 @@ test("ヒーローを選んだときは、 名前と最初の武器を言う (= 
   assert.ok(UI["navi.hero.pick"].ja.includes("{name}") && UI["navi.hero.pick"].ja.includes("{weapon}"));
 });
 
-test("タイトルでアインを押すと、 押すたびに違う反応をする", () => {
+test("タイトルでマインちゃんを押すと、 押すたびに違う反応をする", () => {
   const keys = new Set([0, 1, 2, 3].map((n) => naviLines("titleTap", { n })[0].key));
   assert.equal(keys.size, 4);
   assert.equal(naviLines("title")[0].mood, "greet", "最初はあいさつの動き");
@@ -50,5 +50,19 @@ test("コマとポーズの絵は mycryptoheroes の Image/Characters/navi_ain_*
   const all = [...Object.values(NAVI_FRAMES).flat(), ...Object.values(NAVI_POSES)];
   assert.ok(all.length >= 20);
   for (const f of all) assert.match(naviFrameUrl(f), /\/Image\/Characters\/navi_ain_[a-z0-9_]+\.png$/);
-  assert.deepEqual(NAVI_COMM_PLACES, ["hero", "battle"], "ボタンや戦場を隠さない場所は通信窓");
+  assert.deepEqual(NAVI_COMM_PLACES, ["battle"], "戦場を隠さない場所は通信窓");
+});
+
+test("モード選択とヒーロー選択は、 画面の下の専用の帯 (= ほかの UI と重ねない。 SPEC-059)", () => {
+  assert.deepEqual(NAVI_DOCK_PLACES, ["mode", "hero"]);
+  for (const p of NAVI_DOCK_PLACES) assert.ok(!NAVI_COMM_PLACES.includes(p), `${p} は帯と小窓のどちらか一方`);
+});
+
+test("帯に出るセリフは 3 行に収まる長さ (= 帯の高さは決まっている)", () => {
+  const scenes = [naviLines("mode"), naviLines("hero"), naviLines("heroPick", { heroName: "スパルタクス", weaponName: "パンジャンドラム" })].flat();
+  for (const l of scenes) {
+    const ja = UI[l.key].ja.replace("{name}", "スパルタクス").replace("{weapon}", "パンジャンドラム");
+    assert.ok(ja.length <= 45, `${l.key}: ${ja.length} 文字`);
+    assert.ok(UI[l.key].en.length <= 90, `${l.key} (en)`);
+  }
 });

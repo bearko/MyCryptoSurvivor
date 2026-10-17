@@ -1,12 +1,14 @@
 // ============================================================
-// navi.js — ナビのアイン (= SPEC-056。 喋る案内役)
+// navi.js — ナビのマインちゃん (= SPEC-056。 喋る案内役。 SPEC-059 で名前と置き場所を見直し)
 // ============================================================
 //
 // - 吹き出しはセリフの量に合わせて伸び縮みし (= ばねで)、 1 文字ずつ出る。 システムの表示ではなく、 キャラが喋っている
 // - 喋っているあいだは口が動き (= talk のコマ)、 言い終えるとそのセリフのポーズになり、 待っているあいだは瞬きする
-// - 吹き出しを押すと次のセリフへ (= ページをめくるように)。 アインを押すと反応する
+// - 吹き出しを押すと次のセリフへ (= ページをめくるように)。 マインちゃんを押すと反応する
 // - 置き場所 (= data-place) は title / mode / hero / battle。
-//   hero と battle は「通信窓」 (= 顔だけの小窓と吹き出し)。 ボタンや戦場を隠さない。 戦闘では押せない
+//   mode と hero は「通信の帯」 (= 画面の下の専用の帯に、 顔のアイコンとセリフ)。 ほかの UI と重ねない。
+//     ヒーロー選択の大きなヒーローの絵 (= 見せ場) には重ねない (SPEC-059)
+//   battle は「通信窓」 (= 顔だけの小窓と吹き出し)。 戦場を隠さない。 押せない
 // 絵は mycryptoheroes の Image/Characters/navi_ain_*.png (= 96x128)。 2 倍 (= 整数倍) で出す。
 // pauseTime には触らない。
 
@@ -92,8 +94,8 @@ function _ensure() {
   _el.className = "navi hidden";
   _el.id = "navi";
   _el.innerHTML =
-    '<button type="button" class="navi__bubble" aria-live="polite"><span class="navi__text"></span><span class="navi__next" aria-hidden="true">▼</span></button>' +
-    '<button type="button" class="navi__body" aria-label="Ain"><img class="navi__img" alt="" draggable="false" /></button>' +
+    '<button type="button" class="navi__bubble" aria-live="polite"><span class="navi__name" aria-hidden="true">NAVI // MINE</span><span class="navi__text"></span><span class="navi__next" aria-hidden="true">▼</span></button>' +
+    '<button type="button" class="navi__body" aria-label="Mine"><img class="navi__img" alt="" draggable="false" /></button>' +
     '<span class="navi__measure" aria-hidden="true"></span>';
   _img = _el.querySelector(".navi__img");
   _bubble = _el.querySelector(".navi__bubble");
@@ -101,7 +103,7 @@ function _ensure() {
   _measure = _el.querySelector(".navi__measure");
   _bubble.addEventListener("click", _onBubble);
   _el.querySelector(".navi__body").addEventListener("click", () => {
-    // たたんだ吹き出しは、 アインを押すとまた開く
+    // たたんだ吹き出しは、 マインちゃんを押すとまた開く
     if (_el.classList.contains("navi--quiet")) { _unquiet(); return; }
     _tapN += 1;
     if (_onTapNavi) _onTapNavi(_tapN);
@@ -168,8 +170,13 @@ function _greet(then) {
   step();
 }
 
-/** 吹き出しの大きさを、 セリフが収まる大きさへ (= CSS がばねで追う) */
+/** 吹き出しの大きさを、 セリフが収まる大きさへ (= CSS がばねで追う)。 通信の帯は大きさが決まっているので測らない */
 function _fitBubble(text) {
+  if (_el.classList.contains("navi--dock")) {
+    _bubble.style.width = "";
+    _bubble.style.height = "";
+    return;
+  }
   _measure.textContent = text;
   const r = _measure.getBoundingClientRect();
   _bubble.style.width = `${Math.ceil(r.width) + 2}px`;
@@ -229,14 +236,16 @@ function _onBubble() {
   }
 }
 
+/** 通信の帯 (= 画面の下の専用の帯。 ほかの UI と重ねない) にする置き場所 (SPEC-059) */
+export const NAVI_DOCK_PLACES = ["mode", "hero"];
 /** 通信窓 (= 顔だけの小窓) にする置き場所 */
-export const NAVI_COMM_PLACES = ["hero", "battle"];
+export const NAVI_COMM_PLACES = ["battle"];
 
 /**
  * セリフを言わせる。 place は置き場所 (= CSS)。 autoHideMs を渡すと、 言い終えてその時間で消える (= 戦闘)。
  * host: その要素の中に置く (= ヒーロー選択の大きな絵の左上)。 top: 画面の上からの位置 (= 戦闘で HUD の下)
  * quietMs: 言い終えてその時間で吹き出しをたたむ (= 下のボタンを隠したままにしない)
- * onTapNavi: アインを押したときに呼ぶ (= 反応のセリフを出す)
+ * onTapNavi: マインちゃんを押したときに呼ぶ (= 反応のセリフを出す)
  */
 export function naviSay(lines, { place = "title", autoHideMs = 0, onTapNavi = null, host = null, top = null, quietMs = 0 } = {}) {
   if (!_ensure() || !lines || lines.length === 0) return;
@@ -250,15 +259,19 @@ export function naviSay(lines, { place = "title", autoHideMs = 0, onTapNavi = nu
     parent.appendChild(_el);
     _el.classList.add("hidden");   // 置き場所が変わったら、 出てくる動きから
   }
+  // 帯と、 それ以外 (= 全身・小窓) を行き来したら、 出てくる動きから (= 同じ帯の中で場面が変わるだけなら続けて喋る)
+  const isDock = NAVI_DOCK_PLACES.includes(place);
+  const kindChanged = _el.classList.contains("navi--dock") !== isDock || (!isDock && _el.dataset.place !== place);
   _el.dataset.place = place;
+  _el.classList.toggle("navi--dock", isDock);
   _el.classList.toggle("navi--comm", NAVI_COMM_PLACES.includes(place));
   _el.style.top = top == null ? "" : `${Math.round(top)}px`;
   const wasHidden = _el.classList.contains("hidden");
   _el.classList.remove("hidden", "navi--out");
-  if (wasHidden) { _el.classList.remove("navi--in"); void _el.offsetWidth; _el.classList.add("navi--in"); }
+  if (wasHidden || kindChanged) { _el.classList.remove("navi--in"); void _el.offsetWidth; _el.classList.add("navi--in"); }
   _lines = lines;
   _idx = 0;
-  _showLine(0, { turn: !wasHidden });
+  _showLine(0, { turn: !wasHidden && !kindChanged });
   if (autoHideMs > 0) {
     const total = lines.reduce((a, l) => a + tpl(t(l.key, l.key), l.vars ?? {}).length * NAVI_TYPE_MS, 0) + autoHideMs;
     _hideTimer = setTimeout(naviHide, total);
@@ -276,7 +289,7 @@ export function naviHide() {
   _hideTimer = setTimeout(() => { _el.classList.add("hidden"); _el.classList.remove("navi--out"); }, 260);
 }
 
-/** タイトルのアイン (= あいさつ。 押すと反応する)。 greet: あいさつの動きから始めるか */
+/** タイトルのマインちゃん (= あいさつ。 押すと反応する)。 greet: あいさつの動きから始めるか */
 export function naviTitle({ greet = true } = {}) {
   const onTapNavi = (n) => naviSay(naviLines("titleTap", { n }), { place: "title", onTapNavi });
   naviSay(greet ? naviLines("title") : naviLines("titleTap", { n: 0 }), { place: "title", onTapNavi });

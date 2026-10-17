@@ -70,7 +70,7 @@ async function init() {
   resumeTime();   // ← splash 終了
 
   setupTitleScreen();
-  naviTitle();   // SPEC-056: タイトルでアインがあいさつ
+  naviTitle();   // SPEC-056: タイトルでマインちゃんがあいさつ
   setupHelpOverlay();
   setupLangToggle();
   setupHeroSelectModal();
@@ -124,7 +124,7 @@ function dismissTitle() {
   // SPEC-055: ワイプで切り替える
   playWipe(() => {
     showModeSelect();
-    naviSay(naviLines("mode"), { place: "mode", quietMs: 3500 });   // SPEC-056: 言い終えたらたたむ (= カードのボタンを隠さない)
+    naviSay(naviLines("mode"), { place: "mode" });   // SPEC-059: 画面の下の通信の帯 (= カードと重ならない)
   }, { label: "NODE // CONNECT" });
 }
 
@@ -234,7 +234,7 @@ function openHeroSelectModal() {
   renderHeroSelectModal();
   renderHeroDetail(null);   // SPEC-014: 詳細パネルを placeholder 状態にリセット
   modal.classList.remove("hidden");
-  naviSay(naviLines("hero"), { place: "hero", host: $("#heroStage") });   // SPEC-056: 大きな絵の左上の通信窓
+  naviSay(naviLines("hero"), { place: "hero" });   // SPEC-059: 通信の帯 (= ヒーローの大きな絵には重ねない)
 }
 
 function closeHeroSelectModal() {
@@ -300,7 +300,7 @@ function pickHero(heroId) {
   state.pendingHeroPick = heroId;
   renderHeroSelectModal();
   renderHeroDetail(heroId);   // SPEC-014: 詳細パネルに反映
-  // SPEC-056: アインが選んだヒーローに反応する (= 同じヒーローを押し直しても喋り直さない)
+  // SPEC-056: マインちゃんが選んだヒーローに反応する (= 同じヒーローを押し直しても喋り直さない)
   const hero = getHero(heroId);
   if (hero && changed) {
     const ext = getExt(HERO_STARTING_WEAPON[hero.heroId] ?? HERO_STARTING_WEAPON_DEFAULT);
@@ -309,7 +309,7 @@ function pickHero(heroId) {
       heroName: localizedHeroName(hero, getLang()),
       weaponName: ext ? getTierName(ext, 1, getLang()) : "",
       n: _heroPickN,
-    }), { place: "hero", host: $("#heroStage") });
+    }), { place: "hero" });
   }
 }
 let _heroPickN = 0;
