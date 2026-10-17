@@ -2,7 +2,7 @@
 id: SPEC-056
 title: Navigator Ain and Hero Layering — Speaking Navi, Hero Showcase, Stage Telop
 status: Done
-pr: TBD
+pr: 81
 phase: v1.1 UI
 kind: Added
 ---
