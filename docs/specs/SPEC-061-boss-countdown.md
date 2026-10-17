@@ -2,7 +2,7 @@
 id: SPEC-061
 title: Boss Countdown — From the Warning to the Boss Spawn
 status: Done
-pr: TBD
+pr: 87
 phase: v1.2 Battle
 kind: Added
 ---
