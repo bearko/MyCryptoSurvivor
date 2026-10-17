@@ -2,7 +2,7 @@
 id: SPEC-062
 title: Shooter Enemies — Keep Distance and Fire Telegraphed Shots
 status: Done
-pr: TBD
+pr: 88
 phase: v1.2 Battle
 kind: Added
 ---
