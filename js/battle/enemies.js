@@ -22,7 +22,11 @@ import { fxPlayerHurt, fxBossIncoming, fxBossSpawned, fxBossCountdown } from "./
 import { getObstacleRects } from "./field.js";
 import { resolveCircle, slideAlongWall } from "./field-geom.js";
 import { tickShooter, nextFireMs } from "./enemy-shots.js";
-import { floodMul, packAngles, separateEnemies, stageMaxEnemies } from "./horde.js";
+import {
+  floodMul, packAngles, separateEnemies, stageMaxEnemies, spawnBudget,
+  densityTarget, screenDensity, densityShortfall, DENSITY_CHECK_MS, DENSITY_GAIN, DENSITY_MAX_PER_CHECK,
+  isLeftBehind, canRecycle, RECYCLE_CHECK_MS, RECYCLE_MAX,
+} from "./horde.js";
 
 const DEFAULT_SPEC = { hp: 25, dmg: 10, speed: 80, radius: 12, xpValue: 1 };
 
@@ -78,12 +82,48 @@ export function tickEnemies(dt, nowMs) {
   // SPEC-065: 大群のステージは、 中盤から湧きが速まる
   const spawnInterval = ENEMY_SPAWN_INTERVAL_MS * (stage.spawnIntervalMul ?? 1)
     / Math.max(0.1, absSpawnMul) / floodMul(stage.flood, b.stageElapsedMs);
-  if (b.enemies.length < cap &&
-      nowMs - b.lastEnemySpawnMs >= spawnInterval) {
+  // SPEC-078: 経った時間ぶん湧かせる (= 1 コマに何体でも。 湧きを大きく速めても上限で止まる)
+  const bud = spawnBudget(b.spawnAcc, dms, spawnInterval, cap - b.enemies.length);
+  b.spawnAcc = bud.acc;
+  if (bud.n > 0) {
     const pool = currentPool(b.stageElapsedMs);
-    const id = pool[Math.floor(Math.random() * pool.length)];
-    spawnEnemyAtRing(id);
+    for (let k = 0; k < bud.n; k++) spawnEnemyAtRing(pool[Math.floor(Math.random() * pool.length)]);
     b.lastEnemySpawnMs = nowMs;
+  }
+
+  // SPEC-078: 画面の敵の密度を、 時刻ごとの目標まで足す (= 強い武器でどんどん倒しても、 ボスの直前は画面が敵で埋まる)
+  const dn = stage.density;
+  if (dn && b.enemies.length < cap) {
+    b.densityCheckMs = (b.densityCheckMs ?? 0) - dms;
+    if (b.densityCheckMs <= 0) {
+      b.densityCheckMs = DENSITY_CHECK_MS;
+      const vw = b.viewport.w, vh = b.viewport.h;
+      const short = densityShortfall(densityTarget(dn, b.stageElapsedMs), screenDensity(b.enemies, b.camera.x, b.camera.y, vw, vh), vw, vh);
+      const n = Math.min(Math.ceil(short * DENSITY_GAIN), DENSITY_MAX_PER_CHECK, cap - b.enemies.length);
+      if (n > 0) {
+        const pool = currentPool(b.stageElapsedMs);
+        for (let k = 0; k < n; k++) spawnEnemyAtRing(pool[Math.floor(Math.random() * pool.length)]);
+      }
+    }
+  }
+
+  // SPEC-078: 置いていかれた敵 (= 自分が走り去って、 画面から遠く離れた敵) を、 画面のすぐ外へ寄せ直す。
+  //   上限まで湧いた敵の多くが画面の外に残ると、 画面が埋まらないため。 HP はそのまま (= 撃破にも数えない)
+  if (dn) {
+    b.recycleCheckMs = (b.recycleCheckMs ?? 0) - dms;
+    if (b.recycleCheckMs <= 0) {
+      b.recycleCheckMs = RECYCLE_CHECK_MS;
+      const halfW = b.viewport.w / 2 + ENEMY_SPAWN_MARGIN_PX;
+      const halfH = b.viewport.h / 2 + ENEMY_SPAWN_MARGIN_PX;
+      let moved = 0;
+      for (const e of b.enemies) {
+        if (moved >= RECYCLE_MAX) break;
+        if (!canRecycle(e) || !isLeftBehind(e.x - b.player.x, e.y - b.player.y, halfW, halfH)) continue;
+        const p = _ringPoint(e.r, halfW, halfH);
+        e.x = p.x; e.y = p.y;
+        moved++;
+      }
+    }
   }
 
   // SPEC-065: 群れ (= 1 方向から、 まとまって押し寄せる)
@@ -170,6 +210,17 @@ export function tickEnemies(dt, nowMs) {
 /** SPEC-065: 敵どうしを押し分ける (= tickEnemies の最後に呼ぶ) */
 export function tickSeparation() {
   separateEnemies(state.battle.enemies);
+}
+
+/** SPEC-078: 湧く輪の上のでたらめな 1 点 (= 世界の縁で止める) */
+function _ringPoint(r, halfW, halfH) {
+  const b = state.battle;
+  const a = Math.random() * Math.PI * 2;
+  const HW = WORLD_W / 2 - r, HH = WORLD_H / 2 - r;
+  return {
+    x: Math.max(-HW, Math.min(HW, b.player.x + Math.cos(a) * halfW)),
+    y: Math.max(-HH, Math.min(HH, b.player.y + Math.sin(a) * halfH)),
+  };
 }
 
 /**

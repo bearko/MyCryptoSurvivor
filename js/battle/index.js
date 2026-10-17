@@ -113,6 +113,7 @@ export function startBattle(hero) {
   b.weapons            = [];                    // SPEC-008: starter pick で最初の武器が入る
   b.nextEntityId       = 1;
   b.lastEnemySpawnMs   = performance.now();
+  b.spawnAcc           = 0;                     // SPEC-078: 湧く数の余り
   b.contactCooldownMs  = 0;
   b.gameOver           = false;                 // SPEC-009: 多重 trigger 防止 flag
   b.stageElapsedMs     = 0;                     // SPEC-022: ステージ経過リセット
