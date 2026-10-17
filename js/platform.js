@@ -21,7 +21,8 @@ export function initPlatform(version) {
   const bg = _sdk();
   if (!bg) return;
   try {
-    Promise.resolve(bg.init({ game: "survivor", version })).catch((e) => console.warn("[platform] init", e));
+    // SPEC-052: 通知は画面の上に出す (= 結果画面のボタンを隠さない。 SDK 1.5.0 から。 古い SDK は無視する)
+    Promise.resolve(bg.init({ game: "survivor", version, toast: "top" })).catch((e) => console.warn("[platform] init", e));
   } catch (e) {
     console.warn("[platform] init", e);
   }
@@ -144,4 +145,43 @@ export function reportRunScore(metrics) {
   } catch (e) {
     console.warn("[platform] score", e);
   }
+}
+
+// ============================================================
+// SPEC-052: 結果画面 (= 通知の置き場所・ポータルへ戻る・プレイヤー名の既定)
+// ============================================================
+export const PORTAL_URL = "https://bearko.games/";
+
+/** 通知を画面の上、 上端から offset px に置く (= 戦闘中は HUD と RTA の時計の下)。 古い SDK では何もしない */
+export function placePlatformToasts(offset = 0) {
+  const bg = _sdk();
+  if (!bg || typeof bg.setToastPosition !== "function") return;
+  try {
+    bg.setToastPosition({ position: "top", offset });
+  } catch (e) {
+    console.warn("[platform] toast", e);
+  }
+}
+
+/** ログイン中の bearko.games の名前 (= ログインしていない・SDK がないなら null) */
+export function platformUserName() {
+  const bg = _sdk();
+  try {
+    const u = bg && typeof bg.getUser === "function" ? bg.getUser() : null;
+    const n = u && typeof u.name === "string" ? u.name.trim() : "";
+    return n || null;
+  } catch (e) {
+    return null;
+  }
+}
+
+/**
+ * ランキングの名前の既定。 純関数 (= tests/platform.test.mjs)
+ *   ログイン中の名前 → 前に送った名前 → 空 (= "anonymous" は既定にしない。 前に送った "anonymous" も空として扱う)
+ */
+export function defaultPlayerName({ accountName, saved } = {}) {
+  const a = (accountName || "").trim();
+  if (a) return a.slice(0, 30);
+  const s = (saved || "").trim();
+  return s && s.toLowerCase() !== "anonymous" ? s.slice(0, 30) : "";
 }

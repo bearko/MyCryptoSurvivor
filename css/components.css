@@ -1222,6 +1222,8 @@
   margin-top: 0.4rem;
 }
 .gameover-modal__choices .btn { letter-spacing: 0.04em; }
+/* SPEC-052: RTA のときの「bearko.games に戻る」 (= a 要素をボタンの見た目に) */
+.result-portal { display: block; text-align: center; text-decoration: none; }
 
 /* SPEC-038: 活動レポートをアイコン重視に刷新 + スコアを大きく */
 .report-hero { padding: 0; margin: 0.2rem 0 0.6rem; }

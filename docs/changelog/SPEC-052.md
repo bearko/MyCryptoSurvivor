@@ -1,0 +1,3 @@
+- **共通基盤の通知を画面の上に** (`js/platform.js` + `js/battle/index.js`): トロフィー・RTA 記録・自己ベストの通知が、クリア画面のボタンに重ならない（SDK 1.5.0 の `setToastPosition`）
+- **活動レポートに「タイトルに戻る」** (`js/battle/activity-report.js` + `js/battle/gameover.js` + `index.html`)。RTA のときは活動レポートとゲームオーバーに「bearko.games に戻る」も
+- **ランキングの名前の既定** (`js/platform.js` + `js/ranking-client.js`): ログイン中の bearko.games の表示名 → 前に送った名前 → 空。"anonymous" は既定にしない

@@ -31,8 +31,9 @@ export function setRankingApiUrl(url) {
   } catch (e) {}
 }
 
-// SPEC-038: 未設定時は "anonymous" を返す (= ユーザーが何も入力しなくても送信できる)
-const DEFAULT_PLAYER_NAME = "anonymous";
+// SPEC-038 で未設定時は "anonymous" を返していたが、 SPEC-052 で空に変えた
+// (= 既定の名前は platform.js の defaultPlayerName。 ログイン中なら bearko.games の名前)
+const DEFAULT_PLAYER_NAME = "";
 
 export function getPlayerName() {
   try {
