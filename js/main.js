@@ -40,6 +40,8 @@ import { APP_VERSION } from "./constants.js";
 import { initPlatform } from "./platform.js";
 import { installModalA11y } from "./modal-a11y.js";
 import { img } from "./constants.js";
+import { installReduceFxAttr } from "./motion.js";
+import { playWipe } from "./transition.js";
 
 // ============================================================
 // DOM helpers
@@ -75,11 +77,12 @@ async function init() {
   installModalA11y();   // SPEC-043: 開いたモーダルにフォーカス・メニューとランキングは Esc で閉じる
   installSettingsUI();  // SPEC-044: 音量・演出を減らす・言語
   installAutoPause();   // SPEC-044: タブを離れたら一時停止
+  installReduceFxAttr(); // SPEC-055: 「演出を減らす」で CSS の常に動く演出も止める
   // SPEC-037: タイトル → モード選択 → ヒーロー選択 の順
   installModeSelect(() => {
     $("#app")?.classList.remove("hidden");
     openHeroSelectModal();
-  });
+  });   // SPEC-055: mode-select.js がワイプで覆ったところで呼ぶ
 
   renderHud();   // SPEC-004: 初期描画 (= Day 1 / 100 / 50 / 100)
 
@@ -116,7 +119,8 @@ function setupTitleScreen() {
 function dismissTitle() {
   unlockAudio();   // SPEC-017: 初回 user gesture で audio policy 解除
   // SPEC-037: タイトル → モード選択画面 (= 旧来は直接 hero 選択モーダルだった)
-  showModeSelect();
+  // SPEC-055: ワイプで切り替える
+  playWipe(showModeSelect, { label: "NODE // CONNECT" });
 }
 
 // ============================================================
@@ -384,8 +388,11 @@ function applyHeroPick() {
   state.run.totalKills    = 0;
   state.run.totalElapsedMs = 0;
   renderOwnedHeroBadge();
-  closeHeroSelectModal();
-  startBattle(state.ownedHero);   // SPEC-006: 戦闘ステージ開始
+  // SPEC-055: ワイプで覆ってから戦闘を始める (= ステージの始まりの帯がワイプの抜けたあとに出る)
+  playWipe(() => {
+    closeHeroSelectModal();
+    startBattle(state.ownedHero);   // SPEC-006: 戦闘ステージ開始
+  }, { label: "NODE // DEPLOY" });
 }
 
 function renderOwnedHeroBadge() {
