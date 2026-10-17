@@ -202,6 +202,8 @@
   "settings.tipsDone":   { "ja": "また話すね！",                   "en": "Will do!" },
   "boss.warning":        { "ja": "ボス接近",                       "en": "Boss incoming" },
   "result.time":         { "ja": "時間",                           "en": "Time" },
+  "meta.gum":            { "ja": "GUM",                            "en": "GUM" },
+  "meta.dust":           { "ja": "ゴールドダスト",                 "en": "Gold Dust" },
   "result.kills":        { "ja": "撃破",                           "en": "Kills" },
   "result.level":        { "ja": "レベル",                         "en": "Level" },
   "result.stageOf":      { "ja": "ステージ {n} / {total}",         "en": "Stage {n} / {total}" },

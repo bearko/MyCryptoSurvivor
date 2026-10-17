@@ -26,6 +26,8 @@ import { returnToTitle } from "./gameover.js";
 import { countUp, revealIn } from "../reveal.js";
 import { presentResult } from "../result-telop.js";
 import { startMenuBgmAfterJingle } from "../ui-sound.js";
+import { grantRunRewards, runDust } from "../meta.js";
+import { renderRewards } from "../meta-ui.js";
 import {
   getPlayerName, setPlayerName, submitScore, getRankingApiUrl,
 } from "../ranking-client.js";
@@ -36,8 +38,11 @@ let _wired = false;
  * 活動レポート modal を開く。 全ステージ clear 時のみ呼ばれる前提。
  * 失敗 (= HP 0) は従来 triggerGameOver() で別 path。
  */
+let _rewards = null;   // SPEC-090: この挑戦の GUM とゴールドダスト (= レポートを描くとき)
+
 export function triggerActivityReport() {
   pauseTime();
+  _rewards = { ...grantRunRewards(true), dust: runDust() };   // SPEC-090: 全クリアの GUM
   // SPEC-041: 共通基盤の総合スコア (= 全クリア)
   state.run.scoreSent = true;
   reportRunScore(scoreMetrics({
@@ -60,6 +65,7 @@ export function triggerActivityReport() {
       revealIn(modal);
       const scoreEl = document.getElementById("activityReportScore");
       if (scoreEl) countUp(scoreEl, Number(scoreEl.dataset.score) || 0, { durMs: 800, delayMs: 450 });
+      renderRewards(document.getElementById("activityReportRewards"), _rewards ?? {}, { delayMs: 900 });   // SPEC-090
     },
   });
 }

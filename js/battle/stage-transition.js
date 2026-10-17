@@ -17,6 +17,8 @@ import { reportStageEnd, reportRtaStageEnd } from "../platform.js";
 import { formatElapsed } from "../survival.js";
 import { countUp, revealIn } from "../reveal.js";
 import { presentResult } from "../result-telop.js";
+import { grantBossDust } from "../meta.js";
+import { renderRewards } from "../meta-ui.js";
 
 let _wired = false;
 
@@ -51,6 +53,11 @@ export function triggerStageEndOrTransition() {
 
   // SPEC-033: 終了直前にステージ snapshot を保存 (= activity report 用)
   _captureStageSnapshot();
+  // SPEC-090: ボスを倒したらゴールドダスト (= 5:00 まで耐えたときは出ない)。 snapshot に控えて結果の画面に出す
+  if (state.battle.bossDefeated) {
+    const snap = state.run.stages.find(s => s.idx === (state.currentStageIdx ?? 0));
+    if (snap && snap.dust == null) snap.dust = grantBossDust(state.currentStageIdx ?? 0);
+  }
 
   // SPEC-039: 共通基盤のトロフィー（最初のステージ・全ステージクリア）
   reportStageEnd(state.currentStageIdx ?? 0, STAGE_TABLE.length);
@@ -78,6 +85,7 @@ export function triggerStageEndOrTransition() {
     then: () => {
       revealIn(modal);
       countUp(document.getElementById("stageTransitionKills"), snap?.kills ?? 0, { durMs: 600, delayMs: 250 });
+      renderRewards(document.getElementById("stageTransitionRewards"), { dust: snap?.dust ?? 0 }, { delayMs: 500 });   // SPEC-090
     },
   });
 }

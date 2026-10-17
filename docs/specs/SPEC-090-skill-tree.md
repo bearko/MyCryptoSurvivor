@@ -2,7 +2,7 @@
 id: SPEC-090
 title: Skill Tree — Permanent Upgrades Bought with GUM (from Score) and Gold Dust (from Bosses)
 status: Implementing
-pr: TBD
+pr: 114
 phase: v1.4 Meta
 kind: Added
 ---
