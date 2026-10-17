@@ -82,6 +82,7 @@ export const state = {
     obstacleRects:   [],   // {x, y, w, h}  - 当たり (= x, y は中心)
     items:           [],   // {id, kind: "heal" | "magnet" | "watch", x, y, r}
     nextChestIdx:    0,
+    fastForwardMs:   0,    // SPEC-054: 懐中時計の 2 倍速が残っている実時間
     nextPotAtMs:     0,
     lastRareSpawnMs: 0,    // 1 分に 1 回の throttle
   },

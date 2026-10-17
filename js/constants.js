@@ -279,6 +279,12 @@ export const POT_CE_GEMS        = 5;          // 壺の「CE の小山」
 // 壊したときに出るもの (= 重み)。 ce は CE の小山
 export const POT_DROPS   = [{ kind: "ce", w: 55 }, { kind: "heal", w: 30 }, { kind: "magnet", w: 15 }];
 export const CHEST_DROPS = [{ kind: "heal", w: 50 }, { kind: "magnet", w: 50 }];
+// SPEC-054: RTA のときだけ、 宝箱から懐中時計 (= 実時間 10 秒、 ゲーム全体が 2 倍速。 続けて拾うと 10 秒ずつ延びる)
+//   宝箱は 1 ステージ 4 つなので、 1 ステージで縮むのは実時間 40 秒まで (= 共通基盤の RTA の最短時間の根拠。 SPEC-001 6.15)
+export const WATCH_EXT_ID      = 1111;        // 懐中時計
+export const WATCH_DURATION_MS = 10000;       // 実時間
+export const WATCH_SPEED       = 2;
+export const CHEST_DROPS_RTA = [{ kind: "watch", w: 50 }, { kind: "heal", w: 25 }, { kind: "magnet", w: 25 }];
 
 // ============================================================
 // SPEC-023: ピッカーストック上限 + リロール
