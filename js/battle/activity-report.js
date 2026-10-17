@@ -31,6 +31,7 @@ import { renderRewards } from "../meta-ui.js";
 import {
   getPlayerName, setPlayerName, submitScore, getRankingApiUrl,
 } from "../ranking-client.js";
+import { markPlayed } from "../played.js";
 
 let _wired = false;
 
@@ -42,6 +43,7 @@ let _rewards = null;   // SPEC-090: この挑戦の GUM とゴールドダスト
 
 export function triggerActivityReport() {
   pauseTime();
+  markPlayed();   // SPEC-088: 1 回遊び終えた (= 次から ABSOLUTE・RTA が選べる)
   _rewards = { ...grantRunRewards(true), dust: runDust() };   // SPEC-090: 全クリアの GUM
   // SPEC-041: 共通基盤の総合スコア (= 全クリア)
   state.run.scoreSent = true;

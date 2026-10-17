@@ -1319,6 +1319,21 @@
 }
 /* SPEC-048: RTA の card の 2 本目 (= ABSOLUTE ×2.0)。 1 本目の下に並べる */
 .mode-card__cta--sub { margin-top: 0; }
+/* SPEC-088: 初プレイのロック (= カードは見せたまま薄く、 押せなくする。 開く条件の 1 行だけはそのまま) */
+.mode-card__lock {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--accent);
+}
+/* 縁は灰色 (= node.css の種類ごとの縁 (.mode-card[data-mode]) より強く) */
+.mode-select .mode-card--locked[data-mode] { --edge-c: #5a5466; cursor: not-allowed; }
+.mode-card--locked > :not(.mode-card__lock) {
+  opacity: 0.4;
+  filter: grayscale(0.6);
+  pointer-events: none;
+}
 .mode-card__sliders {
   display: flex;
   flex-direction: column;

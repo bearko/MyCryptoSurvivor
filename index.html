@@ -116,6 +116,8 @@
           <h3 class="mode-card__name">ABSOLUTE</h3>
           <span class="mode-card__mul" id="modeCardAbsoluteMul">×1.00</span>
         </header>
+        <!-- SPEC-088: 初プレイはロック (= 1 回遊び終えると開く) -->
+        <p class="mode-card__lock hidden" id="modeCardAbsoluteLock">🔒 NORMAL を 1 回遊ぶと選べるようになる</p>
         <p class="mode-card__desc" id="modeCardAbsoluteDesc">難易度を 4 軸で自分でチューニング。 きつくするほどスコア倍率 UP、 楽にすると DOWN。</p>
         <div class="mode-card__sliders" id="absoluteSliders"></div>
         <button class="btn mode-card__cta" id="btnModeAbsolute">これで始める</button>
@@ -127,6 +129,8 @@
           <h3 class="mode-card__name">RTA</h3>
           <span class="mode-card__mul">NORMAL ・ ABS ×2.0</span>
         </header>
+        <!-- SPEC-088: 初プレイはロック (= 1 回遊び終えると開く) -->
+        <p class="mode-card__lock hidden" id="modeCardRtaLock">🔒 NORMAL を 1 回遊ぶと選べるようになる</p>
         <p class="mode-card__desc" id="modeCardRtaDesc">NORMAL か ABSOLUTE ×2.0（4 軸すべて固定）のルールで、 ステージ 1 の開始から全 3 ステージクリアまでの時間を計る。 宝箱から懐中時計（10 秒間 2 倍速）が出る。 15 分以上操作がないと参考記録。</p>
         <a class="mode-card__link" id="modeRtaRanking" href="https://bearko.games/rta/?regulation=survivor-normal-v4" target="_blank" rel="noopener">RTA ランキング</a>
         <button class="btn mode-card__cta" id="btnModeRta">RTA で始める</button>

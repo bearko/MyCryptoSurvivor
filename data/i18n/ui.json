@@ -101,6 +101,7 @@
   "mode.rtaRanking":     { "ja": "RTA ランキング",                "en": "RTA ranking" },
   "mode.startRtaAbs":    { "ja": "ABSOLUTE ×2.0 で RTA",          "en": "RTA on ABSOLUTE ×2.0" },
   "mode.rtaRankingAbs":  { "ja": "RTA ランキング（ABSOLUTE ×2.0）", "en": "RTA ranking (ABSOLUTE ×2.0)" },
+  "mode.locked":         { "ja": "🔒 NORMAL を 1 回遊ぶと選べるようになる", "en": "🔒 Finish one NORMAL run to unlock" },
   "absolute.axis.spawn": { "ja": "敵の出現数",                    "en": "Spawn Rate" },
   "absolute.axis.hp":    { "ja": "敵の HP",                       "en": "Enemy HP" },
   "absolute.axis.dmg":   { "ja": "敵の攻撃力",                    "en": "Enemy DMG" },
