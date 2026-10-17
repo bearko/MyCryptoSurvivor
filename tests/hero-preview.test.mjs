@@ -2,8 +2,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { previewPhase, previewEnemyHp, PREVIEW_TIMING, PREVIEW_TIERS, PREVIEW_RARITY } from "../js/hero-preview.js";
-import { HERO_STARTING_WEAPON } from "../js/constants.js";
+import { previewPhase, previewWaveSize, PREVIEW_TIMING, PREVIEW_TIERS, PREVIEW_RARITY, PREVIEW_ENEMIES } from "../js/hero-preview.js";
+import { HERO_STARTING_WEAPON, ENEMY_SPECS, WAVE_TABLE } from "../js/constants.js";
 
 test("SPEC-083: 選んで 1 秒は大きな絵、 そのあと Common → Uncommon → Rare を 3 秒ずつ", () => {
   assert.deepEqual(PREVIEW_TIMING, { firstShowMs: 1000, tierMs: 3000, showMs: 3000 });
@@ -35,11 +35,15 @@ test("SPEC-083: 見せる段は 1〜3 段目 (= Common・Uncommon・Rare)", () =
   assert.deepEqual(PREVIEW_TIERS.map((t) => PREVIEW_RARITY[t]), ["Common", "Uncommon", "Rare"]);
 });
 
-test("SPEC-083: 敵の HP は 1 段目の武器で 2〜3 回 (= 段が上がるほど早く倒れて見える)", () => {
-  assert.equal(previewEnemyHp(10), 22);
-  assert.equal(previewEnemyHp(30), 66);
-  assert.equal(previewEnemyHp(2), 10);       // 下限
-  assert.equal(previewEnemyHp(undefined), 22);
+test("SPEC-086: 敵はいちばん弱い雑魚を、 2 秒ごとに段の数だけ (= Common 1・Uncommon 2・Rare 3)", () => {
+  assert.deepEqual(PREVIEW_TIERS.map(previewWaveSize), [1, 2, 3]);
+  assert.equal(PREVIEW_ENEMIES.everyMs, 2000);
+  const normal = WAVE_TABLE.flatMap((w) => w.pool);
+  const weakest = normal.reduce((a, id) => (ENEMY_SPECS[id].hp < ENEMY_SPECS[a].hp ? id : a), normal[0]);
+  assert.equal(PREVIEW_ENEMIES.id, weakest);
+  // 1 つの段 (= 3 秒) で出るのは 0 秒と 2 秒の 2 回
+  const waves = Math.ceil(PREVIEW_TIMING.tierMs / PREVIEW_ENEMIES.everyMs);
+  assert.deepEqual(PREVIEW_TIERS.map((t) => previewWaveSize(t) * waves), [2, 4, 6]);
 });
 
 test("SPEC-083: どのヒーローにも最初の武器がある", () => {
