@@ -2,7 +2,7 @@
 id: SPEC-058
 title: Result & Menu UI — Result Telop, Result Tiles, Activity Report, Menu, Settings, Ranking, Help
 status: Done
-pr: TBD
+pr: 83
 phase: v1.1 UI
 kind: Changed
 ---
