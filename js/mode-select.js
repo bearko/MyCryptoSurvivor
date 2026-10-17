@@ -17,6 +17,7 @@ import { onLangChange, t } from "./i18n.js";
 import { isRtaAvailable, RTA_ABSOLUTE_MUL } from "./platform.js";
 import { playWipe } from "./transition.js";
 import { naviTitle } from "./navi.js";
+import { startTitleBgm } from "./ui-sound.js";
 
 let _wired   = false;
 let _onPick  = null;   // (regulation) => void、 hero select に進む callback
@@ -58,6 +59,7 @@ function _wireOnce() {
     _pick(REGULATION_ABSOLUTE, { rta: true, absolute: { spawnMul: m, hpMul: m, dmgMul: m, speedMul: m } });
   });
   _$("btnModeBack")?.addEventListener("click", () => {
+    startTitleBgm();   // SPEC-069: タイトルの曲に戻す (= 押した操作の中で)
     // SPEC-055: ワイプで切り替える
     playWipe(() => {
       hideModeSelect();

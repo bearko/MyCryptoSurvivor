@@ -25,6 +25,64 @@
   color: var(--muted);
   font-size: 0.9rem;
 }
+/* SPEC-069: タイトルへ (= opacity は .splash の transition で 0.3 秒) */
+.splash--out { opacity: 0; pointer-events: none; }
+.splash--tap { cursor: pointer; }
+/* SPEC-069: 「タップしてはじめる」 (= Press to Start と違う見た目。 金のキーではなく、 端末の点滅する案内) */
+.splash__tap {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0.9rem 1.6rem;
+  margin-top: 0.6rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  position: relative;
+}
+.splash__tap::before,
+.splash__tap::after {
+  /* 左右の角括弧 (= 端末の選択枠) */
+  content: "";
+  position: absolute;
+  top: 0.4rem;
+  bottom: 0.4rem;
+  width: 10px;
+  border: 1.5px solid var(--node-cyan, #56ccf2);
+  opacity: 0.8;
+}
+.splash__tap::before { left: 0; border-right: 0; }
+.splash__tap::after  { right: 0; border-left: 0; }
+.splash__tap:focus-visible { outline: 2px solid var(--node-cyan, #56ccf2); outline-offset: 4px; }
+.splash__tap-kicker {
+  font-family: var(--font-num);
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 0.32em;
+  color: var(--node-cyan, #56ccf2);
+}
+.splash__tap-label {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  letter-spacing: 0.08em;
+  animation: splash-tap-blink 1.4s ease-in-out infinite;
+}
+.splash__tap-note {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+@keyframes splash-tap-blink {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.35; }
+}
+:root[data-reduce-fx] .splash__tap-label { animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  .splash__tap-label { animation: none; }
+}
 
 /* ---------- Title ---------- */
 .title-screen {

@@ -198,7 +198,9 @@ export const SFX = {
   TROJAN_OPEN:     "Audio/SE/Battle/2_area_damage.mp3",            // SPEC-064: 木馬が開く
 };
 export const BGM_BATTLE = "Audio/BGM/pvp.mp3";
-export const BGM_MENU   = "Audio/BGM/land.mp3";   // SPEC-060: タイトル・モード選択・ヒーロー選択・結果の画面
+export const BGM_MENU   = "Audio/BGM/land.mp3";   // SPEC-060: モード選択・ヒーロー選択・結果の画面
+// SPEC-069: タイトル (= 作者の指定)。 素材では SE の置き場にあるが、 1 分 48 秒の曲 (= ループで流す)
+export const BGM_TITLE  = "Audio/SE/Actions/craft.mp3";
 
 // ============================================================
 // SPEC-019: XP gem アイコン (= MCH 公式 CE icon)

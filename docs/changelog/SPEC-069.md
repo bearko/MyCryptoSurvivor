@@ -1,0 +1,4 @@
+- **画面ごとの BGM** (`js/constants.js` + `js/ui-sound.js` + `js/main.js` + `js/mode-select.js` + `js/menu.js` + `js/battle/gameover.js`): タイトルは craft.mp3、モード選択・ヒーロー選択は land.mp3。曲は押した操作の中で替える
+- **「タップしてはじめる」** (`index.html` + `js/main.js` + `css/layout.css`): ブラウザが音を止めたときだけ、読み込みのあとに 1 回タップを挟み、タイトルで最初から BGM を鳴らす
+- **音の鳴らし始めの見直し** (`js/audio.js` + `js/ui-sound.js`): BGM の要素を使い回し、止められたら次の操作（指を離した・クリック・キー）で鳴らし直す。iOS で BGM が始まらないおそれをなくす
+- **ボタンの音を大きく** (`js/ui-sound.js`): crash.mp3 の音量 0.45 → 1.0（元の音が小さく、BGM に埋もれていた）

@@ -57,6 +57,12 @@
   <div id="splash" class="splash">
     <img class="splash__logo" src="assets/logo.png" alt="MyCryptoSurvivors" />
     <div class="splash__loading" data-i18n="splash.loading">読み込み中…</div>
+    <!-- SPEC-069: ブラウザが音を止めたときだけ出す。 押すとタイトルの BGM が鳴り、 タイトルへ -->
+    <button type="button" id="splashTap" class="splash__tap hidden" data-se="off">
+      <span class="splash__tap-kicker" aria-hidden="true">TAP TO CONNECT</span>
+      <span class="splash__tap-label" data-i18n="splash.tap">タップしてはじめる</span>
+      <span class="splash__tap-note" data-i18n="splash.sound">🔊 音が出ます</span>
+    </button>
   </div>
 
   <!-- ============================================================ -->
