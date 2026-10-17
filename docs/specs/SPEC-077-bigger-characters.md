@@ -2,7 +2,7 @@
 id: SPEC-077
 title: Bigger Characters and a Subtle Hit Disc
 status: Done
-pr: TBD
+pr: 103
 phase: v1.3 Battle
 kind: Changed
 ---
