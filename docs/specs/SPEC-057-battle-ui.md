@@ -2,7 +2,7 @@
 id: SPEC-057
 title: Battle UI — HUD, Card Deal, Boss Cut-in, Damage Numbers, Background Saturation
 status: Done
-pr: TBD
+pr: 82
 phase: v1.1 UI
 kind: Changed
 ---
