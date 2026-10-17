@@ -2,7 +2,7 @@
 id: SPEC-055
 title: Node Terminal Design Language — Panels, Living Backgrounds, Wipe Transitions
 status: Done
-pr: TBD
+pr: 80
 phase: v1.1 UI
 kind: Changed
 ---
