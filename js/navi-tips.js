@@ -17,7 +17,7 @@ import { state } from "./state.js";
 
 /** ひとことを言う場面 (= navi.tip.<key> がセリフ) */
 export const TIP_KEYS = [
-  "item.heal", "item.magnet", "item.watch", "item.thunder", "item.card",
+  "item.heal", "item.magnet", "item.watch", "item.thunder", "item.card", "item.bossChest",
   "gimmick.beads", "gimmick.punch", "gimmick.trojan",
   "enemy.shooter",
 ];

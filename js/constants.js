@@ -291,6 +291,11 @@ export const CHEST_RADIUS       = 18;
 export const CHEST_HP           = 60;         // × ステージの enemyHpMul
 export const CHEST_TIMES_MS     = [30000, 90000, 150000, 210000];
 export const CHEST_CE_GEMS      = 6;          // 宝箱はお助けアイテムと一緒に CE も少し出す
+// SPEC-081: ボス戦の宝箱 (= 枠の中に出る。 ボスが出て firstMs 後から everyMs ごと、 場に maxOnField まで)。
+//   中身にマジックカード (= その場でレベルアップ) がある (= 宝箱からカードが出るのはボス戦だけ)。
+//   RTA でも懐中時計は出さない (= 共通基盤の RTA の最短時間を変えない)
+export const BOSS_CHEST = { firstMs: 6000, everyMs: 14000, maxOnField: 2, minD: 140, maxD: 380 };
+export const BOSS_CHEST_DROPS = [{ kind: "card", w: 40 }, { kind: "heal", w: 30 }, { kind: "thunder", w: 20 }, { kind: "magnet", w: 10 }];
 // お助けアイテム
 export const ITEM_RADIUS        = 12;
 export const ITEM_PICKUP_RADIUS = 30;
