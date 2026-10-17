@@ -39,7 +39,7 @@ export function triggerActivityReport() {
   state.run.scoreSent = true;
   reportRunScore(scoreMetrics({
     run: state.run, cleared: true, reportScore: computeScore(state.run),
-    regulation: state.regulation, regulationMul: computeRegulationMul(state.regulation, state.absolute), absolute: state.absolute,
+    regulation: state.regulation, absolute: state.absolute,   // SPEC-051: 倍率は共通基盤が計算する
   }));
   _wireOnce();
   // SPEC-017: BGM 停止 + win SE (= 既存 gameover の clear 分岐と同じ感触に)

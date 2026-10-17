@@ -1,15 +1,15 @@
 ---
 id: SPEC-051
 title: bearko.games Platform score — send the difficulty name, not the multiplier
-status: Accepted
-pr:
+status: Done
+pr: 76
 phase: Phase 3
 kind: Changed
 ---
 
 # SPEC-051 — 総合スコアに送る難易度を「名前と設定」にする
 
-- **Status**: Accepted
+- **Status**: Done
 - **関連**: SPEC-041（総合スコア）、SPEC-037（ABSOLUTE）、[bearko/MyCryptoPortfolio#27](https://github.com/bearko/MyCryptoPortfolio/issues/27)、共通基盤の SPEC-002 3.2（計算式 v3）・5.1
 
 ## 1. 背景
