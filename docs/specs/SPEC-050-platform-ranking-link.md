@@ -1,15 +1,15 @@
 ---
 id: SPEC-050
 title: bearko.games Platform — link to the overall ranking
-status: Accepted
-pr:
+status: Done
+pr: 74
 phase: Phase 3
 kind: Added
 ---
 
 # SPEC-050 — bearko.games の総合ランキングへの導線
 
-- **Status**: Accepted
+- **Status**: Done
 - **関連**: SPEC-035（ランキング）、SPEC-041（総合スコア）、[bearko/MyCryptoPortfolio#29](https://github.com/bearko/MyCryptoPortfolio/issues/29)、共通基盤の SPEC-001 3 章（既存のランキングは当面残す）
 
 ## 1. 背景

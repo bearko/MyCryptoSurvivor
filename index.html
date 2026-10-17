@@ -238,6 +238,11 @@
         </table>
       </div>
       <p class="ranking-msg" id="rankingMsg" aria-live="polite"></p>
+      <!-- SPEC-050: bearko.games の総合ランキングへ (新しいタブ。遊んでいる途中の画面を失わないため) -->
+      <p class="ranking-platform">
+        <a id="rankingPlatformLink" href="https://bearko.games/score/?game=survivor" target="_blank" rel="noopener">bearko.games の総合ランキング ↗</a>
+        <span id="rankingPlatformNote">このランキングとは別の、bearko.games のタイトル共通のランキングです</span>
+      </p>
       <div class="ranking-config hidden" id="rankingConfig">
         <label class="ranking-config__label" id="rankingConfigLabel" for="rankingApiInput">ランキング API URL (= GAS Web App)</label>
         <input class="gameover-form__input" id="rankingApiInput" type="text"
