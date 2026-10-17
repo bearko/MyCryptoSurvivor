@@ -35,6 +35,7 @@ import {
 } from "./archetypes.js";
 import { tickDamageNumbers } from "./damage.js";
 import { tickBossAttack } from "./boss-attack.js";
+import { tickEnemyShots } from "./enemy-shots.js";
 import { startCoachIfFirst, tickCoach, hideCoach } from "./coach.js";
 import { resetFx, tickFx } from "./fx.js";
 import { startBgm } from "../audio.js";
@@ -122,6 +123,10 @@ export function startBattle(hero) {
   b.bossOrbits         = b.bossOrbits      ?? [];
   b.bossProjectiles.length = 0;
   b.bossOrbits.length      = 0;
+  // SPEC-062: 撃ってくる敵の弾と、 出す間隔の時計
+  b.enemyShots         = b.enemyShots ?? [];
+  b.enemyShots.length  = 0;
+  b.lastShooterSpawnMs = performance.now();
   // SPEC-033: マジックカード + レアエネミーカウンタも各ステージ開始でリセット
   b.magicCards         = b.magicCards ?? [];
   b.magicCards.length  = 0;
@@ -253,6 +258,7 @@ function _step(dt, now) {
   tickBombs(dt);                 // SPEC-012: Pierrot の遅延爆発
   tickShockwaves(dt);            // SPEC-015: Moai 着弾の AoE 衝撃波
   tickBossAttack(dt, now);       // SPEC-030: ボス攻撃 (= ファオ放射 / yamap 周回) + 衝突
+  tickEnemyShots(dt);            // SPEC-062: 撃ってくる敵の弾
   tickDamageNumbers(dt);         // SPEC-016: ダメージ数字 floater
   tickFx(dt);                    // SPEC-045: 揺れ・縁の赤・粒
   tickGems(dt);                  // SPEC-007: 拾う + level up trigger

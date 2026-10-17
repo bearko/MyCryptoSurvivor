@@ -72,6 +72,7 @@ export const state = {
     bossDefeated:   false, // ボス撃破フラグ (= clear trigger)
     rerollsLeft:    2,     // SPEC-023: 1 戦闘あたり picker リロール可能回数
     // SPEC-030: ボス攻撃 (= ファオ / yamap) の固有エンティティ
+    enemyShots:      [],   // SPEC-062: {id, x, y, vx, vy, r, dmg, age}
     bossProjectiles: [],   // {id, x, y, vx, vy, r, dmg, life, age, iconId, iconSize}
     bossOrbits:      [],   // {id, bossEnemyId, angle, r, dmg, iconId, iconSize, hitR, lastHitMs}
     bossLastFireMs:  0,    // ファオ攻撃の throttle
