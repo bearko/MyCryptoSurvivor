@@ -2,7 +2,7 @@
 id: SPEC-082
 title: Measure v1.3 on New Versions — Total Score balance 3 and RTA v4
 status: Done
-pr: TBD
+pr: 112
 phase: v1.3 Battle
 kind: Changed
 ---
