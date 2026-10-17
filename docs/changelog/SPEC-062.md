@@ -1,0 +1,1 @@
+- **離れたところから撃ってくる敵** (`js/battle/enemy-shots.js` 新規 + `js/battle/enemies.js` + `js/constants.js` + `js/battle/render.js`): 赤い縁の敵が、画面の中で距離を保って横へ回り、赤い点線で狙ってから撃ってくる（狙って 1 発・3 方向の 2 種）。ステージが進むほど多く早く出る

@@ -29,11 +29,33 @@ export function damagePopScale(ageMs) {
 /** SPEC-057: 戦場の背景の彩度をどれだけ落とすか (= UI と敵を先に目に入れる。 色の優先度) */
 export const BG_DESATURATE = 0.45;
 
+/** SPEC-062: 撃つ前に狙う線 (= 撃つ向きに、 点滅する赤い破線。 3 方向なら 3 本) */
+function _drawAimLines(ctx, e, sx, sy, nowMs) {
+  const angles = e.shot?.pattern === "spread3" ? [e.aimAngle - 0.28, e.aimAngle, e.aimAngle + 0.28] : [e.aimAngle];
+  ctx.save();
+  ctx.globalAlpha = 0.45 + 0.35 * Math.abs(Math.sin(nowMs / 60));
+  ctx.strokeStyle = "#ff5a6a";
+  ctx.lineWidth = 2;
+  ctx.setLineDash([8, 6]);
+  for (const a of angles) {
+    ctx.beginPath();
+    ctx.moveTo(sx + Math.cos(a) * (e.r + 4), sy + Math.sin(a) * (e.r + 4));
+    ctx.lineTo(sx + Math.cos(a) * (e.r + 150), sy + Math.sin(a) * (e.r + 150));
+    ctx.stroke();
+  }
+  ctx.setLineDash([]);
+  ctx.beginPath();
+  ctx.arc(sx, sy, e.r + 5, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
+}
+
 /**
  * 1 frame 描画。 ctx は dpr 反映済の transform で渡される前提。
  */
 export function renderBattle(ctx, nowMs = 0) {
   const { player, camera, viewport, enemies, gems, projectiles, orbits, beams, bombs, shockwaves, damageNumbers, bossProjectiles, bossOrbits, magicCards } = state.battle;
+  const enemyShots = state.battle.enemyShots ?? [];   // SPEC-062
   const w = viewport.w, h = viewport.h;
   if (w <= 0 || h <= 0) return;
 
@@ -236,11 +258,14 @@ export function renderBattle(ctx, nowMs = 0) {
       ctx.arc(sx, sy, e.r, 0, Math.PI * 2);
       ctx.fill();
     }
-    ctx.strokeStyle = "rgba(0, 0, 0, 0.45)";
-    ctx.lineWidth = 1.5;
+    // SPEC-062: 撃ってくる敵は赤い縁 (= 突っこんでくる敵と見分ける)
+    const isShooter = e.behavior === "shooter";
+    ctx.strokeStyle = isShooter ? "rgba(255, 96, 112, 0.95)" : "rgba(0, 0, 0, 0.45)";
+    ctx.lineWidth = isShooter ? 2.5 : 1.5;
     ctx.beginPath();
     ctx.arc(sx, sy, e.r, 0, Math.PI * 2);
     ctx.stroke();
+    if (isShooter && e.aiming) _drawAimLines(ctx, e, sx, sy, nowMs);
     // SPEC-045: 当たった瞬間に白く光る
     if ((e.hitFlashMs ?? 0) > 0) {
       ctx.globalAlpha = 0.55 * (e.hitFlashMs / 80);
@@ -291,6 +316,29 @@ export function renderBattle(ctx, nowMs = 0) {
         ctx.stroke();
       }
     }
+  }
+
+  // SPEC-062: 撃ってくる敵の弾 (= 赤い光の玉と、 短い尾)
+  for (const p of enemyShots) {
+    const sx = p.x - camera.x;
+    const sy = p.y - camera.y;
+    if (sx + 16 < 0 || sx - 16 > w || sy + 16 < 0 || sy - 16 > h) continue;
+    ctx.strokeStyle = "rgba(255, 90, 106, 0.45)";
+    ctx.lineWidth = p.r * 1.4;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(sx, sy);
+    ctx.lineTo(sx - p.vx * 0.06, sy - p.vy * 0.06);
+    ctx.stroke();
+    ctx.lineCap = "butt";
+    ctx.fillStyle = "rgba(255, 70, 90, 0.4)";
+    ctx.beginPath();
+    ctx.arc(sx, sy, p.r + 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#ffd6dc";
+    ctx.beginPath();
+    ctx.arc(sx, sy, p.r - 2, 0, Math.PI * 2);
+    ctx.fill();
   }
 
   // SPEC-030: boss projectiles (= ファオ放射) を icon 描画

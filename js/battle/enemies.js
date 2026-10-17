@@ -21,6 +21,7 @@ import { playSe } from "../audio.js";
 import { fxPlayerHurt, fxBossIncoming, fxBossSpawned, fxBossCountdown } from "./fx.js";
 import { getObstacleRects } from "./field.js";
 import { resolveCircle, slideAlongWall } from "./field-geom.js";
+import { tickShooter, nextFireMs } from "./enemy-shots.js";
 
 const DEFAULT_SPEC = { hp: 25, dmg: 10, speed: 80, radius: 12, xpValue: 1 };
 
@@ -90,6 +91,16 @@ export function tickEnemies(dt, nowMs) {
     b.lastRareSpawnMs = nowMs;
   }
 
+  // SPEC-062: 撃ってくる敵 (= ステージごとに、 決まった時刻から一定の間隔で。 同時に出ている数に上限)
+  const sh = stage.shooters;
+  if (sh && b.stageElapsedMs >= sh.fromMs && b.enemies.length < MAX_ENEMIES &&
+      nowMs - (b.lastShooterSpawnMs ?? 0) >= sh.everyMs / Math.max(0.1, absSpawnMul)) {
+    let alive = 0;
+    for (const e of b.enemies) if (e.behavior === "shooter") alive++;
+    if (alive < sh.max) spawnEnemyAtRing(sh.ids[Math.floor(Math.random() * sh.ids.length)]);
+    b.lastShooterSpawnMs = nowMs;
+  }
+
   const px = b.player.x;
   const py = b.player.y;
   const rects = getObstacleRects();   // SPEC-053: 建物
@@ -104,7 +115,9 @@ export function tickEnemies(dt, nowMs) {
     const dx = px - e.x;
     const dy = py - e.y;
     const d  = Math.hypot(dx, dy) || 1;
-    if ((e.hitFreezeMs ?? 0) <= 0) {
+    if (e.behavior === "shooter") {
+      tickShooter(e, dt, px, py);   // SPEC-062: 距離を保って撃つ (= まっすぐ追わない)
+    } else if ((e.hitFreezeMs ?? 0) <= 0) {
       e.x += (dx / d) * e.speed * dt;
       e.y += (dy / d) * e.speed * dt;
       // SPEC-053: 建物にめりこんだら押し出し、 壁に沿ってプレイヤーへ回りこむ
@@ -193,5 +206,13 @@ export function spawnEnemyAtRing(enemyId = 101) {
     xpValue: xpVal,
     bossAttack: isBoss ? (stage.bossAttack ?? null) : null,        // SPEC-030
     bossAttackExtId: isBoss ? (stage.bossAttackExtId ?? null) : null,
+    // SPEC-062: 撃ってくる敵 (= 最初の 1 発は少しずらす。 回る向きは 1 体ずつ違う)
+    behavior: spec.behavior ?? null,
+    shot: spec.shot ?? null,
+    shotDmg: spec.shot ? Math.max(1, Math.round(spec.shot.dmg * dmgMul)) : 0,
+    fireCdMs: spec.shot ? nextFireMs(spec.shot.everyMs * 0.6) : 0,
+    aiming: false,
+    aimAngle: 0,
+    strafeDir: Math.random() < 0.5 ? -1 : 1,
   });
 }

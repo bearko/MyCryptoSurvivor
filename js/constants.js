@@ -235,6 +235,11 @@ export const ENEMY_SPECS = {
   170:  { hp:  400, dmg: 24, speed: 65, radius: 32, xpValue:  35, isRare: true },   // バイトバンディット フラペチーノ ドッピオ (= 21 → 32)
   396:  { hp:  220, dmg: 18, speed: 95, radius: 20, xpValue:  25, isRare: true },   // ラビット フラペチーノ ドッピオ (= 13 → 20)
   407:  { hp:  280, dmg: 20, speed: 70, radius: 24, xpValue:  30, isRare: true },   // ラブレター フラペチーノ ドッピオ (= 16 → 24)
+  // SPEC-062: 離れたところから撃ってくる敵 (= js/battle/enemy-shots.js)。 shot.dmg はステージ・ABSOLUTE の攻撃力の倍率がかかる
+  166:  { hp:   70, dmg: 10, speed: 70, radius: 15, xpValue:   4, behavior: "shooter",
+          shot: { pattern: "aimed",   speed: 170, everyMs: 2600, dmg: 12 } },   // バイトバンディット フラペチーノ (= 狙って 1 発)
+  136:  { hp:   90, dmg: 10, speed: 60, radius: 16, xpValue:   5, behavior: "shooter",
+          shot: { pattern: "spread3", speed: 140, everyMs: 3200, dmg: 10 } },   // メリッサ フラペチーノ (= 3 方向)
 };
 
 // SPEC-033: レアエネミー定数
@@ -336,6 +341,8 @@ export const STAGE_TABLE = [
     enemyDmgMul:       1.0,
     xpMul:             1.0,
     spawnIntervalMul:  1.0,
+    // SPEC-062: 撃ってくる敵 (= fromMs から everyMs ごとに 1 体。 同時に max 体まで)
+    shooters: { fromMs: 90000, everyMs: 10000, max: 3, ids: [166] },
   },
   {
     idx: 1,
@@ -354,6 +361,7 @@ export const STAGE_TABLE = [
     enemyDmgMul:       1.25,
     xpMul:             2.0,
     spawnIntervalMul:  0.85,
+    shooters: { fromMs: 45000, everyMs: 7000, max: 6, ids: [166, 136] },   // SPEC-062
   },
   {
     idx: 2,
@@ -372,6 +380,7 @@ export const STAGE_TABLE = [
     enemyDmgMul:       1.5,
     xpMul:             3.0,
     spawnIntervalMul:  0.7,
+    shooters: { fromMs: 30000, everyMs: 5000, max: 9, ids: [166, 136] },   // SPEC-062
   },
 ];
 

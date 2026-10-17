@@ -160,6 +160,8 @@
                            "en": "A boss appears at 4:00. Defeat it, or survive until 5:00, to clear the stage." },
   "help.stage.three":    { "ja": "全 3 ステージ。Lv は引き継ぎ、武器はステージごとに選び直す",
                            "en": "3 stages in a row. Your level carries over; weapons are picked again each stage." },
+  "help.stage.shooters": { "ja": "赤い縁の敵は、離れたところから撃ってくる。赤い点線が出たら、その向きから外れる",
+                           "en": "Red-rimmed enemies keep their distance and shoot. When a red dotted line appears, step out of its path" },
   "help.grow.title":     { "ja": "強くなる",                       "en": "Getting Stronger" },
   "help.grow.gems":      { "ja": "敵が落とすジェムを拾うと Lv アップ。武器か強化を 1 つ選ぶ",
                            "en": "Pick up the gems enemies drop to level up, then choose one weapon or buff." },
