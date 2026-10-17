@@ -191,6 +191,7 @@ export const SFX = {
   GAME_OVER_LOSE:  "Audio/SE/Jingles/lose.mp3",
   GAME_OVER_CLEAR: "Audio/SE/Jingles/win.mp3",
   UI_CLICK:        "Audio/SE/Actions/crash.mp3",   // SPEC-060: ボタンを押したとき
+  THUNDER:         "Audio/SE/Battle/2_area_damage.mp3",   // SPEC-063: 雷鼓
 };
 export const BGM_BATTLE = "Audio/BGM/pvp.mp3";
 export const BGM_MENU   = "Audio/BGM/land.mp3";   // SPEC-060: タイトル・モード選択・ヒーロー選択・結果の画面
@@ -284,14 +285,19 @@ export const HEAL_EXT_ID        = 1129;       // パンケーキ: HP を回復
 export const HEAL_RATIO         = 0.3;        // 最大 HP の 30%
 export const POT_CE_GEMS        = 5;          // 壺の「CE の小山」
 // 壊したときに出るもの (= 重み)。 ce は CE の小山
-export const POT_DROPS   = [{ kind: "ce", w: 55 }, { kind: "heal", w: 30 }, { kind: "magnet", w: 15 }];
-export const CHEST_DROPS = [{ kind: "heal", w: 50 }, { kind: "magnet", w: 50 }];
+// SPEC-063: 雷鼓 (= thunder。 画面の敵に雷) を足した
+export const POT_DROPS   = [{ kind: "ce", w: 50 }, { kind: "heal", w: 27 }, { kind: "magnet", w: 13 }, { kind: "thunder", w: 10 }];
+export const CHEST_DROPS = [{ kind: "heal", w: 40 }, { kind: "magnet", w: 35 }, { kind: "thunder", w: 25 }];
+// SPEC-063: 雷鼓 — 画面に映っている敵すべてに雷が落ちる。 雑魚は倒れ (= 経験値も落ちる)、 ボスは最大 HP の 20%。 敵の弾も消える
+export const THUNDER_EXT_ID       = 5071;    // 雷鼓
+export const THUNDER_BOSS_RATIO   = 0.2;
+export const THUNDER_FX_MS        = 420;     // 稲妻の線が見えている長さ
 // SPEC-054: RTA のときだけ、 宝箱から懐中時計 (= 実時間 10 秒、 ゲーム全体が 2 倍速。 続けて拾うと 10 秒ずつ延びる)
 //   宝箱は 1 ステージ 4 つなので、 1 ステージで縮むのは実時間 40 秒まで (= 共通基盤の RTA の最短時間の根拠。 SPEC-001 6.15)
 export const WATCH_EXT_ID      = 1111;        // 懐中時計
 export const WATCH_DURATION_MS = 10000;       // 実時間
 export const WATCH_SPEED       = 2;
-export const CHEST_DROPS_RTA = [{ kind: "watch", w: 50 }, { kind: "heal", w: 25 }, { kind: "magnet", w: 25 }];
+export const CHEST_DROPS_RTA = [{ kind: "watch", w: 50 }, { kind: "heal", w: 20 }, { kind: "magnet", w: 15 }, { kind: "thunder", w: 15 }];
 
 // ============================================================
 // SPEC-023: ピッカーストック上限 + リロール

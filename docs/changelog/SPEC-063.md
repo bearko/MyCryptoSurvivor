@@ -1,0 +1,1 @@
+- **雷鼓（画面の敵を一掃）** (`js/battle/field.js` + `js/battle/fx.js` + `js/constants.js` + `js/battle/render.js`): 壺・宝箱から出るお助けアイテム。拾うと画面に映っている敵すべてに雷が落ちて倒れ（経験値も落ちる）、ボスには最大 HP の 20%。画面の中の敵の弾も消える

@@ -131,3 +131,8 @@ export function pickSpawnPoint({ rnd, px, py, minD, maxD, halfW, halfH, rects, r
   }
   return null;
 }
+
+/** SPEC-063: 自分 (= 画面の真ん中) から dx, dy の位置が画面に映っているか。 pad だけ外まで含める (= 半分見えている敵も) */
+export function inView(dx, dy, vw, vh, pad = 0) {
+  return Math.abs(dx) <= vw / 2 + pad && Math.abs(dy) <= vh / 2 + pad;
+}

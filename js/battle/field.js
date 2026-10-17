@@ -13,13 +13,13 @@ import {
   OBSTACLE_HITBOX_RATIO, WORLD_W, WORLD_H,
   POT_RADIUS, POT_HP, POT_INITIAL, POT_MAX_ON_FIELD, POT_RESPAWN_MS, POT_CE_GEMS, POT_DROPS,
   CHEST_RADIUS, CHEST_HP, CHEST_TIMES_MS, CHEST_CE_GEMS, CHEST_DROPS, CHEST_DROPS_RTA, WATCH_DURATION_MS,
-  ITEM_RADIUS, ITEM_PICKUP_RADIUS, HEAL_RATIO,
+  ITEM_RADIUS, ITEM_PICKUP_RADIUS, HEAL_RATIO, THUNDER_BOSS_RATIO,
   STAGE_TABLE, SFX,
 } from "../constants.js";
-import { obstacleRect, rollTable, pickSpawnPoint } from "./field-geom.js";
+import { obstacleRect, rollTable, pickSpawnPoint, inView } from "./field-geom.js";
 import { spawnGem } from "./gems.js";
-import { pushDamageNumber } from "./damage.js";
-import { fxBurst } from "./fx.js";
+import { pushDamageNumber, hitEnemy } from "./damage.js";
+import { fxBurst, fxThunder } from "./fx.js";
 import { playSe } from "../audio.js";
 
 function _stage() {
@@ -156,6 +156,8 @@ export function applyItem(kind) {
     pushDamageNumber(b.player.x, b.player.y - b.player.r - 4, "×2 SPEED!", "#ffe39a", "lg");
     fxBurst(b.player.x, b.player.y, "#ffe39a", 16, 180);
     playSe(SFX.PICK_BUFF, 120, 0.6);
+  } else if (kind === "thunder") {
+    thunderStrike();   // SPEC-063
   } else if (kind === "magnet") {
     // 落ちている CE を全部吸い寄せる (= gems.js が毎フレーム近づける)
     for (const g of b.gems) g.magnet = true;
@@ -163,4 +165,32 @@ export function applyItem(kind) {
     fxBurst(b.player.x, b.player.y, "#56ccf2", 14, 200);
     playSe(SFX.GEM_PICKUP, 80, 0.6);
   }
+}
+
+/**
+ * SPEC-063: 雷鼓 — 画面に映っている敵すべてに雷が落ちる。
+ * 雑魚は倒れる (= 撃破数・経験値はふつうに倒したときと同じ)。 ボスは最大 HP の 20%。 壺・宝箱は壊さない。
+ * 画面の中の敵の弾 (= 撃ってくる敵・ボス) も消える。 戻り値: 雷を落とした数
+ */
+export function thunderStrike() {
+  const b = state.battle;
+  const vw = b.viewport.w, vh = b.viewport.h;
+  const px = b.player.x, py = b.player.y;
+  const bolts = [];
+  for (let i = b.enemies.length - 1; i >= 0; i--) {
+    const e = b.enemies[i];
+    if (e.isProp || !inView(e.x - px, e.y - py, vw, vh, e.r)) continue;
+    bolts.push({ x: e.x, y: e.y, seed: Math.random() });
+    hitEnemy(i, e.isBoss ? Math.round(e.hpMax * THUNDER_BOSS_RATIO) : e.hp);
+  }
+  for (const arr of [b.enemyShots, b.bossProjectiles]) {
+    if (!arr) continue;
+    for (let i = arr.length - 1; i >= 0; i--) {
+      if (inView(arr[i].x - px, arr[i].y - py, vw, vh, 0)) arr.splice(i, 1);
+    }
+  }
+  fxThunder(bolts);
+  pushDamageNumber(px, py - b.player.r - 4, "THUNDER!", "#fff3a0", "lg");
+  playSe(SFX.THUNDER, 120, 0.7);
+  return bolts.length;
 }
