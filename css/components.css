@@ -1168,6 +1168,8 @@
   align-self: stretch;
   margin-top: auto;
 }
+/* SPEC-048: RTA の card の 2 本目 (= ABSOLUTE ×2.0)。 1 本目の下に並べる */
+.mode-card__cta--sub { margin-top: 0; }
 .mode-card__sliders {
   display: flex;
   flex-direction: column;

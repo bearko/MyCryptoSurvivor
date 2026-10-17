@@ -37,7 +37,7 @@ import { tickBossAttack } from "./boss-attack.js";
 import { startCoachIfFirst, tickCoach, hideCoach } from "./coach.js";
 import { resetFx, tickFx } from "./fx.js";
 import { startBgm } from "../audio.js";
-import { startRtaRun } from "../platform.js";
+import { startRtaRun, rtaRegulationFor } from "../platform.js";
 import { BGM_BATTLE, STAGE_TABLE } from "../constants.js";
 import { t, tpl } from "../i18n.js";
 
@@ -64,7 +64,11 @@ export function startBattle(hero) {
   }
 
   // SPEC-040: RTA で始めた run は、 ステージ 1 の開始で計測を始める (= 再走も同じ。 前の計測は中断になる)
-  if (state.rtaMode && (state.currentStageIdx ?? 0) === 0) startRtaRun();
+  // SPEC-048: レギュレーションは今のルールから決める (= NORMAL か ABSOLUTE ×2.0 固定)
+  if (state.rtaMode && (state.currentStageIdx ?? 0) === 0) {
+    const reg = rtaRegulationFor(state.regulation, state.absolute);
+    if (reg) startRtaRun(reg);
+  }
   // SPEC-041: 新しい挑戦 (= ステージ 1) では、全ステージ通しの記録を空にして、総合スコアをまだ送っていない状態にする。
   // (= ゲームオーバーからの再走 applyRetry は state.run を空にしていなかったので、ここでそろえる)
   if ((state.currentStageIdx ?? 0) === 0) {
