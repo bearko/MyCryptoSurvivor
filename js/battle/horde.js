@@ -77,7 +77,7 @@ export function spawnBudget(acc, dms, intervalMs, room, maxPerFrame = SPAWN_MAX_
 export const RECYCLE_CHECK_MS = 250;
 export const RECYCLE_MAX = 24;
 /** 湧く輪 (= 画面の半分 + 余白) の何倍より遠ければ寄せ直すか */
-export const RECYCLE_K = 1.7;
+export const RECYCLE_K = 1.4;
 
 /**
  * 置いていかれたか (= 自分を中心にした湧く輪の楕円の k 倍より外)。 純関数

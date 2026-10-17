@@ -418,7 +418,7 @@ export const STAGE_TABLE = [
     // SPEC-065: 中盤から大群。 SPEC-078: ボスの直前に画面の 9 割を敵が埋める (= 湧きを大きく速め、 上限も上げる)
     flood: { fromMs: 15000, fullMs: 230000, maxMul: 20, packFromMs: 60000, packEveryMs: 8000, packSize: 28 },
     density: { fromMs: 10000, fullMs: 230000, max: 1.65 },
-    maxEnemies: 560,
+    maxEnemies: 600,
   },
 ];
 
