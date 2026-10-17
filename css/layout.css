@@ -15,11 +15,10 @@
   transition: opacity 0.3s;
 }
 .splash__logo {
-  /* SPEC-029: 画像ロゴ。 1100×320 banner、 横幅基準で fit */
-  width: min(80vw, 480px);
+  /* SPEC-070: 背景の透けたロゴ (= 1029×583。 光は絵に入っているので filter はかけない) */
+  width: min(72vw, 340px);
   height: auto;
   display: block;
-  filter: drop-shadow(0 0 12px rgba(86, 204, 242, 0.35));
 }
 .splash__loading {
   color: var(--muted);
@@ -109,10 +108,15 @@
   width: 100%;
 }
 .title-screen__logo {
-  width: min(86vw, 600px);
+  /* SPEC-070: 背景の透けたロゴ。 中央にそろう (= 余白は絵の光のぶんだけ) */
+  width: min(80vw, 420px);
   height: auto;
   display: block;
-  filter: drop-shadow(0 0 16px rgba(86, 204, 242, 0.45));
+}
+/* SPEC-070: 縦の短い画面では小さく (= 下のマインちゃんの吹き出しと言語のボタンを重ねない) */
+@media (max-height: 700px) {
+  .title-screen__logo { width: min(60vw, 240px); }
+  .title-screen { gap: 1.1rem; }
 }
 .title-screen__sub {
   margin: 0;
