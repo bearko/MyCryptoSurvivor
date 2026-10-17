@@ -18,6 +18,7 @@ import {
   getMagicCardSprite,
 } from "./sprites.js";
 import { shakeOffset, renderFxWorld, renderFxScreen } from "./fx.js";
+import { renderArenaWorld, renderBossMarkerPointer } from "./arena-render.js";
 import { renderGimmicksUnder, renderGimmicksOver, drawTrojan } from "./gimmicks-render.js";
 
 /** SPEC-057: ダメージ数字の文字の大きさ (= size ごと) */
@@ -74,6 +75,9 @@ export function renderBattle(ctx, nowMs = 0) {
 
   // SPEC-053: 建物 (= 足もとに影を落として、 通れないことを見せる)
   _drawObstacles(ctx, camera, w, h);
+
+  // SPEC-079: ボスの出る場所 (= 予告の赤い丸) と、 ボス戦の枠
+  renderArenaWorld(ctx, camera, w, h, nowMs);
 
   // SPEC-012 / SPEC-015 / SPEC-031: bombs (= 赤い半透明円で当たり判定を可視化 + icon + 点滅)
   for (const b of bombs) {
@@ -441,6 +445,7 @@ export function renderBattle(ctx, nowMs = 0) {
 
   // SPEC-053: 画面の外の宝箱の向き (= 縁に小さな矢印)
   _drawChestPointers(ctx, camera, w, h, enemies);
+  renderBossMarkerPointer(ctx, camera, w, h);   // SPEC-079
   // SPEC-054: 懐中時計の 2 倍速の残り
   _drawFastForward(ctx, w);
 

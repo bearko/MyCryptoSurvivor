@@ -1,0 +1,3 @@
+- **ボスはステージの真ん中に** (`js/battle/arena.js` + `js/battle/arena-render.js` + `js/battle/enemies.js`): 予告のあいだ、出る場所に赤い丸（と、これから閉じる枠の点線）。画面の外なら縁に赤い矢印
+- **ボスが出るとほかの敵が消える** (`js/battle/enemies.js`): 撃破に数えず CE も落とさない（落ちている CE は残る）。ボス戦のあいだは敵が湧かない
+- **ボス戦の枠** (`js/battle/arena.js` + `js/battle/player.js` + `js/battle/gimmicks.js`): ステージの真ん中に 1/4 の広さの枠が閉じてくる。外は暗く、縁は赤く光る。カメラも枠の中を映す

@@ -18,7 +18,8 @@ import { triggerStageEndOrTransition } from "./stage-transition.js";
 import { triggerGameOver } from "./gameover.js";
 import { pushDamageNumber } from "./damage.js";
 import { playSe } from "../audio.js";
-import { fxPlayerHurt, fxBossIncoming, fxBossSpawned, fxBossCountdown } from "./fx.js";
+import { fxPlayerHurt, fxBossIncoming, fxBossSpawned, fxBossCountdown, fxBurst } from "./fx.js";
+import { startArena, BOSS_SPAWN_POS } from "./arena.js";
 import { getObstacleRects } from "./field.js";
 import { resolveCircle, slideAlongWall } from "./field-geom.js";
 import { tickShooter, nextFireMs } from "./enemy-shots.js";
@@ -64,6 +65,7 @@ export function tickEnemies(dt, nowMs) {
     fxBossCountdown(BOSS_SPAWN_AT_MS - b.stageElapsedMs, BOSS_WARNING_LEAD_MS);
   }
   if (!b.bossSpawned && b.stageElapsedMs >= BOSS_SPAWN_AT_MS) {
+    clearForBoss();   // SPEC-079: ほかの敵は消え (= CE は落とさない)、 枠が閉じはじめる
     spawnEnemyAtRing(stage.bossEnemyId);
     b.bossSpawned = true;
     fxBossSpawned();
@@ -83,7 +85,8 @@ export function tickEnemies(dt, nowMs) {
   const spawnInterval = ENEMY_SPAWN_INTERVAL_MS * (stage.spawnIntervalMul ?? 1)
     / Math.max(0.1, absSpawnMul) / floodMul(stage.flood, b.stageElapsedMs);
   // SPEC-078: 経った時間ぶん湧かせる (= 1 コマに何体でも。 湧きを大きく速めても上限で止まる)
-  const bud = spawnBudget(b.spawnAcc, dms, spawnInterval, cap - b.enemies.length);
+  // SPEC-079: ボス戦のあいだは湧かない
+  const bud = spawnBudget(b.spawnAcc, dms, spawnInterval, b.bossSpawned ? 0 : cap - b.enemies.length);
   b.spawnAcc = bud.acc;
   if (bud.n > 0) {
     const pool = currentPool(b.stageElapsedMs);
@@ -92,7 +95,7 @@ export function tickEnemies(dt, nowMs) {
   }
 
   // SPEC-078: 画面の敵の密度を、 時刻ごとの目標まで足す (= 強い武器でどんどん倒しても、 ボスの直前は画面が敵で埋まる)
-  const dn = stage.density;
+  const dn = b.bossSpawned ? null : stage.density;   // SPEC-079: ボス戦のあいだは足さない・寄せ直さない
   if (dn && b.enemies.length < cap) {
     b.densityCheckMs = (b.densityCheckMs ?? 0) - dms;
     if (b.densityCheckMs <= 0) {
@@ -129,7 +132,7 @@ export function tickEnemies(dt, nowMs) {
 
   // SPEC-065: 群れ (= 1 方向から、 まとまって押し寄せる)
   const fl = stage.flood;
-  if (fl && b.stageElapsedMs >= Math.max(fl.packFromMs, b.nextPackMs ?? 0)) {
+  if (fl && !b.bossSpawned && b.stageElapsedMs >= Math.max(fl.packFromMs, b.nextPackMs ?? 0)) {
     b.nextPackMs = b.stageElapsedMs + fl.packEveryMs;
     const pool = currentPool(b.stageElapsedMs);
     const halfW = b.viewport.w / 2 + ENEMY_SPAWN_MARGIN_PX;
@@ -143,8 +146,8 @@ export function tickEnemies(dt, nowMs) {
     }
   }
 
-  // SPEC-033: レアエネミーを 1 分に 1 回スポーン (= 全ステージ共通、 ボス出現中も並行)
-  if (b.enemies.length < cap &&
+  // SPEC-033: レアエネミーを 1 分に 1 回スポーン (= 全ステージ共通。 SPEC-079 でボス戦のあいだは出さない)
+  if (!b.bossSpawned && b.enemies.length < cap &&
       b.stageElapsedMs >= RARE_SPAWN_INTERVAL_MS &&
       nowMs - b.lastRareSpawnMs >= RARE_SPAWN_INTERVAL_MS) {
     const rid = RARE_ENEMY_IDS[Math.floor(Math.random() * RARE_ENEMY_IDS.length)];
@@ -154,7 +157,7 @@ export function tickEnemies(dt, nowMs) {
 
   // SPEC-062: 撃ってくる敵 (= ステージごとに、 決まった時刻から一定の間隔で。 同時に出ている数に上限)
   const sh = stage.shooters;
-  if (sh && b.stageElapsedMs >= sh.fromMs && b.enemies.length < cap &&
+  if (sh && !b.bossSpawned && b.stageElapsedMs >= sh.fromMs && b.enemies.length < cap &&
       nowMs - (b.lastShooterSpawnMs ?? 0) >= sh.everyMs / Math.max(0.1, absSpawnMul)) {
     let alive = 0;
     for (const e of b.enemies) if (e.behavior === "shooter") alive++;
@@ -208,6 +211,25 @@ export function tickEnemies(dt, nowMs) {
   }
 }
 
+/**
+ * SPEC-079: ボスが出るとき、 ほかの敵を消し (= 撃破にも数えず、 CE も落とさない。 落ちている CE は残る)、 枠を閉じはじめる。
+ * 壺・宝箱は残す (= 枠の中へ寄る)。 敵の弾も消す。 画面の中の敵は煙のように消える
+ */
+export function clearForBoss() {
+  const b = state.battle;
+  const cam = b.camera, vw = b.viewport.w, vh = b.viewport.h;
+  let puffs = 0;
+  for (let i = b.enemies.length - 1; i >= 0; i--) {
+    const e = b.enemies[i];
+    if (e.isProp || e.isBoss) continue;
+    const sx = e.x - cam.x, sy = e.y - cam.y;
+    if (puffs < 160 && sx > -e.r && sx < vw + e.r && sy > -e.r && sy < vh + e.r) { fxBurst(e.x, e.y, "#cfc8e6", 3, 90); puffs++; }
+    b.enemies.splice(i, 1);
+  }
+  if (b.enemyShots) b.enemyShots.length = 0;
+  startArena();
+}
+
 /** SPEC-065: 敵どうしを押し分ける (= tickEnemies の最後に呼ぶ) */
 export function tickSeparation() {
   separateEnemies(state.battle.enemies);
@@ -242,8 +264,9 @@ export function spawnEnemyAtRing(enemyId = 101, at = null) {
     x = at.x;
     y = at.y;
   } else if (isBoss) {
-    x = b.player.x;
-    y = b.player.y - halfH;   // 上から登場
+    // SPEC-079: ステージの真ん中 (= ボス戦の枠の中心。 予告のあいだ赤い丸で示す)
+    x = BOSS_SPAWN_POS.x;
+    y = BOSS_SPAWN_POS.y;
   } else {
     const angle = Math.random() * Math.PI * 2;
     x = b.player.x + Math.cos(angle) * halfW;
