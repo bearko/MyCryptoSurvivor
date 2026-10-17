@@ -1,4 +1,4 @@
-// SPEC-074: 壺も宝箱もマイクリのエクステンションの絵。 ほかの絵と取り違えない
+// SPEC-074: 壺も宝箱もマイクリのエクステンションの絵。 ほかの絵と取り違えない (= SPEC-076 で宝箱は 5106)
 // 実行: node --test tests/prop-art.test.mjs
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -10,8 +10,8 @@ import { TROJAN_EXT_ID } from "../js/battle/gimmicks.js";
 
 const EXT = JSON.parse(readFileSync(new URL("../data/extensions.json", import.meta.url), "utf8"));
 
-test("宝箱の絵は 1165 オルゴール (= 木の箱に見える)", () => {
-  assert.equal(CHEST_EXT_ID, 1165);
+test("宝箱の絵は 5106 財宝ゴールデンモアイ (= 作者の指定。 SPEC-076)", () => {
+  assert.equal(CHEST_EXT_ID, 5106);
 });
 
 test("壺・宝箱・お助けアイテム・マジックカード・木馬は、 みな別の絵", () => {
@@ -19,13 +19,14 @@ test("壺・宝箱・お助けアイテム・マジックカード・木馬は�
   assert.equal(new Set(ids).size, ids.length);
 });
 
-test("宝箱の絵は、 武器・強化の絵と重ならない (= 拾うものと壊すものを取り違えない)", () => {
+test("宝箱の絵は、 武器・強化の絵 (= 持ち物の欄に出る 1 段目) と重ならない。 重なるのはモアイの 5 段目の弾だけ (= SPEC-076)", () => {
   const list = Array.isArray(EXT) ? EXT : (EXT.extensions ?? []);
-  const used = new Set();
+  const base = new Set(), tiers = [];
   for (const e of list) {
-    for (const k of ["iconId", "projectileIconId"]) if (e[k] != null) used.add(e[k]);
-    for (const id of e.tierIconIds ?? []) used.add(id);
+    for (const k of ["iconId", "projectileIconId"]) if (e[k] != null) base.add(e[k]);
+    (e.tierIconIds ?? []).forEach((id, i) => { if (id === CHEST_EXT_ID) tiers.push(`${e.series}:${i + 1}`); });
   }
-  assert.ok(used.size > 0);
-  assert.equal(used.has(CHEST_EXT_ID), false);
+  assert.ok(base.size > 0);
+  assert.equal(base.has(CHEST_EXT_ID), false);
+  assert.deepEqual(tiers, ["Moai:5"], "モアイの 5 段目の弾は落ちてきてすぐ消える。 宝箱は止まっていて光の円と HP の帯がある");
 });
