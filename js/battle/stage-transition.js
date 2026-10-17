@@ -71,7 +71,7 @@ export function triggerStageEndOrTransition() {
   _renderTransitionModal();
   const modal = document.getElementById("stageTransitionModal");
   modal?.classList.remove("hidden");
-  // SPEC-058: テロップ (= 斜めの帯とヒーロー・アイン) のあと、 SPEC-046: 上から順に出し、 撃破数を数え上げる
+  // SPEC-058: テロップ (= 斜めの帯とヒーロー・マインちゃん) のあと、 SPEC-046: 上から順に出し、 撃破数を数え上げる
   const snap = state.run.stages.find(s => s.idx === (state.currentStageIdx ?? 0));
   presentResult(modal, "clear", {
     heroId: state.ownedHero?.heroId ?? null,

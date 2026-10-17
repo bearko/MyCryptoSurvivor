@@ -4,7 +4,7 @@
 //
 // ステージクリア・全クリア・倒れたとき、 結果の画面の前に 1.6 秒だけ:
 //   - 斜めの帯が飛びこむ (= MCH の Style/Cutins/battle_result_cutin.css の jack-in の写し)
-//   - 帯の前にヒーローとナビのアインが重なる。 アインは結果に反応する (= 喜ぶ / 涙ぐむ)
+//   - 帯の前にヒーローとナビのマインちゃんが重なる。 マインちゃんは結果に反応する (= 喜ぶ / 涙ぐむ)
 // 押すと飛ばせる。 終わったら結果の画面を上から順に出す (= then)。
 // 動きを減らすときは出さずに、 すぐ then。 pauseTime には触らない (= 結果の画面が止めている)。
 
@@ -14,7 +14,7 @@ import { heroImg } from "./heroes.js";
 import { t } from "./i18n.js";
 
 export const TELOP_MS = 1600;
-/** アインがポーズを変えるとき (= 帯が止まったあと) */
+/** マインちゃんがポーズを変えるとき (= 帯が止まったあと) */
 export const TELOP_POSE2_MS = 700;
 
 /** 結果ごとの表示 (= 純関数。 tests/result-telop.test.mjs) */
@@ -82,7 +82,7 @@ export function presentResult(modal, kind, { heroId = null, then = () => {} } = 
   };
   if (prefersReducedMotion() || !_ensure()) { finishModal(); return; }
 
-  naviHide();   // 戦闘の通信の窓は引っこめる (= アインはテロップの前に出る)
+  naviHide();   // 戦闘の通信の窓は引っこめる (= マインちゃんはテロップの前に出る)
   const spec = telopSpec(kind);
   _el.dataset.tone = spec.tone;
   _el.dataset.kind = kind;

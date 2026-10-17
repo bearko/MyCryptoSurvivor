@@ -12,7 +12,7 @@ test("テロップは短く (= 結果を待たせない。 押せば飛ばせる
   assert.ok(TELOP_POSE2_MS > 0 && TELOP_POSE2_MS < TELOP_MS);
 });
 
-test("どの結果にも ja・en の文と、 アインのポーズが 2 つある", () => {
+test("どの結果にも ja・en の文と、 マインちゃんのポーズが 2 つある", () => {
   for (const [kind, spec] of Object.entries(TELOP_KINDS)) {
     for (const key of [spec.sub, spec.line]) {
       assert.ok(ui[key]?.ja && ui[key]?.en, `${kind}: ${key}`);

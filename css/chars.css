@@ -1,14 +1,14 @@
 /* ============================================================
    chars.css — キャラクターと UI の重なり (= SPEC-056)
    ============================================================
-   - ナビのアイン: 画面の下からのぞきこみ、 端末の通信窓 (= 吹き出し) で喋る
+   - ナビのマインちゃん: 画面の下からのぞきこみ、 端末の通信窓 (= 吹き出し) で喋る
    - ヒーロー選択: 大きなドット絵の裏に名前の大きな文字。 選ぶたびに構図が変わる
    - ステージの始まり: 帯 (= テロップ) の手前にヒーロー
    ドット絵は 64 / 96 の整数倍で、 image-rendering: pixelated。
    ============================================================ */
 
 /* ------------------------------------------------------------
-   1. ナビのアイン
+   1. ナビのマインちゃん
    ------------------------------------------------------------ */
 .navi {
   --s: 2;                                  /* 絵の倍率 (= 整数) */
@@ -42,7 +42,7 @@
   image-rendering: pixelated;
   -webkit-user-drag: none;
 }
-/* 吹き出し = 通信窓。 左下の角が、 アインのほうへ伸びる */
+/* 吹き出し = 通信窓。 左下の角が、 マインちゃんのほうへ伸びる */
 .navi__bubble,
 .navi__measure {
   box-sizing: border-box;
@@ -94,7 +94,7 @@
 .navi__bubble--more.navi__bubble--done .navi__next { opacity: 1; animation: navi-next 0.9s ease-in-out infinite; }
 @keyframes navi-next { 50% { transform: translateY(2px); opacity: 0.4; } }
 
-/* たたむ (= 言い終えて少したったら。 アインを押すとまた開く) */
+/* たたむ (= 言い終えて少したったら。 マインちゃんを押すとまた開く) */
 .navi__bubble { transition: width 300ms var(--ease-spring), height 300ms var(--ease-spring), opacity 220ms ease, scale 220ms ease; }
 .navi--quiet .navi__bubble { opacity: 0; scale: 0.6; pointer-events: none; }
 
@@ -122,32 +122,7 @@
 }
 
 /* 置き場所 */
-.navi[data-place="mode"] {
-  --s: 1;
-  --peek: 0.12;
-  left: auto;
-  right: max(2px, var(--safe-r));
-}
-.navi[data-place="mode"] .navi__body { transform: scaleX(-1); }
-.navi[data-place="mode"].navi--in .navi__body { animation-name: navi-in-flip; }
-@keyframes navi-in-flip {
-  from { transform: scaleX(-1) translateY(70%); }
-  to   { transform: scaleX(-1) translateY(0); }
-}
-.navi[data-place="mode"] .navi__bubble {
-  left: auto;
-  right: calc(70px * var(--s));
-  bottom: calc(128px * var(--s) * 0.6);
-  transform-origin: 100% 100%;
-  padding: 0.55rem calc(0.85rem + 10px) 0.6rem 0.85rem;
-  clip-path: polygon(9px 0, calc(100% - 10px) 0, calc(100% - 10px) calc(100% - 14px), 100% 100%, 0 100%, 0 9px);
-  background:
-    linear-gradient(270deg, transparent 10px, var(--node-cyan) 10px 12px, transparent 12px),
-    linear-gradient(180deg, rgba(86, 204, 242, 0.16), transparent 45%),
-    var(--node-scan),
-    linear-gradient(165deg, #1f2c3e 0%, #151b28 100%);
-}
-/* 通信窓 (= ヒーロー選択と戦闘): 顔だけの小窓と吹き出し。 ボタンも戦場も隠さない */
+/* 通信窓 (= 戦闘): 顔だけの小窓と吹き出し。 戦場を隠さない */
 .navi--comm {
   --s: 1;
   position: absolute;
@@ -210,9 +185,138 @@
 @media (max-height: 760px) {
   .navi[data-place="title"] { --s: 1; --peek: 0.1; }
 }
-/* さらに短い画面のモード選択は、 吹き出しを出さない (= カードのボタンに重なるため) */
+
+/* 通信の帯 (= モード選択・ヒーロー選択。 SPEC-059)
+   画面の下の専用の帯に、 顔のアイコンとセリフ。 画面のほうが帯の高さぶんを空けるので、 ほかの UI と重ならない。
+   ヒーロー選択の大きなヒーローの絵 (= 見せ場) には重ねない */
+:root { --navi-dock-h: 88px; }
+.navi__name { display: none; }
+.navi--dock {
+  --cut: 10px;
+  position: fixed;
+  left: max(8px, var(--safe-l));
+  right: max(8px, var(--safe-r));
+  top: auto;
+  bottom: max(8px, var(--safe-b));
+  width: auto;
+  max-width: 560px;
+  height: var(--navi-dock-h);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px 7px 7px;
+  box-sizing: border-box;
+  z-index: calc(var(--z-modal) + 5);
+  pointer-events: auto;
+  border: 1.5px solid transparent;
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+  background:
+    linear-gradient(135deg, var(--node-cyan) 0 calc(var(--cut) * 0.7071 + 1px), transparent 0) border-box,
+    linear-gradient(-45deg, var(--accent) 0 calc(var(--cut) * 0.7071 + 1px), transparent 0) border-box,
+    linear-gradient(180deg, rgba(86, 204, 242, 0.12), transparent 50%) padding-box,
+    var(--node-scan) padding-box,
+    linear-gradient(165deg, #1f2c3e 0%, #141a26 100%) padding-box,
+    linear-gradient(135deg, var(--node-cyan), rgba(86, 204, 242, 0.25) 55%, var(--accent)) border-box;
+}
+/* 顔のアイコン (= 96x128 の絵の (34, 22) から 36x36 を 2 倍で) */
+.navi--dock .navi__body {
+  position: relative;
+  order: -1;
+  flex: 0 0 auto;
+  width: 72px;
+  height: 72px;
+  overflow: hidden;
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+  background: var(--node-scan), radial-gradient(circle at 50% 40%, #2f5878, #121a26 75%);
+  box-shadow: inset 0 0 0 1.5px var(--node-cyan);
+  filter: none;
+}
+.navi--dock .navi__img {
+  position: absolute;
+  width: 192px;
+  height: 256px;
+  max-width: none;
+  left: -68px;
+  top: -50px;
+}
+/* セリフ: 帯の残りの幅いっぱい。 大きさは帯が決める (= 測ってばねで追わない) */
+.navi--dock .navi__bubble {
+  position: relative;
+  flex: 1 1 auto;
+  align-self: stretch;
+  left: auto;
+  bottom: auto;
+  min-width: 0;
+  max-width: none;
+  padding: 2px 4px 2px 0;
+  clip-path: none;
+  background: none;
+  box-shadow: none;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  transform-origin: 0 50%;
+  transition: none;
+}
+.navi--dock .navi__name {
+  display: block;
+  margin-bottom: 2px;
+  font-family: var(--font-num);
+  font-weight: 700;
+  font-size: 0.6rem;
+  letter-spacing: 0.3em;
+  color: var(--node-cyan);
+  text-shadow: 0 0 8px rgba(86, 204, 242, 0.55);
+}
+.navi--dock .navi__next { right: 0; bottom: 0; }
+/* 帯は下からせり上がる (= 中の顔と吹き出しは動かさない) */
+.navi--dock.navi--in { animation: navi-dock-in 420ms var(--ease-spring) both; }
+.navi--dock.navi--out { animation: navi-dock-out 220ms var(--ease-out) both; }
+.navi--dock.navi--in .navi__body,
+.navi--dock.navi--in .navi__bubble,
+.navi--dock.navi--out .navi__body,
+.navi--dock.navi--out .navi__bubble { animation: none; }
+@keyframes navi-dock-in {
+  from { translate: 0 120%; opacity: 0; }
+  to   { translate: 0 0; opacity: 1; }
+}
+@keyframes navi-dock-out {
+  to { translate: 0 120%; opacity: 0; }
+}
+/* 帯のぶんを空ける (= モード選択はスクロールでき、 ヒーロー選択のカードは帯の上に収まる) */
+.mode-select {
+  justify-content: flex-start;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-bottom: calc(var(--navi-dock-h) + 16px + var(--safe-b));
+}
+.mode-select > :first-child { margin-top: auto; }
+.mode-select > :last-child { margin-bottom: auto; }
+.hero-modal { padding-bottom: calc(var(--navi-dock-h) + 16px + var(--safe-b)); }
+/* カードが低くなっても中身は縮めない (= ヒーローの見せ場が潰れない)。 はみ出すぶんはカードの中でスクロールし、
+   「冒険を始める」はカードの下に貼りつく */
+.hero-modal__card > *,
+.hero-stage { flex-shrink: 0; }
+.hero-modal__cta { position: sticky; bottom: 0; z-index: 2; }
+/* 横に広い画面では、 帯をカードの左下の空きに置く (= ヒーロー選択のカードを縦いっぱいに使う)。
+   カードは幅 560px で真ん中なので、 帯の右端 (= 16px + 50vw - 300px) はカードの左端 (= 50vw - 280px) に届かない */
+@media (min-width: 1200px) {
+  .navi--dock {
+    left: max(16px, var(--safe-l));
+    right: auto;
+    width: min(340px, calc(50vw - 300px));
+    margin: 0;
+  }
+  .hero-modal { padding-bottom: max(1rem, var(--safe-b)); }
+}
+/* 縦の短い画面では帯を細く (= 2 行・小さい顔) */
 @media (max-height: 700px) {
-  .navi[data-place="mode"] .navi__bubble { display: none; }
+  :root { --navi-dock-h: 66px; }
+  .navi--dock { padding: 6px 8px 6px 6px; gap: 8px; }
+  .navi--dock .navi__body { width: 52px; height: 52px; }
+  .navi--dock .navi__img { left: -78px; top: -60px; }
+  .navi--dock .navi__bubble { font-size: 0.74rem; line-height: 1.4; }
+  .navi--dock .navi__name { font-size: 0.54rem; margin-bottom: 1px; }
 }
 
 /* ------------------------------------------------------------
@@ -342,6 +446,8 @@
 /* ------------------------------------------------------------
    4. 動きを減らす
    ------------------------------------------------------------ */
+:root[data-reduce-fx] .navi--dock.navi--in,
+:root[data-reduce-fx] .navi--dock.navi--out,
 :root[data-reduce-fx] .navi--in .navi__body,
 :root[data-reduce-fx] .navi--in .navi__bubble,
 :root[data-reduce-fx] .navi__bubble--turn,

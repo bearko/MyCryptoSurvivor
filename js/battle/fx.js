@@ -266,7 +266,7 @@ function _showBossCutin() {
   const name = doc.getElementById("bossCutinName");
   if (sprite) sprite.src = enemyImg(stage.bossEnemyId);
   if (name) name.textContent = localizedEnemyName(boss, getLang()) || "BOSS";
-  // アインが通信窓で知らせる (= 言い終えると引っこむ)
+  // マインちゃんが通信窓で知らせる (= 言い終えると引っこむ)
   const hud = doc.getElementById("hud");
   const top = (hud ? Math.round(hud.getBoundingClientRect().bottom) : 0) + (state.rtaMode ? 40 : 8);
   naviSay(naviLines("boss"), { place: "battle", autoHideMs: 1400, top });
