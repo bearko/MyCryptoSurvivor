@@ -202,7 +202,8 @@ export function renderBattle(ctx, nowMs = 0) {
     let drew = false;
     if (p.iconId != null) {
       const sp = getExtSprite(p.iconId);
-      const angle = Math.atan2(p.vy, p.vx) + (p.iconRotOffset ?? 0);
+      // SPEC-073: 回る弾 (= パンジャンドラム) は転がった角度、 それ以外は進む向き
+      const angle = p.spin ? (p.rot ?? 0) : Math.atan2(p.vy, p.vx) + (p.iconRotOffset ?? 0);
       drew = drawSpriteRotated(ctx, sp, sx, sy, p.iconSize ?? 18, angle);
     }
     if (!drew) {
