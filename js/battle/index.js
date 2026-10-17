@@ -14,7 +14,6 @@ import {
   STATS_INITIAL, STATS_MAX,
   HERO_STARTING_WEAPON, HERO_STARTING_WEAPON_DEFAULT,
   HERO_HP_BASE, HERO_HP_PER_STAT, HERO_SPEED_BASE, HERO_SPEED_PER_AGI,
-  REROLL_PER_BATTLE,
 } from "../constants.js";
 import { getExt, getCategory } from "../extensions.js";
 import { installInput, getInputVector } from "./input.js";
@@ -29,6 +28,9 @@ import { rebuildWeaponsFromOwned } from "./extensions-as-weapons.js";
 import { renderBattle } from "./render.js";
 import { getHeroSprite, getDefaultEnemySprite, getBackgroundSprite } from "./sprites.js";
 import { tickRegen, resetBuffs } from "./buffs.js";
+import { perksForRun, perk, rerollsPerBattle, baseMaxHp } from "../perks.js";   // SPEC-090c
+import { getMeta } from "../meta.js";
+import { triggerLevelUpPick } from "./levelup.js";
 import {
   tickOrbits, tickBeams, tickBombs, tickHomingProjectiles,
   tickShockwaves,
@@ -89,6 +91,10 @@ export function startBattle(hero) {
   }
 
   const b = state.battle;
+  // SPEC-090c: スキルツリーの効果 (= RTA では切る)。 不死鳥は 1 回の挑戦に 1 度
+  state.perks = perksForRun(getMeta(), { rta: !!state.rtaMode });
+  if ((state.currentStageIdx ?? 0) === 0) b.phoenixUsed = false;
+  b.xpAcc = 0;
   b.player.x = 0;
   b.player.y = 0;
   b.player.r = Math.round(PLAYER_RADIUS * CHAR_SCALE);   // SPEC-077
@@ -123,7 +129,7 @@ export function startBattle(hero) {
   b.bossDefeated       = false;                 // SPEC-022: ボス撃破フラグ
   b.fastForwardMs      = 0;                     // SPEC-054: 2 倍速はステージをまたがない
   _ffOffsetMs          = 0;
-  b.rerollsLeft        = REROLL_PER_BATTLE;     // SPEC-023: picker リロール残数
+  b.rerollsLeft        = rerollsPerBattle();    // SPEC-023: picker リロール残数 (+ SPEC-090c 引き直し)
   // SPEC-030: ボス攻撃エンティティを毎戦リセット
   b.bossProjectiles    = b.bossProjectiles ?? [];
   b.bossOrbits         = b.bossOrbits      ?? [];
@@ -150,9 +156,10 @@ export function startBattle(hero) {
   // SPEC-014: hero.stats.hp / agi から HP 上限と移動速度を派生 (= hero ごとに性能差)
   const heroHpStat   = hero?.stats?.hp  ?? 0;
   const heroAgiStat  = hero?.stats?.agi ?? 0;
-  const heroMaxHp    = HERO_HP_BASE    + Math.round(heroHpStat  * HERO_HP_PER_STAT);
+  const heroMaxHp    = baseMaxHp(HERO_HP_BASE + Math.round(heroHpStat * HERO_HP_PER_STAT));   // SPEC-090c: 頑丈なからだ・鉄壁
   const heroSpeed    = HERO_SPEED_BASE + Math.round(heroAgiStat * HERO_SPEED_PER_AGI);
   state.statsMax.hp  = heroMaxHp;
+  b.baseMaxHp        = heroMaxHp;   // SPEC-090c: アーマーはこれに足す (= buffs.js)
   state.stats.hp     = heroMaxHp;
   b.player.speed     = heroSpeed;
   state.xp           = XP_INITIAL;
@@ -174,6 +181,9 @@ export function startBattle(hero) {
   b.active = true;
   resetFx();             // SPEC-045: 揺れ・粒・予告をステージごとに作り直す
   startCoachIfFirst();   // SPEC-042: 初回のステージ 1 だけ操作ガイド
+  // SPEC-090c: 先手 (= 始まってすぐ選ぶ。 各ステージの始まりに。 経験値の梯子は進めない)
+  const headStart = perk("startLevels");
+  if (headStart > 0) { state.level += headStart; triggerLevelUpPick(headStart); }
   _showStageIntro();     // SPEC-046: 「STAGE n / ステージ名」の帯
   resizeCanvas();
   _placeToasts();        // SPEC-052: 通知は HUD (と RTA の時計) の下に出す

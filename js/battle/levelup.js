@@ -6,6 +6,7 @@
 // pending count を持っているので、 1 フレーム複数 LV up でも連鎖して開く。
 
 import { state, pauseTime, resumeTime } from "../state.js";
+import { perk, stockLimit } from "../perks.js";   // SPEC-090c
 import {
   EXT_ROSTER, extImg, extTierImg, getExt, getCategory,
   getTierName, getSkillName, getSkillDesc,
@@ -157,8 +158,8 @@ function _samplePicks(n, exclude = new Set(), last = new Set()) {
     .filter(o => getCategory(getExt(o.extId)) === "weapon").length;
   const ownedBuffCount   = state.ownedExtensions
     .filter(o => getCategory(getExt(o.extId)) === "buff").length;
-  const weaponStockFull = ownedWeaponCount >= STOCK_LIMIT_WEAPON;
-  const buffStockFull   = ownedBuffCount   >= STOCK_LIMIT_BUFF;
+  const weaponStockFull = ownedWeaponCount >= stockLimit("weapon");   // SPEC-090c: 大きな鞄で +1
+  const buffStockFull   = ownedBuffCount   >= stockLimit("buff");
 
   const eligible = EXT_ROSTER.filter(e => {
     const o = ownedById.get(String(e.extId));
@@ -212,6 +213,12 @@ export function rerollPicks() {
  */
 export function skipPick() {
   if (!_isOpen || _picking || state.pendingPickIsStarter) return;
+  // SPEC-090c: 見送りの礼 (= スキップすると HP が少し戻る)
+  const heal = Math.round(state.statsMax.hp * perk("skipHeal"));
+  if (heal > 0) {
+    state.stats.hp = Math.min(state.statsMax.hp, state.stats.hp + heal);
+    playSe(SFX.PICK_HEAL, 100, 0.55);
+  }
   _close();
 }
 
@@ -437,7 +444,7 @@ function _renderOwned() {
   const head = document.getElementById("levelUpOwnedHead");
   if (head) head.textContent = t("levelup.owned", "装備中");
   const lang = getLang();
-  const groups = ownedStripGroups(owned, (o) => getCategory(getExt(o.extId)));
+  const groups = ownedStripGroups(owned, (o) => getCategory(getExt(o.extId)), { weaponLimit: stockLimit("weapon"), buffLimit: stockLimit("buff") });   // SPEC-090c
   for (const g of groups) {
     const row = document.createElement("div");
     row.className = "levelup-owned__row";

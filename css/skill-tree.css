@@ -262,3 +262,17 @@
   .tnode.pop, .tnode.burst, .tnode.can .tnode-panel, .tree-links .link-flow, .tree-links .link.grow, .tree-shock, .tree-notice { animation: none; }
   .tree-world.glide { transition: none; }
 }
+
+/* ---- SPEC-090c: ヒーロー選択の 1 行 (= いま効いている恒久強化) ---- */
+.hero-perks {
+  margin: 0.15rem 0 0.1rem;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.68rem;
+  line-height: 1.4;
+  letter-spacing: 0.03em;
+  text-align: center;
+  color: var(--node-gold-hi, #f6e2a0);
+  background: rgba(196, 163, 90, 0.08);
+  border: 1px solid rgba(196, 163, 90, 0.3);
+  border-radius: var(--r-sm);
+}

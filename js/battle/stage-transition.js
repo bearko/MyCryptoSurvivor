@@ -19,6 +19,7 @@ import { countUp, revealIn } from "../reveal.js";
 import { presentResult } from "../result-telop.js";
 import { grantBossDust } from "../meta.js";
 import { renderRewards } from "../meta-ui.js";
+import { perk } from "../perks.js";   // SPEC-090c
 
 let _wired = false;
 
@@ -56,7 +57,7 @@ export function triggerStageEndOrTransition() {
   // SPEC-090: ボスを倒したらゴールドダスト (= 5:00 まで耐えたときは出ない)。 snapshot に控えて結果の画面に出す
   if (state.battle.bossDefeated) {
     const snap = state.run.stages.find(s => s.idx === (state.currentStageIdx ?? 0));
-    if (snap && snap.dust == null) snap.dust = grantBossDust(state.currentStageIdx ?? 0);
+    if (snap && snap.dust == null) snap.dust = grantBossDust(state.currentStageIdx ?? 0, { bonus: perk("bossDust") });   // SPEC-090c: 金運
   }
 
   // SPEC-039: 共通基盤のトロフィー（最初のステージ・全ステージクリア）

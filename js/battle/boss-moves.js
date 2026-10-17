@@ -11,12 +11,12 @@
 // ファオの放射・yamap の周回 (= boss-attack.js) はそのまま重ねる。 時間はゲームの中の時間。
 
 import { state } from "../state.js";
-import { CONTACT_COOLDOWN_MS, SFX, FAO_PROJ_R, FAO_PROJ_ICON_SIZE, FAO_PROJ_LIFE_MS } from "../constants.js";
+import { SFX, FAO_PROJ_R, FAO_PROJ_ICON_SIZE, FAO_PROJ_LIFE_MS } from "../constants.js";
 import { currentBounds } from "./arena.js";
-import { pushDamageNumber } from "./damage.js";
+import { hurtPlayer } from "./hurt.js";   // SPEC-090c
+import { windupMs } from "../perks.js";   // SPEC-090c: 見切り (= 予告が長い)
 import { playSe } from "../audio.js";
-import { fxPlayerHurt, fxBurst } from "./fx.js";
-import { triggerGameOver } from "./gameover.js";
+import { fxBurst } from "./fx.js";
 
 /** ボスごとの型 (= moves: 型 → 間隔 ms)。 hpMul: ENEMY_SPECS の HP に掛ける (= 自動プレイで、 ボス戦がおよそ 40 秒になるように。 SPEC-078 で敵が増え、 ボスの前にレベルが 40 前後まで上がるため) */
 export const BOSS_MOVES = {
@@ -145,13 +145,13 @@ function _tickAct(boss, mv, dms, dt) {
   if (act.kind === "charge") {
     if (act.phase === "windup") {
       // 向きは途中まで自分を追い、 lockAt を過ぎたら固まる (= 最後の一瞬で横へ逃げられる)
-      if (act.t < CHARGE.windupMs * CHARGE.lockAt) {
+      if (act.t < windupMs(CHARGE.windupMs) * CHARGE.lockAt) {
         const a = Math.atan2(b.player.y - boss.y, b.player.x - boss.x);
         act.dx = Math.cos(a); act.dy = Math.sin(a);
       }
       act.len = rayToBounds(boss.x, boss.y, act.dx, act.dy, currentBounds(), boss.r, CHARGE.maxLen);
-      mv.shake = (Math.random() - 0.5) * 4 * Math.min(1, act.t / CHARGE.windupMs);
-      if (act.t >= CHARGE.windupMs) {
+      mv.shake = (Math.random() - 0.5) * 4 * Math.min(1, act.t / windupMs(CHARGE.windupMs));
+      if (act.t >= windupMs(CHARGE.windupMs)) {
         act.phase = "dash"; act.t = 0; act.run = 0;
         boss.dmg = Math.round(mv.baseDmg * CHARGE.dmgMul);
         playSe(SFX.TROJAN_OPEN, 0, 0.45);
@@ -170,8 +170,8 @@ function _tickAct(boss, mv, dms, dt) {
     }
   } else if (act.kind === "slam") {
     if (act.phase === "windup") {
-      mv.shake = (Math.random() - 0.5) * 3 * Math.min(1, act.t / SLAM.windupMs);
-      if (act.t >= SLAM.windupMs) {
+      mv.shake = (Math.random() - 0.5) * 3 * Math.min(1, act.t / windupMs(SLAM.windupMs));
+      if (act.t >= windupMs(SLAM.windupMs)) {
         act.phase = "recover"; act.t = 0;
         const p = b.player;
         if (Math.hypot(p.x - boss.x, p.y - boss.y) <= act.radius + p.r) _hurt(mv.def.slam.dmg);
@@ -217,15 +217,7 @@ function _fireRing(boss, def) {
 }
 
 function _hurt(raw) {
-  const b = state.battle;
-  if (b.gameOver || b.contactCooldownMs > 0) return;
-  const taken = Math.max(1, Math.round(raw * (state.buffs?.dmgTakenMul ?? 1)));
-  state.stats.hp = Math.max(0, state.stats.hp - taken);
-  b.contactCooldownMs = CONTACT_COOLDOWN_MS;
-  pushDamageNumber(b.player.x, b.player.y - b.player.r - 4, taken, "#ff7676");
-  playSe(SFX.PLAYER_DAMAGED, 200, 0.55);
-  fxPlayerHurt(true);
-  if (state.stats.hp <= 0 && !b.gameOver) triggerGameOver();
+  hurtPlayer(raw, { boss: true });   // SPEC-090c: 被弾は 1 か所 (= hurt.js)
 }
 
 function _tickRings(dms) {

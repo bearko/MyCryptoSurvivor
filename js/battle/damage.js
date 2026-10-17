@@ -21,6 +21,7 @@ import { breakTrojan } from "./gimmicks.js";
 import {
   HIT_FREEZE_MS, DAMAGE_NUMBER_LIFE_MS, DAMAGE_NUMBER_RISE_PX_S,
 } from "../constants.js";
+import { bossDmgDealtMul } from "../perks.js";   // SPEC-090c
 
 /**
  * 敵に damage を与える。 数字 floater + hit freeze を一括処理。
@@ -32,6 +33,7 @@ export function hitEnemy(idx, dmg) {
   const enemies = state.battle.enemies;
   const e = enemies[idx];
   if (!e) return false;
+  if (e.isBoss) dmg *= bossDmgDealtMul();   // SPEC-090c: 竜の爪・竜殺し
   const dmgInt = Math.max(0, Math.round(dmg));
   if (dmgInt <= 0) return false;
   e.hp -= dmgInt;

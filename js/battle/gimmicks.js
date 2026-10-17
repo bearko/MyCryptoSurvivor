@@ -10,12 +10,12 @@
 // 予告 (= 線・印・残り秒) を必ず先に見せる (= 見てから避けられる)。
 
 import { state } from "../state.js";
-import { STAGE_TABLE, WORLD_W, WORLD_H, CONTACT_COOLDOWN_MS, CHEST_DROPS, SFX } from "../constants.js";
+import { STAGE_TABLE, WORLD_W, WORLD_H, CHEST_DROPS, SFX } from "../constants.js";
 import { stageMaxEnemies } from "./horde.js";
-import { hitEnemy, pushDamageNumber } from "./damage.js";
-import { fxBurst, fxPlayerHurt } from "./fx.js";
+import { hitEnemy } from "./damage.js";
+import { hurtPlayer } from "./hurt.js";   // SPEC-090c
+import { fxBurst } from "./fx.js";
 import { playSe } from "../audio.js";
-import { triggerGameOver } from "./gameover.js";
 import { getObstacleRects, spawnItem } from "./field.js";
 import { pickSpawnPoint, rollTable } from "./field-geom.js";
 import { spawnEnemyAtRing, currentPool } from "./enemies.js";
@@ -160,15 +160,7 @@ function _dmgMul() {
 
 /** 仕掛けが自分に当たった (= 被弾の間隔は体当たりと共通) */
 function _hurtPlayer(raw) {
-  const b = state.battle;
-  if (b.gameOver || b.contactCooldownMs > 0) return;
-  const taken = Math.max(1, Math.round(raw * _dmgMul() * (state.buffs?.dmgTakenMul ?? 1)));
-  state.stats.hp = Math.max(0, state.stats.hp - taken);
-  b.contactCooldownMs = CONTACT_COOLDOWN_MS;
-  pushDamageNumber(b.player.x, b.player.y - b.player.r - 4, taken, "#ff7676");
-  playSe(SFX.PLAYER_DAMAGED, 200, 0.55);
-  fxPlayerHurt(false);
-  if (state.stats.hp <= 0 && !b.gameOver) triggerGameOver();
+  hurtPlayer(raw * _dmgMul(), { boss: false, shake: false });   // SPEC-090c: 被弾は 1 か所 (= hurt.js)
 }
 
 // SPEC-079: ボス戦の枠があれば、 その中に収める

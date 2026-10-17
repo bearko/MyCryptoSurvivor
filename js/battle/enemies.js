@@ -5,20 +5,27 @@
 
 import { state } from "../state.js";
 import {
-  ENEMY_SPAWN_INTERVAL_MS, ENEMY_SPAWN_MARGIN_PX,
-  ENEMY_COLOR, MAX_ENEMIES,
-  CONTACT_COOLDOWN_MS,
-  STAGE_DURATION_MS, BOSS_SPAWN_AT_MS, BOSS_WARNING_LEAD_MS,
-  WAVE_TABLE, ENEMY_SPECS, STAGE_TABLE,
-  WORLD_W, WORLD_H,
-  RARE_ENEMY_IDS, RARE_SPAWN_INTERVAL_MS,
-  SFX, CHAR_SCALE, BOSS_CHAR_SCALE,
+  ENEMY_SPAWN_INTERVAL_MS,
+  ENEMY_SPAWN_MARGIN_PX,
+  ENEMY_COLOR,
+  MAX_ENEMIES,
+  STAGE_DURATION_MS,
+  BOSS_SPAWN_AT_MS,
+  BOSS_WARNING_LEAD_MS,
+  WAVE_TABLE,
+  ENEMY_SPECS,
+  STAGE_TABLE,
+  WORLD_W,
+  WORLD_H,
+  RARE_ENEMY_IDS,
+  RARE_SPAWN_INTERVAL_MS,
+  CHAR_SCALE,
+  BOSS_CHAR_SCALE,
 } from "../constants.js";
 import { triggerStageEndOrTransition } from "./stage-transition.js";
-import { triggerGameOver } from "./gameover.js";
-import { pushDamageNumber } from "./damage.js";
-import { playSe } from "../audio.js";
-import { fxPlayerHurt, fxBossIncoming, fxBossSpawned, fxBossCountdown, fxBurst } from "./fx.js";
+import { hurtPlayer } from "./hurt.js";   // SPEC-090c
+import { rareIntervalMs } from "../perks.js";   // SPEC-090c
+import { fxBossIncoming, fxBossSpawned, fxBossCountdown, fxBurst } from "./fx.js";
 import { startArena, BOSS_SPAWN_POS } from "./arena.js";
 import { BOSS_MOVES, bossHoldsStill } from "./boss-moves.js";
 import { getObstacleRects } from "./field.js";
@@ -149,8 +156,8 @@ export function tickEnemies(dt, nowMs) {
 
   // SPEC-033: レアエネミーを 1 分に 1 回スポーン (= 全ステージ共通。 SPEC-079 でボス戦のあいだは出さない)
   if (!b.bossSpawned && b.enemies.length < cap &&
-      b.stageElapsedMs >= RARE_SPAWN_INTERVAL_MS &&
-      nowMs - b.lastRareSpawnMs >= RARE_SPAWN_INTERVAL_MS) {
+      b.stageElapsedMs >= rareIntervalMs() &&
+      nowMs - b.lastRareSpawnMs >= rareIntervalMs()) {
     const rid = RARE_ENEMY_IDS[Math.floor(Math.random() * RARE_ENEMY_IDS.length)];
     spawnEnemyAtRing(rid);
     b.lastRareSpawnMs = nowMs;
@@ -199,17 +206,7 @@ export function tickEnemies(dt, nowMs) {
     }
 
     if (b.contactCooldownMs <= 0 && d < e.r + b.player.r) {
-      const taken = e.dmg * (state.buffs?.dmgTakenMul ?? 1);
-      const takenInt = Math.max(1, Math.round(taken));
-      state.stats.hp -= takenInt;
-      if (state.stats.hp < 0) state.stats.hp = 0;
-      b.contactCooldownMs = CONTACT_COOLDOWN_MS;
-      pushDamageNumber(b.player.x, b.player.y - b.player.r - 4, takenInt, "#ff7676");
-      playSe(SFX.PLAYER_DAMAGED, 200, 0.55);
-      fxPlayerHurt(!!e.isBoss);   // SPEC-045: 縁の赤・揺れ
-      if (state.stats.hp <= 0 && !b.gameOver) {
-        triggerGameOver();
-      }
+      hurtPlayer(e.dmg, { boss: !!e.isBoss });   // SPEC-090c: 被弾は 1 か所 (= hurt.js)。 ボスなら大きく揺らす
     }
   }
 }

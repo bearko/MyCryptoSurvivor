@@ -42,13 +42,16 @@ export function rewardScore(stages, cleared) {
   return kills * 100 + best * 500 + ext.size * 300 + speed + 5000;
 }
 
+/** 名前を変えた節 (= 払った GUM を失わないように読み替える) */
+export const RENAMED_NODES = Object.freeze({ mov_wall: "mov_dash" });
+
 /** 壊れた保存を既定に直す。 純関数 */
 export function normalizeMeta(raw) {
   const r = (raw && typeof raw === "object") ? raw : {};
   const int = (v) => Math.max(0, Math.floor(Number(v) || 0));
   const nodes = {};
   if (r.nodes && typeof r.nodes === "object") {
-    for (const [k, v] of Object.entries(r.nodes)) { const n = int(v); if (n > 0 && /^[\w.]+$/.test(k)) nodes[k] = n; }
+    for (const [k0, v] of Object.entries(r.nodes)) { const k = RENAMED_NODES[k0] ?? k0; const n = int(v); if (n > 0 && /^[\w.]+$/.test(k)) nodes[k] = Math.max(nodes[k] ?? 0, n); }
   }
   return {
     v: META_VERSION,
@@ -145,9 +148,9 @@ export function runStagesForRewards() {
 }
 
 /** 挑戦が終わったとき (= 全クリア・敗北): GUM を足して、 { gum, score } を返す */
-export function grantRunRewards(cleared) {
+export function grantRunRewards(cleared, { gumMul = 0 } = {}) {
   const score = rewardScore(runStagesForRewards(), !!cleared);
-  const gum = gumForScore(score);
+  const gum = Math.round(gumForScore(score) * (1 + Math.max(0, Number(gumMul) || 0)));   // SPEC-090c: 金勘定・金運
   const m = addRewards({ gum });
   m.runs += 1;
   _save();
@@ -155,8 +158,8 @@ export function grantRunRewards(cleared) {
 }
 
 /** ボスを倒したとき: ゴールドダストを足して、 その数を返す */
-export function grantBossDust(stageIdx) {
-  const dust = dustForStage(stageIdx);
+export function grantBossDust(stageIdx, { bonus = 0 } = {}) {
+  const dust = dustForStage(stageIdx) + Math.max(0, bonus | 0);   // SPEC-090c: 金運
   addRewards({ dust });
   return dust;
 }

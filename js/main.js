@@ -46,7 +46,7 @@ import { naviSay, naviHide, naviLines, naviTitle } from "./navi.js";
 import { installUiSound, startTitleBgm, startMenuBgm, waitAutoplay } from "./ui-sound.js";
 import { startHeroPreview, stopHeroPreview } from "./hero-preview.js";
 import { playVoice, stopVoice } from "./voice.js";
-import { installSkillTree } from "./skill-tree.js";   // SPEC-090
+import { installSkillTree, renderHeroPerks } from "./skill-tree.js";   // SPEC-090 / SPEC-090c
 
 // ============================================================
 // DOM helpers
@@ -292,6 +292,7 @@ function closeHeroSelectModal() {
 function renderHeroSelectModal() {
   const grid = $("#heroSelectGrid");
   if (!grid) return;
+  renderHeroPerks();   // SPEC-090c: いま効いている恒久強化の 1 行
 
   const lang = getLang();
   const altTpl = t("hero.select.imgAlt", "Portrait of {name}");

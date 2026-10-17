@@ -249,6 +249,8 @@
   "tree.upgraded":       { "ja": "「{name}」Lv {lv}！",            "en": "\"{name}\" Lv {lv}!" },
   "tree.routeNodes":     { "ja": "{name}：{n} / {total}",          "en": "{name}: {n} / {total}" },
   "tree.lv":             { "ja": "Lv {n} / {max}",                 "en": "Lv {n} / {max}" },
+  "hero.perks.title":    { "ja": "スキルツリー",                   "en": "Skill Tree" },
+  "hero.perks.rta":      { "ja": "RTA ではスキルツリーの効果は切れる", "en": "Skill tree effects are off in RTA" },
   "result.kills":        { "ja": "撃破",                           "en": "Kills" },
   "result.level":        { "ja": "レベル",                         "en": "Level" },
   "result.stageOf":      { "ja": "ステージ {n} / {total}",         "en": "Stage {n} / {total}" },
