@@ -78,7 +78,7 @@ export function tickEnemies(dt, nowMs) {
   // 通常 spawn (= wave pool からランダム、 ステージごと spawn 間隔 mul)
   // SPEC-037: ABSOLUTE の spawnMul で出現密度をスケール (= mul=2 → 2 倍出る → interval を 1/2 に)
   const absSpawnMul = state.absolute?.spawnMul ?? 1;
-  const cap = stageMaxEnemies(stage);   // SPEC-065: トロイだけ 320
+  const cap = stageMaxEnemies(stage);   // SPEC-065 / SPEC-078: ステージごと (= 320 / 440 / 600)
   // SPEC-065: 大群のステージは、 中盤から湧きが速まる
   const spawnInterval = ENEMY_SPAWN_INTERVAL_MS * (stage.spawnIntervalMul ?? 1)
     / Math.max(0.1, absSpawnMul) / floodMul(stage.flood, b.stageElapsedMs);
