@@ -4,7 +4,7 @@
 //
 // OS の prefers-reduced-motion か、 設定の「演出を減らす」のどちらかが ON なら true。
 
-import { getSettings } from "./settings.js";
+import { getSettings, onSettingsChange } from "./settings.js";
 
 export function osPrefersReducedMotion() {
   try {
@@ -16,4 +16,18 @@ export function osPrefersReducedMotion() {
 
 export function prefersReducedMotion() {
   return osPrefersReducedMotion() || getSettings().reduceFx;
+}
+
+/**
+ * SPEC-055: 「演出を減らす」を html の data-reduce-fx に映す (= CSS の常に動く演出を止める)。 起動時に 1 回
+ */
+export function installReduceFxAttr() {
+  const apply = () => {
+    try {
+      const on = prefersReducedMotion();
+      document.documentElement.toggleAttribute("data-reduce-fx", on);
+    } catch (_) { /* document がない (= テスト) */ }
+  };
+  apply();
+  onSettingsChange(apply);
 }

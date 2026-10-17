@@ -1,0 +1,295 @@
+/* ============================================================
+   node.css — デザイン言語「ノード端末」 (= SPEC-055)
+   ============================================================
+   MCH のブロックチェーンの世界 (= ステージは node : 〜) を、 UI の質感に落とす。
+   - パネル: 角を切った端末の筐体。 縁は金 → シアンの金属の光、 面は走査線
+   - 生きている: パネルの縁を光が流れ、 背景のブロックの格子と粒がいつも動いている
+   - 色の優先度: UI がいちばん鮮やか (= 背景・エフェクトは沈める)
+   - 動き: 画面の切り替えは 600ms のワイプ (= 能動的に情報を取りに行く操作を気持ちよく)
+   このファイルは最後に読む (= 既存の部品の見た目だけを上書きする皮)。
+   ============================================================ */
+
+:root {
+  --node-cyan:   #56ccf2;
+  --node-gold-hi: #f6e2a0;
+  --node-cut:    14px;
+  --node-cut-sm: 8px;
+  --node-face:   linear-gradient(165deg, #2b2342 0%, #1c1727 55%, #141019 100%);
+  --node-scan:   repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.032) 0 1px, transparent 1px 3px);
+  --node-grid:   rgba(196, 163, 90, 0.07);
+  --dur-page:    600ms;
+  --ease-page:   cubic-bezier(.75, 0, .2, 1);
+  --z-wipe:      900;
+}
+
+/* ------------------------------------------------------------
+   1. パネル (= 全モーダルのカードとモード選択のカード)
+   ------------------------------------------------------------ */
+.hero-modal__card,
+.levelup-modal__card,
+.gameover-modal__card,
+.help-card,
+.mode-card {
+  --edge-c: var(--accent);
+  --cut: var(--node-cut);
+  border: 2px solid transparent;
+  border-radius: 0;
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+  background:
+    /* 切った角の縁 (= 左上・右下の斜めの辺にも光の線) */
+    linear-gradient(135deg, var(--node-gold-hi) 0 calc(var(--cut) * 0.7071 + 1.5px), transparent 0) border-box,
+    linear-gradient(-45deg, var(--node-cyan) 0 calc(var(--cut) * 0.7071 + 1.5px), transparent 0) border-box,
+    /* 縁を流れる光 (= UI を止めない) */
+    linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.85), transparent) 0 0 / 34% 2px no-repeat border-box,
+    /* 面: 走査線 + 上の光沢 + 筐体 */
+    var(--node-scan) padding-box,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.07), transparent 22%) padding-box,
+    var(--node-face) padding-box,
+    /* 縁: 金属の光 (= 左上は明るく、 右下はシアン) */
+    linear-gradient(135deg, var(--node-gold-hi), var(--edge-c) 28%, color-mix(in srgb, var(--edge-c) 35%, transparent) 62%, var(--node-cyan)) border-box;
+  box-shadow: none;
+  animation: modal-pop-in 0.22s var(--ease-out), node-sheen 5.5s linear 0.4s infinite;
+}
+@keyframes node-sheen {
+  0%   { background-position: 0 0, 0 0, -60% 0, 0 0, 0 0, 0 0, 0 0; }
+  45%  { background-position: 0 0, 0 0, 160% 0, 0 0, 0 0, 0 0, 0 0; }
+  100% { background-position: 0 0, 0 0, 160% 0, 0 0, 0 0, 0 0, 0 0; }
+}
+/* 失敗の画面は赤い縁 (= ゲームオーバー)。 成功・メニューは金 */
+.gameover-modal__card { --edge-c: var(--ifrit); }
+.stage-clear-card, .report-card, .pause-menu__card, .ranking-card, .settings-card { --edge-c: var(--accent); }
+.stage-clear-card, .report-card { box-shadow: none; }
+.help-card { --edge-c: var(--node-cyan); }
+
+/* モード選択のカードは種類ごとの縁 */
+.mode-card { --cut: 12px; }
+.mode-card[data-mode="ABSOLUTE"] { --edge-c: var(--ifrit); }
+.mode-card[data-mode="RTA"] { --edge-c: #a78bfa; }
+
+/* ------------------------------------------------------------
+   2. 見出し: 英字の小見出し (= data-kicker) と、 端末のラベル
+   ------------------------------------------------------------ */
+[data-kicker]::before {
+  content: attr(data-kicker);
+  display: block;
+  margin-bottom: 0.15rem;
+  font-family: var(--font-num);
+  font-weight: 700;
+  font-size: 0.62rem;
+  letter-spacing: 0.34em;
+  color: var(--node-cyan);
+  text-shadow: 0 0 8px rgba(86, 204, 242, 0.55);
+}
+
+/* ------------------------------------------------------------
+   3. ボタン: 角を切った端末のキー
+   ------------------------------------------------------------ */
+.btn,
+.title-screen__press {
+  --cut: var(--node-cut-sm);
+  border-radius: 0;
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+}
+.btn:not(.btn--secondary):not(.btn--ghost):not(.btn--danger),
+.title-screen__press {
+  background:
+    linear-gradient(105deg, transparent 0 40%, rgba(255, 255, 255, 0.55) 50%, transparent 60% 100%) 150% 0 / 250% 100% no-repeat,
+    linear-gradient(180deg, #f3dc95 0%, var(--accent) 48%, #a8863f 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), inset 0 -2px 0 rgba(0, 0, 0, 0.25);
+  color: var(--on-accent);
+  transition: background-position 520ms var(--ease-out), transform var(--dur-fast) var(--ease-out), filter var(--dur-base);
+}
+@media (hover: hover) {
+  .btn:not(.btn--secondary):not(.btn--ghost):not(.btn--danger):hover,
+  .title-screen__press:hover { opacity: 1; background-position: -150% 0, 0 0; filter: brightness(1.06); }
+}
+.btn:not(.btn--secondary):not(.btn--ghost):not(.btn--danger):focus-visible { background-position: -150% 0, 0 0; }
+.btn:not(.btn--secondary):not(.btn--ghost):not(.btn--danger):disabled { filter: grayscale(0.6); }
+
+.btn--secondary {
+  border: 1.5px solid transparent;
+  background:
+    linear-gradient(135deg, var(--accent) 0 calc(var(--cut) * 0.7071 + 1px), transparent 0) border-box,
+    linear-gradient(-45deg, var(--accent) 0 calc(var(--cut) * 0.7071 + 1px), transparent 0) border-box,
+    linear-gradient(180deg, rgba(196, 163, 90, 0.16), rgba(196, 163, 90, 0.06)) padding-box,
+    linear-gradient(#1b1626, #1b1626) padding-box,
+    linear-gradient(135deg, var(--node-gold-hi), var(--accent) 50%, #8a6d32) border-box;
+}
+@media (hover: hover) {
+  .btn--secondary:hover {
+    opacity: 1;
+    background:
+      linear-gradient(135deg, var(--accent) 0 calc(var(--cut) * 0.7071 + 1px), transparent 0) border-box,
+      linear-gradient(-45deg, var(--accent) 0 calc(var(--cut) * 0.7071 + 1px), transparent 0) border-box,
+      linear-gradient(180deg, rgba(196, 163, 90, 0.3), rgba(196, 163, 90, 0.12)) padding-box,
+      linear-gradient(#1b1626, #1b1626) padding-box,
+      linear-gradient(135deg, var(--node-gold-hi), var(--accent) 50%, #8a6d32) border-box;
+  }
+}
+
+/* タイトルの Press to Start: 光がときどき走る (= 押してほしい場所がいつも生きている) */
+.title-screen__press {
+  --cut: 12px;
+  padding: 0.95rem 2.4rem;
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  animation: press-pulse 1.6s ease-in-out infinite, node-press-sheen 3.2s var(--ease-out) 1s infinite;
+}
+@keyframes node-press-sheen {
+  0%, 55% { background-position: 150% 0, 0 0; }
+  85%, 100% { background-position: -150% 0, 0 0; }
+}
+
+/* 閉じる × も端末のキーに */
+.hero-modal__close-x,
+.help-card__close-x {
+  border-radius: 0 !important;
+  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+}
+
+/* ------------------------------------------------------------
+   4. 背景: ブロックの格子と粒がいつも流れている
+   ------------------------------------------------------------ */
+.hero-modal,
+.levelup-modal,
+.gameover-modal,
+.help-overlay {
+  background:
+    radial-gradient(ellipse at 50% 120%, rgba(86, 204, 242, 0.12), transparent 55%),
+    radial-gradient(ellipse at 50% -20%, rgba(196, 163, 90, 0.14), transparent 55%),
+    linear-gradient(var(--node-grid) 1px, transparent 1px) 0 0 / 36px 36px,
+    linear-gradient(90deg, var(--node-grid) 1px, transparent 1px) 0 0 / 36px 36px,
+    rgba(12, 10, 18, 0.9);
+  animation: modal-fade-in 0.2s ease, node-grid-drift 26s linear infinite;
+}
+.title-screen::after,
+.hero-modal::before,
+.levelup-modal::before,
+.gameover-modal::before,
+.help-overlay::before {
+  /* 漂う粒 (= ブロック)。 2 つの大きさで奥行き */
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background:
+    radial-gradient(circle, rgba(246, 226, 160, 0.55) 0 1.5px, transparent 2px) 0 0 / 140px 160px,
+    radial-gradient(circle, rgba(86, 204, 242, 0.45) 0 1px, transparent 1.5px) 40px 60px / 90px 110px;
+  animation: node-motes 18s linear infinite;
+  opacity: 0.7;
+}
+.hero-modal, .levelup-modal, .gameover-modal, .help-overlay { isolation: isolate; }
+.title-screen::after {
+  /* タイトルは背景の写真 (z -1) の上・ボタンの下に、 格子と粒 */
+  background:
+    radial-gradient(circle, rgba(246, 226, 160, 0.55) 0 1.5px, transparent 2px) 0 0 / 140px 160px,
+    radial-gradient(circle, rgba(86, 204, 242, 0.45) 0 1px, transparent 1.5px) 40px 60px / 90px 110px,
+    linear-gradient(var(--node-grid) 1px, transparent 1px) 0 0 / 36px 36px,
+    linear-gradient(90deg, var(--node-grid) 1px, transparent 1px) 0 0 / 36px 36px;
+  animation: node-motes-grid 26s linear infinite;
+  opacity: 1;
+}
+@keyframes node-grid-drift {
+  from { background-position: 0 0, 0 0, 0 0, 0 0, 0 0; }
+  to   { background-position: 0 0, 0 0, 0 -360px, 0 -360px, 0 0; }
+}
+@keyframes node-motes {
+  from { background-position: 0 0, 40px 60px; }
+  to   { background-position: 0 -480px, 40px -490px; }
+}
+@keyframes node-motes-grid {
+  from { background-position: 0 0, 40px 60px, 0 0, 0 0; }
+  to   { background-position: 0 -480px, 40px -490px, 0 -360px, 0 -360px; }
+}
+
+/* ------------------------------------------------------------
+   5. 画面の切り替え: 斜めの帯が流れて覆い、 抜ける (= js/transition.js)
+   ------------------------------------------------------------ */
+.node-wipe {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-wipe);
+  pointer-events: none;
+  overflow: hidden;
+  display: none;
+}
+.node-wipe--run { display: block; pointer-events: auto; }
+/* 1 枚の大きな斜めの筐体が横切る (= 縦長の画面でも端まで覆う幅にしてある) */
+.node-wipe__panel,
+.node-wipe__lead {
+  position: absolute;
+  top: -30%;
+  bottom: -30%;
+  transform: skewX(-18deg) translateX(-340vw);
+}
+.node-wipe__panel {
+  left: -80vw;
+  width: 260vw;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 18vw, rgba(196, 163, 90, 0.18) 18vw calc(18vw + 2px)),
+    var(--node-scan),
+    linear-gradient(180deg, #2b2342, #120e19);
+  border-left: 3px solid var(--node-gold-hi);
+  border-right: 3px solid var(--node-cyan);
+}
+.node-wipe__lead {
+  /* 先を走る細い光 */
+  left: calc(180vw + 2vw);
+  width: 3vw;
+  background: linear-gradient(180deg, var(--node-cyan), #ffffff, var(--node-cyan));
+  box-shadow: 0 0 22px rgba(86, 204, 242, 0.9);
+}
+.node-wipe--run .node-wipe__panel { animation: node-wipe var(--dur-page) var(--ease-page) both; }
+.node-wipe--run .node-wipe__lead  { animation: node-wipe var(--dur-page) var(--ease-page) -30ms both; }
+@keyframes node-wipe {
+  0%   { transform: skewX(-18deg) translateX(-340vw); }
+  40%  { transform: skewX(-18deg) translateX(0); }
+  60%  { transform: skewX(-18deg) translateX(0); }
+  100% { transform: skewX(-18deg) translateX(340vw); }
+}
+.node-wipe__label {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  font-family: var(--font-num);
+  font-weight: 700;
+  letter-spacing: 0.5em;
+  font-size: 0.8rem;
+  color: var(--node-cyan);
+  text-shadow: 0 0 10px rgba(86, 204, 242, 0.8);
+  opacity: 0;
+}
+.node-wipe--run .node-wipe__label { animation: node-wipe-label var(--dur-page) linear both; }
+@keyframes node-wipe-label {
+  0%, 34% { opacity: 0; }
+  42%, 58% { opacity: 1; }
+  66%, 100% { opacity: 0; }
+}
+
+/* ------------------------------------------------------------
+   6. 動きを減らす (= OS の設定と、 ゲームの「演出を減らす」)
+   ------------------------------------------------------------ */
+:root[data-reduce-fx] .hero-modal__card,
+:root[data-reduce-fx] .levelup-modal__card,
+:root[data-reduce-fx] .gameover-modal__card,
+:root[data-reduce-fx] .help-card,
+:root[data-reduce-fx] .mode-card { animation: modal-pop-in 0.22s var(--ease-out); }
+:root[data-reduce-fx] .hero-modal,
+:root[data-reduce-fx] .levelup-modal,
+:root[data-reduce-fx] .gameover-modal,
+:root[data-reduce-fx] .help-overlay { animation: modal-fade-in 0.2s ease; }
+:root[data-reduce-fx] .title-screen::after,
+:root[data-reduce-fx] .hero-modal::before,
+:root[data-reduce-fx] .levelup-modal::before,
+:root[data-reduce-fx] .gameover-modal::before,
+:root[data-reduce-fx] .help-overlay::before { animation: none; }
+:root[data-reduce-fx] .title-screen__press { animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  .node-wipe--run .node-wipe__panel,
+  .node-wipe--run .node-wipe__lead,
+  .node-wipe--run .node-wipe__label { animation: none; }
+}

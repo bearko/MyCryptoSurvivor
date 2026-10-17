@@ -15,6 +15,7 @@ import {
 } from "./constants.js";
 import { onLangChange, t } from "./i18n.js";
 import { isRtaAvailable, RTA_ABSOLUTE_MUL } from "./platform.js";
+import { playWipe } from "./transition.js";
 
 let _wired   = false;
 let _onPick  = null;   // (regulation) => void、 hero select に進む callback
@@ -56,8 +57,11 @@ function _wireOnce() {
     _pick(REGULATION_ABSOLUTE, { rta: true, absolute: { spawnMul: m, hpMul: m, dmgMul: m, speedMul: m } });
   });
   _$("btnModeBack")?.addEventListener("click", () => {
-    hideModeSelect();
-    _$("titleScreen")?.classList.remove("hidden");
+    // SPEC-055: ワイプで切り替える
+    playWipe(() => {
+      hideModeSelect();
+      _$("titleScreen")?.classList.remove("hidden");
+    });
   });
   onLangChange(() => {
     _renderLabels();
@@ -76,8 +80,11 @@ function _pick(regulation, { rta = false, absolute = null } = {}) {
     // sliders から state に取り込み (= 既存値が入っているはず)
     state.absolute = _readSliders();
   }
-  hideModeSelect();
-  if (typeof _onPick === "function") _onPick(regulation);
+  // SPEC-055: ワイプで覆ったところでヒーロー選択へ
+  playWipe(() => {
+    hideModeSelect();
+    if (typeof _onPick === "function") _onPick(regulation);
+  }, { label: "SELECT // HERO" });
 }
 
 function _renderSliders() {

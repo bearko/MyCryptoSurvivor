@@ -40,6 +40,8 @@
   <link rel="stylesheet" href="css/components.css" />
   <link rel="stylesheet" href="css/effects.css" />
   <link rel="stylesheet" href="css/responsive.css" />
+  <!-- SPEC-055: デザイン言語「ノード端末」 (= 既存の部品の見た目を上書きするので最後に読む) -->
+  <link rel="stylesheet" href="css/node.css" />
 </head>
 <body>
 
@@ -84,7 +86,7 @@
   <!-- 2.5 Game Mode select (= SPEC-037)                              -->
   <!-- ============================================================ -->
   <section id="gameModeSelectScreen" class="title-screen mode-select hidden">
-    <h2 class="mode-select__title" id="modeSelectTitle">ゲームモード</h2>
+    <h2 class="mode-select__title" id="modeSelectTitle" data-kicker="MODE SELECT">ゲームモード</h2>
     <p class="mode-select__sub" id="modeSelectSub">難易度を選んで進む</p>
 
     <div class="mode-select__cards">
@@ -194,7 +196,7 @@
     <div class="gameover-modal__card stage-clear-card">
       <div class="stage-pips" id="stageTransitionPips" data-reveal aria-hidden="true"></div>
       <h2 class="gameover-modal__title result-title" id="stageTransitionTitle" data-reveal
-          data-i18n="stage.clearTitle">Stage Clear!</h2>
+          data-i18n="stage.clearTitle" data-kicker="NODE CLEAR">Stage Clear!</h2>
       <div class="result-stage-name" id="stageTransitionCurrent" data-reveal></div>
       <div class="result-tiles" id="stageTransitionTiles" data-reveal></div>
       <div class="result-next" id="stageTransitionSub" data-reveal></div>
@@ -209,7 +211,7 @@
   <div id="rankingModal" class="gameover-modal hidden" role="dialog" aria-modal="true" data-esc-close="rankingClose"
        aria-labelledby="rankingTitle">
     <div class="gameover-modal__card ranking-card">
-      <h2 class="gameover-modal__title" id="rankingTitle">ランキング</h2>
+      <h2 class="gameover-modal__title" id="rankingTitle" data-kicker="RANKING">ランキング</h2>
       <div class="ranking-toolbar">
         <select id="rankingFilter" class="ranking-filter">
           <option value="all"     id="rankingFilterAll">全バージョン</option>
@@ -259,7 +261,7 @@
   <div id="gameOverModal" class="gameover-modal hidden" role="dialog" aria-modal="true"
        aria-labelledby="gameOverTitle">
     <div class="gameover-modal__card">
-      <h2 class="gameover-modal__title result-title" id="gameOverTitle" data-reveal data-i18n="gameover.title">ゲームオーバー</h2>
+      <h2 class="gameover-modal__title result-title" id="gameOverTitle" data-reveal data-i18n="gameover.title" data-kicker="RESULT">ゲームオーバー</h2>
       <div class="result-stage-name" id="gameOverStage" data-reveal></div>
       <div class="result-tiles" data-reveal>
         <div class="result-tile"><span class="result-tile__icon" aria-hidden="true">⏱</span>
@@ -293,7 +295,7 @@
   <div id="pauseMenuModal" class="gameover-modal hidden" role="dialog" aria-modal="true" data-esc-close="pauseMenuClose"
        aria-labelledby="pauseMenuTitle">
     <div class="gameover-modal__card pause-menu__card">
-      <h2 class="gameover-modal__title" id="pauseMenuTitle" data-i18n="menu.title">メニュー</h2>
+      <h2 class="gameover-modal__title" id="pauseMenuTitle" data-i18n="menu.title" data-kicker="PAUSE">メニュー</h2>
       <div class="pause-menu__buttons">
         <button class="btn btn--secondary" id="pauseMenuRanking" data-i18n="menu.ranking">ランキング</button>
         <button class="btn btn--secondary" id="pauseMenuSettings" data-i18n="settings.title">設定</button>
@@ -311,7 +313,7 @@
        aria-labelledby="settingsTitle" data-esc-close="settingsClose">
     <div class="gameover-modal__card settings-card">
       <header class="settings-card__head">
-        <h2 class="gameover-modal__title settings-card__title" id="settingsTitle" data-i18n="settings.title">設定</h2>
+        <h2 class="gameover-modal__title settings-card__title" id="settingsTitle" data-i18n="settings.title" data-kicker="SETTINGS">設定</h2>
         <button class="help-card__close-x" id="settingsCloseX" aria-label="Close">×</button>
       </header>
       <div class="settings-row">
@@ -346,7 +348,7 @@
   <div id="activityReportModal" class="gameover-modal hidden" role="dialog" aria-modal="true"
        aria-labelledby="activityReportTitle">
     <div class="gameover-modal__card report-card">
-      <h2 class="gameover-modal__title result-title" id="activityReportTitle" data-reveal>活動レポート</h2>
+      <h2 class="gameover-modal__title result-title" id="activityReportTitle" data-reveal data-kicker="ACTIVITY REPORT">活動レポート</h2>
       <!-- SPEC-038: テキストではなくアイコン重視のレイアウトに刷新 / SPEC-046: 上から順に出す -->
       <div class="report-hero" id="activityReportHero" data-reveal></div>
       <div class="report-stages" id="activityReportStages"></div>
@@ -373,7 +375,7 @@
   <div id="levelUpModal" class="levelup-modal hidden" role="dialog" aria-modal="true"
        aria-labelledby="levelUpTitle">
     <div class="levelup-modal__card">
-      <h2 class="levelup-modal__title" id="levelUpTitle" data-i18n="levelup.title">レベルアップ!</h2>
+      <h2 class="levelup-modal__title" id="levelUpTitle" data-i18n="levelup.title" data-kicker="LEVEL UP">レベルアップ!</h2>
       <p class="levelup-modal__sub"   id="levelUpSub"   data-i18n="levelup.sub">強化を 1 つ選ぼう</p>
       <div class="levelup-modal__grid" id="levelUpGrid" role="listbox"></div>
       <!-- SPEC-023: リロール (= 1戦 2 回まで、 残数表示) -->
@@ -389,7 +391,7 @@
        aria-labelledby="heroSelectTitle">
     <div class="hero-modal__card">
       <header class="hero-modal__head">
-        <h2 class="hero-modal__title" id="heroSelectTitle" data-i18n="hero.select.title">
+        <h2 class="hero-modal__title" id="heroSelectTitle" data-i18n="hero.select.title" data-kicker="SELECT HERO">
           ヒーローを選ぶ
         </h2>
         <button class="hero-modal__close-x" id="heroSelectClose" aria-label="Close">×</button>
@@ -443,7 +445,7 @@
   <div id="helpOverlay" class="help-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
     <div class="help-card">
       <header class="help-card__head">
-        <h2 id="helpTitle" data-i18n="help.title">遊び方</h2>
+        <h2 id="helpTitle" data-i18n="help.title" data-kicker="HOW TO PLAY">遊び方</h2>
         <button id="btnHelpCloseX" class="help-card__close-x" aria-label="Close">×</button>
       </header>
       <section class="help-sec">
