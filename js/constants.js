@@ -393,7 +393,7 @@ export const STAGE_TABLE = [
     gimmick: "punch",    // SPEC-064: パンチカード
     // SPEC-078: ボスの直前に画面の 3/4 を敵が埋める
     flood: { fromMs: 20000, fullMs: 230000, maxMul: 16, packFromMs: 90000, packEveryMs: 10000, packSize: 20 },
-    density: { fromMs: 15000, fullMs: 230000, max: 1.25 },
+    density: { fromMs: 15000, fullMs: 230000, max: 1.45 },
     maxEnemies: 440,
   },
   {
