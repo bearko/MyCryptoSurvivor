@@ -2,7 +2,7 @@
 id: SPEC-067
 title: Level-up Reroll Without Repeats and Skip
 status: Done
-pr: TBD
+pr: 93
 phase: v1.2 Battle
 kind: Changed
 ---
