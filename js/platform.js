@@ -45,6 +45,21 @@ export function reportStageEnd(stageIdx, stageCount) {
 // SPEC-040: RTA (= 共通基盤の SDK が時間を計る。 公式タイムはサーバーの受信時刻の差)
 // ============================================================
 export const RTA_REGULATION = "survivor-normal";
+// SPEC-048: ABSOLUTE の 4 軸をすべて ×2.0 に固定した RTA
+export const RTA_REGULATION_ABSOLUTE_2X = "survivor-absolute-2x";
+export const RTA_ABSOLUTE_MUL = 2.0;
+
+/**
+ * 今のルールで走る RTA のレギュレーション ID。 決まったルールでなければ null (= 計測しない)。 純関数 (= tests/platform.test.mjs)
+ *   NORMAL → survivor-normal、 ABSOLUTE で 4 軸すべて ×2.0 → survivor-absolute-2x
+ */
+export function rtaRegulationFor(regulation, absolute) {
+  if (regulation == null || regulation === "NORMAL") return RTA_REGULATION;
+  if (regulation !== "ABSOLUTE") return null;
+  const a = absolute || {};
+  const axes = ["spawnMul", "hpMul", "dmgMul", "speedMul"];
+  return axes.every((k) => a[k] === RTA_ABSOLUTE_MUL) ? RTA_REGULATION_ABSOLUTE_2X : null;
+}
 
 /** RTA を出せるか (= SDK が読めたときだけ。 ローカルで開いたときなどは RTA の card を隠す) */
 export function isRtaAvailable() {
@@ -74,11 +89,11 @@ function _rtaCall(name, fn) {
 }
 
 /** ステージ 1 が始まったとき (= startBattle で stage idx 0)。 前の計測は SDK が中断にする */
-export function startRtaRun() {
+export function startRtaRun(regulation = RTA_REGULATION) {
   // 経過時間の表示は HUD (= ヘッダー + Lv / HP / XP) のすぐ下に出す
   const hud = typeof document !== "undefined" ? document.getElementById("hud") : null;
   const timerOffset = hud ? Math.round(hud.getBoundingClientRect().bottom) + 6 : 0;
-  _rtaCall("start", (rta) => rta.start({ regulation: RTA_REGULATION, timerOffset }));
+  _rtaCall("start", (rta) => rta.start({ regulation, timerOffset }));
 }
 
 /** ステージを終えたとき。 igtMs は各ステージのゲーム内時間の合計 */

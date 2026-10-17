@@ -1,0 +1,2 @@
+- **RTA に ABSOLUTE ×2.0 を追加** (`js/mode-select.js` + `js/platform.js` + `js/battle/index.js` + `index.html`): RTA の card の「ABSOLUTE ×2.0 で RTA」で、4 軸すべて ×2.0 に固定したルールの全 3 ステージを計る（共通基盤のレギュレーション `survivor-absolute-2x`）。ランキングへのリンクも置く
+- **総合スコアの倍率の上限 2.0**（共通基盤の計算式 v2）: ABSOLUTE の倍率は総合スコアには 2.0 まで効く。ゲーム内の活動レポート・ランキングのスコアは今までどおり

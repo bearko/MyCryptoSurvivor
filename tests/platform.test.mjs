@@ -91,6 +91,34 @@ test("RTA：計測中だけ区切り・中断を送り、失敗してもゲー�
   }
 });
 
+// ---------------------------------------------------------------- SPEC-048: ABSOLUTE ×2.0 の RTA
+import { rtaRegulationFor, RTA_REGULATION_ABSOLUTE_2X } from "../js/platform.js";
+
+test("RTA：ルールからレギュレーションを決める", () => {
+  const all = (m) => ({ spawnMul: m, hpMul: m, dmgMul: m, speedMul: m });
+  assert.equal(rtaRegulationFor("NORMAL", all(1)), RTA_REGULATION);
+  assert.equal(rtaRegulationFor(undefined, undefined), RTA_REGULATION);
+  assert.equal(rtaRegulationFor("ABSOLUTE", all(2)), RTA_REGULATION_ABSOLUTE_2X);
+  assert.equal(RTA_REGULATION_ABSOLUTE_2X, "survivor-absolute-2x");
+  assert.equal(rtaRegulationFor("ABSOLUTE", all(1.5)), null, "×2.0 以外の ABSOLUTE は計測しない");
+  assert.equal(rtaRegulationFor("ABSOLUTE", { ...all(2), speedMul: 1.75 }), null, "1 軸でも違えば計測しない");
+  assert.equal(rtaRegulationFor("ABSOLUTE", null), null);
+  assert.equal(rtaRegulationFor("HARD", all(1)), null);
+});
+
+test("RTA：ABSOLUTE ×2.0 のレギュレーションで始める", async () => {
+  const calls = [];
+  globalThis.window = { BearkoGames: { rta: { start: async (o) => { calls.push(o.regulation); return { ok: true }; }, current: () => null } } };
+  try {
+    startRtaRun(RTA_REGULATION_ABSOLUTE_2X);
+    startRtaRun();
+    await new Promise((r) => setTimeout(r, 0));
+    assert.deepEqual(calls, ["survivor-absolute-2x", "survivor-normal"]);
+  } finally {
+    delete globalThis.window;
+  }
+});
+
 // ---------------------------------------------------------------- SPEC-041: 総合スコア
 import { scoreMetrics, reportRunScore } from "../js/platform.js";
 

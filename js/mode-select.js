@@ -14,7 +14,7 @@ import {
   computeRegulationMul,
 } from "./constants.js";
 import { onLangChange, t } from "./i18n.js";
-import { isRtaAvailable } from "./platform.js";
+import { isRtaAvailable, RTA_ABSOLUTE_MUL } from "./platform.js";
 
 let _wired   = false;
 let _onPick  = null;   // (regulation) => void、 hero select に進む callback
@@ -50,6 +50,11 @@ function _wireOnce() {
   _$("btnModeAbsolute")?.addEventListener("click", () => _pick(REGULATION_ABSOLUTE));
   // SPEC-040: RTA は NORMAL のルール + rtaMode
   _$("btnModeRta")?.addEventListener("click", () => _pick(REGULATION_NORMAL, { rta: true }));
+  // SPEC-048: ABSOLUTE の 4 軸をすべて ×2.0 に固定した RTA (= スライダーの値は使わない)
+  _$("btnModeRtaAbs")?.addEventListener("click", () => {
+    const m = RTA_ABSOLUTE_MUL;
+    _pick(REGULATION_ABSOLUTE, { rta: true, absolute: { spawnMul: m, hpMul: m, dmgMul: m, speedMul: m } });
+  });
   _$("btnModeBack")?.addEventListener("click", () => {
     hideModeSelect();
     _$("titleScreen")?.classList.remove("hidden");
@@ -60,11 +65,13 @@ function _wireOnce() {
   });
 }
 
-function _pick(regulation, { rta = false } = {}) {
+function _pick(regulation, { rta = false, absolute = null } = {}) {
   state.regulation = regulation;
   state.rtaMode = rta;
   if (regulation === REGULATION_NORMAL) {
     state.absolute = { spawnMul: 1, hpMul: 1, dmgMul: 1, speedMul: 1 };
+  } else if (absolute) {
+    state.absolute = { ...absolute };
   } else {
     // sliders から state に取り込み (= 既存値が入っているはず)
     state.absolute = _readSliders();
@@ -119,9 +126,12 @@ function _renderLabels() {
   const bN = _$("btnModeNormal");    if (bN) bN.textContent = t("mode.startNormal", "これで始める");
   const bA = _$("btnModeAbsolute");  if (bA) bA.textContent = t("mode.startAbsolute", "これで始める");
   const bb = _$("btnModeBack");      if (bb) bb.textContent = t("mode.back", "タイトルに戻る");
-  const rd = _$("modeCardRtaDesc");  if (rd) rd.textContent = t("mode.rtaDesc", "NORMAL のルールで、 ステージ 1 の開始から全 3 ステージクリアまでの時間を計る。 15 分以上操作がないと参考記録。");
+  const rd = _$("modeCardRtaDesc");  if (rd) rd.textContent = t("mode.rtaDesc", "NORMAL か ABSOLUTE ×2.0（4 軸すべて固定）のルールで、 ステージ 1 の開始から全 3 ステージクリアまでの時間を計る。 15 分以上操作がないと参考記録。");
   const bR = _$("btnModeRta");       if (bR) bR.textContent = t("mode.startRta", "RTA で始める");
   const rl = _$("modeRtaRanking");   if (rl) rl.textContent = t("mode.rtaRanking", "RTA ランキング");
+  // SPEC-048: ABSOLUTE ×2.0 の RTA
+  const bRA = _$("btnModeRtaAbs");     if (bRA) bRA.textContent = t("mode.startRtaAbs", "ABSOLUTE ×2.0 で RTA");
+  const rlA = _$("modeRtaRankingAbs"); if (rlA) rlA.textContent = t("mode.rtaRankingAbs", "RTA ランキング（ABSOLUTE ×2.0）");
   // slider のラベル
   document.querySelectorAll('#absoluteSliders .abs-slider__label').forEach(el => {
     const ax = el.dataset.axis;
