@@ -2,7 +2,7 @@
 id: SPEC-060
 title: Menu Sound — Menu BGM and Button Click SE
 status: Done
-pr: TBD
+pr: 86
 phase: v1.1 UI
 kind: Added
 ---
