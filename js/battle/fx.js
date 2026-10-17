@@ -165,7 +165,7 @@ export const BOSS_BANNER_INTRO_MS = 3200;
 /** 最後のこの秒数は、 画面の真ん中に大きな数字 */
 export const BOSS_COUNTDOWN_BIG_SEC = 5;
 
-/** 残りの時間の表示 (= 純関数)。 0:30 → 0:01。 端数は切り上げ (= 0.2 秒残りは 0:01) */
+/** 残りの時間の表示 (= 純関数)。 0:10 → 0:01。 端数は切り上げ (= 0.2 秒残りは 0:01) */
 export function bossCountdownText(remainMs) {
   const sec = Math.max(0, Math.ceil(remainMs / 1000));
   return `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`;
@@ -335,6 +335,8 @@ export function renderFxScreen(ctx, w, h, nowMs = 0) {
 function _showBossBanner() {
   const el = globalThis.document?.getElementById("bossBanner");
   if (!el) return;
+  // SPEC-071: RTA のときは、 たたんだ帯を右端に (= 上の真ん中の RTA の時計と重ねない)
+  el.classList.toggle("boss-banner--rta", !!state.rtaMode);
   el.classList.remove("hidden");
   el.classList.remove("boss-banner--in");
   void el.offsetWidth;   // アニメーションをかけ直す

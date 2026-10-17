@@ -53,7 +53,7 @@ export function tickEnemies(dt, nowMs) {
   const stage = _currentStage();
 
   // SPEC-022 / SPEC-030: ボス時刻到達で 1 度だけスポーン (= ボス id はステージ別)
-  // SPEC-045: 出る 30 秒前に予告 (= 1 ステージ 1 回。 fx 側で 2 回目を弾く)
+  // SPEC-045: 出る前に予告 (= SPEC-071 で 10 秒前。 1 ステージ 1 回。 fx 側で 2 回目を弾く)
   if (!b.bossSpawned && b.stageElapsedMs >= BOSS_SPAWN_AT_MS - BOSS_WARNING_LEAD_MS) {
     fxBossIncoming();
     // SPEC-061: 出るまでの残りを数える (= ゲームの中の時間)
