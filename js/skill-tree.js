@@ -10,7 +10,7 @@
 import { getMeta, onMetaChange, spend, setNodeRank, resetNodes } from "./meta.js";
 import { ROUTES, ROUTE_MAP, NODE_MAP, TREE_NODES, ROOT_ID, CAPSTONE_NEED, RING, nodePos, routeLabelPos } from "./skill-data.js";
 import {
-  nodeRank, owns, nodeMax, nodeCost, canAfford, shortBy, routeCounts, nodeBlockers, nodeState,
+  nodeRank, owns, nodeMax, nodeCost, canAfford, shortBy, routeCounts, nodeState,
   nodeVisible, nodeShown, claimableNodes, tryBuy, spentTotal,
   treeNudge, treeGuide, guideTarget,
 } from "./skill-logic.js";
@@ -70,6 +70,7 @@ let _lastTap = { id: null, at: 0 };
 let _statsOpen = false;   // 狭い画面の「いまの効果」の札 (= 既定は閉じる)
 let _hintSaid = false;    // タイトルの案内 (= 起動中に 1 回)
 const NAVI_TREE_HIDE_MS = 2600;
+const WIDE = typeof matchMedia === "function" ? matchMedia("(min-width: 900px)") : { matches: false, addEventListener() {} };
 
 export function isSkillTreeOpen() { return _open; }
 
@@ -93,6 +94,15 @@ export function installSkillTree() {
     if (ic) ic.src = img(ICON_GUM);
   }
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && _open) closeSkillTree(); });
+  // 幅が 900px をまたいだら組み直す (= 右の列 ⇔ 下の欄)。 見ている場所と選んだ節はそのまま
+  WIDE.addEventListener?.("change", () => {
+    if (!_open || !_parts) return;
+    const view = { ..._parts.view };
+    buildScreen();
+    Object.assign(_parts.view, view);
+    applyView();
+    renderAll();
+  });
   onMetaChange(() => { refreshTitleEntry(); });
   onLangChange(() => { refreshTitleEntry(); renderHeroPerks(); if (_open) renderAll(); });
   // SPEC-093: 根をまだ取っていなければ、 タイトルでマインちゃんが入口を教える (= 起動中に 1 回)
@@ -228,8 +238,21 @@ function buildScreen() {
   const main = h("div", { class: "tree-main" });
   world.append(links, nodeLayer);
   viewport.append(world, notice);
-  main.append(viewport, stats);
-  clear(_screen).append(bg, head, routeBar, main, sheet);
+  // SPEC-094: 木の左下に 縮める・広げる・中心へ (= Workshop の作り。 下の欄から外して、 木のそばに置く)
+  const tools = h("div", { class: "tree-tools" },
+    h("button", { class: "tree-tool", type: "button", "aria-label": t("tree.zoomOut", "縮める"), onclick: () => zoomStep(1 / 1.25) }, "−"),
+    h("button", { class: "tree-tool", type: "button", "aria-label": t("tree.zoomIn", "広げる"), onclick: () => zoomStep(1.25) }, "＋"),
+    h("button", { class: "tree-tool wide", type: "button", onclick: () => centerOn(ROOT_ID, true) }, t("tree.center", "中心へ")));
+  // SPEC-094: 広い画面は Workshop と同じく、 右の列に「詳しい欄」と「いまの効果」を縦に並べる。 狭い画面は下の欄と右上の札
+  const wide = WIDE.matches;
+  _screen.classList.toggle("wide", wide);
+  if (wide) {
+    main.append(viewport, tools, h("div", { class: "tree-side" }, sheet, stats));
+    clear(_screen).append(bg, head, routeBar, main);
+  } else {
+    main.append(viewport, tools, stats);
+    clear(_screen).append(bg, head, routeBar, main, sheet);
+  }
 
   const view = { x: 0, y: 0, scale: window.innerWidth < 560 ? 0.62 : 0.85 };
   _parts = { head, routeBar, viewport, world, links, nodeLayer, notice, sheet, stats, view, px, W, H };
@@ -291,8 +314,24 @@ function renderStats() {
     h("div", { class: "stats-body" },
       h("p", { class: "stats-note" }, t("tree.statsNote", "次の挑戦から効く（RTA では切れる）")),
       rows.length ? h("ul", { class: "stats-list" }, rows.map(statRow)) : h("p", { class: "stats-none" }, t("tree.statsNone", "まだ効果はない")),
-      flags.length ? h("p", { class: "stats-flags" }, flags.join("・")) : null),
+      flags.length ? h("p", { class: "stats-flags" }, flags.join("・")) : null,
+      resetBox(m)),
   );
+}
+
+/** 作り直す (= めったに使わないので、 効果の欄のいちばん下に小さく。 押すと確かめる。 SPEC-094) */
+function resetBox(m) {
+  if (!owns(m, ROOT_ID)) return null;
+  if (!_resetAsk) {
+    return h("div", { class: "stats-reset" },
+      h("button", { class: "reset-link", type: "button", onclick: () => { _resetAsk = true; renderStats(); } }, t("tree.reset", "作り直す")));
+  }
+  const back = spentTotal(m);
+  return h("div", { class: "stats-reset ask" },
+    h("p", {}, tpl(t("tree.resetConfirm", "全部戻す？（GUM {gum}・ゴールドダスト {dust} が戻る）"), back)),
+    h("div", { class: "reset-btns" },
+      h("button", { class: "tree-btn sub danger", type: "button", onclick: () => doReset(back) }, t("tree.resetYes", "戻す")),
+      h("button", { class: "tree-btn sub", type: "button", onclick: () => { _resetAsk = false; renderStats(); } }, t("tree.resetNo", "やめる"))));
 }
 
 /** 頭: 戻る・題・右に残高 (= 選んだ節の費用を「−40」と並べ、 足りないぶんは赤く。 木に重ねないので節が隠れない) */
@@ -438,12 +477,6 @@ const costChips = (cost) => h("span", { class: "cost-row" },
   cost.gum ? h("span", { class: "cost-chip" }, h("img", { src: img(ICON_GUM), alt: "" }), `${cost.gum}`) : null,
   cost.dust ? h("span", { class: "cost-chip dust" }, h("img", { src: img(ICON_DUST), alt: "" }), `${cost.dust}`) : null);
 
-function blockerText(b) {
-  if (b.key === "parent") return tpl(t("tree.blockParent", "「{name}」の先"), { name: nameOf(NODE_MAP[b.id]) });
-  if (b.key === "route") return tpl(t("tree.blockRoute", "この道の節を {need} つ（いま {n} つ）"), { need: b.need, n: b.n });
-  return "";
-}
-
 function shortText(m, cost) {
   const s = shortBy(m, cost);
   const list = [];
@@ -456,6 +489,7 @@ function renderSheet() {
   const m = getMeta();
   const { sheet } = _parts;
   clear(sheet);
+  sheet.classList.toggle("idle", !_selected);
   const add = (...xs) => sheet.append(...xs.flat().filter(Boolean));
   if (!_selected) return renderIdle(add, m);
   const n = NODE_MAP[_selected];
@@ -463,76 +497,92 @@ function renderSheet() {
   if (!nodeVisible(m, n.id)) {
     const parent = NODE_MAP[n.parent];
     add(
-      h("div", { class: "sheet-top" },
-        h("div", {}, h("div", { class: "sheet-name" }, t("tree.hidden", "？？？")), h("div", { class: "sheet-meta" }, h("span", { class: "route-tag", style: { "--c": ROUTE_MAP[n.route].color } }, L(ROUTE_MAP[n.route].name)))),
+      h("div", { class: "dt-head" },
+        h("div", { class: "dt-icon teaser", style: { "--c": ROUTE_MAP[n.route].color } }, "？"),
+        h("div", { class: "dt-title" },
+          h("div", { class: "dt-tags" }, h("span", { class: "route-tag", style: { "--c": ROUTE_MAP[n.route].color } }, L(ROUTE_MAP[n.route].name))),
+          h("div", { class: "dt-name" }, t("tree.hidden", "？？？"))),
         closeX),
-      h("p", { class: "sheet-desc" }, tpl(t("tree.hiddenDesc", "「{name}」を解放すると、この先が見える。"), { name: nameOf(parent) })),
+      h("p", { class: "dt-desc" }, tpl(t("tree.hiddenDesc", "「{name}」を解放すると、この先が見える。"), { name: nameOf(parent) })),
       h("button", { class: "tree-btn", type: "button", onclick: () => select(parent.id, true) }, tpl(t("tree.toParent", "「{name}」へ"), { name: nameOf(parent) })),
     );
     return;
   }
   const st = nodeState(m, n.id);
   const route = n.route ? ROUTE_MAP[n.route] : null;
+  const color = route ? route.color : "#f6e2a0";
   const cost = nodeCost(m, n.id);
-  const blockers = nodeBlockers(m, n.id);
   const afford = canAfford(m, cost);
-  let action;
-  if (n.kind === "root" && owns(m, n.id)) action = h("button", { class: "tree-btn", type: "button", disabled: true }, t("tree.rootOwned", "すべてはここから"));
-  else if (n.kind === "root") action = h("button", { class: "tree-btn gold", type: "button", onclick: () => unlock(n) }, t("tree.unlockRoot", "解放する（0 GUM）"));
-  else if (st === "owned") action = h("button", { class: "tree-btn", type: "button", disabled: true }, n.kind === "repeat" ? t("tree.maxed", "最大") : t("tree.owned", "解放済み"));
-  else if (st === "available") {
-    action = h("button", { class: "tree-btn gold", type: "button", disabled: !afford, onclick: () => unlock(n) },
-      n.kind === "repeat" && nodeRank(m, n.id) > 0 ? t("tree.upgrade", "強化する") : t("tree.unlock", "解放する"), costChips(cost));
-  } else action = h("button", { class: "tree-btn", type: "button", disabled: true }, t("tree.locked", "まだ解放できない"), costChips(cost));
+  const rank = nodeRank(m, n.id);
+  // 頭: 大きなアイコン・道と種類の札・名前・段 (= 強化は目盛り)
+  const pips = n.kind === "repeat"
+    ? h("div", { class: "dt-pips", "aria-label": tpl(t("tree.lv", "Lv {n} / {max}"), { n: rank, max: nodeMax(n) }) },
+      Array.from({ length: nodeMax(n) }, (_, k) => h("i", { class: k < rank ? "on" : "" })),
+      h("b", { class: "num" }, tpl(t("tree.lv", "Lv {n} / {max}"), { n: rank, max: nodeMax(n) })))
+    : null;
   add(
-    h("div", { class: "sheet-top" },
-      h("div", {},
-        h("div", { class: "sheet-name" }, nameOf(n)),
-        h("div", { class: "sheet-meta" },
+    h("div", { class: "dt-head" },
+      h("div", { class: `dt-icon ${owns(m, n.id) ? "has" : ""}`, style: { "--c": color } }, h("img", { src: iconUrl(n.icon), alt: "", draggable: "false", onerror: (e) => e.target.remove() })),
+      h("div", { class: "dt-title" },
+        h("div", { class: "dt-tags" },
           route ? h("span", { class: "route-tag", style: { "--c": route.color } }, L(route.name)) : null,
-          h("span", {}, t(KIND_KEY[n.kind], n.kind)))),
-      n.kind === "repeat" ? h("div", { class: "sheet-lv num" }, tpl(t("tree.lv", "Lv {n} / {max}"), { n: nodeRank(m, n.id), max: nodeMax(n) })) : null,
+          h("span", { class: "kind-tag" }, t(KIND_KEY[n.kind], n.kind))),
+        h("div", { class: "dt-name" }, nameOf(n)),
+        pips),
       closeX),
-    h("p", { class: "sheet-desc" }, L(n.desc)),
-    n.kind === "capstone" ? h("p", { class: "sheet-note" }, tpl(t("tree.capNote", "この道の節を {need} つそろえると解放できる。道の到達点。"), { need: CAPSTONE_NEED })) : null,
-    blockers.length && st !== "owned" ? h("p", { class: "sheet-block" }, blockers.map(blockerText).join("／")) : null,
-    st === "available" && !afford ? h("p", { class: "sheet-block" }, shortText(m, cost)) : null,
-    sheetDiff(m, n.id),
-    action,
+    h("p", { class: "dt-desc" }, L(n.desc)),
+    detailConds(m, n, st, cost),
+    detailChanges(m, n.id),
+    actionButton(m, n, st, cost, afford),
   );
 }
 
-/** 選んだ節で変わる値 (= 「攻撃 ＋9% → ＋12%」。 狭い画面で効果の欄を閉じていても分かる)。 SPEC-093 */
-function sheetDiff(m, id) {
+/** 条件の一覧 (= 満たしたものは ✓ で薄く、 まだのものは ✗。 Workshop の作り) */
+function detailConds(m, n, st, cost) {
+  if (n.kind === "root" || st === "owned") return null;
+  const items = [];
+  if (n.parent && NODE_MAP[n.parent].kind !== "root") items.push({ ok: owns(m, n.parent), text: tpl(t("tree.condParent", "「{name}」を解放"), { name: nameOf(NODE_MAP[n.parent]) }) });
+  if (n.kind === "capstone") {
+    const have = routeCounts(m)[n.route] || 0;
+    items.push({ ok: have >= CAPSTONE_NEED, text: tpl(t("tree.condRoute", "この道の節を {need} つ（いま {n} つ）"), { need: CAPSTONE_NEED, n: have }) });
+  }
+  const s = shortBy(m, cost);
+  if (cost.gum) items.push({ ok: !s.gum, text: s.gum ? tpl(t("tree.condGumShort", "GUM {need}（あと {n}）"), { need: cost.gum, n: s.gum }) : tpl(t("tree.condGum", "GUM {need}"), { need: cost.gum }) });
+  if (cost.dust) items.push({ ok: !s.dust, text: s.dust ? tpl(t("tree.condDustShort", "ゴールドダスト {need}（あと {n}）"), { need: cost.dust, n: s.dust }) : tpl(t("tree.condDust", "ゴールドダスト {need}"), { need: cost.dust }) });
+  if (!items.length) return null;
+  return h("ul", { class: "dt-conds" }, items.map((c) => h("li", { class: c.ok ? "met" : "" }, h("i", { "aria-hidden": "true" }, c.ok ? "✓" : "✗"), c.text)));
+}
+
+/** 解放・強化のボタン (= 金のグラデーション。 費用は中に並べる) */
+function actionButton(m, n, st, cost, afford) {
+  if (n.kind === "root" && owns(m, n.id)) return h("button", { class: "tree-btn", type: "button", disabled: true }, t("tree.rootOwned", "すべてはここから"));
+  if (n.kind === "root") return h("button", { class: "tree-btn gold", type: "button", onclick: () => unlock(n) }, t("tree.unlockRoot", "解放する（0 GUM）"));
+  if (st === "owned") return h("button", { class: "tree-btn done", type: "button", disabled: true }, n.kind === "repeat" ? t("tree.maxed", "最大") : t("tree.owned", "解放済み"));
+  if (st === "available") {
+    return h("button", { class: `tree-btn ${n.kind === "repeat" && nodeRank(m, n.id) > 0 ? "green" : "gold"}`, type: "button", disabled: !afford, onclick: () => unlock(n) },
+      h("span", {}, n.kind === "repeat" && nodeRank(m, n.id) > 0 ? t("tree.upgrade", "強化する") : t("tree.unlock", "解放する")), costChips(cost));
+  }
+  return h("button", { class: "tree-btn", type: "button", disabled: true }, h("span", {}, t("tree.locked", "まだ解放できない")), costChips(cost));
+}
+
+/** 選んだ節で変わる値 (= 「攻撃  ＋9% → ＋12%」 の一覧。 狭い画面で効果の欄を閉じていても分かる)。 SPEC-093 / SPEC-094 */
+function detailChanges(m, id) {
   const next = nextPerks(m, id);
   if (!next) return null;
   const rows = perkRows(computePerks(m), next, getLang()).rows.filter((r) => r.changed);
   if (!rows.length) return null;
-  return h("p", { class: "sheet-diff num" }, rows.map((r) => `${r.label} ${r.value === "—" ? "" : r.value + " → "}${r.next}`).join("　"));
+  return h("ul", { class: "dt-changes" }, rows.map((r) => h("li", { style: { "--c": ROUTE_MAP[r.route].color } },
+    h("span", {}, r.label), h("b", { class: "num" }, r.value === "—" ? "" : `${r.value} → `, h("em", {}, r.next)))));
 }
 
+/** 何も選んでいないとき: 解放できる節への近道だけ (= 「中心へ」 は木の左下、 「作り直す」 は効果の欄の下へ。 SPEC-094) */
 function renderIdle(add, m) {
   const claimable = claimableNodes(m);
-  if (_resetAsk) {
-    const back = spentTotal(m);
-    add(
-      h("p", { class: "sheet-desc" }, tpl(t("tree.resetConfirm", "全部戻す？（GUM {gum}・ゴールドダスト {dust} が戻る）"), back)),
-      h("div", { class: "sheet-btns two" },
-        h("button", { class: "tree-btn sub danger", type: "button", onclick: () => doReset(back) }, t("tree.resetYes", "戻す")),
-        h("button", { class: "tree-btn sub", type: "button", onclick: () => { _resetAsk = false; renderSheet(); } }, t("tree.resetNo", "やめる"))),
-    );
-    return;
-  }
   const first = claimable[0];
-  add(
-    first
-      ? h("button", { class: "sheet-go ok", type: "button", onclick: () => select(first.id, true) },
-        tpl(t("tree.claimable", "▶ 解放できます：{name}{more}（タップで移動）"), { name: nameOf(first), more: claimable.length > 1 ? tpl(t("tree.claimableMore", " ほか {n}"), { n: claimable.length - 1 }) : "" }))
-      : h("p", { class: "sheet-note" }, t("tree.idleHint", "挑戦を終えると GUM が、ボスを倒すとゴールドダストが貯まる。節を 2 回押すと解放。")),
-    h("div", { class: "sheet-btns two" },
-      h("button", { class: "tree-btn sub", type: "button", onclick: () => centerOn(ROOT_ID, true) }, t("tree.center", "中心へ")),
-      h("button", { class: "tree-btn sub", type: "button", disabled: !owns(m, ROOT_ID), onclick: () => { _resetAsk = true; renderSheet(); } }, t("tree.reset", "作り直す"))),
-  );
+  add(first
+    ? h("button", { class: "sheet-go ok", type: "button", onclick: () => select(first.id, true) },
+      tpl(t("tree.claimable", "▶ 解放できます：{name}{more}（タップで移動）"), { name: nameOf(first), more: claimable.length > 1 ? tpl(t("tree.claimableMore", " ほか {n}"), { n: claimable.length - 1 }) : "" }))
+    : h("p", { class: "sheet-note" }, t("tree.idleHint", "挑戦を終えると GUM が、ボスを倒すとゴールドダストが貯まる。節を 2 回押すと解放。")));
 }
 
 // ============================================================
@@ -685,6 +735,12 @@ function installPanZoom() {
     const next = Math.min(1.6, Math.max(0.4, view.scale * (e.deltaY < 0 ? 1.1 : 0.9)));
     zoomAt(next, e.clientX, e.clientY);
   }, { passive: false });
+}
+
+/** 縮める・広げるのボタン (= 木の真ん中を軸に) */
+function zoomStep(k) {
+  const r = _parts.viewport.getBoundingClientRect();
+  zoomAt(Math.min(1.6, Math.max(0.4, _parts.view.scale * k)), r.left + r.width / 2, r.top + r.height / 2);
 }
 
 function zoomAt(next, cx, cy, from) {
