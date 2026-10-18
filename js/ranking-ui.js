@@ -4,10 +4,10 @@
 //
 // 起動経路: タイトル画面の 「ランキング」 ボタン or 活動レポートの 「ランキングを見る」
 // 内部: fetchRanking → top 20 を table 描画。 URL 未設定なら入力欄を出して保存可能。
-// URL hash bootstrap: ?#api=base64(URL) を踏むと自動で localStorage に保存。
+// (SPEC-095 で #api= のリンクで送り先を書き換える機能はやめた)
 
 import {
-  fetchRanking, getRankingApiUrl, setRankingApiUrl,
+  fetchRanking, getRankingApiUrl, setRankingApiUrl, isRankingApiUrl,
 } from "./ranking-client.js";
 import { APP_VERSION } from "./constants.js";
 import { state, pauseTime, resumeTime } from "./state.js";
@@ -45,23 +45,8 @@ export function installRankingUI() {
     if (_opened) _renderShell();
   });
 
-  // URL hash bootstrap: #api=base64 を踏んだら自動保存
-  _consumeHashApiUrl();
-}
-
-function _consumeHashApiUrl() {
-  try {
-    const h = (location.hash || "").replace(/^#/, "");
-    const m = h.match(/(?:^|&)api=([^&]+)/);
-    if (!m) return;
-    const decoded = atob(decodeURIComponent(m[1]));
-    if (decoded && /^https?:\/\//.test(decoded)) {
-      setRankingApiUrl(decoded);
-      // 一度きりで消す (= reload しても再保存されない)
-      const next = h.replace(/(?:^|&)api=[^&]+/, "").replace(/^&/, "");
-      history.replaceState(null, "", location.pathname + location.search + (next ? "#" + next : ""));
-    }
-  } catch (_) {}
+  // SPEC-095: #api=… のリンクで送り先を書き換える機能はやめた (= 他人が作ったリンクを踏むだけで、
+  // 以後の名前とスコアが知らないサーバーへ送られるため)。 送り先は既定のまま、 変えるなら設定から手で
 }
 
 export async function openRanking() {
@@ -168,8 +153,8 @@ async function _onRefresh() {
 
 function _onSaveUrl() {
   const v = (_input()?.value || "").trim();
-  if (!/^https?:\/\//.test(v)) {
-    if (_msg()) _msg().textContent = t("ranking.urlInvalid", "URL は http(s):// で始めてください");
+  if (!isRankingApiUrl(v)) {   // SPEC-095: Google Apps Script のウェブアプリの URL だけ
+    if (_msg()) _msg().textContent = t("ranking.urlInvalid", "URL は https://script.google.com/macros/s/…/exec の形で入れてください");
     return;
   }
   setRankingApiUrl(v);

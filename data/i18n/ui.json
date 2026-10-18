@@ -137,7 +137,7 @@
   "ranking.loadFail":      { "ja": "読込失敗: {err}",                     "en": "Load failed: {err}" },
   "ranking.needUrl":       { "ja": "API URL が未設定です。 下の入力欄に貼り付けて保存してください。",
                              "en": "API URL is not set. Paste it below and save." },
-  "ranking.urlInvalid":    { "ja": "URL は http(s):// で始めてください",   "en": "URL must start with http(s)://" },
+  "ranking.urlInvalid":    { "ja": "URL は https://script.google.com/macros/s/…/exec の形で入れてください",   "en": "Use a https://script.google.com/macros/s/…/exec URL" },
   "ranking.urlSaved":      { "ja": "URL を保存しました。 再読込します…",   "en": "Saved. Reloading…" },
   "ranking.urlPlaceholder":{ "ja": "https://script.google.com/macros/s/.../exec",
                              "en": "https://script.google.com/macros/s/.../exec" },
