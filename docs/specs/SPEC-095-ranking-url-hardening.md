@@ -2,7 +2,7 @@
 id: SPEC-095
 title: Ranking API URL Hardening — GAS Web App Only, No Hash Override
 status: Done
-pr: TBD
+pr: 125
 phase: v1.4 Meta
 kind: Security
 ---
