@@ -44,7 +44,7 @@ import { tickBossMoves } from "./boss-moves.js";
 import { startCoachIfFirst, tickCoach, hideCoach } from "./coach.js";
 import { resetFx, tickFx } from "./fx.js";
 import { startBgm } from "../audio.js";
-import { startRtaRun, rtaRegulationFor, placePlatformToasts, setChatVisible } from "../platform.js";
+import { startRtaRun, rtaRegulationFor, placePlatformToasts, setChatVisible, reportStageStart } from "../platform.js";
 import { BGM_BATTLE, STAGE_TABLE, WATCH_SPEED } from "../constants.js";
 import { t, tpl } from "../i18n.js";
 import { heroImg } from "../heroes.js";
@@ -83,6 +83,8 @@ export function startBattle(hero) {
     const reg = rtaRegulationFor(state.regulation, state.absolute);
     if (reg) startRtaRun(reg);
   }
+  // SPEC-096: ステージ 3 にたどり着いた (= 共通基盤のアチーブメント)
+  reportStageStart(state.currentStageIdx ?? 0, STAGE_TABLE.length);
   // SPEC-041: 新しい挑戦 (= ステージ 1) では、全ステージ通しの記録を空にして、総合スコアをまだ送っていない状態にする。
   // (= ゲームオーバーからの再走 applyRetry は state.run を空にしていなかったので、ここでそろえる)
   if ((state.currentStageIdx ?? 0) === 0) {

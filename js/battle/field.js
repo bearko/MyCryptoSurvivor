@@ -26,6 +26,7 @@ import { naviTipOnce } from "../navi-tips.js";
 import { pushDamageNumber, hitEnemy } from "./damage.js";
 import { fxBurst, fxThunder } from "./fx.js";
 import { playSe } from "../audio.js";
+import { reportChestOpened } from "../platform.js";   // SPEC-096
 
 function _stage() {
   return STAGE_TABLE[state.currentStageIdx ?? 0] ?? STAGE_TABLE[0];
@@ -131,6 +132,7 @@ export function dropFromProp(e) {
   if (e.propKind === "chest") {
     fxBurst(e.x, e.y, "#f0c14b", 22, 220);
     pushDamageNumber(e.x, e.y - e.r - 6, "OPEN!", "#ffe39a", "lg");
+    reportChestOpened();   // SPEC-096: 宝箱を初めて開ける (= 共通基盤のアチーブメント。 同じ起動で 1 度だけ送る)
   } else {
     fxBurst(e.x, e.y, "#7fb3ff", 8, 130);
   }

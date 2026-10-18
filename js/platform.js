@@ -1,21 +1,121 @@
 // ============================================================
-// platform.js — bearko.games 共通基盤（トロフィー）への窓口 (= SPEC-039)
+// platform.js — bearko.games 共通基盤（アチーブメント・RTA・総合スコア）への窓口 (= SPEC-039 / SPEC-096)
 // ============================================================
 //
 // SDK（https://bearko.games/sdk/v1.js）が読めない・通信に失敗しても何もしない。
 // ゲームの進行・pauseTime には触らない。ログイン状態は共通基盤が持つ（localStorage は使わない）。
 
+import { owns, ownedCount } from "./skill-logic.js";
+import { TREE_NODES, ROOT_ID } from "./skill-data.js";
+
+// ============================================================
+// SPEC-039 / SPEC-096: アチーブメント (= 共通基盤 SPEC-008。 SDK の関数名は unlockTrophy のまま)
+// ============================================================
+
+/** 覚醒魔王ファオ (= data/enemies.json の 373。 ステージ 2 のボス) */
+export const FAO_ENEMY_ID = 373;
+/** ABSOLUTE のアチーブメントに要る倍率 (= 4 軸すべて) */
+export const ACHIEVEMENT_ABSOLUTE_MUL = 2.0;
+const ABSOLUTE_AXES = ["spawnMul", "hpMul", "dmgMul", "speedMul"];
+
 /**
- * 終えたステージ（0 始まり）に対応するトロフィー ID。純関数 (= tests/platform.test.mjs)
+ * 終えたステージ（0 始まり）で送るアチーブメント ID。純関数 (= tests/platform.test.mjs)
+ *   ctx.bossDefeated: そのステージのボスを倒したか、 ctx.bossEnemyId: そのステージのボス、
+ *   ctx.stages: state.run.stages (= ボスを倒したステージは dust を持つ)、 ctx.rtaMode / regulation / absolute
  */
-export function trophyIdsForStageEnd(stageIdx, stageCount) {
+export function trophyIdsForStageEnd(stageIdx, stageCount, ctx = {}) {
   const ids = [];
+  const last = stageCount > 0 && stageIdx === stageCount - 1;
   if (stageIdx === 0) ids.push("survivor.stage1");
-  if (stageCount > 0 && stageIdx === stageCount - 1) ids.push("survivor.clear");
+  if (stageIdx === 1) ids.push("survivor.stage2");
+  if (ctx.bossDefeated && ctx.bossEnemyId === FAO_ENEMY_ID) ids.push("survivor.fao");
+  if (!last) return ids;
+  ids.push("survivor.clear");
+  const stages = Array.isArray(ctx.stages) ? ctx.stages : [];
+  const bossIdx = new Set(stages.filter((s) => s && s.dust != null).map((s) => s.idx));
+  let allBoss = true;
+  for (let i = 0; i < stageCount; i++) if (!bossIdx.has(i)) allBoss = false;
+  if (allBoss) ids.push("survivor.allboss");
+  if (ctx.rtaMode) ids.push("survivor.rta");
+  if (ctx.regulation === "ABSOLUTE") {
+    const a = ctx.absolute || {};
+    // スライダーの値は小数 (= parseFloat) なので、 わずかな誤差は許す
+    if (ABSOLUTE_AXES.every((k) => Number(a[k]) >= ACHIEVEMENT_ABSOLUTE_MUL - 1e-9)) ids.push("survivor.absolute");
+  }
+  return ids;
+}
+
+/** 始めたステージ（0 始まり）で送るアチーブメント ID (= ステージ 3 にたどり着く)。純関数 */
+export function achievementIdsForStageStart(stageIdx, stageCount = 3) {
+  return stageIdx === 2 && stageCount >= 3 ? ["survivor.stage3"] : [];
+}
+
+/**
+ * セーブ (= localStorage["mcs.meta.v1"]。 meta.js の normalizeMeta の形) から、 いま満たしているアチーブメント ID。純関数
+ */
+export function achievementIdsForMeta(meta) {
+  const ids = [];
+  if (!meta || typeof meta !== "object") return ids;
+  if (owns(meta, ROOT_ID)) ids.push("survivor.awaken");
+  if (ownedCount(meta) >= 5) ids.push("survivor.tree5");
+  if (TREE_NODES.some((n) => n.kind === "capstone" && owns(meta, n.id))) ids.push("survivor.capstone");
+  if ((meta.earned?.dust | 0) > 0) ids.push("survivor.firstboss");   // ゴールドダストはボスを倒したときだけ入る
+  if ((meta.runs | 0) >= 10) ids.push("survivor.runs10");
   return ids;
 }
 
 const _sdk = () => (typeof window !== "undefined" ? window.BearkoGames : undefined);
+
+// 送る列: 1 つずつ順に (= 未ログインの最初の書き込みで仮アカウントができるため)。 同じ起動で同じ ID は 1 度だけ
+let _ready = Promise.resolve();   // 共通基盤の init が終わるまで待つ
+const _sentIds = new Set();
+const _queue = [];
+let _pump = null;
+
+/** アチーブメントを送る (= 列に足す)。 SDK がなければ何もしない */
+export function unlockAchievements(ids) {
+  const bg = _sdk();
+  if (!bg || typeof bg.unlockTrophy !== "function") return;
+  for (const id of ids || []) {
+    if (typeof id !== "string" || !id || _sentIds.has(id)) continue;
+    _sentIds.add(id);
+    _queue.push(id);
+  }
+  _kick();
+}
+
+function _kick() {
+  if (_pump || !_queue.length) return;
+  // 終わりぎわに足されたものも取りこぼさない (= finally でもう一度見る)
+  _pump = _drain().finally(() => { _pump = null; _kick(); });
+}
+
+async function _drain() {
+  await _ready;
+  while (_queue.length) {
+    const id = _queue.shift();
+    const bg = _sdk();
+    if (!bg || typeof bg.unlockTrophy !== "function") { _queue.length = 0; return; }
+    try {
+      const r = await bg.unlockTrophy(id);
+      if (!r || !r.ok) console.warn("[platform] achievement", id, r && r.error);
+    } catch (e) {
+      console.warn("[platform] achievement", id, e);
+    }
+  }
+}
+
+/** テスト用: 列が空になるまで待つ */
+export function whenAchievementsSent() {
+  return _pump ?? Promise.resolve();
+}
+
+/** テスト用: 送った記録と列を空にする */
+export function _resetAchievementsForTest() {
+  _sentIds.clear();
+  _queue.length = 0;
+  _ready = Promise.resolve();
+}
 
 export function initPlatform(version) {
   const bg = _sdk();
@@ -24,7 +124,7 @@ export function initPlatform(version) {
     // SPEC-052: 通知は画面の上に出す (= 結果画面のボタンを隠さない。 SDK 1.5.0 から。 古い SDK は無視する)
     // SPEC-091: 全体チャットの 💬 は右上 (= 下はマインちゃんの帯と通知が使う。 SDK 1.6.0 から)。
     //           読み込みの画面には出さない (= タイトルに入ったとき setChatVisible(true))
-    Promise.resolve(bg.init({ game: "survivor", version, toast: "top", chat: { position: "top-right", offset: { x: 12, y: 12 } } }))
+    _ready = Promise.resolve(bg.init({ game: "survivor", version, toast: "top", chat: { position: "top-right", offset: { x: 12, y: 12 } } }))
       .then(() => setChatVisible(false))
       .catch((e) => console.warn("[platform] init", e));
   } catch (e) {
@@ -32,18 +132,24 @@ export function initPlatform(version) {
   }
 }
 
-export function reportStageEnd(stageIdx, stageCount) {
-  const bg = _sdk();
-  if (!bg) return;
-  for (const id of trophyIdsForStageEnd(stageIdx, stageCount)) {
-    try {
-      Promise.resolve(bg.unlockTrophy(id))
-        .then((r) => { if (!r || !r.ok) console.warn("[platform] trophy", id, r && r.error); })
-        .catch((e) => console.warn("[platform] trophy", id, e));
-    } catch (e) {
-      console.warn("[platform] trophy", id, e);
-    }
-  }
+/** ステージを終えたとき (= ボス撃破 or 5 分耐久。 死亡は通らない) */
+export function reportStageEnd(stageIdx, stageCount, ctx = {}) {
+  unlockAchievements(trophyIdsForStageEnd(stageIdx, stageCount, ctx));
+}
+
+/** ステージを始めたとき (= SPEC-096: ステージ 3 にたどり着く) */
+export function reportStageStart(stageIdx, stageCount) {
+  unlockAchievements(achievementIdsForStageStart(stageIdx, stageCount));
+}
+
+/** セーブ (= mcs.meta.v1) が変わったとき・起動時 (= SPEC-096: 前から遊んでいる人にも付く) */
+export function reportMetaAchievements(meta) {
+  unlockAchievements(achievementIdsForMeta(meta));
+}
+
+/** 宝箱を開けたとき (= SPEC-096: その場で) */
+export function reportChestOpened() {
+  unlockAchievements(["survivor.chest"]);
 }
 
 // ============================================================
