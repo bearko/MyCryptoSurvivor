@@ -37,7 +37,8 @@ import { startBattle } from "./battle/index.js";
 import { playSe, unlockAudio, suspendBgm, resumeBgm } from "./audio.js";
 import { SFX } from "./constants.js";
 import { APP_VERSION } from "./constants.js";
-import { initPlatform, setChatVisible } from "./platform.js";
+import { initPlatform, setChatVisible, reportMetaAchievements } from "./platform.js";
+import { getMeta, onMetaChange } from "./meta.js";
 import { installModalA11y } from "./modal-a11y.js";
 import { img } from "./constants.js";
 import { installReduceFxAttr } from "./motion.js";
@@ -589,8 +590,12 @@ function renderHeader() {
 // Boot
 // ============================================================
 window.addEventListener("DOMContentLoaded", () => {
-  // SPEC-039: bearko.games 共通基盤（トロフィー）。SDK がなければ何もしない
+  // SPEC-039: bearko.games 共通基盤（アチーブメント）。SDK がなければ何もしない
   initPlatform(APP_VERSION);
+  // SPEC-096: セーブ (= mcs.meta.v1) から判定できるアチーブメントは、 起動時と、 セーブが変わるたび
+  // (= スキルツリーの解放・ボスのゴールドダスト・挑戦の終わり) に、 いま満たしているものを送る
+  reportMetaAchievements(getMeta());
+  onMetaChange((m) => reportMetaAchievements(m));
   init().catch((e) => console.error("init failed", e));
 });
 

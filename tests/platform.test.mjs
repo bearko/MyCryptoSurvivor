@@ -1,28 +1,104 @@
-// SPEC-039: ステージ → トロフィー ID の対応と、SDK がない・失敗するときに例外を出さないこと。
+// SPEC-039 / SPEC-096: 条件 → アチーブメント ID の対応と、送る列（順に・1 度だけ・SDK がない・失敗するときに例外を出さない）。
 // 実行: node --test tests/platform.test.mjs
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { trophyIdsForStageEnd, reportStageEnd, initPlatform } from "../js/platform.js";
+import {
+  trophyIdsForStageEnd, achievementIdsForStageStart, achievementIdsForMeta,
+  reportStageEnd, reportStageStart, reportMetaAchievements, reportChestOpened,
+  unlockAchievements, whenAchievementsSent, _resetAchievementsForTest,
+  initPlatform, FAO_ENEMY_ID,
+} from "../js/platform.js";
+import { STAGE_TABLE } from "../js/constants.js";
+import { TREE_NODES, ROOT_ID } from "../js/skill-data.js";
 
 const STAGES = 3; // js/constants.js の STAGE_TABLE（あかばす・ほれりす・とろい）
+const tick = () => new Promise((r) => setTimeout(r, 0));
 
-test("ステージ終了で送るトロフィー", () => {
+test("ファオはステージ 2 (= idx 1) のボス", () => {
+  assert.equal(STAGE_TABLE.length, STAGES);
+  assert.equal(STAGE_TABLE[1].bossEnemyId, FAO_ENEMY_ID);
+});
+
+test("ステージ終了で送るアチーブメント：ステージ 1・2・全クリア", () => {
   assert.deepEqual(trophyIdsForStageEnd(0, STAGES), ["survivor.stage1"]);
-  assert.deepEqual(trophyIdsForStageEnd(1, STAGES), []);
+  assert.deepEqual(trophyIdsForStageEnd(1, STAGES), ["survivor.stage2"]);
   assert.deepEqual(trophyIdsForStageEnd(2, STAGES), ["survivor.clear"]);
 });
 
-test("SDK がなくても例外を出さない", () => {
-  assert.doesNotThrow(() => initPlatform("0.1.0"));
-  assert.doesNotThrow(() => reportStageEnd(0, STAGES));
+test("ステージ終了：ファオはボスを倒したときだけ (= 5 分耐久では送らない)", () => {
+  const fao = { bossEnemyId: STAGE_TABLE[1].bossEnemyId };
+  assert.deepEqual(trophyIdsForStageEnd(1, STAGES, { ...fao, bossDefeated: true }), ["survivor.stage2", "survivor.fao"]);
+  assert.deepEqual(trophyIdsForStageEnd(1, STAGES, { ...fao, bossDefeated: false }), ["survivor.stage2"]);
+  assert.deepEqual(trophyIdsForStageEnd(0, STAGES, { bossEnemyId: STAGE_TABLE[0].bossEnemyId, bossDefeated: true }), ["survivor.stage1"]);
 });
 
-test("SDK があれば unlockTrophy を呼び、失敗してもゲームを止めない", async () => {
+test("全クリア：ボス 3 体 (= どのステージにもゴールドダスト)・RTA・ABSOLUTE ×2.0 以上", () => {
+  const all = [{ idx: 0, dust: 1 }, { idx: 1, dust: 2 }, { idx: 2, dust: 3 }];
+  const miss = [{ idx: 0, dust: 1 }, { idx: 1 }, { idx: 2, dust: 3 }];
+  assert.deepEqual(trophyIdsForStageEnd(2, STAGES, { stages: all }), ["survivor.clear", "survivor.allboss"]);
+  assert.deepEqual(trophyIdsForStageEnd(2, STAGES, { stages: miss }), ["survivor.clear"]);
+  assert.deepEqual(trophyIdsForStageEnd(2, STAGES, { stages: all.slice(1) }), ["survivor.clear"], "ステージが欠けていれば送らない");
+  assert.deepEqual(trophyIdsForStageEnd(2, STAGES, { stages: miss, rtaMode: true }), ["survivor.clear", "survivor.rta"]);
+  const x2 = { spawnMul: 2, hpMul: 2, dmgMul: 2, speedMul: 2 };
+  assert.deepEqual(trophyIdsForStageEnd(2, STAGES, { regulation: "ABSOLUTE", absolute: x2 }), ["survivor.clear", "survivor.absolute"]);
+  assert.deepEqual(trophyIdsForStageEnd(2, STAGES, { regulation: "ABSOLUTE", absolute: { ...x2, hpMul: 3 } }), ["survivor.clear", "survivor.absolute"]);
+  assert.deepEqual(trophyIdsForStageEnd(2, STAGES, { regulation: "ABSOLUTE", absolute: { ...x2, dmgMul: 1.9 } }), ["survivor.clear"]);
+  assert.deepEqual(trophyIdsForStageEnd(2, STAGES, { regulation: "NORMAL", absolute: x2 }), ["survivor.clear"], "NORMAL では送らない");
+  // RTA ABSOLUTE ×2.0 は rta と absolute の両方
+  assert.deepEqual(
+    trophyIdsForStageEnd(2, STAGES, { stages: all, rtaMode: true, regulation: "ABSOLUTE", absolute: x2 }),
+    ["survivor.clear", "survivor.allboss", "survivor.rta", "survivor.absolute"],
+  );
+  // 途中のステージでは全クリアのものは送らない
+  assert.deepEqual(trophyIdsForStageEnd(1, STAGES, { stages: all, rtaMode: true, regulation: "ABSOLUTE", absolute: x2 }), ["survivor.stage2"]);
+});
+
+test("ステージ開始：ステージ 3 にたどり着く", () => {
+  assert.deepEqual(achievementIdsForStageStart(0, STAGES), []);
+  assert.deepEqual(achievementIdsForStageStart(1, STAGES), []);
+  assert.deepEqual(achievementIdsForStageStart(2, STAGES), ["survivor.stage3"]);
+});
+
+test("セーブから：覚醒・節 5 つ・奥義・初めてのボス・挑戦 10 回", () => {
+  const nodes = (ids) => Object.fromEntries(ids.map((id) => [id, 1]));
+  const plain = TREE_NODES.filter((n) => n.kind !== "root" && n.kind !== "capstone").map((n) => n.id);
+  const cap = TREE_NODES.find((n) => n.kind === "capstone").id;
+  assert.deepEqual(achievementIdsForMeta(null), []);
+  assert.deepEqual(achievementIdsForMeta({ nodes: {}, earned: { dust: 0 }, runs: 9 }), []);
+  assert.deepEqual(achievementIdsForMeta({ nodes: nodes([ROOT_ID]) }), ["survivor.awaken"]);
+  // 根は数えない。 段 (= repeat の 5 段) も 1 つ
+  assert.deepEqual(achievementIdsForMeta({ nodes: nodes([ROOT_ID, ...plain.slice(0, 4)]) }), ["survivor.awaken"]);
+  assert.deepEqual(achievementIdsForMeta({ nodes: { [ROOT_ID]: 1, [plain[0]]: 5, [plain[1]]: 1, [plain[2]]: 1, [plain[3]]: 1 } }), ["survivor.awaken"]);
+  assert.deepEqual(achievementIdsForMeta({ nodes: nodes([ROOT_ID, ...plain.slice(0, 5)]) }), ["survivor.awaken", "survivor.tree5"]);
+  assert.deepEqual(achievementIdsForMeta({ nodes: nodes([ROOT_ID, cap]) }), ["survivor.awaken", "survivor.capstone"]);
+  assert.deepEqual(achievementIdsForMeta({ nodes: {}, earned: { gum: 500, dust: 1 } }), ["survivor.firstboss"]);
+  assert.deepEqual(achievementIdsForMeta({ nodes: {}, runs: 10 }), ["survivor.runs10"]);
+});
+
+test("SDK がなくても例外を出さない", async () => {
+  _resetAchievementsForTest();
+  assert.doesNotThrow(() => initPlatform("0.1.0"));
+  assert.doesNotThrow(() => reportStageEnd(0, STAGES));
+  assert.doesNotThrow(() => reportStageStart(2, STAGES));
+  assert.doesNotThrow(() => reportMetaAchievements({ nodes: { [ROOT_ID]: 1 } }));
+  assert.doesNotThrow(() => reportChestOpened());
+  await whenAchievementsSent();
+});
+
+test("SDK があれば unlockTrophy を 1 つずつ順に送り、同じ ID は 1 度だけ。失敗してもゲームを止めない", async () => {
+  _resetAchievementsForTest();
   const sent = [];
+  let inFlight = 0, maxInFlight = 0;
   globalThis.window = {
     BearkoGames: {
       init: async () => ({ ok: true }),
-      unlockTrophy: async (id) => { sent.push(id); return { ok: id !== "survivor.clear", error: "network" }; },
+      unlockTrophy: async (id) => {
+        inFlight++; maxInFlight = Math.max(maxInFlight, inFlight);
+        await tick();
+        inFlight--;
+        sent.push(id);
+        return { ok: id !== "survivor.clear", error: "network" };
+      },
     },
   };
   const warn = console.warn;
@@ -30,14 +106,52 @@ test("SDK があれば unlockTrophy を呼び、失敗してもゲームを止�
   try {
     initPlatform("0.1.0");
     reportStageEnd(0, STAGES);
-    reportStageEnd(2, STAGES);
-    await new Promise((r) => setTimeout(r, 0));
-    assert.deepEqual(sent, ["survivor.stage1", "survivor.clear"]);
-    globalThis.window.BearkoGames.unlockTrophy = () => { throw new Error("boom"); };
-    assert.doesNotThrow(() => reportStageEnd(0, STAGES));
+    reportStageEnd(2, STAGES, { stages: [{ idx: 0, dust: 1 }, { idx: 1, dust: 2 }, { idx: 2, dust: 3 }] });
+    reportChestOpened();
+    reportChestOpened();
+    reportStageEnd(0, STAGES);   // 2 度目は送らない
+    await whenAchievementsSent();
+    assert.deepEqual(sent, ["survivor.stage1", "survivor.clear", "survivor.allboss", "survivor.chest"]);
+    assert.equal(maxInFlight, 1, "前の返事を待ってから次を送る");
+    // 送り終えたあとに足したものも送る
+    reportMetaAchievements({ nodes: { [ROOT_ID]: 1 }, runs: 10 });
+    await whenAchievementsSent();
+    assert.deepEqual(sent.slice(4), ["survivor.awaken", "survivor.runs10"]);
+    // 例外を出す SDK でも止まらない (= 次の ID は送りにいく)
+    const tried = [];
+    globalThis.window.BearkoGames.unlockTrophy = (id) => { tried.push(id); throw new Error("boom"); };
+    assert.doesNotThrow(() => reportStageEnd(1, STAGES));
+    assert.doesNotThrow(() => reportStageStart(2, STAGES));
+    await whenAchievementsSent();
+    assert.deepEqual(tried, ["survivor.stage2", "survivor.stage3"]);
   } finally {
     console.warn = warn;
     delete globalThis.window;
+    _resetAchievementsForTest();
+  }
+});
+
+test("共通基盤の init が終わってから送り始める", async () => {
+  _resetAchievementsForTest();
+  const log = [];
+  let finishInit;
+  globalThis.window = {
+    BearkoGames: {
+      init: () => new Promise((r) => { finishInit = () => { log.push("init"); r({ ok: true }); }; }),
+      unlockTrophy: async (id) => { log.push(id); return { ok: true }; },
+    },
+  };
+  try {
+    initPlatform("0.1.0");
+    unlockAchievements(["survivor.awaken"]);
+    await tick();
+    assert.deepEqual(log, []);
+    finishInit();
+    await whenAchievementsSent();
+    assert.deepEqual(log, ["init", "survivor.awaken"]);
+  } finally {
+    delete globalThis.window;
+    _resetAchievementsForTest();
   }
 });
 

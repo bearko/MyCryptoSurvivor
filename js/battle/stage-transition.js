@@ -60,8 +60,16 @@ export function triggerStageEndOrTransition() {
     if (snap && snap.dust == null) snap.dust = grantBossDust(state.currentStageIdx ?? 0, { bonus: perk("bossDust") });   // SPEC-090c: 金運
   }
 
-  // SPEC-039: 共通基盤のトロフィー（最初のステージ・全ステージクリア）
-  reportStageEnd(state.currentStageIdx ?? 0, STAGE_TABLE.length);
+  // SPEC-039 / SPEC-096: 共通基盤のアチーブメント (= ステージ 1・2・全クリア・ファオ・ボス 3 体・RTA・ABSOLUTE ×2.0)
+  const endIdx = state.currentStageIdx ?? 0;
+  reportStageEnd(endIdx, STAGE_TABLE.length, {
+    bossDefeated: !!state.battle.bossDefeated,
+    bossEnemyId: STAGE_TABLE[endIdx]?.bossEnemyId ?? null,
+    stages: state.run.stages,
+    rtaMode: !!state.rtaMode,
+    regulation: state.regulation,
+    absolute: state.absolute,
+  });
   // SPEC-040: RTA の区切り (= RTA で始めた run だけ。 IGT は各ステージのゲーム内時間の合計)
   if (state.rtaMode) reportRtaStageEnd(state.currentStageIdx ?? 0, STAGE_TABLE.length, state.run.totalElapsedMs);
 
