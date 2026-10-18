@@ -5,7 +5,7 @@
 // 見える / その先 (= 「？」) / 取れる / 足りない / 条件が合わない の判定と、 費用と、 払った合計 (= 作り直しの返金)。
 // 買うときは tryBuy で確かめてから、 meta.js の spend と setNodeRank で書く (= 画面の仕事)。
 
-import { NODE_MAP, TREE_NODES, CAPSTONE_NEED } from "./skill-data.js";
+import { NODE_MAP, TREE_NODES, CAPSTONE_NEED, ROOT_ID } from "./skill-data.js";
 
 export function nodeRank(meta, id) {
   return meta?.nodes?.[id] | 0;
@@ -128,4 +128,28 @@ export function treeTotal() {
 /** 取った節の数 (= 根を除く) */
 export function ownedCount(meta) {
   return TREE_NODES.filter((n) => n.kind !== "root" && owns(meta, n.id)).length;
+}
+
+// ---- SPEC-093: 初回の案内 (= セーブの状態から決める。 新しい印は持たない) ----
+
+/** タイトルと結果の画面で入口を目立たせるか (= 1 回以上遊んだが、 根をまだ取っていない) */
+export function treeNudge(meta) {
+  return (meta?.runs | 0) > 0 && !owns(meta, ROOT_ID);
+}
+
+/** 木の中の案内の段: "root" (= 根を押す) / "first" (= 最初の 1 つ) / null (= 案内しない) */
+export function treeGuide(meta) {
+  if (!owns(meta, ROOT_ID)) return "root";
+  return ownedCount(meta) === 0 ? "first" : null;
+}
+
+/** 案内で指し示す節 (= root は根、 first はいま買える節でいちばん安いもの。 無ければ null) */
+export function guideTarget(meta) {
+  const step = treeGuide(meta);
+  if (step === "root") return ROOT_ID;
+  if (step !== "first") return null;
+  const list = claimableNodes(meta).filter((n) => n.kind !== "root");
+  if (!list.length) return null;
+  const cost = (n) => nodeCost(meta, n.id);
+  return list.reduce((a, b) => (cost(b).dust < cost(a).dust || (cost(b).dust === cost(a).dust && cost(b).gum < cost(a).gum) ? b : a)).id;
 }

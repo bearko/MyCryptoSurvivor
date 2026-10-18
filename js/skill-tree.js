@@ -8,10 +8,11 @@
 // 入口: タイトルの「スキルツリー」(= 1 回も遊んでいなければ出さない) と、 結果の画面の「スキルツリーへ」。
 
 import { getMeta, onMetaChange, spend, setNodeRank, resetNodes } from "./meta.js";
-import { ROUTES, ROUTE_MAP, NODE_MAP, TREE_NODES, ROOT_ID, CAPSTONE_NEED, nodePos, routeLabelPos } from "./skill-data.js";
+import { ROUTES, ROUTE_MAP, NODE_MAP, TREE_NODES, ROOT_ID, CAPSTONE_NEED, RING, nodePos, routeLabelPos } from "./skill-data.js";
 import {
   nodeRank, owns, nodeMax, nodeCost, canAfford, shortBy, routeCounts, nodeBlockers, nodeState,
   nodeVisible, nodeShown, claimableNodes, tryBuy, spentTotal,
+  treeNudge, treeGuide, guideTarget,
 } from "./skill-logic.js";
 import { t, tpl, getLang, onLangChange } from "./i18n.js";
 import { img, SFX } from "./constants.js";
@@ -20,10 +21,11 @@ import { ICON_GUM, ICON_DUST } from "./meta-ui.js";
 import { prefersReducedMotion } from "./motion.js";
 import { returnToTitle } from "./battle/gameover.js";
 import { state } from "./state.js";
-import { computePerks, perksSummary } from "./perks.js";   // SPEC-090c: ヒーロー選択の 1 行
+import { computePerks, perksSummary, perkRows } from "./perks.js";   // SPEC-090c: ヒーロー選択の 1 行 / SPEC-093: いまの効果の欄
+import { naviSay, naviHide, naviLines, naviTitle, setTitleExtra } from "./navi.js";   // SPEC-093
 
 const UNIT = 108;                 // 1 マスのピクセル
-const RING_R = 2.6 + 0.9;         // 中心から 1 段目と、 その先の「？」が収まる距離 (マス)
+const RING_R = RING + 0.6;        // 中心から 1 段目と、 その先の「？」が収まる距離 (マス)
 const SVGNS = "http://www.w3.org/2000/svg";
 const DBL_TAP_MS = 400;
 const NOTICE_MS = 1700;
@@ -65,6 +67,9 @@ let _selected = null;
 let _resetAsk = false;    // 「作り直す」の確認中
 let _noticeTimer = 0;
 let _lastTap = { id: null, at: 0 };
+let _statsOpen = false;   // 狭い画面の「いまの効果」の札 (= 既定は閉じる)
+let _hintSaid = false;    // タイトルの案内 (= 起動中に 1 回)
+const NAVI_TREE_HIDE_MS = 2600;
 
 export function isSkillTreeOpen() { return _open; }
 
@@ -80,7 +85,8 @@ export function installSkillTree() {
     if (!btn) continue;
     btn.addEventListener("click", async () => {
       btn.disabled = true;
-      try { await returnToTitle(); } finally { btn.disabled = false; }
+      // SPEC-093: タイトルのセリフは言わせない (= すぐ木を開くので、 木のセリフを言う)
+      try { await returnToTitle({ navi: false }); } finally { btn.disabled = false; }
       openSkillTree();
     });
     const ic = btn.querySelector("img");
@@ -89,6 +95,12 @@ export function installSkillTree() {
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && _open) closeSkillTree(); });
   onMetaChange(() => { refreshTitleEntry(); });
   onLangChange(() => { refreshTitleEntry(); renderHeroPerks(); if (_open) renderAll(); });
+  // SPEC-093: 根をまだ取っていなければ、 タイトルでマインちゃんが入口を教える (= 起動中に 1 回)
+  setTitleExtra(() => {
+    if (_hintSaid || _open || !treeNudge(getMeta())) return [];
+    _hintSaid = true;
+    return naviLines("treeHint");
+  });
   refreshTitleEntry();
 }
 
@@ -98,6 +110,14 @@ export function refreshTitleEntry() {
   const badge = document.getElementById("titleSkillTreeBadge");
   const m = getMeta();
   if (btn) btn.classList.toggle("hidden", (m.runs | 0) === 0);
+  // SPEC-093: 根をまだ取っていなければ、 入口を脈打たせて「NEW」 (= タイトルと結果の画面)
+  const nudge = treeNudge(m);
+  for (const id of ["btnTitleSkillTree", "gameOverSkillTree", "activityReportSkillTree"]) {
+    const el = document.getElementById(id);
+    if (!el) continue;
+    el.classList.toggle("tree-nudge", nudge);
+    el.dataset.new = t("tree.new", "NEW");
+  }
   if (badge) {
     const n = claimableNodes(m).length;
     badge.textContent = n > 9 ? "9+" : String(n);
@@ -138,7 +158,35 @@ export function openSkillTree({ focus = null } = {}) {
     if (!_open) return;
     const guide = focus && NODE_MAP[focus] && !owns(getMeta(), focus) && nodeVisible(getMeta(), focus) ? focus : null;
     if (guide) select(guide, true); else centerOn(ROOT_ID);
+    sayOnOpen();
   });
+}
+
+// ============================================================
+// SPEC-093: マインちゃん (= 木の左上の小窓)。 案内の段なら案内、 そうでなければ開いたときのひとこと
+// ============================================================
+function naviTop() {
+  const r = _parts?.viewport.getBoundingClientRect();
+  return r ? r.top + 8 : 96;
+}
+
+function guideLine(m) {
+  const step = treeGuide(m);
+  if (step === "root") return "root";
+  if (step === "first") return guideTarget(m) ? "first" : "noGum";
+  return null;
+}
+
+function sayTree(step, { stay = false } = {}) {
+  if (!_open || !step) return;
+  naviSay(naviLines("tree", { step }), { place: "tree", top: naviTop(), autoHideMs: stay ? 0 : NAVI_TREE_HIDE_MS });
+}
+
+function sayOnOpen() {
+  const m = getMeta();
+  const g = guideLine(m);
+  if (g) return sayTree(g, { stay: true });
+  sayTree(claimableNodes(m).length ? "claimable" : "idle");
 }
 
 export function closeSkillTree() {
@@ -149,6 +197,9 @@ export function closeSkillTree() {
   if (_screen) clear(_screen);
   _parts = null;
   refreshTitleEntry();
+  // SPEC-093: 戻った先 (= タイトル) のセリフ
+  naviHide();
+  if (!document.getElementById("titleScreen")?.classList.contains("hidden")) naviTitle({ greet: false });
 }
 
 // ============================================================
@@ -173,12 +224,15 @@ function buildScreen() {
   const nodeLayer = h("div", { class: "tree-nodes" });
   const notice = h("div", { class: "tree-notice hidden", role: "status", "aria-live": "polite" });
   const sheet = h("footer", { class: "tree-sheet" });
+  const stats = h("aside", { class: "tree-stats", "aria-live": "polite" });   // SPEC-093: いまの効果
+  const main = h("div", { class: "tree-main" });
   world.append(links, nodeLayer);
   viewport.append(world, notice);
-  clear(_screen).append(bg, head, routeBar, viewport, sheet);
+  main.append(viewport, stats);
+  clear(_screen).append(bg, head, routeBar, main, sheet);
 
   const view = { x: 0, y: 0, scale: window.innerWidth < 560 ? 0.62 : 0.85 };
-  _parts = { head, routeBar, viewport, world, links, nodeLayer, notice, sheet, view, px, W, H };
+  _parts = { head, routeBar, viewport, world, links, nodeLayer, notice, sheet, stats, view, px, W, H };
   installPanZoom();
 }
 
@@ -209,6 +263,36 @@ function renderAll(fresh = new Map(), burst = false) {
   renderLinks(fresh, burst);
   renderNodes(fresh, burst);
   renderSheet();
+  renderStats();
+}
+
+/** 選んだ節を買ったあとの表 (= 買えない・上限なら null)。 SPEC-093 */
+function nextPerks(m, id) {
+  if (!id || !nodeVisible(m, id) || nodeState(m, id) !== "available") return null;
+  const n = NODE_MAP[id];
+  if (n.kind === "root") return null;
+  return computePerks({ ...m, nodes: { ...m.nodes, [id]: nodeRank(m, id) + 1 } });
+}
+
+const statRow = (r) => h("li", { class: `stat-row ${r.changed ? "chg" : ""}`, style: { "--c": ROUTE_MAP[r.route].color } },
+  h("span", { class: "stat-k" }, r.label),
+  h("span", { class: "stat-v num" }, r.value, r.next ? h("b", {}, ` → ${r.next}`) : null));
+
+/** いまの効果の欄 (= 数値の行と、 数値でない効果の名前)。 SPEC-093 §2.2 */
+function renderStats() {
+  const { stats } = _parts;
+  const m = getMeta();
+  const { rows, flags } = perkRows(computePerks(m), nextPerks(m, _selected), getLang());
+  const count = rows.filter((r) => r.value !== "—").length + flags.length;
+  stats.classList.toggle("open", _statsOpen);
+  clear(stats).append(
+    h("button", { class: "stats-head", type: "button", "aria-expanded": String(_statsOpen), onclick: () => { _statsOpen = !_statsOpen; renderStats(); } },
+      h("b", {}, t("tree.stats", "いまの効果")), count ? h("em", { class: "num" }, String(count)) : null, h("i", { "aria-hidden": "true" }, _statsOpen ? "▴" : "▾")),
+    h("div", { class: "stats-body" },
+      h("p", { class: "stats-note" }, t("tree.statsNote", "次の挑戦から効く（RTA では切れる）")),
+      rows.length ? h("ul", { class: "stats-list" }, rows.map(statRow)) : h("p", { class: "stats-none" }, t("tree.statsNone", "まだ効果はない")),
+      flags.length ? h("p", { class: "stats-flags" }, flags.join("・")) : null),
+  );
 }
 
 /** 頭: 戻る・題・右に残高 (= 選んだ節の費用を「−40」と並べ、 足りないぶんは赤く。 木に重ねないので節が隠れない) */
@@ -318,6 +402,7 @@ function renderNodes(fresh, burst) {
   clear(nodeLayer);
   const center = px(nodePos(NODE_MAP[ROOT_ID]));
   const still = prefersReducedMotion();
+  const guide = guideTarget(m);
   for (const n of TREE_NODES) {
     if (!nodeShown(m, n.id)) continue;
     const p = px(nodePos(n));
@@ -325,8 +410,9 @@ function renderNodes(fresh, burst) {
     const color = n.route ? ROUTE_MAP[n.route].color : "#f6e2a0";
     const lvl = levelText(m, n);
     const anim = fresh.has(n.id) && !still ? (burst && n.kind !== "root" ? "burst" : "pop") : "";
+    const guided = guide === n.id;   // SPEC-093: 初回の案内で指し示す節
     const btn = h("button", {
-      class: `tnode k-${cls === "teaser" ? "teaser" : n.kind} ${cls} ${_selected === n.id ? "sel" : ""} ${anim} ${cls === "owned" || cls === "max" ? "has" : ""}`,
+      class: `tnode k-${cls === "teaser" ? "teaser" : n.kind} ${cls} ${_selected === n.id ? "sel" : ""} ${anim} ${cls === "owned" || cls === "max" ? "has" : ""} ${guided ? "guide" : ""}`,
       type: "button",
       "data-se": "off",
       style: {
@@ -341,7 +427,8 @@ function renderNodes(fresh, burst) {
     },
     h("span", { class: "tnode-panel" }, cls === "teaser" ? h("span", { class: "tnode-q" }, "？") : h("img", { src: iconUrl(n.icon), alt: "", draggable: "false", onerror: (e) => e.target.remove() })),
     lvl && cls !== "teaser" ? h("span", { class: "tnode-lv num" }, cls === "max" ? "MAX" : lvl) : null,
-    h("span", { class: "tnode-name" }, cls === "teaser" ? t("tree.hidden", "？？？") : nameOf(n)));
+    h("span", { class: "tnode-name" }, cls === "teaser" ? t("tree.hidden", "？？？") : nameOf(n)),
+    guided ? h("span", { class: "tnode-guide", "aria-hidden": "true" }, t("tree.guide", "ここを 2 回！")) : null);
     nodeLayer.append(btn);
   }
 }
@@ -410,8 +497,18 @@ function renderSheet() {
     n.kind === "capstone" ? h("p", { class: "sheet-note" }, tpl(t("tree.capNote", "この道の節を {need} つそろえると解放できる。道の到達点。"), { need: CAPSTONE_NEED })) : null,
     blockers.length && st !== "owned" ? h("p", { class: "sheet-block" }, blockers.map(blockerText).join("／")) : null,
     st === "available" && !afford ? h("p", { class: "sheet-block" }, shortText(m, cost)) : null,
+    sheetDiff(m, n.id),
     action,
   );
+}
+
+/** 選んだ節で変わる値 (= 「攻撃 ＋9% → ＋12%」。 狭い画面で効果の欄を閉じていても分かる)。 SPEC-093 */
+function sheetDiff(m, id) {
+  const next = nextPerks(m, id);
+  if (!next) return null;
+  const rows = perkRows(computePerks(m), next, getLang()).rows.filter((r) => r.changed);
+  if (!rows.length) return null;
+  return h("p", { class: "sheet-diff num" }, rows.map((r) => `${r.label} ${r.value === "—" ? "" : r.value + " → "}${r.next}`).join("　"));
 }
 
 function renderIdle(add, m) {
@@ -447,6 +544,7 @@ function select(id, move = false) {
   renderNodes(new Map(), false);
   renderHead();
   renderSheet();
+  renderStats();
   if (move) centerOn(id, true);
 }
 
@@ -468,6 +566,7 @@ function unlock(n) {
     return;
   }
   const before = new Set(TREE_NODES.filter((x) => nodeShown(m, x.id)).map((x) => x.id));
+  const stepBefore = treeGuide(m);
   if (!spend(r.cost)) return;
   setNodeRank(n.id, r.rank);
   const burst = n.kind === "root";
@@ -486,6 +585,10 @@ function unlock(n) {
     zoomToFit();
   }
   renderAll(fresh, burst);
+  // SPEC-093: 案内の段が進んだら、 次の案内 (= 根 → 最初の 1 つ → できた)
+  const stepAfter = treeGuide(after);
+  if (stepBefore === "first" && stepAfter === null) { _statsOpen = true; renderStats(); sayTree("done"); }   // 「右の欄」を狭い画面でも開いて見せる
+  else if (stepBefore !== stepAfter) { const g = guideLine(after); if (g) setTimeout(() => sayTree(g, { stay: true }), burst ? 900 : 0); }
 }
 
 function doReset(back) {
@@ -496,6 +599,8 @@ function doReset(back) {
   renderAll();
   notice(tpl(t("tree.resetDone", "ツリーを作り直した。GUM {gum}・ゴールドダスト {dust} が戻った"), back), "good");
   centerOn(ROOT_ID, true);
+  const g = guideLine(getMeta());
+  if (g) sayTree(g, { stay: true });
 }
 
 /** 中心から光の輪が広がる */

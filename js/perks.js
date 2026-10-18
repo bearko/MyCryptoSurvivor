@@ -177,3 +177,74 @@ export function perksSummary(p, lang = "ja") {
   }
   return out;
 }
+
+// ---- SPEC-093: スキルツリーの「いまの効果」の欄 ----
+
+/** 数値を変える効果 (= 欄に 1 行ずつ。 道の順)。 f: pct (割合) / num (個数) / sec (秒) / ps (毎秒) / every (秒ごと) */
+export const STAT_ROWS = [
+  { key: "hpMul",            route: "vit", f: "pct", ja: "最大 HP",         en: "Max HP" },
+  { key: "dmgTakenMul",      route: "vit", f: "pct", ja: "被ダメ",          en: "Damage taken" },
+  { key: "regen",            route: "vit", f: "ps",  ja: "自然回復",        en: "Regen" },
+  { key: "dmgMul",           route: "atk", f: "pct", ja: "攻撃",            en: "Attack" },
+  { key: "cdMul",            route: "atk", f: "pct", ja: "クールダウン",    en: "Cooldown" },
+  { key: "rangeMul",         route: "atk", f: "pct", ja: "範囲",            en: "Range" },
+  { key: "bullets",          route: "atk", f: "num", ja: "弾数",            en: "Projectiles" },
+  { key: "pierce",           route: "atk", f: "num", ja: "貫通",            en: "Pierce" },
+  { key: "speedMul",         route: "mov", f: "pct", ja: "移動速度",        en: "Move speed" },
+  { key: "pickupMul",        route: "mov", f: "pct", ja: "CE を拾う範囲",   en: "CE pickup" },
+  { key: "itemPickupMul",    route: "mov", f: "pct", ja: "アイテムの範囲",  en: "Item pickup" },
+  { key: "iframeMul",        route: "mov", f: "pct", ja: "無敵時間",        en: "I-frames" },
+  { key: "xpMul",            route: "grw", f: "pct", ja: "経験値",          en: "XP" },
+  { key: "reroll",           route: "grw", f: "num", ja: "リロール",        en: "Rerolls" },
+  { key: "startLevels",      route: "grw", f: "num", ja: "開始レベル",      en: "Start levels" },
+  { key: "stock",            route: "grw", f: "num", ja: "武器と強化の枠",  en: "Slots" },
+  { key: "gumMul",           route: "trs", f: "pct", ja: "GUM",             en: "GUM" },
+  { key: "pots",             route: "trs", f: "num", ja: "壺",              en: "Pots" },
+  { key: "rareIntervalSec",  route: "trs", f: "every", ja: "レアエネミー",  en: "Rare enemies" },
+  { key: "bossDust",         route: "trs", f: "num", ja: "ボスのダスト",    en: "Boss Dust" },
+  { key: "thunderBossRatio", route: "bos", f: "pct", ja: "雷鼓の対ボス",    en: "Raiko vs boss" },
+  { key: "telegraphSec",     route: "bos", f: "sec", ja: "ボスの予告",      en: "Boss telegraph" },
+  { key: "bossDmgMul",       route: "bos", f: "pct", ja: "対ボスの攻撃",    en: "Damage to bosses" },
+  { key: "bossDmgTakenMul",  route: "bos", f: "pct", ja: "ボスからの被ダメ", en: "Damage from bosses" },
+];
+const STAT_KEYS = new Set(STAT_ROWS.map((r) => r.key));
+
+/** 1 つの値を短い文字に (= 純関数) */
+export function formatStat(f, v, lang = "ja") {
+  const r = Math.round(v * 1000) / 1000;
+  const sign = r >= 0 ? "＋" : "−";
+  const a = Math.abs(r);
+  if (f === "pct") return `${sign}${Math.round(a * 100)}%`;
+  if (f === "num") return `${sign}${a}`;
+  if (f === "sec") return lang === "en" ? `+${a}s` : `＋${a} 秒`;
+  if (f === "ps") return lang === "en" ? `${a}/s` : `${a}/秒`;
+  if (f === "every") return lang === "en" ? `every ${a}s` : `${a} 秒ごと`;
+  return String(r);
+}
+
+/**
+ * 欄の行 (= 純関数)。 now: いまの表、 next: 選んだ節を買ったあとの表 (= 無ければ null)
+ *   返す: { rows: [{ key, route, label, value, next, changed }], flags: [名前] }
+ *   rows はいま効いているものと、 next で変わるものだけ。 flags は数値でない効果 (= 大盛りなど) の名前
+ */
+export function perkRows(now, next = null, lang = "ja") {
+  const rows = [];
+  for (const r of STAT_ROWS) {
+    const a = now?.[r.key] ?? 0;
+    const b = next ? (next[r.key] ?? 0) : a;
+    const changed = !!next && a !== b;
+    if (!a && !changed) continue;
+    rows.push({
+      key: r.key, route: r.route, label: lang === "en" ? r.en : r.ja,
+      value: a ? formatStat(r.f, a, lang) : "—",
+      next: changed ? formatStat(r.f, b, lang) : null,
+      changed,
+    });
+  }
+  const flags = [];
+  for (const [k, v] of Object.entries(now ?? {})) {
+    if (!v || STAT_KEYS.has(k) || !LINES[k]) continue;
+    flags.push((LINES[k][lang] ?? LINES[k].ja)(v));
+  }
+  return { rows, flags };
+}

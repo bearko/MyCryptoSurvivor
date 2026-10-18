@@ -88,10 +88,11 @@ export const NODE_MAP = Object.fromEntries(NODES.map((n) => [n.id, n]));
 /** 画面に出す節 (= 根と道の上のもの。 いまはすべて) */
 export const TREE_NODES = NODES;
 
-// 画面上の座標 (1 = 1 マス)。 中心から道の角度の向きに段数ぶん伸ばし、 lane で横にずらす (= 参考作と同じ比率)
-const RING = 2.6;
-const STEP = 1.7;
-const LANE = 0.98;
+// 画面上の座標 (1 = 1 マス)。 中心から道の角度の向きに段数ぶん伸ばし、 lane で横にずらす
+// SPEC-093: 参考作の比率 (2.6 / 1.7 / 0.98) のほぼ半分に詰めた (= 1 画面に見える節を増やす。 隣どうしは約 100px 離れる)
+export const RING = 1.5;
+const STEP = 0.95;
+const LANE = 0.6;
 export function nodePos(n) {
   if (n.kind === "root") return { x: 0, y: 0 };
   const a = (ROUTE_MAP[n.route].angle * Math.PI) / 180;

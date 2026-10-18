@@ -59,7 +59,7 @@ test("座標: 根は中心、 同じ道は同じ向きに伸び、 隣り合う�
   const pts = TREE_NODES.map((n) => ({ n, p: nodePos(n) }));
   for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < pts.length; j++) {
     const d = Math.hypot(pts[i].p.x - pts[j].p.x, pts[i].p.y - pts[j].p.y);
-    assert.ok(d >= 1.3, `${pts[i].n.id} と ${pts[j].n.id} が近い (${d.toFixed(2)})`);
+    assert.ok(d >= 0.9, `${pts[i].n.id} と ${pts[j].n.id} が近い (${d.toFixed(2)})`);
   }
   for (const r of ROUTES) {
     const lp = routeLabelPos(r);
