@@ -2,7 +2,7 @@
 id: SPEC-094
 title: Skill Tree Detail UI — Workshop-style Detail, 3D Gradient Buttons, Reset Moved Out of Reach, Zoom Tools
 status: Done
-pr: TBD
+pr: 124
 phase: v1.4 Meta
 kind: Changed
 ---
