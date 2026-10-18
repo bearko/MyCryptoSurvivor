@@ -8,7 +8,7 @@ MyCryptoHeroes のヒーローとエクステンションで遊ぶ **サバイ�
 
 > **ベース**: `bearko/mycryptotemplate` (= vanilla JS / 静的 host テンプレート)
 > **想定範囲**: モバイル / PC 両対応の 2D web ゲーム (= ビルドステップなし)
-> **ジャンル**: サバイバー系アクション + ランキング（bearko.games のトロフィー・RTA・総合スコアに参加）
+> **ジャンル**: サバイバー系アクション + ランキング（bearko.games のアチーブメント・RTA・総合スコアに参加）
 
 ## 遊び方
 
@@ -21,6 +21,29 @@ MyCryptoHeroes のヒーローとエクステンションで遊ぶ **サバイ�
 - 敵を倒すと出る経験値ジェムを拾うと Lv が上がり、武器か強化を 1 つ選ぶ
 - 各ステージは 4 分でボスが出る。倒すか 5 分耐えるとクリア。全 3 ステージで活動レポートとスコア
 - モード：NORMAL ／ ABSOLUTE（難易度を 4 軸で調整、スコアに倍率）／ RTA（bearko.games）
+
+## bearko.games のアチーブメント
+
+条件を満たすと bearko.games 共通基盤のアチーブメントが手に入る（SPEC-039 / SPEC-096。ログインしていなくても獲得でき、あとでログインすると登録される）。
+一覧と絵は共通基盤の `docs/ACHIEVEMENT_CATALOG.md`。
+
+| 種類 | No. | ID | 名前 | 絵 | 条件 |
+|---|---|---|---|---|---|
+| ヒーロー | 023 | `survivor.stage1` | 狼王ロボ | シートン | 最初のステージをクリアする（ボス撃破か 5 分耐久） |
+| ヒーロー | 024 | `survivor.awaken` | 荒野の復讐者 | ジェロニモ | スキルツリーの「サバイバーの覚醒」を解放する |
+| ヒーロー | 025 | `survivor.stage2` | 幻の生存者 | アナスタシア | ステージ 2 をクリアする |
+| ヒーロー | 026 | `survivor.tree5` | 変身 | カフカ | スキルツリーの節を 5 つ取る |
+| ヒーロー | 027 | `survivor.stage3` | 不屈のガンマン | ワイアット・アープ | ステージ 3 にたどり着く |
+| ヒーロー | 028 | `survivor.fao` | フンババとの戦い | ギルガメッシュ | 覚醒魔王ファオを倒す |
+| ヒーロー | 029 | `survivor.capstone` | 六韜 | 太公望 | スキルツリーの奥義をひとつ解放する |
+| ヒーロー | 030 | `survivor.clear` | ロシアの怪僧 | ラスプーチン | 全 3 ステージをクリアする（クリア） |
+| ヒーロー | 031 | `survivor.allboss` | 人中に呂布あり | 呂布 | 3 体のボスをすべて倒して全ステージをクリアする |
+| ヒーロー | 032 | `survivor.rta` | ワンホールショット | ビリー・ザ・キッド | RTA で全ステージを完走する |
+| ヒーロー | 033 | `survivor.absolute` | 蒼狼 | チンギス・ハン | ABSOLUTE の 4 軸すべて ×2.0 以上で全ステージをクリアする |
+| エクステンション | — | `survivor.visit` | 慈愛の雪崩 | 慈愛の氷雪王妃クイーンスノー&ベビー | MyCryptoSurvivor を遊ぶ（SDK が送る） |
+| エクステンション | — | `survivor.firstboss` | タイガーシュート | アムールタイガー | 初めてボスを倒す |
+| エクステンション | — | `survivor.chest` | 世界を駆けたドラムライン | ドレークの遺産 | 宝箱を初めて開ける |
+| エクステンション | — | `survivor.runs10` | 黄金氷河期 | 絶対零度ゴールデンスノーマン | 挑戦を通算 10 回終える |
 
 ## クイックリファレンス
 
@@ -98,5 +121,5 @@ bearko 個人プロジェクト。 ヒーロー画像 / 名称は MCH (MyCryptoH
 
 - `bearko/mycryptotemplate` — 派生元テンプレート
 - `bearko/mycryptoheroes` — 画像 / 音声 CDN (= ASSET_BASE が指す先)
-- `bearko/MyCryptoPortfolio` — bearko.games 共通基盤（ログイン・トロフィー・RTA・総合スコア）
+- `bearko/MyCryptoPortfolio` — bearko.games 共通基盤（ログイン・アチーブメント・RTA・総合スコア）
 - `bearko/mycryptotactics` / `bearko/mycryptofactory` — 兄弟プロジェクト
