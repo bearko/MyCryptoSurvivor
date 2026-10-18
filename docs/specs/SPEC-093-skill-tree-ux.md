@@ -2,7 +2,7 @@
 id: SPEC-093
 title: Skill Tree UX — Tighter Layout, Current-Effect Panel, First-Time Guide by Mine, Per-Screen Lines
 status: Done
-pr: TBD
+pr: 123
 phase: v1.4 Meta
 kind: Changed
 ---
