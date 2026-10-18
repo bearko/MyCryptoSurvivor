@@ -85,6 +85,15 @@ export function naviLines(scene, ctx = {}) {
       if (i === 0 && ctx.rta) lines.push({ key: "navi.stage.rta", pose: "wink", voice: "stage.rta" });
       return lines;
     }
+    // SPEC-093: スキルツリーの案内と、 木を開いたときのひとこと (= ボイスはまだ無い)
+    case "treeHint":
+      return [{ key: "navi.tree.hint", pose: "pointer" }];
+    case "tree": {
+      const key = { root: "navi.tree.root", first: "navi.tree.first", noGum: "navi.tree.noGum", done: "navi.tree.done", claimable: "navi.tree.claimable", idle: "navi.tree.idle" }[ctx.step];
+      if (!key) return [];
+      const pose = { root: "pointer", first: "pointer", noGum: "cross", done: "hooray", claimable: "sparkle", idle: "wink" }[ctx.step];
+      return [{ key, pose }];
+    }
     case "tip": {
       // SPEC-068: 初めてのアイテム・仕掛け・敵のひとこと。 key は navi-tips.js の TIP_KEYS
       const key = String(ctx.key ?? "");
@@ -254,7 +263,7 @@ function _onBubble() {
 /** 通信の帯 (= 画面の下の専用の帯。 ほかの UI と重ねない) にする置き場所 (SPEC-059) */
 export const NAVI_DOCK_PLACES = ["mode", "hero"];
 /** 通信窓 (= 顔だけの小窓) にする置き場所 */
-export const NAVI_COMM_PLACES = ["battle"];
+export const NAVI_COMM_PLACES = ["battle", "tree"];
 
 /**
  * セリフを言わせる。 place は置き場所 (= CSS)。 autoHideMs を渡すと、 言い終えてその時間で消える (= 戦闘)。
@@ -310,8 +319,16 @@ export function naviHide() {
   _hideTimer = setTimeout(() => { _el.classList.add("hidden"); _el.classList.remove("navi--out"); }, 260);
 }
 
+/** タイトルで足すセリフ (= SPEC-093 のスキルツリーの案内。 skill-tree.js が置く。 線を返す関数) */
+let _titleExtra = null;
+export function setTitleExtra(fn) { _titleExtra = typeof fn === "function" ? fn : null; }
+
 /** タイトルのマインちゃん (= あいさつ。 押すと反応する)。 greet: あいさつの動きから始めるか */
 export function naviTitle({ greet = true } = {}) {
   const onTapNavi = (n) => naviSay(naviLines("titleTap", { n }), { place: "title", onTapNavi });
-  naviSay(greet ? naviLines("title") : naviLines("titleTap", { n: 0 }), { place: "title", onTapNavi });
+  let extra = [];
+  try { extra = (_titleExtra && _titleExtra()) || []; } catch (_) { extra = []; }
+  // 足すセリフがあれば、 それを先に (= あいさつの動きで。 吹き出しをめくらないと読めない場所に置かない)
+  const lines = extra.length ? extra.map((l, i) => (i === 0 && greet ? { ...l, mood: "greet" } : l)) : (greet ? naviLines("title") : naviLines("titleTap", { n: 0 }));
+  naviSay(lines, { place: "title", onTapNavi });
 }

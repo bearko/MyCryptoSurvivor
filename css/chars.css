@@ -179,6 +179,17 @@
   left: max(8px, var(--safe-l));
   z-index: 60;
 }
+/* SPEC-093: スキルツリーの中 (= 木の左上。 木の画面 (260) より上、 モーダル (320) より下)。 押すと次のセリフ */
+.navi--comm[data-place="tree"] {
+  position: fixed;
+  left: max(8px, var(--safe-l));
+  z-index: 280;
+  pointer-events: auto;
+}
+@media (max-width: 899px) {
+  .navi--comm[data-place="tree"] .navi__bubble,
+  .navi--comm[data-place="tree"] .navi__measure { --bubble-max: min(calc(100vw - 196px), 260px); }
+}
 .navi--comm[data-place="battle"] .navi__body,
 .navi--comm[data-place="battle"] .navi__bubble { pointer-events: none; }
 /* 縦が短い画面では小さく (= ボタンを隠さない) */

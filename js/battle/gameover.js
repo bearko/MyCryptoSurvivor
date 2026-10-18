@@ -17,7 +17,7 @@ import { stopBgm, playSe } from "../audio.js";
 import { abortRtaRun, scoreMetrics, reportRunScore, defaultPlayerName, platformUserName, setChatVisible } from "../platform.js";
 import { STAGE_TABLE } from "../constants.js";
 import { countUp, revealIn } from "../reveal.js";
-import { naviTitle } from "../navi.js";
+import { naviTitle, naviHide } from "../navi.js";
 import { presentResult } from "../result-telop.js";
 import { startTitleBgm, startMenuBgmAfterJingle } from "../ui-sound.js";
 import { grantRunRewards, runDust } from "../meta.js";
@@ -114,7 +114,8 @@ function _wireOnce() {
 }
 
 /** ゲームオーバー・活動レポートから「タイトルに戻る」 (= SPEC-037。 SPEC-052 で活動レポートからも呼ぶ) */
-export async function returnToTitle() {
+/** タイトルへ戻す。 navi: タイトルのセリフを言わせるか (= SPEC-093。 すぐスキルツリーを開くときは false) */
+export async function returnToTitle({ navi = true } = {}) {
   startTitleBgm();   // SPEC-069: タイトルの曲 (= craft.mp3)。 押した操作の中で替える (= 下の await のあとだと iOS で止められる)
   document.getElementById("gameOverModal")?.classList.add("hidden");
   // 全 modal close
@@ -145,7 +146,8 @@ export async function returnToTitle() {
   document.getElementById("app")?.classList.add("hidden");
   document.getElementById("titleScreen")?.classList.remove("hidden");
   setChatVisible(true);   // SPEC-091
-  naviTitle({ greet: false });   // SPEC-056
+  if (navi) naviTitle({ greet: false });   // SPEC-056
+  else naviHide();
 }
 
 async function _onSubmitClick() {

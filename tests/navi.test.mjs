@@ -50,7 +50,7 @@ test("コマとポーズの絵は mycryptoheroes の Image/Characters/navi_ain_*
   const all = [...Object.values(NAVI_FRAMES).flat(), ...Object.values(NAVI_POSES)];
   assert.ok(all.length >= 20);
   for (const f of all) assert.match(naviFrameUrl(f), /\/Image\/Characters\/navi_ain_[a-z0-9_]+\.png$/);
-  assert.deepEqual(NAVI_COMM_PLACES, ["battle"], "戦場を隠さない場所は通信窓");
+  assert.deepEqual(NAVI_COMM_PLACES, ["battle", "tree"], "戦場とスキルツリーの木を隠さない場所は通信窓 (= SPEC-093)");
 });
 
 test("モード選択とヒーロー選択は、 画面の下の専用の帯 (= ほかの UI と重ねない。 SPEC-059)", () => {
