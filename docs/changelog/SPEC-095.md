@@ -1,0 +1,1 @@
+- **ランキングの送り先を固くした** (`js/ranking-client.js` + `js/ranking-ui.js`): `#api=` のリンクで送り先を書き換える機能をやめ、 送り先は Google Apps Script のウェブアプリの URL だけを受け付ける。 GAS のサンプルに、 名前の数式インジェクション対策

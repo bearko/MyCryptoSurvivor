@@ -15,10 +15,15 @@ function _decodeDefault() {
   } catch (e) { return null; }
 }
 
+/** 送り先として受け付ける URL (= Google Apps Script のウェブアプリだけ。 SPEC-095)。 純関数 */
+export function isRankingApiUrl(url) {
+  return /^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(String(url || "").trim());
+}
+
 export function getRankingApiUrl() {
   try {
     const v = localStorage.getItem(LS_RANKING_API_URL);
-    if (v && v.trim()) return v.trim();
+    if (v && isRankingApiUrl(v)) return v.trim();
   } catch (e) {}
   const def = _decodeDefault();
   return (def && def.trim()) ? def.trim() : null;
@@ -27,7 +32,7 @@ export function getRankingApiUrl() {
 export function setRankingApiUrl(url) {
   try {
     if (!url || !url.trim()) localStorage.removeItem(LS_RANKING_API_URL);
-    else localStorage.setItem(LS_RANKING_API_URL, url.trim());
+    else if (isRankingApiUrl(url)) localStorage.setItem(LS_RANKING_API_URL, url.trim());
   } catch (e) {}
 }
 
