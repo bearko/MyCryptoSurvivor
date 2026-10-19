@@ -11,8 +11,9 @@ import * as A from "./archetypes.js";
 
 export function tickWeapons(_dt, nowMs) {
   const b = state.battle;
-  const cdMul       = state.buffs?.cdMul            ?? 1;
-  const dmgMul      = state.buffs?.dmgMul           ?? 1;
+  // SPEC-097: ヒーローの INT / PHY の倍率も掛ける (= startBattle が置く。 プレビューなど無いときは 1)
+  const cdMul       = (state.buffs?.cdMul  ?? 1) * (b.heroCdMul  ?? 1);
+  const dmgMul      = (state.buffs?.dmgMul ?? 1) * (b.heroDmgMul ?? 1);
   const bulletBonus = state.buffs?.bulletCountBonus ?? 0;
 
   for (const w of b.weapons) {

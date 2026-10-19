@@ -14,7 +14,7 @@ globalThis.Audio = FakeAudio;
 
 const { VOICE_LINES } = await import("../js/voice-lines.js");
 const { playVoice, stopVoice, voiceWaitMs, hasVoice } = await import("../js/voice.js");
-const { naviLines } = await import("../js/navi.js");
+const { naviLines, RETIRED_VOICES } = await import("../js/navi.js");
 const { TIP_KEYS } = await import("../js/navi-tips.js");
 const { normalizeSettings, updateSettings, DEFAULT_SETTINGS } = await import("../js/settings.js");
 const { STAGE_TABLE } = await import("../js/constants.js");
@@ -42,18 +42,26 @@ test("マインちゃんのどのセリフにもボイスがある", () => {
     ...TIP_KEYS.flatMap((key) => naviLines("tip", { key })),
   ];
   for (const l of all) {
-    assert.ok(l.voice && VOICE_LINES[l.voice], `${l.key} のボイス (${l.voice})`);
+    // SPEC-097: ボイスをまだ録っていないヒーローの紹介だけは、 文だけ
+    if (l.key.startsWith("navi.hero.pick.") && !l.voice) assert.ok(!VOICE_LINES[`hero.${l.key.split(".").pop()}`] || RETIRED_VOICES.has(`hero.${l.key.split(".").pop()}`), l.key);
+    else assert.ok(l.voice && VOICE_LINES[l.voice], `${l.key} のボイス (${l.voice})`);
     assert.ok(ui[l.key]?.ja && ui[l.key]?.en, `${l.key} の文`);
   }
-  // 使っていないボイスはない (= タイトルコールは main.js が鳴らす)
-  const used = new Set(all.map((l) => l.voice).concat("title.call"));
+  // 使っていないボイスはない (= タイトルコールは main.js が鳴らす。 SPEC-097 で外したものを除く)
+  const used = new Set(all.map((l) => l.voice).concat("title.call", ...RETIRED_VOICES));
   for (const id of Object.keys(VOICE_LINES)) assert.ok(used.has(id), `${id} を使っていない`);
 });
 
 test("ヒーローを選んだときは、 ヒーローごとの紹介 (= ボイスのないヒーローは、 いままでのひな形)", () => {
-  const l = naviLines("heroPick", { heroId: 1001, heroName: "x", weaponName: "y" })[0];
-  assert.equal(l.key, "navi.hero.pick.1001");
-  assert.equal(ui[l.key].ja, "コナン・ドイル！「リボルバー」で敵を狙い撃つよ！");
+  const l = naviLines("heroPick", { heroId: 1006, heroName: "x", weaponName: "y" })[0];
+  assert.equal(l.key, "navi.hero.pick.1006");
+  assert.equal(l.voice, "hero.1006");
+  assert.equal(ui[l.key].ja, "ピタゴラス！ 「ノービスブック」が周囲を守るよ！");
+  // SPEC-097: ボイスをまだ録っていない (= 武器が変わった) ヒーローは、 ヒーローごとの文だけ
+  const xu = naviLines("heroPick", { heroId: 2013, heroName: "x", weaponName: "y" })[0];
+  assert.equal(xu.key, "navi.hero.pick.2013");
+  assert.equal(xu.voice, undefined);
+  assert.match(ui[xu.key].ja, /マレット/);
   const other = naviLines("heroPick", { heroId: 9999, heroName: "x", weaponName: "y" })[0];
   assert.equal(other.key, "navi.hero.pick");
   assert.deepEqual(other.vars, { name: "x", weapon: "y" });

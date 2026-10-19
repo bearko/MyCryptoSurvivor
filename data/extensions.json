@@ -1,11 +1,15 @@
 {
   "version": 2,
-  "source": "MyCryptoSurvivor SPEC-011 (17 series × 5 tiers)",
+  "source": "MyCryptoSurvivor SPEC-011 (17 series × 5 tiers; SPEC-097 で 4 系列を差し替え)",
   "extensions": [
     {
       "extId": 1,
       "category": "weapon",
       "series": "Revolver",
+      "seriesName": {
+        "ja": "リボルバー",
+        "en": "Revolver"
+      },
       "archetype": "radial",
       "iconId": 1029,
       "projectileIconId": null,
@@ -94,6 +98,10 @@
       "extId": 2,
       "category": "weapon",
       "series": "Book",
+      "seriesName": {
+        "ja": "ブック",
+        "en": "Book"
+      },
       "archetype": "orbit",
       "iconId": 1008,
       "seriesColor": "#bb86fc",
@@ -180,39 +188,43 @@
     {
       "extId": 3,
       "category": "weapon",
-      "series": "Panjandrum",
+      "series": "Broomstick",
+      "seriesName": {
+        "ja": "ホーキ",
+        "en": "Broomstick"
+      },
       "archetype": "bigHoming",
-      "iconId": 1153,
+      "iconId": 1080,
       "seriesColor": "#ff7a59",
       "tierNames": [
         {
-          "ja": "木製パンジャンドラム",
-          "en": "Wooden Panjandrum"
+          "ja": "ホーキ",
+          "en": "Broomstick"
         },
         {
-          "ja": "鉄製パンジャンドラム",
-          "en": "Iron Panjandrum"
+          "ja": "エリートホーキ",
+          "en": "Elite Broomstick"
         },
         {
-          "ja": "白磁のパンジャンドラム",
-          "en": "White Porcelain Panjandrum"
+          "ja": "魔女のホーキ",
+          "en": "Witch's Broomstick"
         },
         {
-          "ja": "自律型パンジャンドラム",
-          "en": "Autonomous Panjandrum"
+          "ja": "流星のホーキ",
+          "en": "Broomstick of Shooting star"
         },
         {
-          "ja": "クリプトパンジャンドラム",
-          "en": "Crypto Panjandrum"
+          "ja": "自由のホーキ",
+          "en": "Broomstick of Freedom"
         }
       ],
       "skillName": {
-        "ja": "突進輪",
-        "en": "Charge Wheel"
+        "ja": "ひと掃き",
+        "en": "Big Sweep"
       },
       "skillDescTpl": {
-        "ja": "ゆっくり追尾する大型弾。 数 {bullets} / DMG {dmg} / CD {cd}秒 / 貫通 {pierce}",
-        "en": "Slow homing heavy. Count {bullets} / DMG {dmg} / CD {cd}s / Pierce {pierce}"
+        "ja": "ゆっくり追尾する大きなホーキ。 数 {bullets} / DMG {dmg} / CD {cd}秒 / 貫通 {pierce}",
+        "en": "Slow homing big broom. Count {bullets} / DMG {dmg} / CD {cd}s / Pierce {pierce}"
       },
       "tierParams": [
         {
@@ -262,49 +274,53 @@
         }
       ],
       "tierIconIds": [
-        1153,
-        2153,
-        3153,
-        4153,
-        5153
+        1080,
+        2080,
+        3080,
+        4080,
+        5080
       ]
     },
     {
       "extId": 4,
       "category": "weapon",
-      "series": "Moai",
+      "series": "Parrot",
+      "seriesName": {
+        "ja": "パロット",
+        "en": "Parrot"
+      },
       "archetype": "dropTarget",
-      "iconId": 1106,
+      "iconId": 1113,
       "seriesColor": "#d4d4dc",
       "tierNames": [
         {
-          "ja": "待合せ場所のモアイ像",
-          "en": "Moai at the meeting place"
+          "ja": "パロットエッグ",
+          "en": "Parrot Eggs"
         },
         {
-          "ja": "ぐらふぁい島モアイの目覚",
-          "en": "Awakening of Graph-Island Moai"
+          "ja": "パロパロ",
+          "en": "Pair Parrots"
         },
         {
-          "ja": "ぐらふぁい島モアイの息吹",
-          "en": "Breath of Graph-Island Moai"
+          "ja": "ウィズダムパロット",
+          "en": "Wisdom Parrot"
         },
         {
-          "ja": "モアイ艦長",
-          "en": "Captain Moai"
+          "ja": "アドミラルパロット",
+          "en": "Admiral Parrot"
         },
         {
-          "ja": "財宝ゴールデンモアイ",
-          "en": "Golden Moai of Treasure"
+          "ja": "ジュエルパロット",
+          "en": "Jewel Parrot"
         }
       ],
       "skillName": {
-        "ja": "落石",
-        "en": "Rockfall"
+        "ja": "急降下",
+        "en": "Dive"
       },
       "skillDescTpl": {
-        "ja": "ランダムな敵の頭上から落下。 数 {bullets} / DMG {dmg} / CD {cd}秒",
-        "en": "Drops from above random enemies. Count {bullets} / DMG {dmg} / CD {cd}s"
+        "ja": "ランダムな敵の頭上から舞い降りる。 数 {bullets} / DMG {dmg} / CD {cd}秒",
+        "en": "Dives onto random enemies from above. Count {bullets} / DMG {dmg} / CD {cd}s"
       },
       "tierParams": [
         {
@@ -359,17 +375,21 @@
         }
       ],
       "tierIconIds": [
-        1106,
-        2106,
-        3106,
-        4106,
-        5106
+        1113,
+        2113,
+        3113,
+        4113,
+        5113
       ]
     },
     {
       "extId": 5,
       "category": "weapon",
       "series": "Shuriken",
+      "seriesName": {
+        "ja": "手裏剣",
+        "en": "Shuriken"
+      },
       "archetype": "stack",
       "iconId": 1124,
       "seriesColor": "#5ecf8a",
@@ -462,6 +482,10 @@
       "extId": 6,
       "category": "weapon",
       "series": "LaserGun",
+      "seriesName": {
+        "ja": "レーザーガン",
+        "en": "Raygun"
+      },
       "archetype": "beam",
       "iconId": 1130,
       "seriesColor": "#f0c14b",
@@ -559,6 +583,10 @@
       "extId": 7,
       "category": "weapon",
       "series": "Knife",
+      "seriesName": {
+        "ja": "ナイフ",
+        "en": "Knife"
+      },
       "archetype": "diagonal",
       "iconId": 1048,
       "seriesColor": "#d4d4dc",
@@ -640,39 +668,43 @@
     {
       "extId": 8,
       "category": "weapon",
-      "series": "Axe",
+      "series": "Mallet",
+      "seriesName": {
+        "ja": "マレット",
+        "en": "Mallet"
+      },
       "archetype": "randomRadial",
-      "iconId": 1011,
+      "iconId": 1073,
       "seriesColor": "#e76060",
       "tierNames": [
         {
-          "ja": "アックス",
-          "en": "Axe"
+          "ja": "マレット",
+          "en": "Mallet"
         },
         {
-          "ja": "エリートアックス",
-          "en": "Elite Axe"
+          "ja": "エリートマレット",
+          "en": "Elite Mallet"
         },
         {
-          "ja": "ブレイブアックス",
-          "en": "Brave Axe"
+          "ja": "ピコピコハンマー",
+          "en": "POW!POW! Mallet"
         },
         {
-          "ja": "テカムセのトマホーク",
-          "en": "Tecumseh’s Tomahawk"
+          "ja": "大黒の小槌",
+          "en": "Daikoku Mallet"
         },
         {
-          "ja": "バイキングアックス",
-          "en": "Viking Axe"
+          "ja": "ミョルニル",
+          "en": "Mjolnir"
         }
       ],
       "skillName": {
-        "ja": "投擲",
-        "en": "Throw"
+        "ja": "打ち下ろし",
+        "en": "Hammer Toss"
       },
       "skillDescTpl": {
-        "ja": "ランダム方向に放射。 弾数 {bullets} / DMG {dmg} / CD {cd}秒",
-        "en": "Random radial throws. Bullets {bullets} / DMG {dmg} / CD {cd}s"
+        "ja": "ランダム方向に槌を投げる。 弾数 {bullets} / DMG {dmg} / CD {cd}秒",
+        "en": "Random radial mallet throws. Bullets {bullets} / DMG {dmg} / CD {cd}s"
       },
       "tierParams": [
         {
@@ -712,49 +744,53 @@
         }
       ],
       "tierIconIds": [
-        1011,
-        2011,
-        3011,
-        4011,
-        5011
+        1073,
+        2073,
+        3073,
+        4073,
+        5073
       ]
     },
     {
       "extId": 9,
       "category": "weapon",
-      "series": "Pierrot",
+      "series": "Snowman",
+      "seriesName": {
+        "ja": "雪だるま",
+        "en": "Snowman"
+      },
       "archetype": "placeBomb",
-      "iconId": 1063,
-      "seriesColor": "#fdcb6e",
+      "iconId": 1126,
+      "seriesColor": "#a8e0ff",
       "tierNames": [
         {
-          "ja": "ピエロ",
-          "en": "Pierrot"
+          "ja": "冬の甘えんぼ王子ウィンター",
+          "en": "Winter - the sweet prince of winter"
         },
         {
-          "ja": "エリートピエロ",
-          "en": "Elite Pierrot"
+          "ja": "氷のおてんば王女アイス",
+          "en": "Ice - the tomboy princess of ice"
         },
         {
-          "ja": "ウィズダムピエロ",
-          "en": "Wisdom Pierrot"
+          "ja": "鋭氷の王位継承者コールド",
+          "en": "Cold - the Icicles heiress"
         },
         {
-          "ja": "アルルカン",
-          "en": "Arlequin"
+          "ja": "慈愛の氷雪王妃クイーンスノー&ベビー",
+          "en": "Queen Snow & Baby - the frozen queen of affection"
         },
         {
-          "ja": "ジョーカー",
-          "en": "Joker"
+          "ja": "絶対零度ゴールデンスノーマン",
+          "en": "Golden Snowman - the Absolute Zero"
         }
       ],
       "skillName": {
-        "ja": "爆弾配置",
-        "en": "Place Bomb"
+        "ja": "雪の置き土産",
+        "en": "Snow Gift"
       },
       "skillDescTpl": {
-        "ja": "現在地に置き、 遅延爆発。 数 {bullets} / DMG {dmg} / CD {cd}秒 / 爆発半径 {radius}px",
-        "en": "Place + delayed boom. Count {bullets} / DMG {dmg} / CD {cd}s / Radius {radius}px"
+        "ja": "現在地に置き、 遅れて凍る爆発。 数 {bullets} / DMG {dmg} / CD {cd}秒 / 爆発半径 {radius}px",
+        "en": "Place + delayed icy burst. Count {bullets} / DMG {dmg} / CD {cd}s / Radius {radius}px"
       },
       "tierParams": [
         {
@@ -804,17 +840,21 @@
         }
       ],
       "tierIconIds": [
-        1063,
-        2063,
-        3063,
-        4063,
-        5063
+        1126,
+        2126,
+        3126,
+        4126,
+        5126
       ]
     },
     {
       "extId": 10,
       "category": "weapon",
       "series": "Blade",
+      "seriesName": {
+        "ja": "ブレード",
+        "en": "Blade"
+      },
       "archetype": "orbitClose",
       "iconId": 1001,
       "seriesColor": "#c4a35a",

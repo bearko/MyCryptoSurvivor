@@ -16,6 +16,16 @@ import { img } from "./constants.js";
 import { t, tpl } from "./i18n.js";
 import { prefersReducedMotion } from "./motion.js";
 import { playVoice, voiceMs, hasVoice } from "./voice.js";
+import { HERO_STARTING_WEAPON } from "./constants.js";
+
+/**
+ * SPEC-097: 顔ぶれと武器が変わって、 いまのセリフと合わなくなったボイス (= 録り直すまで鳴らさない)。
+ * ファイルは消さない (= tools/voice/build.mjs の番号は作者の台本の並び)。 外れたヒーローの 8 本と、 武器が変わった許褚
+ */
+export const RETIRED_VOICES = new Set([
+  "hero.1001", "hero.1002", "hero.1004", "hero.2001", "hero.2002", "hero.2005", "hero.2011", "hero.2012",
+  "hero.2013",
+]);
 
 /** コマ (= ファイル名の navi_ain_ のあと) */
 export const NAVI_FRAMES = {
@@ -70,8 +80,11 @@ export function naviLines(scene, ctx = {}) {
       const poses = ["sparkle", "wink", "smile", "hooray"];
       const pose = poses[Math.abs(ctx.n | 0) % poses.length];
       // SPEC-085: ヒーローごとの紹介 (= ボイスつき)。 ボイスのないヒーローは、 いままでのひな形
+      // SPEC-097: ボイスをまだ録っていないヒーローも、 ヒーローごとの紹介の文は出す
       const voice = `hero.${ctx.heroId}`;
-      if (hasVoice(voice)) return [{ key: `navi.hero.pick.${ctx.heroId}`, pose, voice }];
+      const key = `navi.hero.pick.${ctx.heroId}`;
+      if (hasVoice(voice) && !RETIRED_VOICES.has(voice)) return [{ key, pose, voice }];
+      if (HERO_STARTING_WEAPON[ctx.heroId] != null) return [{ key, pose }];
       return [{ key: "navi.hero.pick", vars: { name: ctx.heroName ?? "", weapon: ctx.weaponName ?? "" }, pose }];
     }
     case "boss":
