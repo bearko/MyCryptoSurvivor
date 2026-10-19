@@ -19,12 +19,11 @@ import { playVoice, voiceMs, hasVoice } from "./voice.js";
 import { HERO_STARTING_WEAPON } from "./constants.js";
 
 /**
- * SPEC-097: 顔ぶれと武器が変わって、 いまのセリフと合わなくなったボイス (= 録り直すまで鳴らさない)。
- * ファイルは消さない (= tools/voice/build.mjs の番号は作者の台本の並び)。 外れたヒーローの 8 本と、 武器が変わった許褚
+ * SPEC-097: 顔ぶれが変わって外れたヒーローのボイス (= 鳴らさない)。
+ * ファイルは消さない (= tools/voice/build.mjs の番号は作者の台本の並び)。 新しい 9 人は追加の録音 (= ADDED) で鳴る
  */
 export const RETIRED_VOICES = new Set([
   "hero.1001", "hero.1002", "hero.1004", "hero.2001", "hero.2002", "hero.2005", "hero.2011", "hero.2012",
-  "hero.2013",
 ]);
 
 /** コマ (= ファイル名の navi_ain_ のあと) */
