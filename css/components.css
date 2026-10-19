@@ -193,6 +193,14 @@
   letter-spacing: 0.04em;
   white-space: nowrap;
 }
+.hero-detail__sig {
+  margin: 0.3rem 0 0;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  color: var(--muted);
+}
+.hero-detail__sig.hidden { display: none; }
+.hero-detail__sig-name { display: block; color: var(--accent); font-weight: 800; }
 .hero-detail__lock {
   margin-top: 0.35rem;
   padding: 0.35rem 0.5rem;

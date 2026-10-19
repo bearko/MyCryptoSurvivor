@@ -17,6 +17,7 @@ import {
   STAGE_TABLE, SFX, BOSS_CHEST, BOSS_CHEST_DROPS,
 } from "../constants.js";
 // SPEC-090c: スキルツリーで変わる定数は、 定数の代わりにここを呼ぶ
+import { sigHealMul } from "./signature.js";   // SPEC-100
 import { chestTimesMs, bossChestCfg, bossChestDrops, potMaxOnField, potDrops, itemPickupMul, healRatio, thunderBossRatio } from "../perks.js";
 import { ARENA } from "./arena.js";
 import { spawnMagicCard } from "./magic-cards.js";
@@ -189,7 +190,7 @@ export function applyItem(kind) {
   if (kind === "heal") {
     const max = state.statsMax.hp;
     const before = state.stats.hp;
-    state.stats.hp = Math.min(max, before + Math.round(max * healRatio()));
+    state.stats.hp = Math.min(max, before + Math.round(max * healRatio() * sigHealMul()));   // SPEC-100: 宮廷医女は倍
     const healed = Math.round(state.stats.hp - before);
     if (healed > 0) pushDamageNumber(b.player.x, b.player.y - b.player.r - 4, `+${healed}`, "#7ee08a", "lg");
     fxBurst(b.player.x, b.player.y, "#7ee08a", 12, 120);

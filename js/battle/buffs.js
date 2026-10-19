@@ -9,6 +9,7 @@ import { state } from "../state.js";
 import { getExt, getCategory } from "../extensions.js";
 import { STATS_INITIAL } from "../constants.js";
 import { perks, perkBuffBase } from "../perks.js";   // SPEC-090c: スキルツリーの土台
+import { sigRegenPerSec } from "./signature.js";   // SPEC-100
 
 /**
  * pick された buff を即時適用。 weapon entry が来た場合は何もしない (= 呼出側で分岐前提)。
@@ -48,7 +49,7 @@ export function applyBuff(extId, level) {
  * RAF ループ毎に呼ぶ HP regen (= 1 sec ごとに regenPerSec hp 回復、 上限クランプ)。
  */
 export function tickRegen(dt) {
-  const r = state.buffs.regenPerSec;
+  const r = state.buffs.regenPerSec + sigRegenPerSec();   // SPEC-100: 宮廷医女
   if (r <= 0) return;
   if (state.stats.hp <= 0) return;     // 死亡中は回復しない
   const max = state.statsMax.hp;

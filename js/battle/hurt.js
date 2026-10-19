@@ -13,6 +13,7 @@ import { playSe } from "../audio.js";
 import { fxPlayerHurt, fxBurst } from "./fx.js";
 import { triggerGameOver } from "./gameover.js";
 import { contactCooldownMs, bossDmgTakenMul, perk, PHOENIX_HP_RATIO, PHOENIX_IFRAME_MS } from "../perks.js";
+import { sigTryPhantom } from "./signature.js";   // SPEC-100
 
 /**
  * @param {number} raw   元のダメージ (= 強化の被ダメ倍率はここで掛ける)
@@ -30,7 +31,18 @@ export function hurtPlayer(raw, { boss = false, shake = boss } = {}) {
   pushDamageNumber(b.player.x, b.player.y - b.player.r - 4, takenInt, "#ff7676");
   playSe(SFX.PLAYER_DAMAGED, 200, 0.55);
   fxPlayerHurt(shake);
-  if (state.stats.hp <= 0 && !b.gameOver && !tryPhoenix()) triggerGameOver();
+  // SPEC-100: 幻の生存者 (= アナスタシア。 1 ステージに 1 度) が先、 次に不死鳥 (= 1 回の挑戦に 1 度)
+  if (state.stats.hp <= 0 && !b.gameOver && !tryPhantom() && !tryPhoenix()) triggerGameOver();
+  return true;
+}
+
+/** SPEC-100: 幻の生存者 (= 倒れる一撃を 1 ステージに 1 度だけ HP 1 で耐え、 数秒消える) */
+function tryPhantom() {
+  if (!sigTryPhantom()) return false;
+  const b = state.battle;
+  pushDamageNumber(b.player.x, b.player.y - b.player.r - 18, "1", "#bfe6ff", "lg");
+  fxBurst(b.player.x, b.player.y, "#bfe6ff", 18, 220);
+  playSe(SFX.PICK_HEAL, 0, 0.7);
   return true;
 }
 

@@ -19,6 +19,7 @@ import {
 } from "./sprites.js";
 import { shakeOffset, renderFxWorld, renderFxScreen } from "./fx.js";
 import { absorbScale } from "./absorb.js";   // SPEC-102
+import { renderSignatureWorld } from "./signature.js";   // SPEC-100
 import { renderArenaWorld, renderBossMarkerPointer } from "./arena-render.js";
 import { renderBossMovesWorld } from "./boss-moves-render.js";
 import { renderGimmicksUnder, renderGimmicksOver, drawTrojan } from "./gimmicks-render.js";
@@ -83,6 +84,7 @@ export function renderBattle(ctx, nowMs = 0) {
   // SPEC-080: ボスの型の予告 (= 突進の通り道・叩きつけの円。 敵より下)
   renderBossMovesWorld(ctx, camera, w, h, nowMs);
 
+  renderSignatureWorld(ctx, camera);   // SPEC-100: 毒霧・クリプトスラッシュ・テスラコイル (= 敵の下)
   // SPEC-012 / SPEC-015 / SPEC-031: bombs (= 半透明円で当たり判定を可視化 + icon + 点滅)
   for (const b of bombs) {
     const sx = b.x - camera.x;

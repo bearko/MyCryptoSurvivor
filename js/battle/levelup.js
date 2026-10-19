@@ -22,6 +22,7 @@ import { applyBuff } from "./buffs.js";
 import { t, tpl, getLang, onLangChange } from "../i18n.js";
 import { playSe } from "../audio.js";
 import { prefersReducedMotion } from "../motion.js";
+import { sigNextPickSteps, sigOnPicked } from "./signature.js";   // SPEC-100
 
 let _pendingCount = 0;
 let _isOpen      = false;
@@ -181,7 +182,7 @@ function _samplePicks(n, exclude = new Set(), last = new Set()) {
       extId:        e.extId,
       ext:          e,
       currentLevel: cur,
-      nextLevel:    cur + 1,
+      nextLevel:    Math.min(EXT_MAX_LEVEL, cur + sigNextPickSteps()),   // SPEC-100: テトラクテュスは 4 回目ごとに 2 段
       isNew:        !o,
     };
   });
@@ -225,9 +226,12 @@ export function skipPick() {
 export function applyPick(extId) {
   const ext   = getExt(extId);
   const owned = state.ownedExtensions.find(o => String(o.extId) === String(extId));
-  const next  = owned ? Math.min(EXT_MAX_LEVEL, owned.level + 1) : 1;
+  // SPEC-100: テトラクテュス (= ピタゴラス) は 4 回目ごとのピックで 2 段上がる
+  const steps = sigNextPickSteps();
+  const next  = Math.min(EXT_MAX_LEVEL, (owned?.level ?? 0) + steps);
   if (owned) owned.level = next;
   else       state.ownedExtensions.push({ extId, level: next });
+  sigOnPicked();
 
   // SPEC-011: weapon vs buff で適用先を分岐
   // SPEC-017: ピック確定 SE (= 武器 = insp、 回復 = 3_heal、 その他 buff = 4_buff)
@@ -314,7 +318,9 @@ export function renderLevelUpModal() {
   if (subEl) {
     subEl.textContent = state.pendingPickIsStarter
       ? t("levelup.starter", "Choose your starting weapon")
-      : t("levelup.sub", "Choose one upgrade");
+      : (sigNextPickSteps() > 1
+        ? t("levelup.tetractys", "Tetractys: this pick rises 2 levels")   // SPEC-100
+        : t("levelup.sub", "Choose one upgrade"));
   }
 
   _renderOwned();   // SPEC-087: 装備中の帯
