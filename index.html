@@ -81,6 +81,12 @@
       Press to Start
     </button>
 
+    <!-- SPEC-098: 次の仲間 (= まだ解放していないヒーローのうち、 いちばん近い 1 人) -->
+    <a class="title-screen__next hidden" id="titleNextHero" target="_blank" rel="noopener">
+      <img class="title-screen__next-icon" id="titleNextHeroIcon" alt="" />
+      <span id="titleNextHeroText"></span>
+    </a>
+
     <div class="title-screen__links">
       <button id="btnTitleHelp" class="btn btn--ghost title-screen__help" data-i18n="help.open">遊び方</button>
       <button id="btnTitleRanking" class="btn btn--ghost title-screen__ranking" data-i18n="ranking.openTitle">ランキング</button>
@@ -469,6 +475,8 @@
         <h2 class="hero-modal__title" id="heroSelectTitle" data-i18n="hero.select.title" data-kicker="SELECT HERO">
           ヒーローを選ぶ
         </h2>
+        <!-- SPEC-098: 解放したヒーローの数 -->
+        <span class="hero-modal__count" id="heroSelectCount"></span>
         <button class="hero-modal__close-x" id="heroSelectClose" aria-label="Close">×</button>
       </header>
 
@@ -501,6 +509,8 @@
               <span class="hero-detail__stat" id="heroDetailHp"></span>
               <span class="hero-detail__stat" id="heroDetailSpeed"></span>
             </div>
+            <!-- SPEC-098: ロック中なら、 どのタイトルのどのアチーブメントで仲間になるか (= ほかのタイトルならそのゲームへ) -->
+            <p class="hero-detail__lock hidden" id="heroDetailLock"><span id="heroDetailLockText"></span><a class="hero-modal__play hidden" id="heroSelectPlay" target="_blank" rel="noopener">このゲームを遊ぶ ↗</a></p>
           </div>
           <div class="hero-detail__weapon">
             <img class="hero-detail__weapon-icon" id="heroDetailWeaponIcon" alt=""

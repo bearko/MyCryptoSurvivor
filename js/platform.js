@@ -7,6 +7,7 @@
 
 import { owns, ownedCount } from "./skill-logic.js";
 import { TREE_NODES, ROOT_ID } from "./skill-data.js";
+import { noteTrophies, refreshHeroUnlocks } from "./hero-unlock.js";   // SPEC-098
 
 // ============================================================
 // SPEC-039 / SPEC-096: アチーブメント (= 共通基盤 SPEC-008。 SDK の関数名は unlockTrophy のまま)
@@ -74,6 +75,8 @@ let _pump = null;
 
 /** アチーブメントを送る (= 列に足す)。 SDK がなければ何もしない */
 export function unlockAchievements(ids) {
+  // SPEC-098: 本作のアチーブメントで解放されるヒーローは、 通信できなくてもこの端末で解放する
+  noteTrophies(ids || []);
   const bg = _sdk();
   if (!bg || typeof bg.unlockTrophy !== "function") return;
   for (const id of ids || []) {
@@ -127,6 +130,12 @@ export function initPlatform(version) {
     _ready = Promise.resolve(bg.init({ game: "survivor", version, toast: "top", chat: { position: "top-right", offset: { x: 12, y: 12 } } }))
       .then(() => setChatVisible(false))
       .catch((e) => console.warn("[platform] init", e));
+    // SPEC-098: 持っているアチーブメントからヒーローを解放する (= 起動時・ほかのタブから戻ったとき・新しく得たとき)
+    _ready.then(() => refreshHeroUnlocks());
+    if (typeof bg.onTrophy === "function") bg.onTrophy((def) => { if (def?.id) noteTrophies([def.id]); });
+    if (typeof document !== "undefined") {
+      document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") refreshHeroUnlocks(); });
+    }
   } catch (e) {
     console.warn("[platform] init", e);
   }

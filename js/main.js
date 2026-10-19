@@ -30,6 +30,9 @@ import {
 } from "./heroes.js";
 import { loadExtensions } from "./extensions.js";
 import { heroMaxHp, heroSpeed } from "./hero-stats.js";   // SPEC-097
+import {
+  getUnlockedHeroes, isHeroUnlocked, unlockOf, nextUnlock, onHeroesUnlocked, GAME_TITLES,
+} from "./hero-unlock.js";   // SPEC-098
 import { loadEnemies } from "./enemies.js";
 import { tickStatsDecay, renderHud } from "./survival.js";
 import { startBattle } from "./battle/index.js";
@@ -112,6 +115,7 @@ function enterTitle() {
   // SPEC-085: タイトルコール (= ロゴの画面を押したとき。 押さずに進めた環境ではここで)。 鳴り終わるまで、 あいさつのボイスを待たせる
   playVoice("title.call", { hold: true });
   naviTitle();   // SPEC-056: タイトルでマインちゃんがあいさつ
+  renderTitleNextHero();   // SPEC-098
 }
 
 function showSplashTap() {
@@ -266,6 +270,17 @@ function setupHeroSelectModal() {
     }
     renderOwnedHeroBadge();
     renderHud();   // SPEC-004: `Day {n}` テンプレ再展開
+    renderTitleNextHero();   // SPEC-098
+  });
+
+  // SPEC-098: アチーブメントでヒーローが解放されたら、 知らせて、 開いている画面を描き直す
+  onHeroesUnlocked((heroIds) => {
+    showHeroUnlockToast(heroIds);
+    renderTitleNextHero();
+    if (!modal.classList.contains("hidden")) {
+      renderHeroSelectModal();
+      if (state.pendingHeroPick != null) renderHeroDetail(state.pendingHeroPick);
+    }
   });
 }
 
@@ -305,20 +320,29 @@ function renderHeroSelectModal() {
     return;
   }
 
-  for (const hero of HERO_ROSTER) {
+  // SPEC-098: 解放した人が先 (= 並びはそのまま)。 札の上に「解放 n / 10」
+  const unlocked = getUnlockedHeroes();
+  const roster = [...HERO_ROSTER].sort((a, b) => Number(!unlocked.has(a.heroId)) - Number(!unlocked.has(b.heroId)));
+  const countEl = $("#heroSelectCount");
+  if (countEl) countEl.textContent = tpl(t("hero.select.count", "Unlocked {n} / {total}"), {
+    n: String(HERO_ROSTER.filter((h) => unlocked.has(h.heroId)).length), total: String(HERO_ROSTER.length),
+  });
+
+  for (const hero of roster) {
     const isSelected = state.pendingHeroPick === hero.heroId;
+    const locked = !unlocked.has(hero.heroId);
     const name = localizedHeroName(hero, lang);
     const rarityLabel = t(`hero.rarity.${hero.rarity}`, hero.rarity);
     const factionLabel = t(`hero.faction.${hero.faction}`, hero.faction);
 
     const tile = document.createElement("button");
     tile.type = "button";
-    tile.className = "hero-tile";
+    tile.className = locked ? "hero-tile hero-tile--locked" : "hero-tile";
     tile.dataset.heroId = String(hero.heroId);
     tile.dataset.faction = hero.faction;
     tile.setAttribute("role", "option");
     tile.setAttribute("aria-selected", isSelected ? "true" : "false");
-    tile.title = `${name} — ${factionLabel} / ${rarityLabel}`;
+    tile.title = `${name} — ${factionLabel} / ${rarityLabel}${locked ? ` (${t("hero.lock.label", "Locked")})` : ""}`;
     // SPEC-097: 札の上に初期武器のアイコンと名前 (= 「このヒーロー＝この武器」がひと目で分かる)
     const wExt  = getExt(HERO_STARTING_WEAPON[hero.heroId] ?? HERO_STARTING_WEAPON_DEFAULT);
     const wName = wExt ? getTierName(wExt, 1, lang) : "";
@@ -327,6 +351,7 @@ function renderHeroSelectModal() {
         <img class="hero-tile__weapon-icon" src="${extTierImg(wExt, 1)}" alt="" onerror="this.remove()" />
         <span class="hero-tile__weapon-name">${escapeText(getSeriesName(wExt, lang))}</span>
       </span>` : ""}
+      ${locked ? `<span class="hero-tile__lock" aria-hidden="true">🔒</span>` : ""}
       <img class="hero-tile__portrait"
            src="${heroImg(hero.heroId)}"
            alt="${escapeAttr(tpl(altTpl, { name }))}"
@@ -472,7 +497,9 @@ function refreshHeroSelectCta() {
   const hintText = $("#heroSelectHintText");
   if (!cta) return;
   const hero = getHero(state.pendingHeroPick);
-  cta.disabled = !hero;
+  const locked = hero && !isHeroUnlocked(hero.heroId);   // SPEC-098
+  cta.disabled = !hero || locked;
+  renderHeroLock(locked ? hero : null);
 
   if (hintText) {
     if (hero) {
@@ -485,9 +512,88 @@ function refreshHeroSelectCta() {
   }
 }
 
+// ============================================================
+// SPEC-098: 次の仲間 (= タイトル) と、 解放の知らせ
+// ============================================================
+/** 詳しい欄の「どのタイトルの、 どのアチーブメントで仲間になるか」 (= hero が null なら隠す) */
+function renderHeroLock(hero) {
+  const box = $("#heroDetailLock");
+  const play = $("#heroSelectPlay");
+  if (!box) return;
+  const u = hero ? unlockOf(hero.heroId) : null;
+  box.classList.toggle("hidden", !u);
+  play?.classList.add("hidden");
+  if (!u) return;
+  const lang = getLang();
+  const vars = {
+    title: GAME_TITLES[u.game]?.name ?? u.game,
+    name: u.achievement?.[lang] ?? u.achievement?.ja ?? u.trophy,
+    cond: t(`hero.unlock.cond.${u.trophy}`, u.trophy),
+  };
+  $("#heroDetailLockText").textContent = tpl(t(u.game === "survivor" ? "hero.lock.here" : "hero.lock.other", ""), vars);
+  if (play && u.game !== "survivor") {
+    play.href = GAME_TITLES[u.game]?.url ?? "https://bearko.games/";
+    play.textContent = t("hero.lock.play", "Play this game ↗");
+    play.classList.remove("hidden");
+  }
+}
+function renderTitleNextHero() {
+  const el = $("#titleNextHero");
+  if (!el) return;
+  const u = nextUnlock(getUnlockedHeroes());
+  const hero = u ? getHero(u.heroId) : null;
+  if (!u || !hero) { el.classList.add("hidden"); return; }
+  const lang = getLang();
+  const vars = {
+    title: GAME_TITLES[u.game]?.name ?? u.game,
+    name: localizedHeroName(hero, lang),
+    cond: t(`hero.unlock.cond.${u.trophy}`, u.trophy),
+  };
+  const here = u.game === "survivor";
+  $("#titleNextHeroText").textContent = tpl(t(here ? "title.next.here" : "title.next.other", ""), vars);
+  const icon = $("#titleNextHeroIcon");
+  if (icon) icon.src = heroImg(hero.heroId);
+  // ほかのタイトルのときだけ、 そのゲームへ (= 本作のときは押しても何も起きない)
+  if (here) { el.removeAttribute("href"); el.classList.add("title-screen__next--here"); }
+  else { el.href = GAME_TITLES[u.game]?.url ?? "https://bearko.games/"; el.classList.remove("title-screen__next--here"); }
+  el.classList.remove("hidden");
+}
+
+let _unlockToastTimer = 0;
+function showHeroUnlockToast(heroIds) {
+  const heroes = heroIds.map((id) => getHero(id)).filter(Boolean);
+  if (!heroes.length) return;
+  let el = $("#heroUnlockToast");
+  if (!el) {
+    el = document.createElement("div");
+    el.id = "heroUnlockToast";
+    el.className = "hero-unlock-toast hidden";
+    el.setAttribute("role", "status");
+    document.body.appendChild(el);
+  }
+  const lang = getLang();
+  el.innerHTML = heroes.map((h) => `
+    <div class="hero-unlock-toast__row">
+      <img class="hero-unlock-toast__icon" src="${heroImg(h.heroId)}" alt="" />
+      <div>
+        <div class="hero-unlock-toast__title">${escapeText(tpl(t("hero.unlocked.toast", "{name} joined you!"), { name: localizedHeroName(h, lang) }))}</div>
+        <div class="hero-unlock-toast__sub">${escapeText(t("hero.unlocked.sub", ""))}</div>
+      </div>
+    </div>`).join("");
+  el.classList.remove("hidden", "hero-unlock-toast--out");
+  void el.offsetWidth;
+  el.classList.add("hero-unlock-toast--in");
+  playSe(SFX.HERO_PICK);
+  clearTimeout(_unlockToastTimer);
+  _unlockToastTimer = setTimeout(() => {
+    el.classList.add("hero-unlock-toast--out");
+    setTimeout(() => el.classList.add("hidden"), 400);
+  }, 4500);
+}
+
 function applyHeroPick() {
   const hero = getHero(state.pendingHeroPick);
-  if (!hero) return;
+  if (!hero || !isHeroUnlocked(hero.heroId)) return;   // SPEC-098: ロック中は始められない
   playSe(SFX.HERO_PICK);   // SPEC-017: tooldev.mp3
   state.ownedHero = { ...hero };
   state.currentStageIdx = 0;       // SPEC-030: 新規 hero pick で stage 1 から
