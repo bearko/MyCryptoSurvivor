@@ -102,6 +102,13 @@ export function getSkillDesc(ext, level, lang) {
   return _fill(tplStr, params);
 }
 
+/** SPEC-097: 系列の名前 (= 資産リポジトリの series.name。 無ければ 1 段目の名前) */
+export function getSeriesName(ext, lang) {
+  const n = ext?.seriesName;
+  if (!n) return getTierName(ext, 1, lang);
+  return n[lang] ?? n.ja ?? n.en ?? "";
+}
+
 export function getSkillName(ext, lang) {
   const n = ext?.skillName;
   if (!n) return "";

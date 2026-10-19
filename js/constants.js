@@ -153,16 +153,17 @@ export const DEBUG_TICK = false;        // onTick ログ
 // ============================================================
 // heroId (= heroes.json) → weapon extId (= extensions.json category=weapon)
 export const HERO_STARTING_WEAPON = {
-  1001:  1,   // コナン・ドイル → Revolver (= 探偵 / 銃)
-  1002: 10,   // 甲斐姫         → Blade    (= 戦国姫 / 剣)
-  1004:  4,   // シートン       → Moai     (= 自然 / 落石)
-  1006:  2,   // ピタゴラス     → Book     (= 哲学 / 守護書)
-  2001:  6,   // ライト兄弟     → LaserGun (= 発明 / 高速光線)
-  2002:  8,   // スパルタクス   → Axe      (= 剣闘士 / 投擲斧)
-  2005:  9,   // グリム兄弟     → Pierrot  (= 童話 / トリックスター)
-  2011:  5,   // 孫子           → Shuriken (= 兵法 / 暗器)
-  2012:  7,   // 石田三成       → Knife    (= 武将 / 短刀)
-  2013:  3,   // 許褚           → Panjandrum (= 怪力 / 突進輪)
+  // SPEC-097: 武器ごとに「この人がこれを使う」と言えるヒーロー (= 作者の決定 2026-10-19)
+  10001: 10,   // MCHウォーリアー     → Blade      (= MCH の顔。 5 段目が MCHブレード)
+  4006:   1,   // ビリー・ザ・キッド   → Revolver   (= 西部の早撃ち)
+  2043:   5,   // 霧隠才蔵             → Shuriken   (= 忍び)
+  2016:   9,   // アナスタシア         → Snowman    (= ロシアの皇女と氷の王族)
+  2003:   7,   // ジャックザリッパー   → Knife      (= 系列のスキル名が「リッパー」)
+  4041:   6,   // ニコラ・テスラ       → LaserGun   (= 光線兵器の構想)
+  1006:   2,   // ピタゴラス           → Book       (= 書を携える哲学者)
+  1007:   3,   // 大長今               → Broomstick (= 宮廷の医女とホーキ)
+  2013:   8,   // 許褚                 → Mallet     (= 怪力の豪傑が槌を振るう)
+  4052:   4,   // フランシス・ドレーク → Parrot     (= 海賊の肩にオウム)
 };
 export const HERO_STARTING_WEAPON_DEFAULT = 1;   // 不明 hero は Revolver fallback
 
@@ -173,6 +174,11 @@ export const HERO_HP_BASE        = 80;     // 基礎 HP (= 全 hero 共通)
 export const HERO_HP_PER_STAT    = 0.20;   // hero.stats.hp の何 % を加算するか
 export const HERO_SPEED_BASE     = 140;    // 基礎移動速度 (px/sec)
 export const HERO_SPEED_PER_AGI  = 0.6;    // hero.stats.agi に乗じる係数
+// SPEC-097: PHY は武器のダメージに、 INT は武器の間隔に効く (= ±1 割ほど。 違いを決めるのは武器と固有スキル)
+export const HERO_PHY_BASE       = 80;     // この値で ×1
+export const HERO_PHY_DIV        = 400;    // ダメージ × (1 + (phy − 80) / 400)
+export const HERO_INT_BASE       = 70;     // この値で ×1
+export const HERO_INT_DIV        = 500;    // 間隔   × (1 − (int − 70) / 500)
 
 // ============================================================
 // SPEC-016: 戦闘フィードバック (= HP バー / ダメージ数字 / hit freeze)

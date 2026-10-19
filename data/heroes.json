@@ -3,28 +3,52 @@
   "source":  "bearko/mycryptoheroes",
   "heroes": [
     {
-      "heroId": 1001,
-      "name":       { "ja": "コナン・ドイル", "en": "Arthur Conan Doyle" },
-      "rarity":     "Common",
-      "faction":    "GENBU",
-      "attributes": ["Soft Science", "England", "Mystery"],
-      "stats":      { "hp": 192, "phy": 25, "int": 69, "agi": 138 }
-    },
-    {
-      "heroId": 1002,
-      "name":       { "ja": "甲斐姫", "en": "Kaihime" },
-      "rarity":     "Common",
+      "heroId": 10001,
+      "name":       { "ja": "MCHウォーリアー", "en": "MCH Warrior" },
+      "rarity":     "MCH",
       "faction":    "SUZAKU",
-      "attributes": ["Female", "Sengoku", "Pole weapon"],
-      "stats":      { "hp": 162, "phy": 79, "int": 45, "agi": 118 }
+      "attributes": [],
+      "stats":      { "hp": 162, "phy": 63, "int": 42, "agi": 53 }
     },
     {
-      "heroId": 1004,
-      "name":       { "ja": "シートン", "en": "Ernest Thompson Seton" },
-      "rarity":     "Common",
-      "faction":    "GENBU",
-      "attributes": ["Soft Science", "Animal", "England"],
-      "stats":      { "hp": 345, "phy": 66, "int": 69, "agi": 46 }
+      "heroId": 4006,
+      "name":       { "ja": "ビリー・ザ・キッド", "en": "Billy the Kid" },
+      "rarity":     "Epic",
+      "faction":    "KOURYU",
+      "attributes": ["Firearms", "Duel", "Western"],
+      "stats":      { "hp": 354, "phy": 78, "int": 119, "agi": 133 }
+    },
+    {
+      "heroId": 2043,
+      "name":       { "ja": "霧隠才蔵", "en": "Kirigakure Saizō" },
+      "rarity":     "Uncommon",
+      "faction":    "BYAKKO",
+      "attributes": ["Covert", "Japan"],
+      "stats":      { "hp": 207, "phy": 115, "int": 65, "agi": 91 }
+    },
+    {
+      "heroId": 2016,
+      "name":       { "ja": "アナスタシア", "en": "Anastasia" },
+      "rarity":     "Uncommon",
+      "faction":    "SEIRYU",
+      "attributes": ["Politics", "Female", "Occult", "Russia"],
+      "stats":      { "hp": 150, "phy": 31, "int": 111, "agi": 148 }
+    },
+    {
+      "heroId": 2003,
+      "name":       { "ja": "ジャックザリッパー", "en": "Jack the Ripper" },
+      "rarity":     "Uncommon",
+      "faction":    "KOURYU",
+      "attributes": ["Covert", "Occult", "England"],
+      "stats":      { "hp": 234, "phy": 108, "int": 25, "agi": 123 }
+    },
+    {
+      "heroId": 4041,
+      "name":       { "ja": "ニコラ・テスラ", "en": "Nikola Tesla" },
+      "rarity":     "Epic",
+      "faction":    "KOURYU",
+      "attributes": ["Hard Science", "Poland", "Machine"],
+      "stats":      { "hp": 327, "phy": 130, "int": 62, "agi": 147 }
     },
     {
       "heroId": 1006,
@@ -35,44 +59,12 @@
       "stats":      { "hp": 216, "phy": 84, "int": 84, "agi": 56 }
     },
     {
-      "heroId": 2001,
-      "name":       { "ja": "ライト兄弟", "en": "Wright Brothers" },
-      "rarity":     "Uncommon",
-      "faction":    "KOURYU",
-      "attributes": ["Hard Science", "America", "Duo", "Machine"],
-      "stats":      { "hp": 219, "phy": 47, "int": 85, "agi": 135 }
-    },
-    {
-      "heroId": 2002,
-      "name":       { "ja": "スパルタクス", "en": "Spartacus" },
-      "rarity":     "Uncommon",
-      "faction":    "SUZAKU",
-      "attributes": ["Duel", "Rome"],
-      "stats":      { "hp": 573, "phy": 59, "int": 42, "agi": 42 }
-    },
-    {
-      "heroId": 2005,
-      "name":       { "ja": "グリム兄弟", "en": "Brothers Grimm" },
-      "rarity":     "Uncommon",
-      "faction":    "GENBU",
-      "attributes": ["Soft Science", "Animal", "Germany", "Duo", "Fairy tale"],
-      "stats":      { "hp": 330, "phy": 35, "int": 110, "agi": 85 }
-    },
-    {
-      "heroId": 2011,
-      "name":       { "ja": "孫子", "en": "Sun Tzu" },
-      "rarity":     "Uncommon",
+      "heroId": 1007,
+      "name":       { "ja": "大長今", "en": "Jang-geum" },
+      "rarity":     "Common",
       "faction":    "BYAKKO",
-      "attributes": ["Soft Science", "China"],
-      "stats":      { "hp": 186, "phy": 57, "int": 127, "agi": 94 }
-    },
-    {
-      "heroId": 2012,
-      "name":       { "ja": "石田三成", "en": "Ishida Mitsunari" },
-      "rarity":     "Uncommon",
-      "faction":    "SEIRYU",
-      "attributes": ["Politics", "Sengoku"],
-      "stats":      { "hp": 246, "phy": 79, "int": 116, "agi": 63 }
+      "attributes": ["Hard Science", "Female"],
+      "stats":      { "hp": 261, "phy": 40, "int": 115, "agi": 54 }
     },
     {
       "heroId": 2013,
@@ -81,6 +73,14 @@
       "faction":    "BYAKKO",
       "attributes": ["Romance of the Three Kingdoms", "Wei", "Axe"],
       "stats":      { "hp": 285, "phy": 131, "int": 51, "agi": 63 }
+    },
+    {
+      "heroId": 4052,
+      "name":       { "ja": "フランシス・ドレーク", "en": "Francis Drake" },
+      "rarity":     "Epic",
+      "faction":    "KOURYU",
+      "attributes": ["Sea", "Firearms", "Journey", "England"],
+      "stats":      { "hp": 270, "phy": 81, "int": 78, "agi": 199 }
     }
   ]
 }

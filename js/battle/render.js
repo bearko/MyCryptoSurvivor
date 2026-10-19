@@ -83,7 +83,7 @@ export function renderBattle(ctx, nowMs = 0) {
   // SPEC-080: ボスの型の予告 (= 突進の通り道・叩きつけの円。 敵より下)
   renderBossMovesWorld(ctx, camera, w, h, nowMs);
 
-  // SPEC-012 / SPEC-015 / SPEC-031: bombs (= 赤い半透明円で当たり判定を可視化 + icon + 点滅)
+  // SPEC-012 / SPEC-015 / SPEC-031: bombs (= 半透明円で当たり判定を可視化 + icon + 点滅)
   for (const b of bombs) {
     const sx = b.x - camera.x;
     const sy = b.y - camera.y;
@@ -92,13 +92,14 @@ export function renderBattle(ctx, nowMs = 0) {
     const t = b.age / b.fuseMs;
     // SPEC-031: AoE 範囲を赤の半透明 fill で表示 (= 着弾前に視認できる)、 fuse 後半で点滅濃度 UP
     const fillAlpha = (t > 0.7 ? 0.32 : 0.22) + (t > 0.7 ? 0.08 * Math.abs(Math.sin(b.age / 60)) : 0);
+    // SPEC-097: 範囲の色は系列の色 (= 雪だるまは氷の色。 色が無ければ前の赤)
     ctx.globalAlpha = fillAlpha;
-    ctx.fillStyle = "#e76060";
+    ctx.fillStyle = b.color ?? "#e76060";
     ctx.beginPath();
     ctx.arc(sx, sy, R, 0, Math.PI * 2);
     ctx.fill();
     ctx.globalAlpha = 0.6;
-    ctx.strokeStyle = "#ff8a8a";
+    ctx.strokeStyle = b.color ?? "#ff8a8a";
     ctx.lineWidth = 1.8;
     ctx.beginPath();
     ctx.arc(sx, sy, R, 0, Math.PI * 2);

@@ -13,13 +13,11 @@ import {
   SECONDS_PER_WEEK,
   WEEKS_PER_MONTH,
   MONTHS_PER_YEAR,
-  HERO_HP_BASE, HERO_HP_PER_STAT,
-  HERO_SPEED_BASE, HERO_SPEED_PER_AGI,
   HERO_STARTING_WEAPON, HERO_STARTING_WEAPON_DEFAULT,
 } from "./constants.js";
 import {
   getExt, extImg, extTierImg,
-  getTierName, getSkillName, getSkillDesc,
+  getTierName, getSkillName, getSkillDesc, getSeriesName,
 } from "./extensions.js";
 import {
   HERO_ROSTER,
@@ -31,6 +29,7 @@ import {
   heroAttributesLine,
 } from "./heroes.js";
 import { loadExtensions } from "./extensions.js";
+import { heroMaxHp, heroSpeed } from "./hero-stats.js";   // SPEC-097
 import { loadEnemies } from "./enemies.js";
 import { tickStatsDecay, renderHud } from "./survival.js";
 import { startBattle } from "./battle/index.js";
@@ -320,7 +319,14 @@ function renderHeroSelectModal() {
     tile.setAttribute("role", "option");
     tile.setAttribute("aria-selected", isSelected ? "true" : "false");
     tile.title = `${name} — ${factionLabel} / ${rarityLabel}`;
+    // SPEC-097: 札の上に初期武器のアイコンと名前 (= 「このヒーロー＝この武器」がひと目で分かる)
+    const wExt  = getExt(HERO_STARTING_WEAPON[hero.heroId] ?? HERO_STARTING_WEAPON_DEFAULT);
+    const wName = wExt ? getTierName(wExt, 1, lang) : "";
     tile.innerHTML = `
+      ${wExt ? `<span class="hero-tile__weapon" title="${escapeAttr(wName)}">
+        <img class="hero-tile__weapon-icon" src="${extTierImg(wExt, 1)}" alt="" onerror="this.remove()" />
+        <span class="hero-tile__weapon-name">${escapeText(getSeriesName(wExt, lang))}</span>
+      </span>` : ""}
       <img class="hero-tile__portrait"
            src="${heroImg(hero.heroId)}"
            alt="${escapeAttr(tpl(altTpl, { name }))}"
@@ -430,10 +436,8 @@ function renderHeroDetail(heroId) {
   const subEl = $("#heroDetailSub");
   if (subEl) subEl.textContent = `${factionEmoji(hero.faction)} ${factionLab} · ${rarityLab}`;
 
-  const heroHpStat  = hero.stats?.hp  ?? 0;
-  const heroAgiStat = hero.stats?.agi ?? 0;
-  const maxHp = HERO_HP_BASE    + Math.round(heroHpStat  * HERO_HP_PER_STAT);
-  const speed = HERO_SPEED_BASE + Math.round(heroAgiStat * HERO_SPEED_PER_AGI);
+  const maxHp = heroMaxHp(hero);   // SPEC-097: 戦闘と同じ式
+  const speed = heroSpeed(hero);
   const hpEl  = $("#heroDetailHp");
   const spdEl = $("#heroDetailSpeed");
   if (hpEl)  hpEl.textContent  = tpl(t("hero.detail.hp",    "HP {n}"),    { n: String(maxHp) });

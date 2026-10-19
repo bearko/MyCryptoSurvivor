@@ -269,12 +269,48 @@
 .hero-tile__rarity[data-rarity="Rare"]      { color: var(--leviathan); }
 .hero-tile__rarity[data-rarity="Epic"]      { color: var(--rarity-sr); }
 .hero-tile__rarity[data-rarity="Legendary"] { color: var(--rarity-ssr); }
+.hero-tile__rarity[data-rarity="MCH"]       { color: var(--accent); }
+
+/* SPEC-097: 札の上に初期武器 (= 「このヒーロー＝この武器」) */
+.hero-tile__weapon {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  max-width: calc(100% - 6px);
+  padding: 1px 5px 1px 1px;
+  border-radius: 999px;
+  background: rgba(10, 8, 16, 0.78);
+  border: 1px solid rgba(196, 163, 90, 0.45);
+  font-size: 0.62rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text);
+  pointer-events: none;
+}
+.hero-tile__weapon-icon {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  border-radius: 50%;
+  image-rendering: pixelated;
+}
+.hero-tile__weapon-name {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
 
 @media (max-width: 480px) {
   .hero-modal__grid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0.35rem; }
   .hero-tile__name { font-size: 0.68rem; letter-spacing: 0; }
   .hero-tile__sub  { font-size: 0.56rem; gap: 0.15rem; white-space: nowrap; }
   .hero-tile__meta { padding: 0.25rem 0.15rem 0.3rem; }
+  .hero-tile__weapon { padding: 1px; }
+  .hero-tile__weapon-name { display: none; }   /* SPEC-097: 狭い画面はアイコンだけ */
 }
 
 /* ---------- Header owned-hero badge ---------- */

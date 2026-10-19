@@ -19,7 +19,7 @@ test("壺・宝箱・お助けアイテム・マジックカード・木馬は�
   assert.equal(new Set(ids).size, ids.length);
 });
 
-test("宝箱の絵は、 武器・強化の絵 (= 持ち物の欄に出る 1 段目) と重ならない。 重なるのはモアイの 5 段目の弾だけ (= SPEC-076)", () => {
+test("宝箱の絵は、 武器・強化の絵と重ならない (= SPEC-076。 SPEC-097 でモアイの系列がパロットに替わり、 5 段目の弾とも重ならなくなった)", () => {
   const list = Array.isArray(EXT) ? EXT : (EXT.extensions ?? []);
   const base = new Set(), tiers = [];
   for (const e of list) {
@@ -28,5 +28,5 @@ test("宝箱の絵は、 武器・強化の絵 (= 持ち物の欄に出る 1 段
   }
   assert.ok(base.size > 0);
   assert.equal(base.has(CHEST_EXT_ID), false);
-  assert.deepEqual(tiers, ["Moai:5"], "モアイの 5 段目の弾は落ちてきてすぐ消える。 宝箱は止まっていて光の円と HP の帯がある");
+  assert.deepEqual(tiers, []);
 });

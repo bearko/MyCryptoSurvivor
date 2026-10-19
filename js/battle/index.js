@@ -13,7 +13,6 @@ import {
   XP_INITIAL, XP_TO_NEXT_INITIAL, LEVEL_INITIAL,
   STATS_INITIAL, STATS_MAX,
   HERO_STARTING_WEAPON, HERO_STARTING_WEAPON_DEFAULT,
-  HERO_HP_BASE, HERO_HP_PER_STAT, HERO_SPEED_BASE, HERO_SPEED_PER_AGI,
 } from "../constants.js";
 import { getExt, getCategory } from "../extensions.js";
 import { installInput, getInputVector } from "./input.js";
@@ -48,6 +47,7 @@ import { startRtaRun, rtaRegulationFor, placePlatformToasts, setChatVisible, rep
 import { BGM_BATTLE, STAGE_TABLE, WATCH_SPEED } from "../constants.js";
 import { t, tpl } from "../i18n.js";
 import { heroImg } from "../heroes.js";
+import { heroMaxHp, heroSpeed, heroDmgMul, heroCdMul } from "../hero-stats.js";   // SPEC-097
 import { naviSay, naviLines } from "../navi.js";
 import { clearNaviTipQueue } from "../navi-tips.js";
 
@@ -158,14 +158,14 @@ export function startBattle(hero) {
   resetArena();                                 // SPEC-079: ボス戦の枠を外す
 
   // SPEC-014: hero.stats.hp / agi から HP 上限と移動速度を派生 (= hero ごとに性能差)
-  const heroHpStat   = hero?.stats?.hp  ?? 0;
-  const heroAgiStat  = hero?.stats?.agi ?? 0;
-  const heroMaxHp    = baseMaxHp(HERO_HP_BASE + Math.round(heroHpStat * HERO_HP_PER_STAT));   // SPEC-090c: 頑丈なからだ・鉄壁
-  const heroSpeed    = HERO_SPEED_BASE + Math.round(heroAgiStat * HERO_SPEED_PER_AGI);
-  state.statsMax.hp  = heroMaxHp;
-  b.baseMaxHp        = heroMaxHp;   // SPEC-090c: アーマーはこれに足す (= buffs.js)
-  state.stats.hp     = heroMaxHp;
-  b.player.speed     = heroSpeed;
+  const maxHp        = baseMaxHp(heroMaxHp(hero));   // SPEC-090c: 頑丈なからだ・鉄壁
+  state.statsMax.hp  = maxHp;
+  b.baseMaxHp        = maxHp;   // SPEC-090c: アーマーはこれに足す (= buffs.js)
+  state.stats.hp     = maxHp;
+  b.player.speed     = heroSpeed(hero);
+  // SPEC-097: PHY は武器のダメージに、 INT は武器の間隔に効く (= weapons.js が掛ける)
+  b.heroDmgMul       = heroDmgMul(hero);
+  b.heroCdMul        = heroCdMul(hero);
   state.xp           = XP_INITIAL;
   state.xpToNext     = XP_TO_NEXT_INITIAL;
   state.level        = LEVEL_INITIAL;
