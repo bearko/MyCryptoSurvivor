@@ -464,7 +464,12 @@
 .hero-detail__portrait,
 .hero-detail__placeholder { display: none; }
 .hero-detail { border: 0; background: none; padding: 0; min-height: 0; display: flex; flex-direction: column; gap: 0.5rem; }
-.hero-detail__content { grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr); }
+/* SPEC-099: 名前とステータス ｜ レーダーチャート ｜ 開始武器 (= 狭い画面は武器を下の段に) */
+.hero-detail__content { grid-template-columns: minmax(0, 0.9fr) 168px minmax(0, 1.2fr); }
+@media (max-width: 560px) {
+  .hero-detail__content { grid-template-columns: minmax(0, 1fr) 150px; }
+  .hero-detail__weapon { grid-column: 1 / -1; }
+}
 .hero-detail__name { font-family: var(--font-display); font-weight: 400; font-size: 1.05rem; }
 
 /* ------------------------------------------------------------

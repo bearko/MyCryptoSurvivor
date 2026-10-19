@@ -1150,6 +1150,26 @@ a.title-screen__next[href]:hover { border-color: var(--accent); }
   word-break: break-word;
 }
 
+/* SPEC-099: レーダーチャート */
+.hero-radar {
+  width: 100%;
+  max-width: 176px;
+  justify-self: center;
+}
+.radar { display: block; width: 100%; height: auto; overflow: visible; }
+.radar__ring { fill: none; stroke: rgba(255, 255, 255, 0.12); stroke-width: 1; }
+.radar__grid polygon:last-of-type { stroke: rgba(255, 255, 255, 0.25); }
+.radar__spoke { stroke: rgba(255, 255, 255, 0.12); stroke-width: 1; }
+.radar__ghost { fill: rgba(255, 255, 255, 0.10); stroke: rgba(255, 255, 255, 0.45); stroke-width: 1; stroke-dasharray: 3 3; }
+.radar__shape { fill-opacity: 0.38; stroke-width: 2; stroke-linejoin: round; transform-origin: 100px 100px; }
+.hero-radar--in .radar__shape { animation: radar-grow 0.45s cubic-bezier(.2, .8, .4, 1); }
+@keyframes radar-grow { from { transform: scale(0.2); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+:root[data-reduce-fx] .hero-radar--in .radar__shape { animation: none; }
+@media (prefers-reduced-motion: reduce) { .hero-radar--in .radar__shape { animation: none; } }
+.radar__label { font-size: 14.5px; fill: var(--text); dominant-baseline: middle; }
+.radar__name { font-weight: 800; }
+.radar__raw { font-size: 11.5px; fill: var(--muted); }
+
 @media (max-width: 480px) {
   .hero-detail__content {
     grid-template-columns: 56px 1fr;

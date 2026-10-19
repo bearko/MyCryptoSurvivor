@@ -512,6 +512,8 @@
             <!-- SPEC-098: ロック中なら、 どのタイトルのどのアチーブメントで仲間になるか (= ほかのタイトルならそのゲームへ) -->
             <p class="hero-detail__lock hidden" id="heroDetailLock"><span id="heroDetailLockText"></span><a class="hero-modal__play hidden" id="heroSelectPlay" target="_blank" rel="noopener">このゲームを遊ぶ ↗</a></p>
           </div>
+          <!-- SPEC-099: 性能のレーダーチャート (= 10 人の中での位置。 いま使っているヒーローの形を薄く重ねる) -->
+          <div class="hero-radar" id="heroRadar" role="img"></div>
           <div class="hero-detail__weapon">
             <img class="hero-detail__weapon-icon" id="heroDetailWeaponIcon" alt=""
                  onerror="this.classList.add('hero-detail__weapon-icon--missing'); this.removeAttribute('src');" />
