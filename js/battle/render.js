@@ -18,6 +18,7 @@ import {
   getMagicCardSprite,
 } from "./sprites.js";
 import { shakeOffset, renderFxWorld, renderFxScreen } from "./fx.js";
+import { absorbScale } from "./absorb.js";   // SPEC-102
 import { renderArenaWorld, renderBossMarkerPointer } from "./arena-render.js";
 import { renderBossMovesWorld } from "./boss-moves-render.js";
 import { renderGimmicksUnder, renderGimmicksOver, drawTrojan } from "./gimmicks-render.js";
@@ -151,8 +152,22 @@ export function renderBattle(ctx, nowMs = 0) {
   for (const g of gems) {
     const sx = g.x - camera.x;
     const sy = g.y - camera.y;
-    const drawR = g.r * 1.6;   // ce.png は丸い MCH エンブレム、 ダイヤより大きめに
+    const drawR = g.r * 1.6 * absorbScale(g);   // ce.png は丸い MCH エンブレム、 ダイヤより大きめに
     if (sx < -drawR || sx > w + drawR || sy < -drawR || sy > h + drawR) continue;
+    // SPEC-102: 吸い込み中は、 前のフレームの位置から光の尾を引く
+    if (g.absorbing && g.lx != null) {
+      ctx.globalAlpha = 0.55;
+      ctx.strokeStyle = g.color;
+      ctx.lineCap = "round";
+      ctx.lineWidth = drawR * 0.9;
+      ctx.beginPath();
+      // 1 フレームの動きだと絵に隠れてしまうので、 5 フレームぶん後ろまで伸ばす
+      ctx.moveTo(sx - (sx - (g.lx - camera.x)) * 5, sy - (sy - (g.ly - camera.y)) * 5);
+      ctx.lineTo(sx, sy);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+      ctx.lineCap = "butt";
+    }
     const drew = drawSpriteCircular(ctx, gemSprite, sx, sy, drawR);
     if (!drew) {
       ctx.fillStyle = g.color;

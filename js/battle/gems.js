@@ -11,6 +11,8 @@ import {
 import { triggerLevelUpPick } from "./levelup.js";
 import { playSe } from "../audio.js";
 import { xpGainMul } from "../perks.js";   // SPEC-090c
+import { prefersReducedMotion } from "../motion.js";
+import { startAbsorb, absorbStep, chainPitch } from "./absorb.js";   // SPEC-102
 
 export function spawnGem(x, y, value = GEM_VALUE) {
   const b = state.battle;
@@ -32,31 +34,49 @@ export function tickGems(dt) {
   const pickupR = GEM_PICKUP_RADIUS * pickupMul;
   const r2 = pickupR * pickupR;
 
-  let pickedAny = false;
+  // SPEC-102: 範囲に入った CE は吸い込み中にして、 ヒーローに届いた瞬間に経験値を入れる。
+  // 動きを減らす設定のときは、 いままでどおりその場で拾う (= 棒磁石は一直線に飛んでくる)
+  const instant = prefersReducedMotion();
+  let picked = 0;
   for (let i = b.gems.length - 1; i >= 0; i--) {
     const g  = b.gems[i];
-    // SPEC-053: 棒磁石を拾ったあとの CE はプレイヤーへ飛んでくる
-    if (g.magnet) {
-      const mx = px - g.x, my = py - g.y;
-      const md = Math.hypot(mx, my) || 1;
-      const step = Math.min(md, MAGNET_SPEED_PX_S * dt);
-      g.x += (mx / md) * step;
-      g.y += (my / md) * step;
+    let arrived = false;
+    if (instant) {
+      // SPEC-053: 棒磁石を拾ったあとの CE はプレイヤーへ飛んでくる
+      if (g.magnet) {
+        const mx = px - g.x, my = py - g.y;
+        const md = Math.hypot(mx, my) || 1;
+        const step = Math.min(md, MAGNET_SPEED_PX_S * dt);
+        g.x += (mx / md) * step;
+        g.y += (my / md) * step;
+      }
+      const dx = g.x - px;
+      const dy = g.y - py;
+      arrived = dx * dx + dy * dy <= r2;
+    } else {
+      if (!g.absorbing) {
+        const dx = g.x - px;
+        const dy = g.y - py;
+        // SPEC-053: 棒磁石は画面のすべての CE を一度に吸い込み中にするだけ
+        if (g.magnet || dx * dx + dy * dy <= r2) startAbsorb(g);
+      }
+      if (g.absorbing) arrived = absorbStep(g, px, py, dt);
     }
-    const dx = g.x - px;
-    const dy = g.y - py;
-    if (dx * dx + dy * dy <= r2) {
+    if (arrived) {
       // SPEC-090c: 学びの速さ (= 端数は貯めて、 整数になったぶんだけ足す)
       b.xpAcc = (b.xpAcc ?? 0) + g.value * xpGainMul();
       const whole = Math.floor(b.xpAcc + 1e-9);
       b.xpAcc -= whole;
       state.xp += whole;
       b.gems.splice(i, 1);
-      pickedAny = true;
+      picked += 1;
     }
   }
   // SPEC-017: 経験値獲得 SE (= 80ms throttle で連発時の連鎖もリズミカルに 1 音ずつ)
-  if (pickedAny) playSe(SFX.GEM_PICKUP, 80, 0.4);
+  // SPEC-102: 続けて届くほど少しずつ高く鳴らす (= じゃらじゃら)
+  b.gemChain ??= { n: 0, ms: 0 };
+  const pitch = chainPitch(b.gemChain, dt * 1000, picked);
+  if (picked > 0) playSe(SFX.GEM_PICKUP, 80, 0.4, pitch);
 
   // level up loop (= 1 frame で複数 LV 上がる可能性あり、 まとめて pick を queue)
   let levelUps = 0;

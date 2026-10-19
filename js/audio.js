@@ -160,8 +160,9 @@ export function setSeMuted(on) {
  * @param {string} relPath - "Audio/se_click.mp3" 等
  * @param {number} throttleMs - 連発防止 (default 80ms)
  * @param {number} volume - 0.0 〜 1.0 (= 設定 100% のときの音量)
+ * @param {number} rate - 再生の速さ (= 音の高さ。 1 がそのまま)
  */
-export function playSe(relPath, throttleMs = 80, volume = 0.5) {
+export function playSe(relPath, throttleMs = 80, volume = 0.5, rate = 1) {
   if (_seMuted) return;
   const vol = mixVolume(volume, getSettings().se);
   if (vol <= 0) return;
@@ -178,6 +179,8 @@ export function playSe(relPath, throttleMs = 80, volume = 0.5) {
     }
     const a = base.cloneNode();
     a.volume = vol;
+    // SPEC-102: 音の高さを変えるとき (= CE が続けて届く「じゃらじゃら」)
+    if (rate !== 1) { a.preservesPitch = false; a.playbackRate = rate; }
     a.play().catch(() => {});
   } catch (_) {}
 }
