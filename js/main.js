@@ -35,6 +35,7 @@ import {
   getUnlockedHeroes, isHeroUnlocked, unlockOf, nextUnlock, onHeroesUnlocked, GAME_TITLES,
 } from "./hero-unlock.js";   // SPEC-098
 import { radarTable, radarSvg, radarAriaLabel, RADAR_AXES } from "./hero-radar.js";   // SPEC-099
+import { SIGNATURE_OF } from "./battle/signature.js";   // SPEC-100
 import { loadEnemies } from "./enemies.js";
 import { tickStatsDecay, renderHud } from "./survival.js";
 import { startBattle } from "./battle/index.js";
@@ -471,6 +472,14 @@ function renderHeroDetail(heroId) {
   if (spdEl) spdEl.textContent = tpl(t("hero.detail.speed", "Speed {n}"), { n: String(speed) });
 
   renderHeroRadar(hero);   // SPEC-099
+  // SPEC-100: 固有スキル
+  const sigKind = SIGNATURE_OF[hero.heroId];
+  const sigBox = $("#heroDetailSig");
+  if (sigBox) {
+    sigBox.classList.toggle("hidden", !sigKind);
+    $("#heroDetailSigName").textContent = `${t("hero.sig.label", "Signature")}：${hero.passive?.[lang] ?? hero.passive?.ja ?? ""}`;
+    $("#heroDetailSigDesc").textContent = sigKind ? t(`hero.sig.${sigKind}`, "") : "";
+  }
 
   // 担当 starter weapon
   const wId = HERO_STARTING_WEAPON[hero.heroId] ?? HERO_STARTING_WEAPON_DEFAULT;

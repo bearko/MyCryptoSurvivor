@@ -34,7 +34,7 @@ import {
   tickOrbits, tickBeams, tickBombs, tickHomingProjectiles,
   tickShockwaves,
 } from "./archetypes.js";
-import { tickDamageNumbers } from "./damage.js";
+import { tickDamageNumbers, hitEnemy } from "./damage.js";
 import { tickBossAttack } from "./boss-attack.js";
 import { tickEnemyShots } from "./enemy-shots.js";
 import { resetGimmicks, tickGimmicks } from "./gimmicks.js";
@@ -48,6 +48,7 @@ import { BGM_BATTLE, STAGE_TABLE, WATCH_SPEED } from "../constants.js";
 import { t, tpl } from "../i18n.js";
 import { heroImg } from "../heroes.js";
 import { heroMaxHp, heroSpeed, heroDmgMul, heroCdMul } from "../hero-stats.js";   // SPEC-097
+import { resetSignature, tickSignature } from "./signature.js";   // SPEC-100
 import { naviSay, naviLines } from "../navi.js";
 import { clearNaviTipQueue } from "../navi-tips.js";
 
@@ -166,6 +167,7 @@ export function startBattle(hero) {
   // SPEC-097: PHY は武器のダメージに、 INT は武器の間隔に効く (= weapons.js が掛ける)
   b.heroDmgMul       = heroDmgMul(hero);
   b.heroCdMul        = heroCdMul(hero);
+  resetSignature(hero);   // SPEC-100: 固有スキル
   state.xp           = XP_INITIAL;
   state.xpToNext     = XP_TO_NEXT_INITIAL;
   state.level        = LEVEL_INITIAL;
@@ -285,6 +287,7 @@ function _step(dt, now) {
   tickOrbits(dt, now);           // SPEC-012: Book / Blade の周回 + 衝突
   tickBeams(dt, now);            // SPEC-012/031: LaserGun の持続レーザー (= 250ms 累積 dispatch)
   tickBombs(dt);                 // SPEC-012: Pierrot の遅延爆発
+  tickSignature(dt, hitEnemy);   // SPEC-100: 固有スキル (= 毒霧・テスラコイル)
   tickShockwaves(dt);            // SPEC-015: Moai 着弾の AoE 衝撃波
   tickBossAttack(dt, now);       // SPEC-030: ボス攻撃 (= ファオ放射 / yamap 周回) + 衝突
   tickEnemyShots(dt);            // SPEC-062: 撃ってくる敵の弾

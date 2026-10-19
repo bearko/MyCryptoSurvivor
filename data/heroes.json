@@ -8,7 +8,8 @@
       "rarity":     "MCH",
       "faction":    "SUZAKU",
       "attributes": [],
-      "stats":      { "hp": 162, "phy": 63, "int": 42, "agi": 53 }
+      "stats":      { "hp": 162, "phy": 63, "int": 42, "agi": 53 },
+      "passive":    { "ja": "クリプトスラッシュ", "en": "Crypto Slash" }
     },
     {
       "heroId": 4006,
@@ -16,7 +17,8 @@
       "rarity":     "Epic",
       "faction":    "KOURYU",
       "attributes": ["Firearms", "Duel", "Western"],
-      "stats":      { "hp": 354, "phy": 78, "int": 119, "agi": 133 }
+      "stats":      { "hp": 354, "phy": 78, "int": 119, "agi": 133 },
+      "passive":    { "ja": "ワンホールショット", "en": "Bull's eye" }
     },
     {
       "heroId": 2043,
@@ -24,7 +26,8 @@
       "rarity":     "Uncommon",
       "faction":    "BYAKKO",
       "attributes": ["Covert", "Japan"],
-      "stats":      { "hp": 207, "phy": 115, "int": 65, "agi": 91 }
+      "stats":      { "hp": 207, "phy": 115, "int": 65, "agi": 91 },
+      "passive":    { "ja": "忍術・毒霧", "en": "Ninjutsu-Dokugiri" }
     },
     {
       "heroId": 2016,
@@ -32,7 +35,8 @@
       "rarity":     "Uncommon",
       "faction":    "SEIRYU",
       "attributes": ["Politics", "Female", "Occult", "Russia"],
-      "stats":      { "hp": 150, "phy": 31, "int": 111, "agi": 148 }
+      "stats":      { "hp": 150, "phy": 31, "int": 111, "agi": 148 },
+      "passive":    { "ja": "幻の生存者", "en": "Phantom Survivor" }
     },
     {
       "heroId": 2003,
@@ -40,7 +44,8 @@
       "rarity":     "Uncommon",
       "faction":    "KOURYU",
       "attributes": ["Covert", "Occult", "England"],
-      "stats":      { "hp": 234, "phy": 108, "int": 25, "agi": 123 }
+      "stats":      { "hp": 234, "phy": 108, "int": 25, "agi": 123 },
+      "passive":    { "ja": "ランゲルライン", "en": "Langer's Line" }
     },
     {
       "heroId": 4041,
@@ -48,7 +53,8 @@
       "rarity":     "Epic",
       "faction":    "KOURYU",
       "attributes": ["Hard Science", "Poland", "Machine"],
-      "stats":      { "hp": 327, "phy": 130, "int": 62, "agi": 147 }
+      "stats":      { "hp": 327, "phy": 130, "int": 62, "agi": 147 },
+      "passive":    { "ja": "テスラコイル", "en": "Tesla coil" }
     },
     {
       "heroId": 1006,
@@ -56,7 +62,8 @@
       "rarity":     "Common",
       "faction":    "SEIRYU",
       "attributes": ["Soft Science", "Hard Science", "Greece"],
-      "stats":      { "hp": 216, "phy": 84, "int": 84, "agi": 56 }
+      "stats":      { "hp": 216, "phy": 84, "int": 84, "agi": 56 },
+      "passive":    { "ja": "テトラクテュス", "en": "Tetractys" }
     },
     {
       "heroId": 1007,
@@ -64,7 +71,8 @@
       "rarity":     "Common",
       "faction":    "BYAKKO",
       "attributes": ["Hard Science", "Female"],
-      "stats":      { "hp": 261, "phy": 40, "int": 115, "agi": 54 }
+      "stats":      { "hp": 261, "phy": 40, "int": 115, "agi": 54 },
+      "passive":    { "ja": "李氏朝鮮、宮廷医女", "en": "Joseon dynasty's Uinyeo" }
     },
     {
       "heroId": 2013,
@@ -72,7 +80,8 @@
       "rarity":     "Uncommon",
       "faction":    "BYAKKO",
       "attributes": ["Romance of the Three Kingdoms", "Wei", "Axe"],
-      "stats":      { "hp": 285, "phy": 131, "int": 51, "agi": 63 }
+      "stats":      { "hp": 285, "phy": 131, "int": 51, "agi": 63 },
+      "passive":    { "ja": "虎痴", "en": "Sense of Tiger" }
     },
     {
       "heroId": 4052,
@@ -80,7 +89,8 @@
       "rarity":     "Epic",
       "faction":    "KOURYU",
       "attributes": ["Sea", "Firearms", "Journey", "England"],
-      "stats":      { "hp": 270, "phy": 81, "int": 78, "agi": 199 }
+      "stats":      { "hp": 270, "phy": 81, "int": 78, "agi": 199 },
+      "passive":    { "ja": "女王直属海賊", "en": "Pirates under the Queen" }
     }
   ]
 }

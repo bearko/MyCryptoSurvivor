@@ -13,6 +13,7 @@ import { playSe } from "../audio.js";
 import { xpGainMul } from "../perks.js";   // SPEC-090c
 import { prefersReducedMotion } from "../motion.js";
 import { startAbsorb, absorbStep, chainPitch } from "./absorb.js";   // SPEC-102
+import { sigPickupMul, sigOnGemsPicked } from "./signature.js";   // SPEC-100
 
 export function spawnGem(x, y, value = GEM_VALUE) {
   const b = state.battle;
@@ -31,7 +32,7 @@ export function tickGems(dt) {
   const py = b.player.y;
   // SPEC-019: ギョク (pickupMul) で吸引半径拡大
   const pickupMul = state.buffs?.pickupMul ?? 1;
-  const pickupR = GEM_PICKUP_RADIUS * pickupMul;
+  const pickupR = GEM_PICKUP_RADIUS * pickupMul * sigPickupMul();   // SPEC-100: 女王直属海賊
   const r2 = pickupR * pickupR;
 
   // SPEC-102: 範囲に入った CE は吸い込み中にして、 ヒーローに届いた瞬間に経験値を入れる。
@@ -77,6 +78,7 @@ export function tickGems(dt) {
   b.gemChain ??= { n: 0, ms: 0 };
   const pitch = chainPitch(b.gemChain, dt * 1000, picked);
   if (picked > 0) playSe(SFX.GEM_PICKUP, 80, 0.4, pitch);
+  sigOnGemsPicked(picked);   // SPEC-100
 
   // level up loop (= 1 frame で複数 LV 上がる可能性あり、 まとめて pick を queue)
   let levelUps = 0;
