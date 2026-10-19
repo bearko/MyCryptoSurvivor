@@ -1,5 +1,6 @@
 // マインちゃんのボイス (= SPEC-085) を WAV から MP3 にし、 js/voice-lines.js (= セリフ → ファイルと長さ) を書く
-//   node tools/voice/build.mjs <WAV のフォルダ>
+//   node tools/voice/build.mjs <WAV のフォルダ>            … 台本の全部 (= ORDER)
+//   node tools/voice/build.mjs <WAV のフォルダ> --added    … 追加の録音 (= 「…_added.wav」。 ADDED) だけ変換して、 いまの一覧に足す
 //   WAV は「番号-セリフ-….wav」 (= 番号は 00 がタイトルコール、 01 から ORDER の並び。 作者の台本の CSV と同じ)。
 //   ffmpeg / ffprobe が要る (= このツールだけ。 ゲームは MP3 を読むだけ)
 import { execFileSync } from "node:child_process";
@@ -20,15 +21,24 @@ export const ORDER = [
   "tip.item.bossChest",
 ];
 
+/**
+ * SPEC-097: 追加の録音 (= 2026-10-19。 作者の台本の「…_added」。 番号は 0 から)。 ヒーローの顔ぶれを変えたぶん。
+ * 許褚 (= hero.2013) は武器が変わったので録り直し (= ORDER の場所はそのまま、 ファイルを差し替える)
+ */
+export const ADDED = [
+  "hero.10001", "hero.4006", "hero.2043", "hero.2016", "hero.2003", "hero.4041", "hero.1007", "hero.2013", "hero.4052",
+];
+
 const OUT_DIR = "assets/voice/mine";
 const src = process.argv[2];
-if (!src) { console.error("usage: node tools/voice/build.mjs <wav dir>"); process.exit(1); }
+const added = process.argv.includes("--added");   // 追加の録音だけ変換し、 いまの一覧に足す
+if (!src) { console.error("usage: node tools/voice/build.mjs <wav dir> [--added]"); process.exit(1); }
 mkdirSync(OUT_DIR, { recursive: true });
-const wavs = readdirSync(src).filter((f) => /^\d+-.*\.wav$/i.test(f));
-const lines = {};
+const wavs = readdirSync(src).filter((f) => /^\d+-.*\.wav$/i.test(f) && /_added\.wav$/i.test(f) === added);
+const lines = added ? { ...(await import("../../js/voice-lines.js")).VOICE_LINES } : {};
 for (const f of wavs) {
   const n = Number(f.split("-")[0]);
-  const id = ORDER[n];
+  const id = (added ? ADDED : ORDER)[n];
   if (!id) throw new Error(`番号 ${n} のボイスの名前がない: ${f}`);
   const out = join(OUT_DIR, `${id}.mp3`);
   // モノラル・44.1kHz・64kbps (= 声だけなので十分。 1 本 20〜40KB)
@@ -36,9 +46,10 @@ for (const f of wavs) {
   const sec = Number(execFileSync("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", out]).toString().trim());
   lines[id] = { file: out, ms: Math.round(sec * 1000) };
 }
-const missing = ORDER.filter((id) => !lines[id]);
+const ALL = [...ORDER, ...ADDED.filter((id) => !ORDER.includes(id))];
+const missing = (added ? ADDED : ORDER).filter((id) => !lines[id]);
 if (missing.length) throw new Error(`WAV がない: ${missing.join(", ")}`);
-const body = ORDER.map((id) => `  "${id}": ${JSON.stringify(lines[id])},`).join("\n");
+const body = ALL.filter((id) => lines[id]).map((id) => `  "${id}": ${JSON.stringify(lines[id])},`).join("\n");
 writeFileSync("js/voice-lines.js", `// ============================================================
 // voice-lines.js — マインちゃんのボイスの一覧 (= SPEC-085)。 tools/voice/build.mjs が書く (= 手で直さない)
 // ============================================================
@@ -48,4 +59,4 @@ export const VOICE_LINES = {
 ${body}
 };
 `);
-console.log(`${ORDER.length} 本を ${OUT_DIR} に書いた`);
+console.log(`${wavs.length} 本を ${OUT_DIR} に書いた`);

@@ -23,7 +23,7 @@ const heroesRaw = JSON.parse(readFileSync(new URL("../data/heroes.json", import.
 const heroes = Array.isArray(heroesRaw) ? heroesRaw : (heroesRaw.heroes ?? Object.values(heroesRaw));
 
 test("ボイスのファイルがすべてある (= MP3。 長さも分かっている)", () => {
-  assert.equal(Object.keys(VOICE_LINES).length, 35);
+  assert.equal(Object.keys(VOICE_LINES).length, 43);   // 台本 35 本 ＋ 追加の録音 8 本 (= 許褚は差し替え。 SPEC-097)
   for (const [id, v] of Object.entries(VOICE_LINES)) {
     assert.match(v.file, /^assets\/voice\/mine\/[\w.]+\.mp3$/, id);
     assert.ok(existsSync(new URL(`../${v.file}`, import.meta.url)), v.file);
@@ -57,11 +57,13 @@ test("ヒーローを選んだときは、 ヒーローごとの紹介 (= ボイ
   assert.equal(l.key, "navi.hero.pick.1006");
   assert.equal(l.voice, "hero.1006");
   assert.equal(ui[l.key].ja, "ピタゴラス！ 「ノービスブック」が周囲を守るよ！");
-  // SPEC-097: ボイスをまだ録っていない (= 武器が変わった) ヒーローは、 ヒーローごとの文だけ
-  const xu = naviLines("heroPick", { heroId: 2013, heroName: "x", weaponName: "y" })[0];
-  assert.equal(xu.key, "navi.hero.pick.2013");
-  assert.equal(xu.voice, undefined);
-  assert.match(ui[xu.key].ja, /マレット/);
+  // SPEC-097: 新しい 10 人はみなボイスつき (= 許褚は武器が変わって録り直した)
+  for (const h of heroes) {
+    const line = naviLines("heroPick", { heroId: h.heroId, heroName: "x", weaponName: "y" })[0];
+    assert.equal(line.key, `navi.hero.pick.${h.heroId}`);
+    assert.equal(line.voice, `hero.${h.heroId}`, h.name.ja);
+  }
+  assert.match(ui["navi.hero.pick.2013"].ja, /マレット/);
   const other = naviLines("heroPick", { heroId: 9999, heroName: "x", weaponName: "y" })[0];
   assert.equal(other.key, "navi.hero.pick");
   assert.deepEqual(other.vars, { name: "x", weapon: "y" });
