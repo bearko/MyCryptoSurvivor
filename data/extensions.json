@@ -92,7 +92,31 @@
         3029,
         4029,
         5029
-      ]
+      ],
+      "ll": {
+        "extId": 5529,
+        "name": {
+          "ja": "モデル２",
+          "en": "Model-2"
+        },
+        "skillName": {
+          "ja": "せんたくいたし申候",
+          "en": "I want to purify"
+        },
+        "desc": {
+          "ja": "全方位へ同時に撃ち、 弾が敵を貫き続ける",
+          "en": "Fires in every direction at once; bullets pierce through everything"
+        },
+        "params": {
+          "bullets": 16,
+          "dmg": 150,
+          "cdMs": 500,
+          "range": 400,
+          "speedPx": 360,
+          "spreadDeg": 360,
+          "pierce": 99
+        }
+      }
     },
     {
       "extId": 2,
@@ -183,7 +207,30 @@
         3008,
         4008,
         5008
-      ]
+      ],
+      "ll": {
+        "extId": 5508,
+        "name": {
+          "ja": "レスター手稿",
+          "en": "Codex Leicester"
+        },
+        "skillName": {
+          "ja": "空はなぜ青いのか",
+          "en": "Why the Sky is Blue"
+        },
+        "desc": {
+          "ja": "回る本が 2 倍に増え、 輪が大きくなる",
+          "en": "Twice the orbiting books in a much wider ring"
+        },
+        "params": {
+          "bullets": 10,
+          "dmg": 110,
+          "cdMs": 600,
+          "range": 0,
+          "speedPx": 0,
+          "orbitR": 130
+        }
+      }
     },
     {
       "extId": 3,
@@ -279,7 +326,31 @@
         3080,
         4080,
         5080
-      ]
+      ],
+      "ll": {
+        "extId": 5580,
+        "name": {
+          "ja": "真・自由のホーキ",
+          "en": "Shin Broomstick of Freedom"
+        },
+        "skillName": {
+          "ja": "真・アンリーシュ",
+          "en": "Shin Unleash"
+        },
+        "desc": {
+          "ja": "巨大なホーキが 2 倍に増え、 敵を貫き続ける",
+          "en": "Twice the giant brooms, sweeping through everything"
+        },
+        "params": {
+          "bullets": 6,
+          "dmg": 300,
+          "cdMs": 1400,
+          "range": 680,
+          "speedPx": 200,
+          "size": 48,
+          "pierce": 99
+        }
+      }
     },
     {
       "extId": 4,
@@ -380,7 +451,32 @@
         3113,
         4113,
         5113
-      ]
+      ],
+      "ll": {
+        "extId": 5613,
+        "name": {
+          "ja": "真・ジュエルパロット",
+          "en": "Shin Jewel Parrot"
+        },
+        "skillName": {
+          "ja": "真・宝石の囀り",
+          "en": "Shin Jewel warble"
+        },
+        "desc": {
+          "ja": "オウムの群れが 3 倍で舞い降り、 着地の範囲も広い",
+          "en": "Three times the parrots dive down, with wider landings"
+        },
+        "params": {
+          "bullets": 15,
+          "dmg": 120,
+          "cdMs": 700,
+          "range": 600,
+          "speedPx": 440,
+          "fallH": 220,
+          "aoeR": 140,
+          "aoeDmgRatio": 0.8
+        }
+      }
     },
     {
       "extId": 5,
@@ -476,7 +572,32 @@
         3124,
         4124,
         5124
-      ]
+      ],
+      "ll": {
+        "extId": 5624,
+        "name": {
+          "ja": "真・赤目四十八滝",
+          "en": "Shin Akame 48 Waterfalls"
+        },
+        "skillName": {
+          "ja": "真・ワレヲシルヘシ",
+          "en": "Shin Know thyself"
+        },
+        "desc": {
+          "ja": "手裏剣が分身して 2 倍、 敵を貫き続ける",
+          "en": "Shuriken split into twice as many and pierce through everything"
+        },
+        "params": {
+          "bullets": 6,
+          "dirs": 8,
+          "dmg": 80,
+          "cdMs": 600,
+          "range": 440,
+          "speedPx": 460,
+          "stackGap": 22,
+          "pierce": 99
+        }
+      }
     },
     {
       "extId": 6,
@@ -577,7 +698,32 @@
         3130,
         4130,
         5130
-      ]
+      ],
+      "ll": {
+        "extId": 5630,
+        "name": {
+          "ja": "真・メギド",
+          "en": "Shin Megiddo"
+        },
+        "skillName": {
+          "ja": "神炎",
+          "en": "The God of Flame"
+        },
+        "desc": {
+          "ja": "光線が画面を横切る太さ・長さに",
+          "en": "Beams wide and long enough to cross the screen"
+        },
+        "params": {
+          "bullets": 8,
+          "dmg": 180,
+          "cdMs": 1200,
+          "range": 700,
+          "speedPx": 0,
+          "durMs": 1600,
+          "len": 1400,
+          "thick": 40
+        }
+      }
     },
     {
       "extId": 7,
@@ -663,7 +809,30 @@
         3048,
         4048,
         5048
-      ]
+      ],
+      "ll": {
+        "extId": 5548,
+        "name": {
+          "ja": "真・アゾット",
+          "en": "Shin Azoth"
+        },
+        "skillName": {
+          "ja": "パラケルススの使役せし悪魔",
+          "en": "Paracelsus employ Devil"
+        },
+        "desc": {
+          "ja": "ナイフが 2 倍に増え、 敵を貫き続ける",
+          "en": "Twice the knives, piercing through everything"
+        },
+        "params": {
+          "bullets": 24,
+          "dmg": 170,
+          "cdMs": 500,
+          "range": 400,
+          "speedPx": 440,
+          "pierce": 99
+        }
+      }
     },
     {
       "extId": 8,
@@ -749,7 +918,34 @@
         3073,
         4073,
         5073
-      ]
+      ],
+      "ll": {
+        "extId": 5573,
+        "name": {
+          "ja": "真・ミョルニル",
+          "en": "Shin Mjolnir"
+        },
+        "skillName": {
+          "ja": "雷霆万鈞",
+          "en": "Rai-Tei-Ban-Kin"
+        },
+        "desc": {
+          "ja": "槌が 2 倍に増え、 1.5 秒ごとに雷が 5 体へ落ちる",
+          "en": "Twice the mallets; every 1.5s lightning strikes 5 enemies"
+        },
+        "params": {
+          "bullets": 16,
+          "dmg": 170,
+          "cdMs": 600,
+          "range": 440,
+          "speedPx": 400,
+          "pierce": 3,
+          "thunderEveryMs": 1500,
+          "thunderCount": 5,
+          "thunderDmg": 200,
+          "thunderR": 700
+        }
+      }
     },
     {
       "extId": 9,
@@ -845,7 +1041,32 @@
         3126,
         4126,
         5126
-      ]
+      ],
+      "ll": {
+        "extId": 5626,
+        "name": {
+          "ja": "真・絶対零度ゴールデンスノーマン",
+          "en": "Shin Golden Snowman - the Absolute Zero"
+        },
+        "skillName": {
+          "ja": "真・黄金氷河期",
+          "en": "Shin Golden glacial age"
+        },
+        "desc": {
+          "ja": "爆ぜた場所の敵が凍って止まる。 爆発も 2 倍の広さ",
+          "en": "Enemies caught in the burst freeze in place; twice the blast radius"
+        },
+        "params": {
+          "bullets": 8,
+          "dmg": 190,
+          "cdMs": 900,
+          "range": 0,
+          "speedPx": 0,
+          "fuseMs": 1000,
+          "radius": 160,
+          "freezeMs": 2500
+        }
+      }
     },
     {
       "extId": 10,
@@ -936,7 +1157,33 @@
         3001,
         4001,
         5001
-      ]
+      ],
+      "ll": {
+        "extId": 5501,
+        "name": {
+          "ja": "真・MCHブレード",
+          "en": "Shin MCH Blade"
+        },
+        "skillName": {
+          "ja": "天の一撃",
+          "en": "God's Strike"
+        },
+        "desc": {
+          "ja": "回る刃が 2 倍の数・2 倍の大きさ。 6 秒ごとに周り一帯へ天の一撃",
+          "en": "Twice the blades, twice the size. Every 6s, a strike from the heavens around you"
+        },
+        "params": {
+          "bullets": 12,
+          "dmg": 150,
+          "cdMs": 600,
+          "range": 0,
+          "speedPx": 0,
+          "orbitR": 80,
+          "novaEveryMs": 6000,
+          "novaDmg": 300,
+          "novaR": 700
+        }
+      }
     },
     {
       "extId": 11,

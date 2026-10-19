@@ -48,6 +48,8 @@
   "hero.sig.queenPirate":    { "ja": "CE を拾うと少しのあいだ速くなり、拾える範囲も広がる", "en": "Picking up CE briefly boosts speed and pickup range" },
   "hero.sig.phantom":        { "ja": "倒れる一撃を 1 ステージに 1 度だけ耐え、数秒消える", "en": "Once per stage, survive a fatal hit and vanish for a few seconds" },
   "hero.sig.uinyeo":         { "ja": "HP が少しずつ戻り、回復アイテムの効きが 2 倍", "en": "HP slowly recovers; heal items work twice as well" },
+  "levelup.rankUpLL":        { "ja": "LL ランクアップ",            "en": "LL RANK UP" },
+  "hero.detail.ll":          { "ja": "Lv.5 のあと LL：{name}",     "en": "After Lv.5, LL: {name}" },
   "levelup.tetractys":       { "ja": "テトラクテュス：このピックは 2 段上がる", "en": "Tetractys: this pick rises 2 levels" },
   "hero.select.count":       { "ja": "解放 {n} / {total}",          "en": "Unlocked {n} / {total}" },
   "hero.lock.label":         { "ja": "ロック中",                   "en": "Locked" },

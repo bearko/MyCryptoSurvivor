@@ -49,6 +49,7 @@ import { t, tpl } from "../i18n.js";
 import { heroImg } from "../heroes.js";
 import { heroMaxHp, heroSpeed, heroDmgMul, heroCdMul } from "../hero-stats.js";   // SPEC-097
 import { resetSignature, tickSignature } from "./signature.js";   // SPEC-100
+import { tickLLExtras } from "./ll.js";   // SPEC-101
 import { naviSay, naviLines } from "../navi.js";
 import { clearNaviTipQueue } from "../navi-tips.js";
 
@@ -176,6 +177,8 @@ export function startBattle(hero) {
   // SPEC-013: ヒーローに固定の starter weapon を Lv.1 で装備 (= starter pick モーダルは廃止)
   const starterId  = HERO_STARTING_WEAPON[hero?.heroId] ?? HERO_STARTING_WEAPON_DEFAULT;
   const starterExt = getExt(starterId);
+  b.starterExtId   = starterId;   // SPEC-101: この武器だけ LL まで上がる
+  b.llFx           = [];
   if (starterExt && getCategory(starterExt) === "weapon") {
     state.ownedExtensions.push({ extId: starterId, level: 1 });
     rebuildWeaponsFromOwned();
@@ -288,6 +291,7 @@ function _step(dt, now) {
   tickBeams(dt, now);            // SPEC-012/031: LaserGun の持続レーザー (= 250ms 累積 dispatch)
   tickBombs(dt);                 // SPEC-012: Pierrot の遅延爆発
   tickSignature(dt, hitEnemy);   // SPEC-100: 固有スキル (= 毒霧・テスラコイル)
+  tickLLExtras(dt, hitEnemy);    // SPEC-101: 真・MCHブレードの一撃・真・ミョルニルの雷
   tickShockwaves(dt);            // SPEC-015: Moai 着弾の AoE 衝撃波
   tickBossAttack(dt, now);       // SPEC-030: ボス攻撃 (= ファオ放射 / yamap 周回) + 衝突
   tickEnemyShots(dt);            // SPEC-062: 撃ってくる敵の弾

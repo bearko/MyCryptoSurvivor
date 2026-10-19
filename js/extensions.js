@@ -7,7 +7,7 @@
 // archetype (radial/orbit/.../hpMaxUp 等) を持つ。 tier 名 / スキル名 / 効果説明テンプレを
 // 内蔵し、 武器も強化も同じ shape で扱う。
 
-import { img } from "./constants.js";
+import { img, LL_LEVEL } from "./constants.js";
 import { loadJson } from "./data-loader.js";
 
 export const EXT_ROSTER = [];
@@ -70,6 +70,7 @@ export function extImg(extOrId) {
  */
 export function extTierImg(ext, level) {
   if (!ext) return img(`Image/Extensions/0.png`);
+  if (isLLLevel(ext, level)) return img(`Image/Extensions/${ext.ll.extId}.png`);   // SPEC-101
   const idx = Math.max(0, Math.min((ext.tierIconIds?.length ?? 1) - 1, (level | 0) - 1));
   const id = ext.tierIconIds?.[idx] ?? ext.iconId;
   return img(`Image/Extensions/${id}.png`);
@@ -83,6 +84,7 @@ export function extTierImg(ext, level) {
  */
 export function getTierName(ext, level, lang) {
   if (!ext) return "";
+  if (isLLLevel(ext, level)) return ext.ll.name[lang] ?? ext.ll.name.ja ?? "";   // SPEC-101
   const idx = Math.max(0, Math.min((ext.tierNames?.length ?? 1) - 1, (level | 0) - 1));
   const t = ext.tierNames?.[idx];
   if (!t) return "";
@@ -95,11 +97,17 @@ export function getTierName(ext, level, lang) {
  */
 export function getSkillDesc(ext, level, lang) {
   if (!ext) return "";
+  if (isLLLevel(ext, level)) return ext.ll.desc[lang] ?? ext.ll.desc.ja ?? "";   // SPEC-101
   const tplObj = ext.skillDescTpl;
   const idx = Math.max(0, Math.min((ext.tierParams?.length ?? 1) - 1, (level | 0) - 1));
   const params = ext.tierParams?.[idx] ?? {};
   const tplStr = (tplObj && (tplObj[lang] ?? tplObj.ja ?? tplObj.en)) ?? "";
   return _fill(tplStr, params);
+}
+
+/** SPEC-101: その段が LL か (= 6 段目で、 その系列に LL 版がある) */
+export function isLLLevel(ext, level) {
+  return !!ext?.ll && (level | 0) >= LL_LEVEL;
 }
 
 /** SPEC-097: 系列の名前 (= 資産リポジトリの series.name。 無ければ 1 段目の名前) */
