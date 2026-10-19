@@ -14,6 +14,7 @@ import {
   WEEKS_PER_MONTH,
   MONTHS_PER_YEAR,
   HERO_STARTING_WEAPON, HERO_STARTING_WEAPON_DEFAULT,
+  FACTION_COLOR, FACTION_COLOR_DEFAULT,
 } from "./constants.js";
 import {
   getExt, extImg, extTierImg,
@@ -33,6 +34,7 @@ import { heroMaxHp, heroSpeed } from "./hero-stats.js";   // SPEC-097
 import {
   getUnlockedHeroes, isHeroUnlocked, unlockOf, nextUnlock, onHeroesUnlocked, GAME_TITLES,
 } from "./hero-unlock.js";   // SPEC-098
+import { radarTable, radarSvg, radarAriaLabel, RADAR_AXES } from "./hero-radar.js";   // SPEC-099
 import { loadEnemies } from "./enemies.js";
 import { tickStatsDecay, renderHud } from "./survival.js";
 import { startBattle } from "./battle/index.js";
@@ -468,6 +470,8 @@ function renderHeroDetail(heroId) {
   if (hpEl)  hpEl.textContent  = tpl(t("hero.detail.hp",    "HP {n}"),    { n: String(maxHp) });
   if (spdEl) spdEl.textContent = tpl(t("hero.detail.speed", "Speed {n}"), { n: String(speed) });
 
+  renderHeroRadar(hero);   // SPEC-099
+
   // 担当 starter weapon
   const wId = HERO_STARTING_WEAPON[hero.heroId] ?? HERO_STARTING_WEAPON_DEFAULT;
   const ext = getExt(wId);
@@ -490,6 +494,27 @@ function renderHeroDetail(heroId) {
     if (wSkill) wSkill.textContent = "";
     if (wDesc)  wDesc.textContent  = "";
   }
+}
+
+// SPEC-099: レーダーチャート (= 段は 10 人の中での位置なので、 全員ぶんを 1 度だけ数える)
+let _radarTable = null;
+function renderHeroRadar(hero) {
+  const el = $("#heroRadar");
+  if (!el) return;
+  if (!_radarTable) {
+    _radarTable = radarTable(HERO_ROSTER, (id) => getExt(HERO_STARTING_WEAPON[id] ?? HERO_STARTING_WEAPON_DEFAULT));
+  }
+  const row = _radarTable.get(hero.heroId);
+  if (!row) { el.innerHTML = ""; return; }
+  const labels = Object.fromEntries(RADAR_AXES.map((a) => [a, t(`hero.radar.${a}`, a)]));
+  // いま使っているヒーロー (= 前に遊んだヒーロー) の形を薄く重ねて比べる
+  const usedId = state.ownedHero?.heroId;
+  const ghost = usedId != null && usedId !== hero.heroId ? _radarTable.get(usedId) : null;
+  el.innerHTML = radarSvg(row, { labels, color: FACTION_COLOR[hero.faction] ?? FACTION_COLOR_DEFAULT, ghost });
+  el.setAttribute("aria-label", tpl(t("hero.radar.aria", "{list}"), { list: radarAriaLabel(row, labels, getLang() === "ja" ? "、" : ", ") }));
+  el.classList.remove("hero-radar--in");
+  void el.offsetWidth;   // 選び直すたびに形が伸びる
+  el.classList.add("hero-radar--in");
 }
 
 function refreshHeroSelectCta() {

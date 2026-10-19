@@ -1,0 +1,2 @@
+- **ヒーローの選択画面にレーダーチャート** (`js/hero-radar.js` + `js/main.js` + `index.html` + `css/components.css` + `css/chars.css`): 体力・攻撃・連射・速さ・射程の 5 軸を、 10 人の中での位置（1〜5 の 5 段）で。 軸の横に生の値。 属性の色で塗り、 前の挑戦で使ったヒーローの形を点線で重ねる。 ロック中のヒーローも見られる。 戦闘と同じ式（`js/hero-stats.js`）から
+- **テスト** (`tests/hero-radar.test.mjs`): 5 段の計算・戦闘と同じ式・射程の取り方・SVG と読み上げの文
