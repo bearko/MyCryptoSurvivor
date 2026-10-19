@@ -497,6 +497,8 @@ function renderHeroDetail(heroId) {
     if (wName)  wName.textContent  = getTierName(ext, 1, lang);
     if (wSkill) wSkill.textContent = getSkillName(ext, lang);
     if (wDesc)  wDesc.textContent  = getSkillDesc(ext, 1, lang);
+    const wLL = $("#heroDetailWeaponLL");   // SPEC-101
+    if (wLL) wLL.textContent = ext.ll ? tpl(t("hero.detail.ll", "LL: {name}"), { name: ext.ll.name[lang] ?? ext.ll.name.ja }) : "";
   } else {
     if (wIcon)  wIcon.removeAttribute("src");
     if (wName)  wName.textContent  = "";

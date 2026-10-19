@@ -10,7 +10,7 @@
 
 import { state } from "../state.js";
 import { getExt, getCategory } from "../extensions.js";
-import { EXT_MAX_LEVEL, SERIES_COLOR_DEFAULT } from "../constants.js";
+import { EXT_MAX_LEVEL, LL_LEVEL, SERIES_COLOR_DEFAULT } from "../constants.js";
 
 /**
  * @param {number|string} extId
@@ -20,8 +20,11 @@ import { EXT_MAX_LEVEL, SERIES_COLOR_DEFAULT } from "../constants.js";
 export function weaponFromExt(extId, level) {
   const ext = getExt(extId);
   if (!ext || getCategory(ext) !== "weapon") return null;
-  const lv     = Math.max(1, Math.min(EXT_MAX_LEVEL, level | 0));
-  const params = ext.tierParams?.[lv - 1] ?? {};
+  // SPEC-101: LL (= 6 段目) はその系列に LL 版があるときだけ。 数値は ext.ll.params
+  const isLL   = !!ext.ll && (level | 0) >= LL_LEVEL;
+  const lv     = isLL ? LL_LEVEL : Math.max(1, Math.min(EXT_MAX_LEVEL, level | 0));
+  const params = isLL ? ext.ll.params : (ext.tierParams?.[lv - 1] ?? {});
+  const tierIcon = isLL ? ext.ll.extId : (ext.tierIconIds?.[lv - 1] ?? ext.iconId ?? null);
   const color  = ext.seriesColor ?? SERIES_COLOR_DEFAULT;
   return {
     extId,
@@ -35,12 +38,13 @@ export function weaponFromExt(extId, level) {
     pierce:     params.pierce  ?? 0,         // SPEC-031: Panjandrum 系列の貫通体数
     color,
     // SPEC-021: tier ごとの icon (= ext.tierIconIds[level-1])、 fallback で iconId
-    iconId:     ext.tierIconIds?.[lv - 1] ?? ext.iconId ?? null,
+    iconId:     tierIcon,
+    isLL,
     // SPEC-019: 投射体専用 icon を ext で明示できる (= null で circle fallback)
     // SPEC-021: tier 連動 (= projectileIconId 明示なら全 tier 共通、 未設定なら現 tier icon に追従)
     projectileIconId: (ext.projectileIconId !== undefined)
       ? ext.projectileIconId
-      : (ext.tierIconIds?.[lv - 1] ?? ext.iconId ?? null),
+      : tierIcon,
     series:     ext.series ?? null,           // SPEC-015: rotation offset 判定用
     lastFireMs: 0,
     // SPEC-012 が読む可能性のある archetype 別パラメータをそのまま渡す

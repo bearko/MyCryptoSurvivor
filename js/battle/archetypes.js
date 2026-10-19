@@ -110,12 +110,14 @@ export function fireRadial(w, dmgMul, bulletBonus) {
   const projIcon = (w.projectileIconId !== undefined) ? w.projectileIconId : w.iconId;
   const lvMul = _levelSizeMul(w);   // SPEC-028
   for (let i = 0; i < total; i++) {
-    const t = total <= 1 ? 0.5 : i / (total - 1);
+    // SPEC-101: 360 度 (= LL のモデル２) は、 最初と最後が重ならないよう等分
+    const t = total <= 1 ? 0.5 : (spreadDeg >= 360 ? i / total : i / (total - 1));
     const a = baseAngle - spreadRad / 2 + spreadRad * t;
     _spawnProjectile({
       x: px, y: py,
       vx: Math.cos(a) * speed, vy: Math.sin(a) * speed,
       dmg: w.dmg * dmgMul, color: w.color,
+        pierce: w.pierce ?? 0,   // SPEC-101: LL は貫き続ける
       iconId: projIcon, iconSize: 22 * lvMul,
       r: PROJECTILE_RADIUS * lvMul,
     });
@@ -221,6 +223,7 @@ export function fireStack(w, dmgMul, bulletBonus) {
         y: py - uy * stackGap * s,
         vx: ux * speed, vy: uy * speed,
         dmg: w.dmg * dmgMul, color: w.color,
+        pierce: w.pierce ?? 0,   // SPEC-101: LL は貫き続ける
         iconId: projIcon, iconSize: 22 * lvMul,
         r: PROJECTILE_RADIUS * lvMul,
       });
@@ -281,6 +284,7 @@ export function fireDiagonal(w, dmgMul, bulletBonus) {
       x: px, y: py,
       vx: Math.cos(a) * speed, vy: Math.sin(a) * speed,
       dmg: w.dmg * dmgMul, color: w.color,
+        pierce: w.pierce ?? 0,   // SPEC-101: LL は貫き続ける
       iconId: projIcon, iconSize: 24 * lvMul,
       iconRotOffset: Math.PI / 4,
       r: PROJECTILE_RADIUS * lvMul,
@@ -305,6 +309,7 @@ export function fireRandomRadial(w, dmgMul, bulletBonus) {
       x: px, y: py,
       vx: Math.cos(a) * speed, vy: Math.sin(a) * speed,
       dmg: w.dmg * dmgMul, color: w.color,
+        pierce: w.pierce ?? 0,   // SPEC-101: LL は貫き続ける
       iconId: projIcon, iconSize: 24 * lvMul,
       r: PROJECTILE_RADIUS * lvMul,
     });
@@ -335,6 +340,7 @@ export function firePlaceBomb(w, dmgMul, bulletBonus) {
       color: w.color,
       iconId: w.iconId,
       iconSize: 26 * lvMul,
+      freezeMs: w.params?.freezeMs ?? 0,   // SPEC-101: LL の雪だるまは凍らせる
     });
   }
 }
@@ -527,7 +533,9 @@ export function tickBombs(dt) {
       const e = enemies[j];
       const dx = e.x - b.x, dy = e.y - b.y;
       if (dx * dx + dy * dy > r2) continue;
-      hitEnemy(j, b.dmg);
+      const killed = hitEnemy(j, b.dmg);
+      // SPEC-101: 凍って止まる (= ボスは短く)。 hitEnemy が短い止まりを置くので、 そのあとで上書き
+      if (!killed && b.freezeMs > 0) e.hitFreezeMs = Math.max(e.hitFreezeMs ?? 0, e.isBoss ? b.freezeMs * 0.3 : b.freezeMs);
     }
     bombs.splice(i, 1);
   }

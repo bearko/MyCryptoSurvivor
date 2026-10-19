@@ -12,7 +12,7 @@ import {
   getTierName, getSkillName, getSkillDesc,
 } from "../extensions.js";
 import {
-  EXT_MAX_LEVEL, PICK_OPTIONS_COUNT,
+  EXT_MAX_LEVEL, LL_LEVEL, PICK_OPTIONS_COUNT,
   SERIES_COLOR_DEFAULT, FALLBACK_WEAPON,
   SFX,
   STOCK_LIMIT_WEAPON, STOCK_LIMIT_BUFF,
@@ -151,7 +151,22 @@ export function rankUpKind(opt, maxLevel = EXT_MAX_LEVEL) {
   return (opt.nextLevel >= maxLevel) ? "rankUpMax" : "rankUp";
 }
 
-function _samplePicks(n, exclude = new Set(), last = new Set()) {
+/**
+ * SPEC-101: LL ランクアップの札を出すか (= 純関数)。 ヒーローの初期武器が Lv.5 で、 その系列に LL 版があるとき
+ * @returns {object|null} 候補 (= 1 枚目に置く)
+ */
+export function llOption(owned, starterExtId, getExtFn, maxLevel = EXT_MAX_LEVEL) {
+  if (starterExtId == null) return null;
+  const o = (owned ?? []).find((x) => String(x.extId) === String(starterExtId));
+  const ext = getExtFn(starterExtId);
+  if (!o || !ext?.ll || o.level !== maxLevel) return null;
+  return { extId: starterExtId, ext, currentLevel: maxLevel, nextLevel: LL_LEVEL, isNew: false, isLL: true };
+}
+
+function _samplePicks(n, exclude = new Set(), last = new Set(), withLL = true) {
+  // SPEC-101: 初期武器が Lv.5 なら、 1 枚目は必ず LL ランクアップ (= 残りの枚数を配る)
+  const ll = withLL ? llOption(state.ownedExtensions, state.battle?.starterExtId, getExt) : null;
+  if (ll) return n <= 1 ? [ll] : [ll, ..._samplePicks(n - 1, new Set([...exclude, String(ll.extId)]), last, false)];
   const ownedById = new Map(state.ownedExtensions.map(o => [String(o.extId), o]));
 
   // SPEC-023: stock 上限到達後は新規系列を候補から除外 (= 既所持の lv up のみ)
@@ -228,7 +243,10 @@ export function applyPick(extId) {
   const owned = state.ownedExtensions.find(o => String(o.extId) === String(extId));
   // SPEC-100: テトラクテュス (= ピタゴラス) は 4 回目ごとのピックで 2 段上がる
   const steps = sigNextPickSteps();
-  const next  = Math.min(EXT_MAX_LEVEL, (owned?.level ?? 0) + steps);
+  // SPEC-101: Lv.5 の初期武器を選んだら LL (= Lv.5 の武器が候補に出るのは LL の札だけ)
+  const toLL  = !!llOption(state.ownedExtensions, state.battle?.starterExtId, getExt) && String(extId) === String(state.battle?.starterExtId);
+  // 段は下げない (= LL の武器がもう一度選ばれても Lv.5 に戻さない)
+  const next  = Math.max(owned?.level ?? 0, toLL ? LL_LEVEL : Math.min(EXT_MAX_LEVEL, (owned?.level ?? 0) + steps));
   if (owned) owned.level = next;
   else       state.ownedExtensions.push({ extId, level: next });
   sigOnPicked();
@@ -243,7 +261,21 @@ export function applyPick(extId) {
     rebuildWeaponsFromOwned();
     playSe(SFX.PICK_WEAPON, 100, 0.55);
   }
+  if (toLL) showLLReveal(ext);   // SPEC-101
   _close();
+}
+
+/** SPEC-101: LL の品の絵を大きく出す (= 0.8 秒。 遊びは止めない。 演出を減らす設定では出さない) */
+function showLLReveal(ext) {
+  if (prefersReducedMotion() || typeof document === "undefined") return;
+  const el = document.createElement("div");
+  el.className = "ll-reveal";
+  el.setAttribute("aria-hidden", "true");
+  el.innerHTML = `<img class="ll-reveal__icon" src="${extTierImg(ext, LL_LEVEL)}" alt="" /><div class="ll-reveal__name"></div>`;
+  el.querySelector(".ll-reveal__name").textContent = getTierName(ext, LL_LEVEL, getLang());
+  document.body.appendChild(el);
+  el.addEventListener("click", () => el.remove());
+  setTimeout(() => el.remove(), 1200);
 }
 
 // ============================================================
@@ -338,7 +370,8 @@ export function renderLevelUpModal() {
     card.setAttribute("data-series", opt.ext.series ?? "");
     card.setAttribute("data-category", opt.ext.category ?? "weapon");
     // SPEC-087: 持っているものの札は「ランクアップ」(= 金の縁と、 アイコンの上の金の帯)
-    const rankUp = rankUpKind(opt);
+    const rankUp = opt.isLL ? "ll" : rankUpKind(opt);   // SPEC-101
+    if (opt.isLL) card.classList.add("levelup-card--ll");
     if (rankUp) {
       card.classList.add("levelup-card--rankup");
       if (rankUp === "rankUpMax") card.classList.add("levelup-card--rankup-max");
@@ -346,13 +379,15 @@ export function renderLevelUpModal() {
 
     // SPEC-011: 「次に到達する tier」 の名前 / 効果を見せる (= ピック前のプレビュー)
     const tierName  = getTierName(opt.ext, opt.nextLevel, lang);
-    const skillName = getSkillName(opt.ext, lang);
+    const skillName = opt.isLL ? (opt.ext.ll.skillName[lang] ?? opt.ext.ll.skillName.ja) : getSkillName(opt.ext, lang);   // SPEC-101
     const skillDesc = getSkillDesc(opt.ext, opt.nextLevel, lang);
     const series    = opt.ext.series ?? "";
     const seriesColor = opt.ext.seriesColor ?? SERIES_COLOR_DEFAULT;
     const lvLabel = opt.isNew
       ? newLabel
-      : tpl(lvUpTpl, { cur: String(opt.currentLevel), next: String(opt.nextLevel) });
+      : (opt.isLL
+        ? tpl(lvUpTpl, { cur: String(opt.currentLevel), next: "LL" }).replace("Lv.LL", "LL")   // SPEC-101
+        : tpl(lvUpTpl, { cur: String(opt.currentLevel), next: String(opt.nextLevel) }));
 
     // SPEC-024: カード上端に 「武器エクステ / 強化エクステ」 のカテゴリ見出し
     const catEl = document.createElement("div");
@@ -378,9 +413,11 @@ export function renderLevelUpModal() {
     if (rankUp) {
       const badge = document.createElement("div");
       badge.className = "levelup-card__rankup";
-      badge.textContent = (rankUp === "rankUpMax")
-        ? t("levelup.rankUpMax", "ランクアップ MAX")
-        : t("levelup.rankUp", "ランクアップ");
+      badge.textContent = rankUp === "ll"
+        ? t("levelup.rankUpLL", "LL ランクアップ")   // SPEC-101
+        : (rankUp === "rankUpMax")
+          ? t("levelup.rankUpMax", "ランクアップ MAX")
+          : t("levelup.rankUp", "ランクアップ");
       iconWrap.appendChild(badge);
     }
 
@@ -476,7 +513,9 @@ function _renderOwned() {
       tile.className = "levelup-owned__tile";
       tile.style.setProperty("--series", ext?.seriesColor ?? SERIES_COLOR_DEFAULT);
       const tierName = getTierName(ext, it.level, lang);
-      const lvText = it.isMax
+      const lvText = it.level >= LL_LEVEL
+        ? "LL"   // SPEC-101
+        : it.isMax
         ? t("levelup.owned.max", "MAX")
         : tpl(t("levelup.owned.lv", "Lv.{n}"), { n: String(it.level) });
       tile.title = `${tierName} ${lvText}`;

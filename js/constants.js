@@ -95,6 +95,7 @@ export const XP_TO_NEXT_GROWTH = 1.2;   // SPEC-065: 1.3 → 1.2 (= Lv15 まで�
 // Extensions as weapons + Level-up pick (= SPEC-008)
 // ============================================================
 export const EXT_MAX_LEVEL          = 5;
+export const LL_LEVEL               = 6;   // SPEC-101: ヒーローの初期武器だけ、 Lv.5 のあとに LL がある
 export const PROJECTILE_LIFE_MS     = 1500;
 // SPEC-073: パンジャンドラムが転がる速さ (= 1 秒に約 1.6 回転。 進む左右の向きで回る向きが変わる)
 export const PANJANDRUM_SPIN_RAD_S = 10;
