@@ -12,6 +12,7 @@
 // ただし 「タイトルに戻る」 は state.battle.active を停止するので resumeTime は不要
 // (= タイトル画面では時間が止まっている設計)。
 
+import { resetResumeCountdown } from "./battle/resume-countdown.js";   // SPEC-104
 import { state, pauseTime, resumeTime } from "./state.js";
 import { stopBgm } from "./audio.js";
 import { startTitleBgm } from "./ui-sound.js";
@@ -94,6 +95,7 @@ function _onToTitle() {
   if (!state.run.scoreSent) reportRunScore(scoreMetrics({ run: state.run, cleared: false, regulation: state.regulation, absolute: state.absolute }));
   // pauseFlags は 0 に戻す (= titleScreen は 「停止状態」 として扱うが counter は綺麗にしておく)
   while (state.pauseFlags > 0) resumeTime();
+  resetResumeCountdown();   // SPEC-104: 数えている途中なら消す
   // run / battle 状態をリセット (= 次に hero pick したらフレッシュに始まる)
   state.currentStageIdx = 0;
   state.ownedHero       = null;

@@ -217,6 +217,11 @@
       </div>
       <!-- SPEC-061: 最後の 5 秒は真ん中に大きな数字 -->
       <div id="bossCountdown" class="boss-countdown num hidden" aria-hidden="true"></div>
+      <!-- SPEC-104: 中断する画面を閉じたら 3 秒数えてから再開 -->
+      <div id="resumeCountdown" class="resume-countdown hidden" role="status" aria-live="assertive">
+        <span class="resume-countdown__label" data-i18n="resume.label">再開まで</span>
+        <span class="resume-countdown__num num">3</span>
+      </div>
       <!-- SPEC-057: ボスが出た瞬間のカットイン (= 遊びは止めない) -->
       <div id="bossCutin" class="boss-cutin" aria-hidden="true">
         <div class="boss-cutin__band">

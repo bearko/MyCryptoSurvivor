@@ -7,6 +7,7 @@
 // startBattle は循環 import 回避のため動的 import。
 
 import { state, pauseTime, resumeTime } from "../state.js";
+import { resetResumeCountdown } from "./resume-countdown.js";   // SPEC-104
 import { t, tpl, onLangChange } from "../i18n.js";
 import {
   getPlayerName, setPlayerName, submitScore, getRankingApiUrl,
@@ -124,6 +125,7 @@ export async function returnToTitle({ navi = true } = {}) {
   }
   // pauseFlags を 0 にリセット (= タイトル画面では時間停止扱い)
   while (state.pauseFlags > 0) resumeTime();
+  resetResumeCountdown();   // SPEC-104: 数えている途中なら消す
   // 戦闘停止 (= BGM は上で タイトルの曲に替えた)
   const m = await import("./index.js");
   m.stopBattle?.();

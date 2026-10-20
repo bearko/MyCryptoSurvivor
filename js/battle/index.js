@@ -6,6 +6,7 @@
 // applyHeroPick から startBattle(hero) を呼ぶ。
 // RAF ループは pauseFlags を見て update を skip するが、 描画は続ける。
 
+import { tickResumeCountdown, resetResumeCountdown } from "./resume-countdown.js";   // SPEC-104
 import { state } from "../state.js";
 import {
   FACTION_COLOR, FACTION_COLOR_DEFAULT,
@@ -131,6 +132,7 @@ export function startBattle(hero) {
   b.contactCooldownMs  = 0;
   b.gameOver           = false;                 // SPEC-009: 多重 trigger 防止 flag
   b.stageElapsedMs     = 0;                     // SPEC-022: ステージ経過リセット
+  resetResumeCountdown({ release: true });     // SPEC-104: 新しいステージは数えずに始める
   b.bossSpawned        = false;                 // SPEC-022: ボス multi-spawn 防止
   b.bossDefeated       = false;                 // SPEC-022: ボス撃破フラグ
   b.fastForwardMs      = 0;                     // SPEC-054: 2 倍速はステージをまたがない
@@ -310,6 +312,7 @@ function _step(dt, now) {
 function _loop(now) {
   const dt = Math.min(0.05, (now - _lastMs) / 1000);  // タブ復帰時の暴走を防ぐ
   _lastMs = now;
+  tickResumeCountdown(now);   // SPEC-104: 中断する画面を閉じたら 3 秒数えてから再開
 
   // SPEC-054: 懐中時計の 2 倍速のあいだは 1 コマで 2 回進める (= 敵・自分・弾・ステージの時計すべて)。
   // 残り時間は実時間で減らす。 途中でレベルアップなどで止まったら、 そこで打ち切る

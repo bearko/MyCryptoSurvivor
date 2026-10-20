@@ -1,0 +1,1 @@
+- **再開の 3 秒カウントダウン** (`js/battle/resume-countdown.js` + `js/battle/index.js` + `index.html` + `css/battle-ui.css`): レベルアップ・メニュー・設定などを閉じたら「再開まで 3・2・1」を出し、数え終えてから動き出す（戦況が分からないまま倒されないように）
