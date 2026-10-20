@@ -2,7 +2,7 @@
 id: SPEC-127
 title: Gift Tickets Needed Scale With Rarity — Common/Uncommon 1, Rare 2, Epic 3, Legendary 5
 status: Done
-pr: TBD
+pr: 162
 phase: v1.6 Shop
 kind: Changed
 ---
