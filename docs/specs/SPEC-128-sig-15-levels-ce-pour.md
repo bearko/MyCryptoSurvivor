@@ -2,7 +2,7 @@
 id: SPEC-128
 title: Signature Skill Goes to Lv.15; Leftover CE Flows Into It at Stage End Instead of Carrying Over (Gift Tickets Still Carry)
 status: Done
-pr: TBD
+pr: 163
 phase: v1.6 Shop
 kind: Changed
 ---
