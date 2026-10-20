@@ -98,6 +98,7 @@ export function startBattle(hero) {
     state.run.totalKills = 0;
     state.run.totalElapsedMs = 0;
     state.run.scoreSent = false;
+    state.run.missionGum = 0;   // SPEC-131
   }
 
   const b = state.battle;

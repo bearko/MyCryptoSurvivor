@@ -165,6 +165,7 @@
   "mission.reward.healDetail": { "ja": "最大 HP の {n}% 回復", "en": "Restore {n}% of max HP" },
   "mission.reward.pick": { "ja": "{a}・{b}・{c} から 1 つ", "en": "Pick one: {a} / {b} / {c}" },
   "mission.rewardDone": { "ja": "「{title}」達成", "en": "“{title}” complete" },
+  "mission.rewardGum": { "ja": "確定報酬 GUM ＋{n}", "en": "Guaranteed: GUM +{n}" },
   "mission.rewardAsk": { "ja": "ごほうびを 1 つ選んでね", "en": "Pick one reward" },
   "mission.bar.boost": { "ja": "力添え", "en": "Boon" },
   "mission.boon.power": { "ja": "攻撃 ×1.5", "en": "Attack ×1.5" },

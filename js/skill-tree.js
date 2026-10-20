@@ -355,7 +355,7 @@ function renderHead() {
 function renderRouteBar() {
   const m = getMeta();
   const counts = routeCounts(m);
-  clear(_parts.routeBar).append(...ROUTES.map((r) => {
+  clear(_parts.routeBar).append(...ROUTES.filter((r) => !r.minor).map((r) => {   // SPEC-131: エクステ別の道は一覧に出さない
     const total = TREE_NODES.filter((x) => x.route === r.id).length;
     const n = counts[r.id] || 0;
     return h("button", {

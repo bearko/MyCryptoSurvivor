@@ -18,9 +18,9 @@ function buy(m, id) {
   return r;
 }
 
-test("節は根 ＋ 36 で、 id が重ならず、 親が同じ道にある", () => {
-  assert.equal(NODES.length, 37);
-  assert.equal(new Set(NODES.map((n) => n.id)).size, 37);
+test("節は根 ＋ 36 ＋ エクステ別 21 で、 id が重ならず、 親が同じ道にある", () => {
+  assert.equal(NODES.length, 58);   // SPEC-131: エクステ別 (= 武器 10 ・ 強化 11)
+  assert.equal(new Set(NODES.map((n) => n.id)).size, 58);
   assert.equal(NODE_MAP[ROOT_ID].kind, "root");
   for (const n of NODES) {
     if (n.kind === "root") continue;
@@ -28,7 +28,7 @@ test("節は根 ＋ 36 で、 id が重ならず、 親が同じ道にある", (
     const p = NODE_MAP[n.parent];
     assert.ok(p, `${n.id} の親 ${n.parent}`);
     assert.ok(p.kind === "root" || p.route === n.route, `${n.id} の親は同じ道`);
-    assert.ok(p.kind === "root" ? n.depth === 1 : p.depth < n.depth, `${n.id} の親は浅い`);
+    assert.ok(p.kind === "root" ? (n.depth === 1 || !!n.mastery) : p.depth < n.depth, `${n.id} の親は浅い`);   // SPEC-131: エクステ別は根の子
     assert.ok(["repeat", "perk", "capstone"].includes(n.kind), `${n.id} の種類`);
     assert.ok(n.name?.ja && n.name?.en && n.desc?.ja && n.desc?.en, `${n.id} の名前と説明 (ja/en)`);
     assert.ok(Number.isInteger(n.icon) && n.icon > 0, `${n.id} の絵`);
@@ -39,8 +39,8 @@ test("節は根 ＋ 36 で、 id が重ならず、 親が同じ道にある", (
 });
 
 test("どの道も 6 節で、 深さ 1 が根の子・深さ 4 が奥義。 奥義とボスの道はゴールドダストが要る", () => {
-  assert.equal(ROUTES.length, 6);
-  for (const r of ROUTES) {
+  assert.equal(ROUTES.filter((r) => !r.minor).length, 6);
+  for (const r of ROUTES.filter((r) => !r.minor)) {
     const ns = TREE_NODES.filter((n) => n.route === r.id);
     assert.equal(ns.length, 6, r.id);
     const d1 = ns.filter((n) => n.depth === 1);
@@ -49,6 +49,12 @@ test("どの道も 6 節で、 深さ 1 が根の子・深さ 4 が奥義。 奥
     assert.equal(caps.length, 1); assert.equal(caps[0].depth, 4);
     assert.ok(caps[0].cost.dust >= 3, `${r.id} の奥義はダスト`);
     assert.deepEqual(ns.map((n) => n.depth).sort(), [1, 2, 2, 3, 3, 4]);
+  }
+  // SPEC-131: エクステ別の道 (= 奥義は無く、 どれも根の子で 5 段・ダスト不要)
+  for (const r of ROUTES.filter((r) => r.minor)) {
+    const ns = TREE_NODES.filter((n) => n.route === r.id);
+    assert.ok(ns.length >= 3 && ns.length <= 4, r.id);
+    for (const n of ns) assert.deepEqual([n.parent, n.kind, n.max, n.cost.dust | 0], [ROOT_ID, "repeat", 5, 0], n.id);
   }
   for (const n of TREE_NODES.filter((n) => n.route === "bos")) assert.ok(n.cost.dust >= 1, `${n.id} はダストで買う`);
   for (const n of TREE_NODES.filter((n) => n.route && n.route !== "bos" && n.kind !== "capstone")) assert.equal(n.cost.dust | 0, 0, `${n.id} はダスト不要`);
@@ -68,7 +74,7 @@ test("座標: 根は中心、 同じ道は同じ向きに伸び、 隣り合う�
   }
 });
 
-test("費用: 強化は段ごとに × 段数、 常時と奥義は固定。 木ぜんぶで 14,000 GUM 前後・ダスト 32", () => {
+test("費用: 強化は段ごとに × 段数、 常時と奥義は固定。 木ぜんぶで 26,000 GUM 前後 (= SPEC-131 でエクステ別 21 × 600)・ダスト 32", () => {
   assert.deepEqual(nodeCostAt(NODE_MAP.vit_hp, 1), { gum: 40, dust: 0 });
   assert.deepEqual(nodeCostAt(NODE_MAP.vit_hp, 3), { gum: 120, dust: 0 });
   assert.deepEqual(nodeCostAt(NODE_MAP.bos_thunder, 2), { gum: 160, dust: 1 });
@@ -76,7 +82,7 @@ test("費用: 強化は段ごとに × 段数、 常時と奥義は固定。 木
   assert.deepEqual(nodeCostAt(NODE_MAP.cap_bos, 1), { gum: 300, dust: 5 });
   assert.deepEqual(nodeCostAt(NODE_MAP[ROOT_ID], 1), { gum: 0, dust: 0 });
   const total = treeTotal();
-  assert.ok(total.gum >= 13000 && total.gum <= 15000, `GUM ${total.gum}`);
+  assert.equal(total.gum, 13610 + 21 * 600, `GUM ${total.gum}`);
   assert.equal(total.dust, 32, "奥義 21 ＋ ボスの道 11");
 });
 
@@ -87,7 +93,9 @@ test("見え方: 最初は根だけ。 根を取ると 1 段目が見え、 2 �
   assert.equal(claimableNodes(m).map((n) => n.id).join(), ROOT_ID, "0 GUM でも根は取れる");
   assert.equal(buy(m, ROOT_ID).ok, true);
   const vis = TREE_NODES.filter((n) => nodeVisible(m, n.id)).map((n) => n.id);
-  assert.deepEqual(vis.sort(), [ROOT_ID, "atk_dmg", "bos_thunder", "grw_xp", "mov_speed", "trs_gum", "vit_hp"].sort());
+  const mastery = TREE_NODES.filter((n) => n.mastery).map((n) => n.id);   // SPEC-131: エクステ別も根を取ると見える
+  assert.equal(mastery.length, 21);
+  assert.deepEqual(vis.sort(), [ROOT_ID, "atk_dmg", "bos_thunder", "grw_xp", "mov_speed", "trs_gum", "vit_hp", ...mastery].sort());
   const teas = TREE_NODES.filter((n) => nodeTeaser(m, n.id));
   assert.equal(teas.length, 18, "2 段目の 12 節と、 6 つの奥義が「？」(= 道の終わりが最初から見える)");
   assert.ok(teas.every((n) => n.depth === 2 || n.kind === "capstone"));

@@ -15,7 +15,7 @@ import {
 } from "../constants.js";
 import { getExt, extTierImg, getSeriesName } from "../extensions.js";
 import { samplePicks, offerFor, grantPick, buildPickCard, renderOwnedStrip } from "./levelup.js";
-import { perk } from "../perks.js";
+import { perk, buffPriceCut } from "../perks.js";
 import { t, tpl, getLang, onLangChange } from "../i18n.js";
 import { playSe } from "../audio.js";
 import { sigOnLevelUp, sigParams, sigLevel, SIG_MAX_LEVEL, SIG_UP_PRICE, pourCeIntoSig } from "./signature.js";
@@ -224,7 +224,7 @@ function _priceOf(o, offer) {
   if (state.shop.welcome && !offer.isLL) return 0;   // 最初の店のサービス (= どれでも 1 品)
   // SPEC-130: 優先がオンなら、 持っている券で買える品はどれも券で (= 買うたびに残りの枚数で見直す)。 オフなら CE で払う
   if (_giftFirst && giftable(offer, state.shop.gifts)) return 0;
-  return shopPrice(offer, state.currentStageIdx ?? 0, _merchant.quirk, o.sale);
+  return shopPrice(offer, state.currentStageIdx ?? 0, _merchant.quirk, o.sale, buffPriceCut(o.extId));   // SPEC-131: 強化の目利き
 }
 
 /** SPEC-130: 「ギフト券支払いを優先」を切り替える (= 覚えておく) */

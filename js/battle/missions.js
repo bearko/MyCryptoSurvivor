@@ -17,7 +17,9 @@ import { img, SFX, BOSS_SPAWN_AT_MS, BOSS_WARNING_LEAD_MS } from "../constants.j
 import { shopTimesMs } from "./shop-logic.js";
 import { t, tpl, onLangChange } from "../i18n.js";
 import { playSe } from "../audio.js";
-import { applyItem, healBy } from "./field.js";   // SPEC-125: 力添え (= お助けアイテム)・HP 回復
+import { applyItem, healBy } from "./field.js";
+import { grantMissionGum, missionGum } from "../meta.js";   // SPEC-131: 達成の確定 GUM
+import { ICON_GUM } from "../meta-ui.js";   // SPEC-125: 力添え (= お助けアイテム)・HP 回復
 
 // ============================================================
 // 純関数 (= tests/missions.test.mjs)
@@ -245,6 +247,7 @@ function _finish(res) {
   _renderBar();
   if (res === "clear") {
     playSe(SFX.GAME_OVER_CLEAR, 100, 0.45);
+    _rewardGum = grantMissionGum(missionGum(mission.weight, state.currentStageIdx ?? 0));   // SPEC-131: 3 つとは別の確定報酬
     _openReward(mission);   // SPEC-125: 出し手のひとこと → ごほうびを選ぶ
   } else {
     _showResult(mission, res);
@@ -252,6 +255,7 @@ function _finish(res) {
 }
 
 let _reward = null;   // ごほうびを選んでいるミッション
+let _rewardGum = 0;   // SPEC-131: そのミッションの確定 GUM (= 画面に出す)
 
 function _openReward(mission) {
   if (!mission || _reward) return;
@@ -405,6 +409,17 @@ function _renderReward() {
   set("missionRewardGiver", t(`mission.${mission.id}.giver`, mission.id));
   set("missionRewardMission", tpl(t("mission.rewardDone", "「{title}」達成"), { title: t(`mission.${mission.id}.title`, mission.id) }));
   set("missionRewardLine", t(`mission.${mission.id}.thanks`, ""));
+  // SPEC-131: 確定報酬の GUM (= 3 つから選ぶものとは別に、 もう入っている)
+  const gumEl = document.getElementById("missionRewardGum");
+  if (gumEl) {
+    gumEl.classList.toggle("hidden", _rewardGum <= 0);
+    gumEl.innerHTML = "";
+    const ic = document.createElement("img");
+    ic.src = img(ICON_GUM); ic.alt = "";
+    const tx = document.createElement("span");
+    tx.textContent = tpl(t("mission.rewardGum", "確定報酬 GUM ＋{n}"), { n: String(_rewardGum) });
+    gumEl.append(ic, tx);
+  }
   const w = document.getElementById("missionReward");
   if (w) w.dataset.weight = mission.weight;
   const box = document.getElementById("missionRewardChoices");
@@ -475,5 +490,7 @@ export function debugOfferMission(id) {
 
 /** SPEC-125: ごほうびの画面を確かめる (= window.__missionClear("lubu")) */
 export function debugClearMission(id) {
-  _openReward(MISSION_MAP[id] ?? MISSIONS[0]);
+  const m = MISSION_MAP[id] ?? MISSIONS[0];
+  _rewardGum = grantMissionGum(missionGum(m.weight, state.currentStageIdx ?? 0));
+  _openReward(m);
 }

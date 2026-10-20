@@ -8,7 +8,7 @@
 // 効果はすべて足し算の倍率 (= 強化エクステンション (SPEC-011) はその上に掛かる。 buffs.js)。
 
 import { state } from "./state.js";
-import { TREE_NODES } from "./skill-data.js";
+import { TREE_NODES, EXT_MASTERY } from "./skill-data.js";
 import { nodeRank } from "./skill-logic.js";
 import {
   CONTACT_COOLDOWN_MS, REROLL_PER_BATTLE, STOCK_LIMIT_WEAPON, STOCK_LIMIT_BUFF,
@@ -24,6 +24,8 @@ export const NO_PERKS = Object.freeze({
   xpMul: 0, reroll: 0, startLevels: 0, stock: 0, skipHeal: 0,
   gumMul: 0, pots: 0, earlyChest: 0, pancakeWeight: 0, rareIntervalSec: 0,
   bossDust: 0, thunderBossRatio: 0, bossChestFast: 0, telegraphSec: 0, bossDmgMul: 0, bossCardRate: 0, bossDmgTakenMul: 0,
+  // SPEC-131: エクステ別 (= 武器の威力 wdmg_<extId> ・ 強化の値引き cut_<extId>)
+  ...Object.fromEntries(EXT_MASTERY.map(([, extId, kind]) => [kind === "w" ? `wdmg_${extId}` : `cut_${extId}`, 0])),
 });
 
 /** 段で積まず、 値をそのまま置くもの (= 1 つの節しか持たない) */
@@ -207,6 +209,10 @@ export const STAT_ROWS = [
   { key: "telegraphSec",     route: "bos", f: "sec", ja: "ボスの予告",      en: "Boss telegraph" },
   { key: "bossDmgMul",       route: "bos", f: "pct", ja: "対ボスの攻撃",    en: "Damage to bosses" },
   { key: "bossDmgTakenMul",  route: "bos", f: "pct", ja: "ボスからの被ダメ", en: "Damage from bosses" },
+  // SPEC-131: エクステ別 (= 武器の威力・強化の値引き)
+  ...EXT_MASTERY.map(([route, extId, kind, ja, en]) => kind === "w"
+    ? { key: `wdmg_${extId}`, route, f: "pct", ja: `${ja}の威力`, en: `${en} damage` }
+    : { key: `cut_${extId}`, route, f: "cut", ja: `${ja}の値段`, en: `${en} price` }),
 ];
 const STAT_KEYS = new Set(STAT_ROWS.map((r) => r.key));
 
@@ -217,6 +223,7 @@ export function formatStat(f, v, lang = "ja") {
   const a = Math.abs(r);
   if (f === "pct") return `${sign}${Math.round(a * 100)}%`;
   if (f === "num") return `${sign}${a}`;
+  if (f === "cut") return `−${Math.round(a * 100)}%`;   // SPEC-131: 値引き (= 正の数で持つ)
   if (f === "ce20") return `${sign}${a * 20}`;   // SPEC-109: 先手は 1 段 = 20 CE
   if (f === "sec") return lang === "en" ? `+${a}s` : `＋${a} 秒`;
   if (f === "ps") return lang === "en" ? `${a}/s` : `${a}/秒`;
@@ -250,3 +257,8 @@ export function perkRows(now, next = null, lang = "ja") {
   }
   return { rows, flags };
 }
+
+/** SPEC-131: その武器の威力の倍率 (= 武器の極意) */
+export const weaponDmgMul = (extId) => 1 + perk(`wdmg_${extId}`);
+/** SPEC-131: その強化エクステのショップの値引き (= 強化の目利き。 0〜0.3) */
+export const buffPriceCut = (extId) => Math.min(0.9, Math.max(0, perk(`cut_${extId}`)));
