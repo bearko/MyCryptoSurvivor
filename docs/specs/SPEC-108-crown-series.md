@@ -2,7 +2,7 @@
 id: SPEC-108
 title: Crown Series — A Buff Extension That Raises the CE You Pick Up
 status: Done
-pr: TBD
+pr: 141
 phase: v1.6 Shop
 kind: Added
 ---
