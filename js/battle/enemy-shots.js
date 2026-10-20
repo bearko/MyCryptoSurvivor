@@ -52,8 +52,9 @@ export function shooterOnScreen(dx, dy, vw, vh, margin = SHOOTER_ONSCREEN_MARGIN
   return Math.abs(dx) <= vw / 2 - margin && Math.abs(dy) <= vh / 2 - margin;
 }
 
-/** 撃ち方ごとの弾の速度 (= 純関数)。 aimed: 狙って 1 発、 spread3: 3 方向 */
+/** 撃ち方ごとの弾の速度 (= 純関数)。 aimed: 狙って 1 発、 spread3: 3 方向、 spread5: 5 方向 (= SPEC-107 の連射) */
 export function shotAngles(pattern, aimAngle) {
+  if (pattern === "spread5") return [-2, -1, 0, 1, 2].map((k) => aimAngle + k * SPREAD_RAD);
   return pattern === "spread3" ? [aimAngle - SPREAD_RAD, aimAngle, aimAngle + SPREAD_RAD] : [aimAngle];
 }
 

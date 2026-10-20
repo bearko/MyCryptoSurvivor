@@ -31,6 +31,8 @@ import { BOSS_MOVES, bossHoldsStill } from "./boss-moves.js";
 import { getObstacleRects } from "./field.js";
 import { resolveCircle, slideAlongWall } from "./field-geom.js";
 import { tickShooter, nextFireMs } from "./enemy-shots.js";
+import { threatTier, rollVariant, applyVariant, crossLine, crossedOut, CROSS, VARIANTS } from "./threat.js";   // SPEC-107
+import { showThreatNotice } from "./milestones.js";   // SPEC-107
 import {
   floodMul, packAngles, separateEnemies, stageMaxEnemies, spawnBudget,
   densityTarget, screenDensity, densityShortfall, DENSITY_CHECK_MS, DENSITY_GAIN, DENSITY_MAX_PER_CHECK,
@@ -163,6 +165,12 @@ export function tickEnemies(dt, nowMs) {
     b.lastRareSpawnMs = nowMs;
   }
 
+  // SPEC-107: そのステージの撃破数で脅威の段階が上がる (= 上がったら知らせる)
+  const tier = threatTier(state.killCount);
+  if (tier > (b.threatTier ?? 0)) { b.threatTier = tier; showThreatNotice(tier); }
+  // SPEC-107: 横断の列 (= T3 から。 予告の線を見せてから、 画面の端から反対の端へ一直線に)
+  if (!b.bossSpawned) _tickCrossers(tier, cap);
+
   // SPEC-062: 撃ってくる敵 (= ステージごとに、 決まった時刻から一定の間隔で。 同時に出ている数に上限)
   const sh = stage.shooters;
   if (sh && !b.bossSpawned && b.stageElapsedMs >= sh.fromMs && b.enemies.length < cap &&
@@ -187,7 +195,12 @@ export function tickEnemies(dt, nowMs) {
     const dx = px - e.x;
     const dy = py - e.y;
     const d  = Math.hypot(dx, dy) || 1;
-    if (e.behavior === "shooter") {
+    if (e.behavior === "crosser") {
+      // SPEC-107: 追わずに一直線。 走りきったら消える (= 撃破に数えず、 CE も落とさない)
+      e.x += e.cross.ux * e.speed * dt;
+      e.y += e.cross.uy * e.speed * dt;
+      if (crossedOut(e)) e.gone = true;
+    } else if (e.behavior === "shooter") {
       tickShooter(e, dt, px, py);   // SPEC-062: 距離を保って撃つ (= まっすぐ追わない)
     } else if (e.isBoss && bossHoldsStill(e)) {
       // SPEC-080: 型の最中 (= 予備動作・突進・立て直し) は boss-moves.js が動かす
@@ -208,6 +221,43 @@ export function tickEnemies(dt, nowMs) {
     if (b.contactCooldownMs <= 0 && d < e.r + b.player.r) {
       hurtPlayer(e.dmg, { boss: !!e.isBoss });   // SPEC-090c: 被弾は 1 か所 (= hurt.js)。 ボスなら大きく揺らす
     }
+  }
+  // SPEC-107: 走りきった横断の敵を片づける
+  if (b.enemies.some((e) => e.gone)) b.enemies = b.enemies.filter((e) => !e.gone);
+}
+
+/** SPEC-107: 横断の列の予告と出現 */
+function _tickCrossers(tier, cap) {
+  const b = state.battle;
+  const every = CROSS.everyMs[tier] ?? 0;
+  b.crossWarns = (b.crossWarns ?? []).filter((w) => {
+    if (b.stageElapsedMs < w.atMs) return true;
+    _spawnCrossLine(w, cap);
+    return false;
+  });
+  if (!every) return;
+  if (b.nextCrossMs == null || b.nextCrossMs === 0) { b.nextCrossMs = b.stageElapsedMs + every * 0.5; return; }
+  if (b.stageElapsedMs < b.nextCrossMs) return;
+  b.nextCrossMs = b.stageElapsedMs + every;
+  const dir = Math.floor(Math.random() * 4);
+  const lane = (Math.random() - 0.5) * (dir < 2 ? b.viewport.h : b.viewport.w) * 0.5;
+  const line = crossLine(dir, b.player.x, b.player.y, b.viewport.w, b.viewport.h, lane);
+  const n = CROSS.minN + Math.floor(Math.random() * (CROSS.maxN - CROSS.minN + 1));
+  b.crossWarns.push({ ...line, n, atMs: b.stageElapsedMs + CROSS.warnMs, fromMs: b.stageElapsedMs });
+}
+
+function _spawnCrossLine(w, cap) {
+  const b = state.battle;
+  const len = Math.hypot(w.x2 - w.x1, w.y2 - w.y1) || 1;
+  const ux = (w.x2 - w.x1) / len, uy = (w.y2 - w.y1) / len;
+  const pool = currentPool(b.stageElapsedMs);
+  const baseId = pool[Math.floor(Math.random() * pool.length)];
+  for (let k = 0; k < w.n && b.enemies.length < cap + w.n; k++) {
+    spawnEnemyAtRing(baseId, { x: w.x1 - ux * CROSS.gap * k, y: w.y1 - uy * CROSS.gap * k }, { variant: "crosser" });
+    const e = b.enemies[b.enemies.length - 1];
+    e.behavior = "crosser";
+    e.speed = CROSS.speed;
+    e.cross = { x2: w.x2, y2: w.y2, ux, uy };
   }
 }
 
@@ -250,7 +300,7 @@ function _ringPoint(r, halfW, halfH) {
  * SPEC-022 / SPEC-030: enemyId 指定でスポーン。 雑魚はステージ mul を hp/dmg/xp に適用、
  * ボス (= 任意 isBoss) は ENEMY_SPECS の絶対値 + ステージ別の bossAttack を持たせる。
  */
-export function spawnEnemyAtRing(enemyId = 101, at = null) {
+export function spawnEnemyAtRing(enemyId = 101, at = null, { variant = undefined } = {}) {
   const b = state.battle;
   const stage = _currentStage();
   const spec = ENEMY_SPECS[enemyId] ?? DEFAULT_SPEC;
@@ -321,4 +371,9 @@ export function spawnEnemyAtRing(enemyId = 101, at = null) {
     aimAngle: 0,
     strafeDir: Math.random() < 0.5 ? -1 : 1,
   });
+  // SPEC-107: 脅威の段階で強い型が混じる (= ボス・レアには付けない。 CE も型の倍率で増える)
+  if (!isBoss && !spec.isRare) {
+    const v = variant !== undefined ? variant : rollVariant(threatTier(state.killCount), { shooter: spec.behavior === "shooter" });
+    if (v && VARIANTS[v]) applyVariant(b.enemies[b.enemies.length - 1], v, enemyId);
+  }
 }

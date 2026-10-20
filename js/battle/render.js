@@ -271,6 +271,7 @@ export function renderBattle(ctx, nowMs = 0) {
 
   // SPEC-064: ステージの仕掛け (= 珠の列の予告・レール、 パンチの印・穴。 敵より下)
   renderGimmicksUnder(ctx, camera, w, h, nowMs);
+  _drawCrossWarns(ctx, camera, nowMs);   // SPEC-107: 横断の列の予告の線
 
   // SPEC-010: enemies (sprite で円形クリップ、 fallback は単色円)
   // SPEC-016: アイコン下に HP バー (= 満タン非表示)
@@ -286,12 +287,12 @@ export function renderBattle(ctx, nowMs = 0) {
       continue;
     }
     const sp = (e.enemyId != null)
-      ? (getEnemySprite(e.enemyId) || state.battle.defaultEnemySprite)
+      ? (getEnemySprite(e.spriteId ?? e.enemyId) || getEnemySprite(e.enemyId) || state.battle.defaultEnemySprite)   // SPEC-107: 型は上位の姿
       : state.battle.defaultEnemySprite;
     // SPEC-077: 足もとに当たりの目安の薄い円 (= 太い黒い縁はやめた)、 その上に絵を切り抜かずに大きく。 少し弾ませる
     // SPEC-062: 撃ってくる敵は赤い縁 (= 突っこんでくる敵と見分ける)
     const isShooter = e.behavior === "shooter";
-    drawHitDisc(ctx, sx, sy, e.r, e.isBoss ? "boss" : (isShooter ? "shooter" : (e.isRare ? "rare" : "enemy")));
+    drawHitDisc(ctx, sx, sy, e.r, e.isBoss ? "boss" : (e.variant === "elite" ? "elite" : (isShooter ? "shooter" : (e.isRare ? "rare" : (e.variant ? "strong" : "enemy")))));
     const bob = e.isBoss ? 0 : Math.sin(nowMs / 140 + e.id) * e.r * 0.06;
     const shx = e.isBoss ? (e.mv?.shake ?? 0) : 0;   // SPEC-080: 予備動作で震える
     const drew = drawSprite(ctx, sp, sx + shx, sy - e.r * 0.12 + bob, e.r * CHAR_SPRITE_RATIO);
@@ -694,4 +695,25 @@ function _drawGrid(ctx, camera, w, h) {
     ctx.lineTo(w, y + 0.5);
   }
   ctx.stroke();
+}
+
+/** SPEC-107: 横断の列の予告 (= 通り道に赤い帯と矢印。 0.6 秒) */
+function _drawCrossWarns(ctx, camera, nowMs) {
+  const ws = state.battle.crossWarns;
+  if (!ws?.length) return;
+  for (const wv of ws) {
+    const x1 = wv.x1 - camera.x, y1 = wv.y1 - camera.y, x2 = wv.x2 - camera.x, y2 = wv.y2 - camera.y;
+    const blink = 0.45 + 0.35 * Math.abs(Math.sin(nowMs / 70));
+    ctx.save();
+    ctx.globalAlpha = blink;
+    ctx.strokeStyle = "rgba(255, 70, 80, 0.55)";
+    ctx.lineWidth = 34;
+    ctx.lineCap = "round";
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+    ctx.strokeStyle = "rgba(255, 210, 210, 0.95)";
+    ctx.lineWidth = 2;
+    ctx.setLineDash([14, 10]);
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+    ctx.restore();
+  }
 }

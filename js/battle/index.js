@@ -135,6 +135,9 @@ export function startBattle(hero) {
   b.stageElapsedMs     = 0;                     // SPEC-022: ステージ経過リセット
   resetResumeCountdown({ release: true });     // SPEC-104: 新しいステージは数えずに始める
   resetMilestones(state.run.totalKills ?? 0);  // SPEC-105: 通算の撃破数の節目
+  b.threatTier         = 0;                     // SPEC-107: 敵の段階はステージごと
+  b.crossWarns         = [];
+  b.nextCrossMs        = 0;
   b.bossSpawned        = false;                 // SPEC-022: ボス multi-spawn 防止
   b.bossDefeated       = false;                 // SPEC-022: ボス撃破フラグ
   b.fastForwardMs      = 0;                     // SPEC-054: 2 倍速はステージをまたがない

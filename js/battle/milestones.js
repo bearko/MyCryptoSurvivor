@@ -41,7 +41,9 @@ export function resetMilestones(base = state.run?.totalKills ?? 0) {
   _base = base | 0;
   _last = _base;
   clearTimeout(_timer);
+  clearTimeout(_threatTimer);
   globalThis.document?.getElementById("killMilestone")?.classList.add("hidden");
+  globalThis.document?.getElementById("threatNotice")?.classList.add("hidden");
 }
 
 export function totalKills() {
@@ -55,6 +57,27 @@ export function tickMilestones(topPx = null) {
   const hit = crossedMilestone(_last, now);
   _last = now;
   if (hit) showMilestone(hit, topPx);
+}
+
+/** SPEC-107: 段階ごとの「何が出はじめるか」 */
+const THREAT_KEYS = [null, "threat.t1", "threat.t2", "threat.t3", "threat.t4"];
+let _threatTimer = 0;
+
+/** SPEC-107: 敵の段階が上がった (= 節目の通知の下に小さく。 遊びは止めない) */
+export function showThreatNotice(tier, topPx = null) {
+  const el = globalThis.document?.getElementById("threatNotice");
+  const key = THREAT_KEYS[tier];
+  if (!el || !key) return;
+  el.textContent = t(key, key);
+  const ms = globalThis.document?.getElementById("killMilestone");
+  const top = topPx ?? (ms?.style.top ? parseFloat(ms.style.top) : null);
+  if (top != null) el.style.top = `${Math.round(top + 70)}px`;
+  el.classList.remove("hidden", "threat-notice--go");
+  void el.offsetWidth;
+  el.classList.add("threat-notice--go");
+  playSe(SFX.GIMMICK_WARN, 0, 0.45);
+  clearTimeout(_threatTimer);
+  _threatTimer = setTimeout(() => el.classList.add("hidden"), 2200);
 }
 
 export function showMilestone(n, topPx = null) {
