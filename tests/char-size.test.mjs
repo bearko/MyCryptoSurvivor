@@ -29,5 +29,5 @@ test("自分と敵の絵は円で切り抜かず、 足もとに当たりの円�
   assert.ok(!/drawSpriteCircular\(ctx, sp, sx, sy, e\.r\)/.test(RENDER), "敵を円で切り抜かない");
   assert.ok(!/drawSpriteCircular\(ctx, state\.battle\.playerSprite/.test(RENDER), "自分を円で切り抜かない");
   assert.match(RENDER, /drawHitDisc\(ctx, px, py, player\.r, "hero"\)/);
-  assert.match(RENDER, /drawHitDisc\(ctx, sx, sy, e\.r,/);
+  assert.match(RENDER, /drawHitDisc\(ctx, sx, sy, er,/);   // SPEC-112: er = e.r (= 乱世の奸雄のあいだだけ小さく)
 });

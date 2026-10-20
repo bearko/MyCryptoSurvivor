@@ -759,5 +759,7 @@ window.addEventListener("DOMContentLoaded", () => {
 if (typeof window !== "undefined") {
   window.__state = state;
   window.__pauseTime = pauseTime;
+  // SPEC-112: ミッションを確かめる (= ?debug=1 でなくても、 開発者ツールから window.__mission("lubu"))
+  import("./battle/missions.js").then((m) => { window.__mission = m.debugOfferMission; }).catch(() => {});
   window.__resumeTime = resumeTime;
 }

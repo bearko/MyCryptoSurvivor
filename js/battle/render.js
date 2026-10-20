@@ -20,6 +20,7 @@ import {
 import { shakeOffset, renderFxWorld, renderFxScreen } from "./fx.js";
 import { absorbScale } from "./absorb.js";   // SPEC-102
 import { renderSignatureWorld } from "./signature.js";   // SPEC-100
+import { missionMods } from "./missions.js";   // SPEC-112
 import { renderLLWorld } from "./ll.js";   // SPEC-101
 import { renderArenaWorld, renderBossMarkerPointer } from "./arena-render.js";
 import { renderBossMovesWorld } from "./boss-moves-render.js";
@@ -64,6 +65,7 @@ export function renderBattle(ctx, nowMs = 0) {
   const enemyShots = state.battle.enemyShots ?? [];   // SPEC-062
   const w = viewport.w, h = viewport.h;
   if (w <= 0 || h <= 0) return;
+  const mods = missionMods();   // SPEC-112: 霧の夜・女王の威光・乱世の奸雄
 
   // SPEC-026: ステージ外は黒、 ステージ内は背景画像 + 半透明ダーク overlay
   ctx.fillStyle = "#0e0c14";
@@ -292,10 +294,11 @@ export function renderBattle(ctx, nowMs = 0) {
     // SPEC-077: 足もとに当たりの目安の薄い円 (= 太い黒い縁はやめた)、 その上に絵を切り抜かずに大きく。 少し弾ませる
     // SPEC-062: 撃ってくる敵は赤い縁 (= 突っこんでくる敵と見分ける)
     const isShooter = e.behavior === "shooter";
-    drawHitDisc(ctx, sx, sy, e.r, e.isBoss ? "boss" : (e.variant === "elite" ? "elite" : (isShooter ? "shooter" : (e.isRare ? "rare" : (e.variant ? "strong" : "enemy")))));
-    const bob = e.isBoss ? 0 : Math.sin(nowMs / 140 + e.id) * e.r * 0.06;
+    const er = e.isBoss ? e.r : e.r * mods.sizeMul;   // SPEC-112: 乱世の奸雄 (= 小さく見づらい)
+    drawHitDisc(ctx, sx, sy, er, e.isBoss ? "boss" : (e.variant === "elite" ? "elite" : (isShooter ? "shooter" : (e.isRare ? "rare" : (e.variant ? "strong" : "enemy")))));
+    const bob = e.isBoss ? 0 : Math.sin(nowMs / 140 + e.id) * er * 0.06;
     const shx = e.isBoss ? (e.mv?.shake ?? 0) : 0;   // SPEC-080: 予備動作で震える
-    const drew = drawSprite(ctx, sp, sx + shx, sy - e.r * 0.12 + bob, e.r * CHAR_SPRITE_RATIO);
+    const drew = drawSprite(ctx, sp, sx + shx, sy - er * 0.12 + bob, er * CHAR_SPRITE_RATIO);
     if (!drew) {
       ctx.fillStyle = e.color;
       ctx.beginPath();
@@ -356,7 +359,7 @@ export function renderBattle(ctx, nowMs = 0) {
   }
 
   // SPEC-062: 撃ってくる敵の弾 (= 赤い光の玉と、 短い尾)
-  for (const p of enemyShots) {
+  for (const p of (mods.hiddenShots ? [] : enemyShots)) {   // SPEC-112: 女王の威光 (= 弾が見えない。 狙い線だけ)
     const sx = p.x - camera.x;
     const sy = p.y - camera.y;
     if (sx + 16 < 0 || sx - 16 > w || sy + 16 < 0 || sy - 16 > h) continue;
@@ -444,6 +447,9 @@ export function renderBattle(ctx, nowMs = 0) {
 
   // SPEC-045: 撃破の粒
   renderFxWorld(ctx, camera, w, h);
+
+  // SPEC-112: 霧の夜 (= 自分のまわりしか見えない)
+  if (mods.fogR) _drawFog(ctx, px, py, mods.fogR, w, h);
 
   // SPEC-016: ダメージ数字 floater (= 一番上の layer)
   // SPEC-057: 大きいものほど大きく (= size)、 出た瞬間に跳ねる (= 1.6 倍 → 1 倍)
@@ -716,4 +722,19 @@ function _drawCrossWarns(ctx, camera, nowMs) {
     ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
     ctx.restore();
   }
+}
+
+/** SPEC-112: 霧の夜。 自分のまわり (= 半径 r) だけ見え、 その外は濃い霧 */
+function _drawFog(ctx, px, py, r, w, h) {
+  const g = ctx.createRadialGradient(px, py, r * 0.55, px, py, r);
+  g.addColorStop(0, "rgba(14, 12, 22, 0)");
+  g.addColorStop(1, "rgba(14, 12, 22, 0.94)");
+  ctx.fillStyle = g;
+  ctx.fillRect(px - r, py - r, r * 2, r * 2);
+  ctx.fillStyle = "rgba(14, 12, 22, 0.94)";
+  // 円の外接四角の外を塗る (= 四角の中はグラデーションが受け持つ)
+  ctx.fillRect(-w, -h, w * 3, py - r + h);
+  ctx.fillRect(-w, py + r, w * 3, h * 2);
+  ctx.fillRect(-w, py - r, px - r + w, r * 2);
+  ctx.fillRect(px + r, py - r, w * 2, r * 2);
 }

@@ -18,6 +18,7 @@ import {
 } from "../constants.js";
 // SPEC-090c: スキルツリーで変わる定数は、 定数の代わりにここを呼ぶ
 import { sigHealMul } from "./signature.js";   // SPEC-100
+import { canHeal } from "./missions.js";   // SPEC-112
 import { chestTimesMs, bossChestCfg, bossChestDrops, potMaxOnField, potDrops, itemPickupMul, healRatio, thunderBossRatio } from "../perks.js";
 import { ARENA } from "./arena.js";
 import { spawnMagicCard } from "./magic-cards.js";
@@ -188,6 +189,10 @@ function _pickupItems() {
 export function applyItem(kind) {
   const b = state.battle;
   if (kind === "heal") {
+    if (!canHeal()) {   // SPEC-112: 不老不死の探求 (= 拾っても戻らない)
+      pushDamageNumber(b.player.x, b.player.y - b.player.r - 4, "×", "#9a9aa8", "lg");
+      return;
+    }
     const max = state.statsMax.hp;
     const before = state.stats.hp;
     state.stats.hp = Math.min(max, before + Math.round(max * healRatio() * sigHealMul()));   // SPEC-100: 宮廷医女は倍

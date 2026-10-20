@@ -122,6 +122,8 @@ export const state = {
   pendingPickIsStarter:  false,
   // SPEC-109: ショップ (= ?shop=1 のときだけ。 財布の CE・ギフト券・お断り・取り置き)。 レベルアップで遊ぶときは null
   shop: null,
+  // SPEC-112: ミッション (= ショップで遊ぶときだけ。 そのステージで持ちかけた数・受けているもの)
+  mission: null,
 
   // SPEC-009: 撃破数 + リトライ用 last run snapshot
   killCount:    0,

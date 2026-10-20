@@ -9,6 +9,7 @@
 import { tickResumeCountdown, resetResumeCountdown } from "./resume-countdown.js";   // SPEC-104
 import { tickMilestones, resetMilestones } from "./milestones.js";   // SPEC-105
 import { isShopMode, resetShopForStage, tickShop, hideShopBar } from "./shop.js";   // SPEC-109
+import { resetMissionsForStage, tickMissions } from "./missions.js";   // SPEC-112
 import { state } from "../state.js";
 import {
   FACTION_COLOR, FACTION_COLOR_DEFAULT,
@@ -209,6 +210,8 @@ export function startBattle(hero) {
     const headStart = perk("startLevels");
     if (headStart > 0) { state.level += headStart; triggerLevelUpPick(headStart); }
   }
+  resetMissionsForStage(!!state.shop);   // SPEC-112: ミッションはショップで遊ぶときだけ
+
   _showStageIntro();     // SPEC-046: 「STAGE n / ステージ名」の帯
   resizeCanvas();
   _placeToasts();        // SPEC-052: 通知は HUD (と RTA の時計) の下に出す
@@ -320,6 +323,7 @@ function _step(dt, now) {
   tickCoach(dt, v.x !== 0 || v.y !== 0);   // SPEC-042: 操作ガイド
   tickMilestones(_commTop() + 64);          // SPEC-105: 撃破数の節目 (= 止めない)
   if (state.shop) tickShop();               // SPEC-109: 時刻になったら店を開く (= 時間を止める)
+  if (state.mission) tickMissions();        // SPEC-112: ミッションの持ちかけ・残り時間・達成
   if (state.battle.contactCooldownMs > 0) {
     state.battle.contactCooldownMs -= dt * 1000;
   }

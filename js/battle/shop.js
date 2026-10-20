@@ -29,6 +29,7 @@ import {
   shopProgress, shopHealAmount, SHOP_SOON_SEC,
 } from "./shop-logic.js";
 import { pushDamageNumber } from "./damage.js";
+import { canHeal } from "./missions.js";   // SPEC-112
 export { isShopMode, shopTimesMs, shopProgress } from "./shop-logic.js";
 
 // ============================================================
@@ -172,7 +173,7 @@ export function openShop({ opening = false } = {}) {
   _paidRerolls = 0;
   _boughtHere = 0;
   // ウェーブの節目のひと息: 来店で HP が少し戻る (= 作者の依頼 2026-10-20)
-  _healed = shopHealAmount(state.stats.hp, state.statsMax.hp);
+  _healed = canHeal() ? shopHealAmount(state.stats.hp, state.statsMax.hp) : 0;   // SPEC-112: 不老不死の探求のあいだは戻らない
   if (_healed > 0) {
     state.stats.hp += _healed;
     const p = state.battle.player;
@@ -413,7 +414,7 @@ export function closeShop() {
   document.getElementById("shopModal")?.classList.add("hidden");
   // SPEC-090c の「見送りの礼」: 何も買わずに出ると HP が少し戻る
   if (_boughtHere === 0) {
-    const heal = Math.round(state.statsMax.hp * perk("skipHeal"));
+    const heal = canHeal() ? Math.round(state.statsMax.hp * perk("skipHeal")) : 0;
     if (heal > 0) {
       state.stats.hp = Math.min(state.statsMax.hp, state.stats.hp + heal);
       playSe(SFX.PICK_HEAL, 100, 0.55);
