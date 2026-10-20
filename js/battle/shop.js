@@ -42,7 +42,7 @@ function _fresh() {
     locked: [], nextIdx: 0, prevMerchant: null, purchases: 0,
     freeRerolls: 0, enteredIdx: -1, snapshot: null,
     sigLevel: 1,   // SPEC-110: 固有スキルの強化段 (= ステージをまたいで残る)
-    welcome: false, welcomeGiven: false,   // 最初の店のサービス (= 1 品ただ。 使うまで残る)
+    welcome: false, welcomeGiven: false,   // 最初の店のサービス (= 1 品無料。 使うまで残る)
     nextMerchant: null,   // 次に来る商人 (= ヘッダーの帯を歩いてくる)
   };
 }
@@ -180,7 +180,7 @@ export function openShop({ opening = false } = {}) {
     pushDamageNumber(p.x, p.y - (p.r ?? 12) - 4, _healed, "#7dff9a");
     playSe(SFX.PICK_HEAL, 100, 0.5);
   }
-  // 最初の店 (= ステージ 1 の 0:10) はまだ CE が少ないので、 サービスで 1 品ただ (= 作者の決定 2026-10-20)
+  // 最初の店 (= ステージ 1 の 0:10) はまだ CE が少ないので、 サービスで 1 品無料 (= 作者の決定 2026-10-20)
   if (!s.welcomeGiven && (state.currentStageIdx ?? 0) === 0) {
     s.welcomeGiven = true;
     s.welcome = true;
@@ -222,7 +222,7 @@ function _priceOf(o, offer) {
   return shopPrice(offer, state.currentStageIdx ?? 0, _merchant.quirk, o.sale);
 }
 
-/** ギフト券を使う品 (= ただにできる品のうち、 いちばん高いもの。 安い品で券を使い切らない) */
+/** ギフト券を使う品 (= 無料にできる品のうち、 いちばん高いもの。 安い品で券を使い切らない) */
 function _giftTarget() {
   const banned = new Set(state.shop.bans);
   let best = null, bestP = -1;
@@ -403,7 +403,7 @@ export function banOffer(extId) {
   renderShop();
 }
 
-/** いまのリロールの値段 (= ただなら 0) */
+/** いまのリロールの値段 (= 無料なら 0) */
 export function currentRerollCost() {
   return (_gamaFree > 0 || state.shop.freeRerolls > 0) ? 0 : rerollCost(_paidRerolls);
 }
@@ -589,7 +589,7 @@ export function renderShop() {
   const rr = document.getElementById("shopReroll");
   if (rr) {
     const cost = currentRerollCost();
-    rr.textContent = cost === 0 ? t("shop.rerollFree", "リロール（ただ）") : tpl(t("shop.reroll", "リロール ◆ {n}"), { n: String(cost) });
+    rr.textContent = cost === 0 ? t("shop.rerollFree", "リロール（無料）") : tpl(t("shop.reroll", "リロール ◆ {n}"), { n: String(cost) });
     rr.disabled = cost > s.ce;
   }
   const leave = document.getElementById("shopLeave");

@@ -13,7 +13,7 @@ export const MERCHANTS = [
   { id: "magellan", enemyId: 821,  quirk: "extraOffer" },  // マゼラン：品が 1 枚多い
   { id: "gennai",   enemyId: 553,  quirk: "buffBias" },    // 平賀源内：強化の品が出やすい
   { id: "columbus", enemyId: 815,  quirk: "newBias" },     // コロンブス：まだ持っていない系列が出やすい
-  { id: "gama",     enemyId: 1165, quirk: "freeReroll" },  // ヴァスコ・ダ・ガマ：リロールが 1 回ただ
+  { id: "gama",     enemyId: 1165, quirk: "freeReroll" },  // ヴァスコ・ダ・ガマ：リロールが 1 回無料
   { id: "kurohige", enemyId: 506,  quirk: "pirate" },      // 黒髭：ランクアップ 2 割引・新しい品 2 割増し
 ];
 /** ステージ 2・3 の開始の前の店は決まった人 (= 「次の地へ向かう前に」) */
@@ -66,7 +66,7 @@ export function shopPrice(offer, stageIdx = 0, quirk = null, sale = false) {
   return roundTo5(p);
 }
 
-/** ギフト券 (= マジックカード) で ただにできる品か */
+/** ギフト券 (= マジックカード) で 無料にできる品か */
 export function giftable(offer) {
   return !!offer && !offer.isLL && (offer.nextLevel | 0) <= SHOP_GIFT_MAX_LEVEL;
 }

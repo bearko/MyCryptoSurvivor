@@ -297,7 +297,7 @@ export function choiceText(c) {
   if (!c) return { name: "", detail: "" };
   if (c.kind === "gift") return {
     name: tpl(t("mission.reward.gift", "ギフト券 ×{n}"), { n: String(c.n) }),
-    detail: t("mission.reward.giftDetail", "1 枚でショップの品が 1 つただ（Lv.4 まで）"),
+    detail: t("mission.reward.giftDetail", "1 枚でショップの品が 1 つ無料（Lv.4 まで）"),
   };
   if (c.kind === "heal") return {
     name: t("mission.reward.heal", "HP 回復"),
