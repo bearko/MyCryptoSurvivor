@@ -2,7 +2,7 @@
 id: SPEC-134
 title: Skill Tree Interaction From MyCryptoWorkshop — Pan on Window, Pinch/Wheel About a Point, Zoom Limits, Minimap, Branch Jump, Overview
 status: Done
-pr: TBD
+pr: 171
 phase: v1.6 Skill Tree
 kind: Changed
 ---
