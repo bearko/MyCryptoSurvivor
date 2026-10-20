@@ -8,6 +8,7 @@
 
 import { state, pauseTime, resumeTime } from "../state.js";
 import { resetResumeCountdown } from "./resume-countdown.js";   // SPEC-104
+import { hideShop } from "./shop.js";   // SPEC-109
 import { t, tpl, onLangChange } from "../i18n.js";
 import {
   getPlayerName, setPlayerName, submitScore, getRankingApiUrl,
@@ -123,6 +124,7 @@ export async function returnToTitle({ navi = true } = {}) {
   for (const id of ["levelUpModal", "stageTransitionModal", "activityReportModal", "rankingModal"]) {
     document.getElementById(id)?.classList.add("hidden");
   }
+  hideShop();   // SPEC-109
   // pauseFlags を 0 にリセット (= タイトル画面では時間停止扱い)
   while (state.pauseFlags > 0) resumeTime();
   resetResumeCountdown();   // SPEC-104: 数えている途中なら消す
@@ -138,6 +140,7 @@ export async function returnToTitle({ navi = true } = {}) {
   state.xp              = 0;
   state.killCount       = 0;
   state.lastRunStats    = null;
+  state.shop            = null;   // SPEC-109
   state.run.stages.length = 0;
   state.run.totalKills    = 0;
   state.run.totalElapsedMs = 0;

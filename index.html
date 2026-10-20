@@ -50,6 +50,8 @@
   <link rel="stylesheet" href="css/result-ui.css" />
   <!-- SPEC-090: スキルツリー (= タイトルの上に重ねる木の画面) -->
   <link rel="stylesheet" href="css/skill-tree.css" />
+  <!-- SPEC-109: ショップ -->
+  <link rel="stylesheet" href="css/shop.css" />
 </head>
 <body>
 
@@ -476,6 +478,39 @@
                 type="button" data-i18n="levelup.skip">スキップ（取得しない）</button>
         <button class="btn levelup-modal__reroll" id="levelUpReroll"
                 type="button" data-i18n="levelup.reroll">リロール (残 2)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SPEC-109: ショップ (= ?shop=1 のときだけ。 レベルアップの置き換え) -->
+  <!-- ============================================================ -->
+  <div id="shopModal" class="levelup-modal shop-modal hidden" role="dialog" aria-modal="true"
+       aria-labelledby="shopTitle">
+    <div class="levelup-modal__card shop-modal__card">
+      <header class="shop-head">
+        <img class="shop-head__face" id="shopMerchantImg" alt="" width="64" height="64" />
+        <div class="shop-head__talk">
+          <h2 class="shop-head__title" id="shopTitle" data-kicker="SHOP"><span id="shopMerchantName"></span></h2>
+          <p class="shop-head__line" id="shopMerchantLine"></p>
+        </div>
+        <div class="shop-wallet" aria-live="polite">
+          <span class="shop-wallet__label" data-i18n="shop.wallet">手持ち</span>
+          <span class="shop-wallet__ce num">◆ <b id="shopCe">0</b></span>
+          <span class="shop-wallet__gift hidden" id="shopGifts"></span>
+        </div>
+      </header>
+      <p class="levelup-modal__sub" id="shopSub"></p>
+      <div class="levelup-modal__owned hidden" id="shopOwned" role="group" aria-labelledby="shopOwnedHead">
+        <span class="levelup-owned__head" id="shopOwnedHead" data-i18n="levelup.owned">装備中</span>
+        <div class="levelup-owned__rows" id="shopOwnedRows"></div>
+      </div>
+      <div class="shop-grid" id="shopGrid" role="list"></div>
+      <div class="shop-bans hidden" id="shopBans"></div>
+      <div class="levelup-modal__actions shop-actions">
+        <span class="shop-actions__bans" id="shopBansLeft"></span>
+        <button class="btn btn--secondary levelup-modal__reroll shop-actions__reroll" id="shopReroll" type="button">リロール</button>
+        <button class="btn btn--primary shop-actions__leave" id="shopLeave" type="button">次のウェーブへ ▶</button>
       </div>
     </div>
   </div>

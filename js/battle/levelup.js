@@ -91,7 +91,7 @@ export function pickFromPool(eligible, n, { exclude = new Set(), last = new Set(
     return arr;
   };
   const fresh = eligible.filter((e) => !exclude.has(id(e)));
-  const used = new Set();
+  const used = new Set();   // 同じ品が候補に 2 回入っていても (= SPEC-109 の店主の癖)、 札は 1 枚
   const result = [];
   // 1) 武器を 1 枠優先 (= 避けるものの外から)
   const weaponPool = fresh.filter((e) => e.category === "weapon");
@@ -103,6 +103,7 @@ export function pickFromPool(eligible, n, { exclude = new Set(), last = new Set(
   // 2) 残りを避けるものの外から、 重ならないように
   for (const e of shuffle(fresh.filter((x) => !used.has(id(x))))) {
     if (result.length >= n) break;
+    if (used.has(id(e))) continue;
     result.push(e);
     used.add(id(e));
   }
@@ -112,6 +113,7 @@ export function pickFromPool(eligible, n, { exclude = new Set(), last = new Set(
     const lastOnes = shuffle(eligible.filter((e) => last.has(id(e)) && !used.has(id(e))));
     for (const e of [...older, ...lastOnes]) {
       if (result.length >= n) break;
+      if (used.has(id(e))) continue;
       result.push(e);
       used.add(id(e));
     }
@@ -169,10 +171,17 @@ function llUnlocked() {
   return hasHeroCleared(getMeta(), state.ownedHero?.heroId);
 }
 
-function _samplePicks(n, exclude = new Set(), last = new Set(), withLL = true) {
+/**
+ * 候補を n 枚 (= レベルアップとショップ SPEC-109 で共通)。 banned: お断りした系列 (= 出さない)。 bias: ショップの店主の癖
+ */
+export function samplePicks(n, { exclude = new Set(), last = new Set(), withLL = true, banned = new Set(), bias = null } = {}) {
+  return _samplePicks(n, exclude, last, withLL, banned, bias);
+}
+
+function _samplePicks(n, exclude = new Set(), last = new Set(), withLL = true, banned = new Set(), bias = null) {
   // SPEC-101: 初期武器が Lv.5 なら、 1 枚目は必ず LL ランクアップ (= 残りの枚数を配る)
   const ll = withLL ? llOption(state.ownedExtensions, state.battle?.starterExtId, getExt, EXT_MAX_LEVEL, llUnlocked()) : null;
-  if (ll) return n <= 1 ? [ll] : [ll, ..._samplePicks(n - 1, new Set([...exclude, String(ll.extId)]), last, false)];
+  if (ll) return n <= 1 ? [ll] : [ll, ..._samplePicks(n - 1, new Set([...exclude, String(ll.extId)]), last, false, banned, bias)];
   const ownedById = new Map(state.ownedExtensions.map(o => [String(o.extId), o]));
 
   // SPEC-023: stock 上限到達後は新規系列を候補から除外 (= 既所持の lv up のみ)
@@ -183,7 +192,8 @@ function _samplePicks(n, exclude = new Set(), last = new Set(), withLL = true) {
   const weaponStockFull = ownedWeaponCount >= stockLimit("weapon");   // SPEC-090c: 大きな鞄で +1
   const buffStockFull   = ownedBuffCount   >= stockLimit("buff");
 
-  const eligible = EXT_ROSTER.filter(e => {
+  let eligible = EXT_ROSTER.filter(e => {
+    if (banned.has(String(e.extId))) return false;   // SPEC-109: お断りした系列
     const o = ownedById.get(String(e.extId));
     if (o) return o.level < EXT_MAX_LEVEL;   // 既所持は EXT_MAX_LEVEL 未満なら eligible
     // 未所持: stock 上限に達していなければ追加可能
@@ -192,6 +202,9 @@ function _samplePicks(n, exclude = new Set(), last = new Set(), withLL = true) {
     return true;
   });
 
+  // SPEC-109: 店主の癖 (= 強化が出やすい・まだ持っていない系列が出やすい)。 候補を重ねて出やすくする
+  if (bias === "buff") eligible = eligible.concat(eligible.filter((e) => e.category === "buff"));
+  if (bias === "new") eligible = eligible.concat(eligible.filter((e) => !ownedById.has(String(e.extId))));
   // SPEC-013: 重複防止、 最低 1 weapon。 SPEC-067: このレベルアップで出したものは避ける
   const result = pickFromPool(eligible, n, { exclude, last });
   for (const e of result) _shown.add(String(e.extId));
@@ -207,6 +220,27 @@ function _samplePicks(n, exclude = new Set(), last = new Set(), withLL = true) {
       isNew:        !o,
     };
   });
+}
+
+/**
+ * SPEC-109: いまその品を買えるとしたら、 どの札になるか (= ショップの取り置きを次の店で出し直す)。
+ * 段が上がりきった・枠がいっぱい・お断りした、 なら null
+ */
+export function offerFor(extId, banned = new Set()) {
+  if (banned.has(String(extId))) return null;
+  const ll = llOption(state.ownedExtensions, state.battle?.starterExtId, getExt, EXT_MAX_LEVEL, llUnlocked());
+  if (ll && String(ll.extId) === String(extId)) return ll;
+  const e = getExt(extId);
+  if (!e) return null;
+  const o = state.ownedExtensions.find((x) => String(x.extId) === String(extId));
+  if (o) {
+    if (o.level >= EXT_MAX_LEVEL) return null;
+  } else {
+    const n = state.ownedExtensions.filter((x) => getCategory(getExt(x.extId)) === e.category).length;
+    if (n >= stockLimit(e.category === "buff" ? "buff" : "weapon")) return null;
+  }
+  const cur = o?.level ?? 0;
+  return { extId: e.extId, ext: e, currentLevel: cur, nextLevel: Math.min(EXT_MAX_LEVEL, cur + sigNextPickSteps()), isNew: !o };
 }
 
 function _ensureFallbackWeapon() {
@@ -245,6 +279,16 @@ export function skipPick() {
 }
 
 export function applyPick(extId) {
+  grantPick(extId);
+  _close();
+}
+
+/**
+ * 品を 1 つ手に入れる (= 持っていれば段が上がり、 無ければ Lv.1)。 レベルアップとショップ (SPEC-109) で共通。
+ * 武器なら組み直し、 強化なら効き目を掛ける。 LL・テトラクテュスもここ
+ * @returns {number} 上がったあとの段
+ */
+export function grantPick(extId) {
   const ext   = getExt(extId);
   const owned = state.ownedExtensions.find(o => String(o.extId) === String(extId));
   // SPEC-100: テトラクテュス (= ピタゴラス) は 4 回目ごとのピックで 2 段上がる
@@ -268,7 +312,7 @@ export function applyPick(extId) {
     playSe(SFX.PICK_WEAPON, 100, 0.55);
   }
   if (toLL) showLLReveal(ext);   // SPEC-101
-  _close();
+  return next;
 }
 
 /** SPEC-101: LL の品の絵を大きく出す (= 0.8 秒。 遊びは止めない。 演出を減らす設定では出さない) */
@@ -364,11 +408,20 @@ export function renderLevelUpModal() {
   _renderOwned();   // SPEC-087: 装備中の帯
 
   grid.innerHTML = "";
+  for (const opt of state.pendingPickOptions) {
+    const card = buildPickCard(opt, grid.children.length);
+    card.addEventListener("click", () => _pickWithFx(card, opt.extId));
+    grid.appendChild(card);
+  }
+  _renderPickButtons();
+}
+
+/** 候補の札 1 枚 (= レベルアップとショップ SPEC-109 で共通。 押したときの動きは呼ぶ側が付ける) */
+export function buildPickCard(opt, i = 0) {
   const lang = getLang();
   const newLabel = t("ext.new", "NEW");
   const lvUpTpl  = t("levelup.delta", "Lv.{cur} → Lv.{next}");
-
-  for (const opt of state.pendingPickOptions) {
+  {
     const card = document.createElement("button");
     card.className = "levelup-card";
     card.type = "button";
@@ -454,11 +507,12 @@ export function renderLevelUpModal() {
     main.append(bar, nameEl, skillEl, descEl, lvEl);
 
     card.append(catEl, iconWrap, main);
-    card.style.setProperty("--i", String(grid.children.length));   // SPEC-057: 配る順
-    card.addEventListener("click", () => _pickWithFx(card, opt.extId));
-    grid.appendChild(card);
+    card.style.setProperty("--i", String(i));   // SPEC-057: 配る順
+    return card;
   }
+}
 
+function _renderPickButtons() {
   // SPEC-023: リロールボタンの残数表示 + disabled 状態
   const rerollBtn = document.getElementById("levelUpReroll");
   if (rerollBtn) {
@@ -482,15 +536,17 @@ export function renderLevelUpModal() {
  * 何も持っていなければ (= 最初の武器を選ぶとき) 隠す。 候補の札より上に置く
  */
 function _renderOwned() {
-  const wrap = document.getElementById("levelUpOwned");
-  const rows = document.getElementById("levelUpOwnedRows");
+  renderOwnedStrip(document.getElementById("levelUpOwned"), document.getElementById("levelUpOwnedRows"), document.getElementById("levelUpOwnedHead"));
+}
+
+/** 装備中の帯を wrap / rows に描く (= レベルアップとショップ SPEC-109 で共通) */
+export function renderOwnedStrip(wrap, rows, head) {
   if (!wrap || !rows) return;
   const owned = state.ownedExtensions ?? [];
   rows.innerHTML = "";
   if (owned.length === 0) { wrap.classList.add("hidden"); return; }
   wrap.classList.remove("hidden");
 
-  const head = document.getElementById("levelUpOwnedHead");
   if (head) head.textContent = t("levelup.owned", "装備中");
   const lang = getLang();
   const groups = ownedStripGroups(owned, (o) => getCategory(getExt(o.extId)), { weaponLimit: stockLimit("weapon"), buffLimit: stockLimit("buff") });   // SPEC-090c

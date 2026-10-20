@@ -13,6 +13,7 @@ import {
   SFX,
 } from "../constants.js";
 import { triggerLevelUpPick } from "./levelup.js";
+import { addShopGift } from "./shop.js";   // SPEC-109
 import { playSe } from "../audio.js";
 import { naviTipOnce } from "../navi-tips.js";
 
@@ -52,6 +53,12 @@ export function tickMagicCards(_dt) {
     }
   }
   if (picked === 0) return;
+  // SPEC-109: ショップでは ギフト券 (= 次の店で 1 品ただ。 行き先 Lv.4 まで)
+  if (state.shop) {
+    addShopGift(picked);
+    playSe(SFX.GEM_PICKUP, 100, 0.5);
+    return;
+  }
 
   // 即時レベルアップ (= xp は減らさない、 state.xpToNext のみ次段に進める)
   for (let n = 0; n < picked; n++) {

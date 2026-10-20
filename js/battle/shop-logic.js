@@ -1,0 +1,89 @@
+// ============================================================
+// battle/shop-logic.js — ショップの純関数 (= SPEC-109。 DOM に触れない。 tests/shop.test.mjs)
+// ============================================================
+
+import {
+  SHOP_FIRST_MS, SHOP_EVERY_MS, SHOP_PER_STAGE, SHOP_PRICE, SHOP_PRICE_LL,
+  SHOP_STAGE_MUL, SHOP_REROLL_COST, SHOP_GIFT_MAX_LEVEL,
+} from "../constants.js";
+
+/** 店主 (= 商人のシャドーヒーロー。 絵は資産リポジトリの Image/Enemies/<enemyId>.png) */
+export const MERCHANTS = [
+  { id: "marco",    enemyId: 480,  quirk: "sale" },        // マルコ・ポーロ：1 品が半額
+  { id: "magellan", enemyId: 821,  quirk: "extraOffer" },  // マゼラン：品が 1 枚多い
+  { id: "gennai",   enemyId: 553,  quirk: "buffBias" },    // 平賀源内：強化の品が出やすい
+  { id: "columbus", enemyId: 815,  quirk: "newBias" },     // コロンブス：まだ持っていない系列が出やすい
+  { id: "gama",     enemyId: 1165, quirk: "freeReroll" },  // ヴァスコ・ダ・ガマ：リロールが 1 回ただ
+  { id: "kurohige", enemyId: 506,  quirk: "pirate" },      // 黒髭：ランクアップ 2 割引・新しい品 2 割増し
+];
+/** ステージ 2・3 の開始の前の店は決まった人 (= 「次の地へ向かう前に」) */
+export const OPENING_MERCHANT = "marco";
+
+/** ショップで遊ぶか (= 作りかけのあいだのフラグ) */
+export function isShopMode(search = _search(), storage = _storage()) {
+  try {
+    if (new URLSearchParams(search ?? "").get("shop") === "1") return true;
+    return storage?.getItem?.("mcs.shop") === "1";
+  } catch { return false; }
+}
+
+/** そのステージの店が開く時刻 (= ステージの経過 ms) */
+export function shopTimesMs(stageIdx) {
+  const first = SHOP_FIRST_MS[Math.min(SHOP_FIRST_MS.length - 1, Math.max(0, stageIdx | 0))];
+  return Array.from({ length: SHOP_PER_STAGE }, (_, i) => first + i * SHOP_EVERY_MS);
+}
+
+/** 5 の倍数に丸める (= 値段の見やすさ) */
+export function roundTo5(v) {
+  return Math.max(5, Math.round(v / 5) * 5);
+}
+
+/**
+ * 品の値段。 行き先の段 (= レアリティ) で上がり、 ステージで掛かる。 店主の癖とセールも効く
+ * @param {{nextLevel:number,isLL?:boolean,isNew?:boolean}} offer
+ */
+export function shopPrice(offer, stageIdx = 0, quirk = null, sale = false) {
+  const lv = Math.max(1, Math.min(SHOP_PRICE.length, offer?.nextLevel | 0));
+  let p = offer?.isLL ? SHOP_PRICE_LL : SHOP_PRICE[lv - 1];
+  p *= SHOP_STAGE_MUL[Math.min(SHOP_STAGE_MUL.length - 1, Math.max(0, stageIdx | 0))];
+  if (quirk === "pirate") p *= offer?.isNew ? 1.2 : 0.8;
+  if (sale) p *= 0.5;
+  return roundTo5(p);
+}
+
+/** ギフト券 (= マジックカード) で ただにできる品か */
+export function giftable(offer) {
+  return !!offer && !offer.isLL && (offer.nextLevel | 0) <= SHOP_GIFT_MAX_LEVEL;
+}
+
+/** 店主を選ぶ (= 同じ人が続けて来ない)。 fixed なら決まった人 */
+export function pickMerchant(prevId = null, rnd = Math.random, fixed = null) {
+  if (fixed) return MERCHANTS.find((m) => m.id === fixed) ?? MERCHANTS[0];
+  const pool = MERCHANTS.filter((m) => m.id !== prevId);
+  return pool[Math.floor(rnd() * pool.length) % pool.length];
+}
+
+/** 払うリロールの値段 (= この店で払った回数 n。 5 → 10 → 15 …) */
+export function rerollCost(paidSoFar = 0) {
+  return SHOP_REROLL_COST * (Math.max(0, paidSoFar | 0) + 1);
+}
+
+/** お断りできるか (= 初期武器と LL は断れない。 回数が残っているとき) */
+export function canBan(offer, starterExtId, bansLeft) {
+  if (!offer || offer.isLL || (bansLeft | 0) <= 0) return false;
+  return String(offer.extId) !== String(starterExtId);
+}
+
+/** 次の店までの割合 (= HUD の帯。 0..1)。 もう店が無ければ 1 */
+export function shopProgress(elapsedMs, stageIdx, nextIdx) {
+  const times = shopTimesMs(stageIdx);
+  if (nextIdx >= times.length) return 1;
+  const to = times[nextIdx];
+  const from = nextIdx > 0 ? times[nextIdx - 1] : 0;
+  if (to <= from) return 1;
+  return Math.max(0, Math.min(1, (elapsedMs - from) / (to - from)));
+}
+
+function _search() { try { return globalThis.location?.search ?? ""; } catch { return ""; } }
+function _storage() { try { return globalThis.localStorage ?? null; } catch { return null; } }
+

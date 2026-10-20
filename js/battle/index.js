@@ -8,6 +8,7 @@
 
 import { tickResumeCountdown, resetResumeCountdown } from "./resume-countdown.js";   // SPEC-104
 import { tickMilestones, resetMilestones } from "./milestones.js";   // SPEC-105
+import { isShopMode, resetShopForStage, tickShop } from "./shop.js";   // SPEC-109
 import { state } from "../state.js";
 import {
   FACTION_COLOR, FACTION_COLOR_DEFAULT,
@@ -198,8 +199,14 @@ export function startBattle(hero) {
   resetFx();             // SPEC-045: 揺れ・粒・予告をステージごとに作り直す
   startCoachIfFirst();   // SPEC-042: 初回のステージ 1 だけ操作ガイド
   // SPEC-090c: 先手 (= 始まってすぐ選ぶ。 各ステージの始まりに。 経験値の梯子は進めない)
-  const headStart = perk("startLevels");
-  if (headStart > 0) { state.level += headStart; triggerLevelUpPick(headStart); }
+  // SPEC-109: ショップで遊ぶときは CE に読み替える (= resetShopForStage)
+  if (isShopMode()) {
+    resetShopForStage(state.currentStageIdx ?? 0);
+  } else {
+    state.shop = null;
+    const headStart = perk("startLevels");
+    if (headStart > 0) { state.level += headStart; triggerLevelUpPick(headStart); }
+  }
   _showStageIntro();     // SPEC-046: 「STAGE n / ステージ名」の帯
   resizeCanvas();
   _placeToasts();        // SPEC-052: 通知は HUD (と RTA の時計) の下に出す
@@ -310,6 +317,7 @@ function _step(dt, now) {
   tickRegen(dt);                 // SPEC-011: Ramen 系列の HP regen
   tickCoach(dt, v.x !== 0 || v.y !== 0);   // SPEC-042: 操作ガイド
   tickMilestones(_commTop() + 64);          // SPEC-105: 撃破数の節目 (= 止めない)
+  if (state.shop) tickShop();               // SPEC-109: 時刻になったら店を開く (= 時間を止める)
   if (state.battle.contactCooldownMs > 0) {
     state.battle.contactCooldownMs -= dt * 1000;
   }
