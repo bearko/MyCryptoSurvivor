@@ -17,9 +17,10 @@ test("ショップは既定で ON (= 2026-10-20 本番に適用)。 ?shop=0 か 
   assert.equal(isShopMode("", store("0")), false);
   assert.equal(isShopMode("", store("1")), true);
   assert.equal(isShopMode("", { getItem() { throw new Error("blocked"); } }), true);
-  // RTA は今のレギュレーション (= v4) のままレベルアップで計る
+  // SPEC-111: RTA でもショップ (= rtaMode で外さない)
   const idx = readFileSync(new URL("../js/battle/index.js", import.meta.url), "utf8");
-  assert.match(idx, /if \(isShopMode\(\) && !state\.rtaMode\)/);
+  assert.match(idx, /if \(isShopMode\(\)\) \{/);
+  assert.doesNotMatch(idx, /isShopMode\(\) && !state\.rtaMode/);
 });
 
 test("来店で HP が少し戻る (= 最大 HP の 1 割。 満タンを超えない・倒れていたら戻さない)", () => {

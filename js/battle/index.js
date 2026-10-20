@@ -201,8 +201,8 @@ export function startBattle(hero) {
   startCoachIfFirst();   // SPEC-042: 初回のステージ 1 だけ操作ガイド
   // SPEC-090c: 先手 (= 始まってすぐ選ぶ。 各ステージの始まりに。 経験値の梯子は進めない)
   // SPEC-109: ショップで遊ぶときは CE に読み替える (= resetShopForStage)
-  // RTA は今のレギュレーション (= v4) のままレベルアップで計る (= 記録を混ぜない。 ショップの版は SPEC-111)
-  if (isShopMode() && !state.rtaMode) {
+  // SPEC-111: RTA でもショップ (= 作者の決定 2026-10-20。 RTA の記録は作者のものだけなので、 レギュレーションの版は分けない)
+  if (isShopMode()) {
     resetShopForStage(state.currentStageIdx ?? 0);
   } else {
     state.shop = null;
