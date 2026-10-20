@@ -2,7 +2,7 @@
 id: SPEC-103
 title: v1.6 Shop & Missions — Buy Skills with CE, Merchant Shadow Heroes, Signature Upgrades, Missions, Enemy Tiers, Kill Milestones (Design & Roadmap)
 status: Draft
-pr: TBD
+pr: 135
 phase: v1.6 Shop
 kind: Changed
 ---
