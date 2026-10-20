@@ -211,6 +211,7 @@ export const SFX = {
   GIMMICK_WARN:    "Audio/SE/Battle/5_debuff_status_effect.mp3",   // SPEC-064: 仕掛けの予告 (= 珠の列・木馬)
   PUNCH:           "Audio/SE/Battle/1_single_damage.mp3",          // SPEC-064: パンチカード
   TROJAN_OPEN:     "Audio/SE/Battle/2_area_damage.mp3",            // SPEC-064: 木馬が開く
+  HERO_UNLOCK:     "Audio/SE/Jingles/knight.mp3",                   // SPEC-098: ヒーローが仲間になった (= 短いファンファーレ。 ほかでは使わない)
 };
 export const BGM_BATTLE = "Audio/BGM/pvp.mp3";
 export const BGM_MENU   = "Audio/BGM/land.mp3";   // SPEC-060: モード選択・ヒーロー選択・結果の画面

@@ -15,7 +15,7 @@ const {
   STARTER_HEROES, HERO_UNLOCKS, GAME_TITLES, unlockedHeroes, nextUnlock, unlockOf, heroForTrophy,
   getUnlockedHeroes, noteTrophies, onHeroesUnlocked, refreshHeroUnlocks, LS_HERO_UNLOCKED, _resetHeroUnlocksForTest,
 } = await import("../js/hero-unlock.js");
-const { HERO_STARTING_WEAPON } = await import("../js/constants.js");
+const { HERO_STARTING_WEAPON, SFX } = await import("../js/constants.js");
 const HEROES = JSON.parse(readFileSync(new URL("../data/heroes.json", import.meta.url), "utf8")).heroes;
 const ui = JSON.parse(readFileSync(new URL("../data/i18n/ui.json", import.meta.url), "utf8"));
 
@@ -41,6 +41,11 @@ test("10 人 = 最初の 2 人 ＋ 本作で 4 人 ＋ ほかのタイトルで 
     assert.ok(u.achievement?.ja && u.achievement?.en, u.trophy);
     assert.ok(ui[`hero.unlock.cond.${u.trophy}`]?.ja && ui[`hero.unlock.cond.${u.trophy}`]?.en, u.trophy);
   }
+});
+
+test("仲間になったときは専用の音 (= ヒーローを選ぶときの音とは別)", () => {
+  assert.match(SFX.HERO_UNLOCK, /^Audio\/SE\/Jingles\/.+\.mp3$/);
+  assert.notEqual(SFX.HERO_UNLOCK, SFX.HERO_PICK);
 });
 
 test("アチーブメントの一覧 → 使えるヒーロー", () => {
