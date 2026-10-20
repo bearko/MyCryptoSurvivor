@@ -62,7 +62,7 @@ test("報酬: CE はステージの値段の倍率を掛ける。 固有スキ�
   assert.deepEqual(rewardOf(MISSION_MAP.ripper, { stageIdx: 0 }), { ce: 80 });
   assert.deepEqual(rewardOf(MISSION_MAP.ripper, { stageIdx: 1 }), { ce: 145 });   // 80 × 1.8 = 144 → 145
   assert.deepEqual(rewardOf(MISSION_MAP.lubu, { stageIdx: 0, sigLevel: 2 }), { sig: 1 });
-  assert.deepEqual(rewardOf(MISSION_MAP.lubu, { stageIdx: 2, sigLevel: 5 }), { ce: 390 });   // 150 × 2.6
+  assert.deepEqual(rewardOf(MISSION_MAP.lubu, { stageIdx: 2, sigLevel: 10 }), { ce: 390 });   // 150 × 2.6
   assert.deepEqual(rewardOf(MISSION_MAP.nobunaga), { gift: 1 });
   assert.deepEqual(rewardOf(MISSION_MAP.caocao), { ban: 1 });
 });

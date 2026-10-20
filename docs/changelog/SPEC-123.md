@@ -1,0 +1,1 @@
+- **固有スキルを 10 段に、エクステの値段に傾斜を** (`js/battle/signature.js` + `js/constants.js`): 固有スキルは Lv.10 まで（Lv.2〜10 で 40〜16,000 CE）。エクステは Rare 500 / Epic 2,000 / Legendary 10,000 / LL 20,000 CE
