@@ -2,7 +2,7 @@
 id: SPEC-124
 title: Closing Hero Select Without Picking Returns to Mode Select (Was Stuck on an Empty Battle Screen)
 status: Done
-pr: TBD
+pr: 159
 phase: v1.6 Fix
 kind: Fixed
 ---
