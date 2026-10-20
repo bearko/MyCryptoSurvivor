@@ -131,6 +131,11 @@
   "shop.sig.phantom.iframeMs": { "ja": "消える時間", "en": "Vanish time" },
   "shop.sig.uinyeo.regenPerSec": { "ja": "回復", "en": "Regen" },
   "shop.sig.uinyeo.healMul": { "ja": "回復アイテム", "en": "Heal items" },
+  "shop.nextLabel": { "ja": "🛒 ショップまで", "en": "🛒 Shop in" },
+  "shop.nextSec": { "ja": "{n} 秒", "en": "{n}s" },
+  "coach.ce": { "ja": "敵が落とす CE を集めて、ショップで品を買おう", "en": "Collect the CE enemies drop and spend it at the shop" },
+  "shop.welcomeFree": { "ja": "🎁 サービス", "en": "🎁 Free" },
+  "shop.intro": { "ja": "敵が落とす CE（◆）を集めると、ショップで品が買えるよ。今回はサービスで 1 品無料！好きなものを選んでね", "en": "Collect the CE (◆) enemies drop to buy items here. This time one item is on the house — pick anything you like!" },
   "hud.stats.xp":        { "ja": "XP",                             "en": "XP" },
 
   "levelup.title":       { "ja": "レベルアップ!",                  "en": "Level Up!" },

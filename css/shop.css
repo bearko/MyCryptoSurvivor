@@ -229,3 +229,40 @@
   .shop-sig__note { display: none; }
   .shop-sig__face { width: 40px; height: 40px; }
 }
+
+/* 最初の店: マインちゃんの説明 (= CE を集めて買う・サービスの 1 品) */
+.shop-intro {
+  display: flex; align-items: center; gap: 0.55rem;
+  padding: 0.45rem 0.7rem;
+  border-radius: 10px;
+  background: linear-gradient(90deg, rgba(95, 198, 230, 0.22), rgba(95, 198, 230, 0.06));
+  border: 1px solid rgba(155, 231, 255, 0.55);
+}
+.shop-intro.hidden { display: none; }
+.shop-intro__ain { width: 48px; height: 48px; flex: 0 0 auto; image-rendering: pixelated; object-fit: contain; }
+.shop-intro__text { margin: 0; font-size: 0.82rem; line-height: 1.45; color: var(--text); }
+
+/* 次のショップまでの秒 (= 2 回目から。 戦場の右上。 左上はマインちゃんの通信の窓なので避ける。 遊びは止めない) */
+.shop-next {
+  position: absolute;
+  top: 8px; right: 8px;
+  z-index: var(--z-stage-ui);
+  display: flex; flex-direction: column; align-items: center;
+  min-width: 4.6rem;
+  padding: 0.2rem 0.55rem 0.25rem;
+  border-radius: 10px;
+  color: #ffe9a8;
+  background: rgba(20, 16, 30, 0.75);
+  border: 1px solid rgba(240, 193, 75, 0.55);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+  white-space: nowrap;
+  line-height: 1.15;
+}
+.shop-next__label { font-size: 0.6rem; font-weight: 700; color: var(--muted); }
+.shop-next__sec { font-size: 1.05rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+.shop-next.hidden { display: none; }
+.shop-next--soon { color: #1a1420; background: linear-gradient(180deg, #ffe08a, #e0a93a); animation: shop-next-pulse 1s ease-in-out infinite; }
+.shop-next--soon .shop-next__label { color: #4a3510; }
+@keyframes shop-next-pulse { 50% { scale: 1.08; } }
+:root[data-reduce-fx] .shop-next--soon { animation: none; }

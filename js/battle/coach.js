@@ -52,7 +52,8 @@ function _render(coach) {
   }
   el.dataset.step = String(coach.step);
   const text = el.querySelector(".coach__text");
-  if (text) text.textContent = t(coach.step === 0 ? "coach.move" : "coach.gems");
+  // SPEC-109: ショップで遊ぶときは「CE を集めて買う」 (= レベルアップは無い)
+  if (text) text.textContent = t(coach.step === 0 ? "coach.move" : (state.shop ? "coach.ce" : "coach.gems"));
   el.classList.remove("hidden");
 }
 
