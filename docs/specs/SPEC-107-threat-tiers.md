@@ -2,7 +2,7 @@
 id: SPEC-107
 title: Threat Tiers — Stronger Enemy Types Join as Stage Kills Rise; Stronger Enemies Drop More CE
 status: Done
-pr: TBD
+pr: 140
 phase: v1.6 Shop
 kind: Added
 ---
