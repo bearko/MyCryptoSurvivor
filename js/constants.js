@@ -344,8 +344,8 @@ export const SHOP_FIRST_MS      = [10000, 0, 0];   // ステージ 1 は 0:10、
 export const SHOP_EVERY_MS      = 40000;           // そのあと 40 秒ごと
 export const SHOP_PER_STAGE     = 6;               // 1 ステージの店の数 (= ボスの前に終わる)
 export const SHOP_OFFERS        = 4;               // 品の枚数 (= マゼランは +1)
-export const SHOP_PRICE         = [15, 30, 80, 800, 4000];   // 行き先の段 Lv.1〜5 の値段 (= ステージ 1)。 SPEC-121: Epic (Lv.4) から一気に上がる
-export const SHOP_PRICE_LL      = 10000;           // LL ランクアップ (= SPEC-121)
+export const SHOP_PRICE         = [15, 30, 80, 300, 1500];   // 行き先の段 Lv.1〜5 の値段 (= ステージ 1)。 SPEC-122: CE のスキルを最大にして取りこぼさなければ、 6 回目の店でぎりぎり全部 Lv.5
+export const SHOP_PRICE_LL      = 3000;            // LL ランクアップ (= Lv.5 の 2 倍。 SPEC-122)
 export const SHOP_STAGE_MUL     = [1, 1.8, 2.6];   // 雑魚の CE が ×1/×2/×3 なので値段も上げる
 export const SHOP_BANS          = 3;               // お断りは 1 挑戦 3 回まで
 export const SHOP_REROLL_COST   = 5;               // 払うリロールは 5 → 10 → 15 … (= 店ごとに戻る)
