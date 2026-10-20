@@ -2,7 +2,7 @@
 id: SPEC-119
 title: Shop Fits One Screen on Phones — Equipped + Wallet on One Row, Boss Count Beside the Merchant, Compact Cards
 status: Done
-pr: TBD
+pr: 152
 phase: v1.6 Shop
 kind: Changed
 ---
