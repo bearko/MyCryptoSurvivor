@@ -2,7 +2,7 @@
 id: SPEC-117
 title: Shop Goes Live — Header Countdown Bar with the Next Merchant Walking In, HP Heal on Each Shop Visit, Shop On by Default (RTA Keeps Level-Ups)
 status: Done
-pr: TBD
+pr: 149
 phase: v1.6 Shop
 kind: Changed
 ---
