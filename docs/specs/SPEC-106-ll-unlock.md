@@ -2,7 +2,7 @@
 id: SPEC-106
 title: LL Unlock — The LL Rank-Up Appears Only After Clearing All Stages With That Hero
 status: Done
-pr: TBD
+pr: 139
 phase: v1.6 Shop
 kind: Changed
 ---
