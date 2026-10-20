@@ -250,18 +250,18 @@ function setupHeroSelectModal() {
   const modal = $("#heroSelectModal");
   if (!modal) return;
 
-  $("#heroSelectClose")?.addEventListener("click", closeHeroSelectModal);
+  $("#heroSelectClose")?.addEventListener("click", cancelHeroSelect);
   $("#heroSelectCta")?.addEventListener("click", applyHeroPick);
 
   // 背景クリックで閉じる
   modal.addEventListener("click", (e) => {
-    if (e.target.id === "heroSelectModal") closeHeroSelectModal();
+    if (e.target.id === "heroSelectModal") cancelHeroSelect();
   });
 
   // Esc で閉じる
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && !modal.classList.contains("hidden")) {
-      closeHeroSelectModal();
+      cancelHeroSelect();
     }
   });
 
@@ -306,6 +306,22 @@ function closeHeroSelectModal() {
   stopHeroPreview();   // SPEC-083
   naviHide();   // SPEC-056
   resumeTime();
+}
+
+/**
+ * SPEC-124: ヒーローを選ばずに閉じた (= ✕・背景・Esc) ときは、 モード選択へ戻す。
+ * 閉じるだけだと、 後ろの戦闘の画面がヒーローなしで残り、 進めなくなっていた
+ */
+let _heroCancelling = false;
+function cancelHeroSelect() {
+  if (_heroCancelling || $("#heroSelectModal")?.classList.contains("hidden")) return;
+  _heroCancelling = true;
+  playWipe(() => {
+    closeHeroSelectModal();
+    $("#app")?.classList.add("hidden");
+    showModeSelect();
+    _heroCancelling = false;
+  }, { label: "SELECT // MODE" });
 }
 
 function renderHeroSelectModal() {
