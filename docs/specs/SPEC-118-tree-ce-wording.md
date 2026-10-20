@@ -2,7 +2,7 @@
 id: SPEC-118
 title: Skill Tree Wording for the Shop (XP → CE, Head Start / Pass Reward / Prodigy) and Unclipped Title Badge
 status: Done
-pr: TBD
+pr: 150
 phase: v1.6 Shop
 kind: Fixed
 ---
