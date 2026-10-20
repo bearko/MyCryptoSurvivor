@@ -2,7 +2,7 @@
 id: SPEC-131
 title: More GUM (Mission Clear Bonus, Kill Bonus) and 21 Extension-Specific Skill Tree Panels
 status: Done
-pr: TBD
+pr: 166
 phase: v1.6 Skill Tree
 kind: Changed
 ---
