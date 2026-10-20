@@ -117,6 +117,9 @@ export const HIT_DISC_STYLE = {
   rare:    { fill: [255, 214, 120], a0: 0.26, a1: 0.06, rim: "rgba(255, 220, 140, 0.6)", rimW: 1.2 },
   shooter: { fill: [255, 96, 112], a0: 0.18, a1: 0.05, rim: "rgba(255, 96, 112, 0.9)", rimW: 1.6 },
   boss:    { fill: [255, 80, 90], a0: 0.22, a1: 0.05, rim: "rgba(255, 120, 130, 0.5)", rimW: 1.6 },
+  // SPEC-107: 強い型 (= 巨大・疾走・横断は橙の縁、 精鋭は金の縁)
+  strong:  { fill: [255, 150, 60], a0: 0.20, a1: 0.05, rim: "rgba(255, 160, 70, 0.85)", rimW: 1.6 },
+  elite:   { fill: [255, 215, 90], a0: 0.32, a1: 0.08, rim: "rgba(255, 225, 120, 1)", rimW: 2 },
 };
 const _discCache = new Map();
 function _discCanvas(r, kind) {

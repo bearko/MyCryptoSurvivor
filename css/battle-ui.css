@@ -278,6 +278,38 @@
   .kill-milestone__rays { display: none; }
 }
 
+/* SPEC-107: 敵の段階が上がった (= 節目の通知の下に小さく赤い帯。 遊びは止めない) */
+.threat-notice {
+  position: absolute;
+  left: 50%;
+  top: 30%;
+  z-index: var(--z-stage-ui);
+  translate: -50% 0;
+  max-width: calc(100% - 24px);
+  padding: 0.3rem 0.9rem;
+  pointer-events: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--font-body);
+  font-weight: 800;
+  font-size: 0.8rem;
+  color: #ffe1e1;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+  background: linear-gradient(90deg, transparent, rgba(120, 16, 24, 0.85) 14%, rgba(120, 16, 24, 0.85) 86%, transparent);
+  border-top: 1px solid rgba(255, 110, 120, 0.6);
+  border-bottom: 1px solid rgba(255, 110, 120, 0.6);
+}
+.threat-notice--go { animation: threat-notice-go 2200ms var(--ease-out) both; }
+@keyframes threat-notice-go {
+  0%   { opacity: 0; translate: -50% 8px; }
+  10%  { opacity: 1; translate: -50% 0; }
+  82%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+:root[data-reduce-fx] .threat-notice--go { animation: none; }
+@media (prefers-reduced-motion: reduce) { .threat-notice--go { animation: none; } }
+
 /* SPEC-104: 再開のカウントダウン (= 戦況を見せながら、 真ん中に 3・2・1) */
 .resume-countdown {
   position: absolute;
