@@ -2,7 +2,7 @@
 id: SPEC-129
 title: Fix Stage 3 Freeze When the Trojan Horse Appears; Keep the Battle Loop Alive Through a Frame Error
 status: Done
-pr: TBD
+pr: 164
 phase: v1.6 Fix
 kind: Fixed
 ---
