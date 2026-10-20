@@ -134,3 +134,14 @@ test("最初の店はサービスで 1 品ただ・説明の文がある・ヘ�
   const ui = JSON.parse(readFileSync(new URL("../data/i18n/ui.json", import.meta.url), "utf8"));
   for (const k of ["shop.intro", "shop.bar.label", "shop.bar.sec", "shop.bar.done", "shop.healed", "shop.welcomeFree", "coach.ce"]) assert.ok(ui[k]?.ja && ui[k]?.en, k);
 });
+
+test("スマホのショップ: 装備中と手持ちを 1 行 (= 8:2)・ボスまでの回数は商人の名前の横", () => {
+  const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
+  const status = html.slice(html.indexOf('class="shop-status"'), html.indexOf('class="shop-body"'));
+  assert.ok(status.includes('id="shopOwned"') && status.includes('id="shopCe"'), "装備中と手持ちが同じ段");
+  const title = html.slice(html.indexOf('id="shopTitle"'), html.indexOf("</h2>", html.indexOf('id="shopTitle"')));
+  assert.ok(title.includes('id="shopSub"'), "ボスまでの回数は名前の横");
+  const css = readFileSync(new URL("../css/shop.css", import.meta.url), "utf8");
+  assert.match(css, /\.shop-status \{ display: grid; grid-template-columns: minmax\(0, 8fr\) minmax\(0, 2fr\);/);
+  assert.match(css, /\.shop-grid\[data-n="5"\] \{ grid-template-columns: repeat\(3, minmax\(0, 1fr\)\); \}/);
+});

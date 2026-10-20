@@ -452,8 +452,12 @@ export function renderShop() {
   const sub = document.getElementById("shopSub");
   if (sub) {
     const left = SHOP_PER_STAGE - s.nextIdx;
-    sub.textContent = tpl(t("shop.sub", "あと {n} 回の店でボス"), { n: String(Math.max(0, left)) })
-      + (_healed > 0 ? tpl(t("shop.healed", "　・　来店で HP +{n}"), { n: String(_healed) }) : "");
+    sub.textContent = tpl(t("shop.sub", "（あと {n} 回でボス）"), { n: String(Math.max(0, left)) });
+  }
+  const healed = document.getElementById("shopHealed");
+  if (healed) {
+    healed.classList.toggle("hidden", !(_healed > 0));
+    healed.textContent = tpl(t("shop.healed", "HP +{n}"), { n: String(_healed) });
   }
 
   _renderSig();   // SPEC-110
@@ -461,6 +465,7 @@ export function renderShop() {
   const intro = document.getElementById("shopIntro");
   if (intro) {
     intro.classList.toggle("hidden", !s.welcome);
+    document.getElementById("shopModal")?.classList.toggle("shop-modal--intro", !!s.welcome);   // スマホは商人のひとことを畳む
     const ain = document.getElementById("shopIntroAin");
     if (ain && !ain.getAttribute("src")) ain.src = naviFrameUrl(NAVI_POSES.smile);
     const msg = document.getElementById("shopIntroText");
@@ -472,6 +477,7 @@ export function renderShop() {
   if (grid) {
     grid.innerHTML = "";
     grid.style.setProperty("--cols", String(Math.max(4, _offers.length)));
+    grid.dataset.n = String(_offers.length);   // スマホで 5 枚のとき 3 列にする (= css)
     const banned = new Set(s.bans);
     _offers.forEach((o, i) => {
       const wrap = document.createElement("div");
@@ -508,7 +514,7 @@ export function renderShop() {
       const lock = document.createElement("button");
       lock.type = "button";
       lock.className = "shop-tool shop-tool--lock" + (locked ? " is-on" : "");
-      lock.textContent = locked ? t("shop.locked", "🔒 取り置き中") : t("shop.lock", "🔓 取り置き");
+      _toolLabel(lock, locked ? t("shop.locked", "🔒 取り置き中") : t("shop.lock", "🔓 取り置き"));
       lock.setAttribute("aria-pressed", locked ? "true" : "false");
       lock.addEventListener("click", () => toggleLock(o.extId));
       tools.appendChild(lock);
@@ -516,7 +522,7 @@ export function renderShop() {
         const ban = document.createElement("button");
         ban.type = "button";
         ban.className = "shop-tool shop-tool--ban";
-        ban.textContent = t("shop.ban", "✕ お断り");
+        _toolLabel(ban, t("shop.ban", "✕ お断り"));
         ban.title = tpl(t("shop.banHint", "{name} をこの挑戦のあいだ出さない"), { name: getSeriesName(offer.ext, lang) });
         ban.addEventListener("click", () => banOffer(o.extId));
         tools.appendChild(ban);
@@ -546,6 +552,7 @@ export function renderShop() {
     }
   }
   _text("shopBansLeft", tpl(t("shop.bansLeft", "お断り 残り {n}"), { n: String(s.bansLeft) }));
+  _text("shopWalletBans", tpl(t("shop.bansLeftShort", "✕ 残り {n}"), { n: String(s.bansLeft) }));   // スマホは手持ちの欄に
 
   const rr = document.getElementById("shopReroll");
   if (rr) {
@@ -559,6 +566,23 @@ export function renderShop() {
       ? t("shop.leaveHeal", "何も買わずに出る（HP 回復）")
       : t("shop.leave", "次のウェーブへ ▶");
   }
+}
+
+/** 取り置き・お断りの文字 (= 印と言葉を分けて、 狭いときは印だけ出せるように) */
+function _toolLabel(btn, text) {
+  const m = /^(\S+)\s+(.*)$/.exec(text);
+  btn.textContent = "";
+  const i = document.createElement("span");
+  i.className = "shop-tool__i";
+  i.textContent = m ? m[1] : text;
+  btn.appendChild(i);
+  if (m) {
+    const l = document.createElement("span");
+    l.className = "shop-tool__l";
+    l.textContent = " " + m[2];
+    btn.appendChild(l);
+  }
+  btn.setAttribute("aria-label", text);
 }
 
 function _text(id, v) {
