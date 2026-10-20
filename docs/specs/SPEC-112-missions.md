@@ -2,7 +2,7 @@
 id: SPEC-112
 title: Missions — Shadow Heroes Offer Mid-Wave Challenges (Accept / Decline), Hero-Themed Effects, Rewards That Feed the Shop
 status: Done
-pr: TBD
+pr: 151
 phase: v1.6 Shop
 kind: Added
 ---
