@@ -2,7 +2,7 @@
 id: SPEC-109
 title: Shop — Buy Extensions with CE from Merchant Shadow Heroes (Hold, Ban, Reroll, Gift Tickets) behind ?shop=1
 status: Done
-pr: TBD
+pr: 142
 phase: v1.6 Shop
 kind: Added
 ---
