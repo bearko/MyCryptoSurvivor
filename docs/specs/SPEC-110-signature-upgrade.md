@@ -2,7 +2,7 @@
 id: SPEC-110
 title: Signature Skill Upgrade — A Permanent Shop Card (Lv.1 → Lv.5) Kept Across Stages
 status: Done
-pr: TBD
+pr: 143
 phase: v1.6 Shop
 kind: Added
 ---
