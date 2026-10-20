@@ -65,3 +65,12 @@ test("マインちゃんの案内のセリフには文がある (= JP / EN)", ()
   assert.deepEqual(naviLines("tree", { step: "nope" }), []);
   for (const k of ["tree.stats", "tree.statsNote", "tree.statsNone", "tree.guide", "tree.new"]) assert.ok(ui[k]?.ja && ui[k]?.en, k);
 });
+
+test("SPEC-135: 画面の分け方 (= 860px で分ける・PC は右に 340px の欄・選ぶたびに欄の先頭へ)", () => {
+  const js = readFileSync(new URL("../js/skill-tree.js", import.meta.url), "utf8");
+  const css = readFileSync(new URL("../css/skill-tree.css", import.meta.url), "utf8");
+  assert.match(js, /matchMedia\("\(min-width: 861px\)"\)/);
+  assert.match(js, /_parts\.sheet\.scrollTop = 0/);
+  assert.match(css, /\.tree-screen\.wide \.tree-side \{[^}]*width: 340px/);
+  assert.match(css, /@media \(max-width: 860px\) \{\s*\.tree-sheet \{ max-height: 46dvh/);
+});
