@@ -2,7 +2,7 @@
 id: SPEC-121
 title: Shop Prices Jump at Epic — Lv.4 800 / Lv.5 4000 / LL 10000 CE
 status: Done
-pr: TBD
+pr: 156
 phase: v1.6 Shop
 kind: Changed
 ---
