@@ -12,7 +12,7 @@ import { state, pauseTime, resumeTime } from "../state.js";
 import { STAGE_TABLE } from "../constants.js";
 import { triggerGameOver } from "./gameover.js";
 import { triggerActivityReport } from "./activity-report.js";
-import { t, tpl, onLangChange } from "../i18n.js";
+import { t, tpl, onLangChange, getLang } from "../i18n.js";
 import { reportStageEnd, reportRtaStageEnd } from "../platform.js";
 import { formatElapsed } from "../survival.js";
 import { countUp, revealIn } from "../reveal.js";
@@ -20,6 +20,8 @@ import { presentResult } from "../result-telop.js";
 import { grantBossDust } from "../meta.js";
 import { renderRewards } from "../meta-ui.js";
 import { perk } from "../perks.js";   // SPEC-090c
+import { pourShopCeIntoSig } from "./shop.js";   // SPEC-128
+import { heroImg } from "../heroes.js";
 
 let _wired = false;
 
@@ -82,6 +84,9 @@ export function triggerStageEndOrTransition() {
   }
 
   state.battle.gameOver = true;   // ループ tick の重複 trigger 防止 (= 既存規約)
+  // SPEC-128: 残った CE を固有スキルへ (= 次のステージへは持ち越さない。 ギフト券は持ち越す)
+  const endSnap = state.run.stages.find(s => s.idx === endIdx);
+  if (state.shop && endSnap && endSnap.sigPour === undefined) endSnap.sigPour = pourShopCeIntoSig();
   pauseTime();
   _wireOnce();
   _renderTransitionModal();
@@ -168,8 +173,9 @@ function _renderTransitionModal() {
     pipsEl.innerHTML = STAGE_TABLE.map((_, i) =>
       `<span class="stage-pip${i <= idx ? " stage-pip--done" : ""}"></span>`).join("");
   }
-  const tilesEl = document.getElementById("stageTransitionTiles");
   const snap = state.run.stages.find(s => s.idx === idx);
+  _renderSigPour(snap?.sigPour ?? null);
+  const tilesEl = document.getElementById("stageTransitionTiles");
   if (tilesEl && snap) {
     tilesEl.innerHTML = resultTilesHtml({
       timeText: formatElapsed(Math.round((snap.elapsedMs ?? 0) / 1000)),
@@ -177,5 +183,39 @@ function _renderTransitionModal() {
       level: snap.level ?? 1,
       killsId: "stageTransitionKills",
     });
+  }
+}
+
+/** SPEC-128: 「残った CE ◆9273 → テスラコイル Lv 5 → 7」 (= ショップで遊んでいないとき・CE が 0 のときは出さない) */
+function _renderSigPour(r) {
+  const el = document.getElementById("stageTransitionSig");
+  if (!el) return;
+  const hero = state.ownedHero;
+  if (!r || !hero || r.ce <= 0) { el.classList.add("hidden"); el.innerHTML = ""; return; }
+  const name = hero.passive?.[getLang()] ?? hero.passive?.ja ?? "";
+  const vars = { ce: String(r.ce), name, from: String(r.from), to: String(r.to), rest: String(r.rest ?? 0) };
+  const up = r.to > r.from;
+  let main, rest = "";
+  if (r.from >= r.to && r.max) main = tpl(t("stage.sigPourMax", "{name} は最大（CE は次のステージへ持ち越さない）"), vars);
+  else if (up) {
+    main = tpl(t("stage.sigPour", "残った CE ◆{ce} → {name} Lv {from} → {to}"), vars);
+    if (!r.max) rest = tpl(t("stage.sigPourRest", "次まで あと ◆{rest}"), vars);
+  } else main = tpl(t("stage.sigPourSame", "残った CE ◆{ce} → {name} Lv {to}（次まで あと ◆{rest}）"), vars);
+  el.classList.remove("hidden");
+  el.classList.toggle("result-sigpour--up", up);
+  el.innerHTML = "";
+  const face = document.createElement("img");
+  face.className = "result-sigpour__face";
+  face.src = heroImg(hero.heroId);
+  face.alt = "";
+  const m = document.createElement("span");
+  m.className = "result-sigpour__main";
+  m.textContent = main;
+  el.append(face, m);
+  if (rest) {
+    const r2 = document.createElement("span");
+    r2.className = "result-sigpour__rest";
+    r2.textContent = rest;
+    el.appendChild(r2);
   }
 }

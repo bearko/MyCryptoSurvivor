@@ -4,7 +4,7 @@ import { test, beforeEach } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import {
-  SIGNATURE_OF, sigParams, sigLevel, SIG_MAX_LEVEL, SIG_UP_PRICE, resetSignature, sigDamageMul, sigTryPhantom,
+  SIGNATURE_OF, sigParams, sigLevel, SIG_MAX_LEVEL, SIG_UP_PRICE, pourCeIntoSig, resetSignature, sigDamageMul, sigTryPhantom,
   sigNextPickSteps, sigOnPicked, sigOnLevelUp, sigRegenPerSec, sigHealMul,
   ONE_HOLE, LANGER, TIGER, PIRATE, PHANTOM, MIST, TESLA, SLASH, TETRACTYS, UINYEO, slashDmg,
 } from "../js/battle/signature.js";
@@ -64,11 +64,40 @@ test("段が上がるほど伸びる (= 下がらない)", () => {
   }
 });
 
-test("SPEC-123: 10 段。 値段は Lv.2〜10 で後ろほど急に高い", () => {
-  assert.equal(SIG_MAX_LEVEL, 10);
+test("SPEC-128: 15 段。 値段は Lv.10 までは 1 段ごとに 2 倍以上、 その先は 1.5 倍", () => {
+  assert.equal(SIG_MAX_LEVEL, 15);
   assert.equal(SIG_UP_PRICE.length, SIG_MAX_LEVEL - 1);
-  assert.deepEqual(SIG_UP_PRICE, [40, 100, 250, 500, 1000, 2000, 4000, 8000, 16000]);
-  for (let i = 1; i < SIG_UP_PRICE.length; i++) assert.ok(SIG_UP_PRICE[i] >= SIG_UP_PRICE[i - 1] * 2, `step ${i}`);   // 1 段ごとに 2 倍以上
+  assert.deepEqual(SIG_UP_PRICE, [40, 100, 250, 500, 1000, 2000, 4000, 8000, 16000, 24000, 36000, 54000, 81000, 120000]);
+  for (let i = 1; i < 9; i++) assert.ok(SIG_UP_PRICE[i] >= SIG_UP_PRICE[i - 1] * 2, `step ${i}`);
+  for (let i = 9; i < SIG_UP_PRICE.length; i++) assert.ok(SIG_UP_PRICE[i] >= SIG_UP_PRICE[i - 1] * 1.48, `step ${i}`);
+});
+
+test("SPEC-128: Lv.15 の数値 (= Lv.5・Lv.10 はそのまま)", () => {
+  assert.deepEqual(sigParams("cryptoSlash", 15), { dmgMul: 7, radius: 360 });
+  assert.deepEqual(sigParams("oneHole", 15), { max: 5 });
+  assert.deepEqual(sigParams("poisonMist", 15), { dmgMul: 7, lifeS: 8 });
+  assert.deepEqual(sigParams("langer", 15), { max: 4.2, range: 330 });
+  assert.deepEqual(sigParams("teslaCoil", 15), { hops: 14, everyS: 0.6 });
+  assert.deepEqual(sigParams("tetractys", 15), { every: 2, steps: 5 });
+  assert.deepEqual(sigParams("tiger", 15), { max: 3.8 });
+  assert.deepEqual(sigParams("queenPirate", 15), { boostS: 7, pickup: 3.8 });
+  assert.deepEqual(sigParams("phantom", 15), { uses: 4, iframeMs: 10000 });
+  assert.deepEqual(sigParams("uinyeo", 15), { regenPerSec: 6, healMul: 7 });
+});
+
+test("SPEC-128: 残った CE を固有スキルへ振る (= 届くたびに上がり、 端数は積み立て。 最大なら振れない)", () => {
+  // Lv.1 に 400: 40 (→2) + 100 (→3) + 250 (→4) = 390、 端数 10 は積み立て
+  assert.deepEqual(pourCeIntoSig({ ce: 400, level: 1 }), { level: 4, invested: 10, spent: 400, wasted: 0 });
+  // 積み立てがあれば、 そのぶん安く上がる
+  assert.deepEqual(pourCeIntoSig({ ce: 490, level: 4, invested: 10 }), { level: 5, invested: 0, spent: 490, wasted: 0 });
+  // 届かなければ積み立てだけ
+  assert.deepEqual(pourCeIntoSig({ ce: 30, level: 1 }), { level: 1, invested: 30, spent: 30, wasted: 0 });
+  // 最大の段なら振れない (= 捨てる)
+  assert.deepEqual(pourCeIntoSig({ ce: 5000, level: 15 }), { level: 15, invested: 0, spent: 0, wasted: 5000 });
+  // 最大に届いた残りも捨てる
+  const r = pourCeIntoSig({ ce: 130000, level: 14 });
+  assert.deepEqual(r, { level: 15, invested: 0, spent: 120000, wasted: 10000 });
+  assert.deepEqual(pourCeIntoSig({ ce: 0, level: 3, invested: 7 }), { level: 3, invested: 7, spent: 0, wasted: 0 });
 });
 
 test("SPEC-123: Lv.10 の数値 (= Lv.5 は SPEC-110 のまま)", () => {
@@ -124,4 +153,14 @@ test("画面とつなぎ: 常設の札・i18n", () => {
   for (const kind of new Set(Object.values(SIGNATURE_OF))) {
     for (const k of Object.keys(sigParams(kind, 1))) assert.ok(ui[`shop.sig.${kind}.${k}`]?.ja && ui[`shop.sig.${kind}.${k}`]?.en, `${kind}.${k}`);
   }
+});
+
+test("SPEC-128: ステージの終わりに財布を固有スキルへ振る (= ショップ・つなぎ)", () => {
+  const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), "utf8");
+  assert.match(read("js/battle/stage-transition.js"), /endSnap\.sigPour = pourShopCeIntoSig\(\)/);
+  const shop = read("js/battle/shop.js");
+  assert.match(shop, /s\.ce = 0;/);
+  assert.match(shop, /sigCe: s\.sigCe \?\? 0/);   // やり直しでは入ったときの積み立てに戻す
+  assert.ok(read("index.html").includes('id="stageTransitionSig"'));
+  for (const k of ["stage.sigPour", "stage.sigPourSame", "stage.sigPourRest", "stage.sigPourMax", "shop.sig.buyRest"]) assert.ok(ui[k]?.ja && ui[k]?.en, k);
 });

@@ -681,3 +681,21 @@
   text-shadow: 0 0 10px rgba(246, 226, 160, 0.55);
 }
 .reward--dust .reward__value { color: var(--node-gold-hi, #f6e2a0); }
+
+/* ============================================================
+   SPEC-128: ステージクリアの「残った CE → 固有スキル Lv 5 → 7」
+   ============================================================ */
+.result-sigpour {
+  display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 0.3rem 0.6rem;
+  margin: 0 auto 0.2rem;
+  padding: 0.4rem 0.8rem;
+  max-width: 100%;
+  border-radius: 10px;
+  background: linear-gradient(90deg, rgba(187, 134, 252, 0.2), rgba(187, 134, 252, 0.06));
+  border: 1px solid rgba(187, 134, 252, 0.55);
+  font-size: 0.82rem; color: #fff;
+}
+.result-sigpour.hidden { display: none; }
+.result-sigpour__face { width: 28px; height: 28px; image-rendering: pixelated; }
+.result-sigpour__rest { font-size: 0.72rem; color: var(--muted); }
+.result-sigpour--up .result-sigpour__main { color: #e9d8ff; font-weight: 800; text-shadow: 0 0 10px rgba(187, 134, 252, 0.7); }

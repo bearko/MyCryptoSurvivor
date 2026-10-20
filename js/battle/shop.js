@@ -18,7 +18,7 @@ import { samplePicks, offerFor, grantPick, buildPickCard, renderOwnedStrip } fro
 import { perk } from "../perks.js";
 import { t, tpl, getLang, onLangChange } from "../i18n.js";
 import { playSe } from "../audio.js";
-import { sigOnLevelUp, sigParams, sigLevel, SIG_MAX_LEVEL, SIG_UP_PRICE } from "./signature.js";
+import { sigOnLevelUp, sigParams, sigLevel, SIG_MAX_LEVEL, SIG_UP_PRICE, pourCeIntoSig } from "./signature.js";
 import { heroImg } from "../heroes.js";
 import { naviFrameUrl, NAVI_POSES } from "../navi.js";
 import { playVoice } from "../voice.js";
@@ -42,6 +42,7 @@ function _fresh() {
     locked: [], nextIdx: 0, prevMerchant: null, purchases: 0,
     freeRerolls: 0, enteredIdx: -1, snapshot: null,
     sigLevel: 1,   // SPEC-110: 固有スキルの強化段 (= ステージをまたいで残る)
+    sigCe: 0,      // SPEC-128: 次の段への積み立て (= ステージの終わりに残った CE を振った端数)
     welcome: false, welcomeGiven: false,   // 最初の店のサービス (= 1 品無料。 使うまで残る)
     nextMerchant: null,   // 次に来る商人 (= ヘッダーの帯を歩いてくる)
   };
@@ -59,7 +60,7 @@ export function resetShopForStage(stageIdx) {
     Object.assign(s, structuredClone(s.snapshot));
   } else {
     s.enteredIdx = idx;
-    s.snapshot = { ce: s.ce, gifts: s.gifts, bans: [...s.bans], bansLeft: s.bansLeft, purchases: s.purchases, sigLevel: s.sigLevel };
+    s.snapshot = { ce: s.ce, gifts: s.gifts, bans: [...s.bans], bansLeft: s.bansLeft, purchases: s.purchases, sigLevel: s.sigLevel, sigCe: s.sigCe ?? 0 };
   }
   s.locked = [];       // 装備がステージごとなので、 取り置きもステージで外れる
   s.nextIdx = 0;
@@ -262,18 +263,41 @@ export function sigUpPrice(lv = sigLevel()) {
   return lv >= SIG_MAX_LEVEL ? null : SIG_UP_PRICE[lv - 1];
 }
 
+/** SPEC-128: 次の段まであといくら (= 値段 − 積み立て。 もう上がらなければ null) */
+export function sigUpRest(s = state.shop) {
+  const price = sigUpPrice(s?.sigLevel ?? 1);
+  return price == null ? null : Math.max(0, price - (s?.sigCe ?? 0));
+}
+
 /** SPEC-110: 固有スキルを 1 段上げる (= 常設の札) */
 export function buySigUp() {
   const s = state.shop;
   const kind = state.battle?.sig?.kind;
-  const price = sigUpPrice(s?.sigLevel ?? 1);
+  const price = sigUpRest(s);
   if (!s || !kind || price == null || price > s.ce) return false;
   s.ce -= price;
+  s.sigCe = 0;
   s.sigLevel += 1;
   _boughtHere += 1;
   playSe(SFX.PICK_BUFF, 100, 0.55);
   renderShop();
   return true;
+}
+
+/**
+ * SPEC-128: ステージの終わり (= stage-transition.js)。 残った CE を固有スキルへ振り、 財布を空にする。
+ * ギフト券は持ち越す。 結果の画面に出すために、 振る前と後を返す
+ */
+export function pourShopCeIntoSig() {
+  const s = state.shop;
+  if (!s) return null;
+  const from = s.sigLevel;
+  const ce = Math.max(0, Math.floor(s.ce));
+  const r = pourCeIntoSig({ ce, level: s.sigLevel, invested: s.sigCe ?? 0 });
+  s.sigLevel = r.level;
+  s.sigCe = r.invested;
+  s.ce = 0;
+  return { ce, from, to: r.level, rest: sigUpRest(s), wasted: r.wasted, max: r.level >= SIG_MAX_LEVEL };
 }
 
 /** SPEC-110: 段で伸びるもの (= 札に「いま → 次」で出す) */
@@ -316,7 +340,7 @@ function _renderSig() {
   if (!kind || !hero) return;
   const lang = getLang();
   const lv = s.sigLevel;
-  const price = sigUpPrice(lv);
+  const price = sigUpRest(s);   // SPEC-128: 積み立てを引いた残り
   const now = sigParams(kind, lv);
   const next = price == null ? null : sigParams(kind, lv + 1);
   el.innerHTML = "";
@@ -362,12 +386,14 @@ function _renderSig() {
     btn.textContent = t("shop.sig.max", "最大まで強化した");
   } else {
     btn.disabled = price > s.ce;
-    btn.textContent = tpl(t("shop.sig.buy", "Lv {n} へ ◆ {p}"), { n: String(lv + 1), p: String(price) });
+    btn.textContent = (s.sigCe ?? 0) > 0
+      ? tpl(t("shop.sig.buyRest", "Lv {n} へ あと ◆ {p}"), { n: String(lv + 1), p: String(price) })
+      : tpl(t("shop.sig.buy", "Lv {n} へ ◆ {p}"), { n: String(lv + 1), p: String(price) });
     btn.addEventListener("click", buySigUp);
   }
   const note = document.createElement("p");
   note.className = "shop-sig__note";
-  note.textContent = t("shop.sig.note", "ステージをまたいで残る");
+  note.textContent = t("shop.sig.note", "ステージをまたいで残る。残った CE はステージの終わりにここへ");
   el.append(head, rows, btn, note);
 }
 
