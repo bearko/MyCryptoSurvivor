@@ -8,11 +8,13 @@
 // 入口: タイトルの「スキルツリー」(= 1 回も遊んでいなければ出さない) と、 結果の画面の「スキルツリーへ」。
 
 import { getMeta, onMetaChange, spend, setNodeRank, resetNodes } from "./meta.js";
-import { ROUTES, ROUTE_MAP, NODE_MAP, TREE_NODES, ROOT_ID, CAPSTONE_NEED, RING, nodePos, routeLabelPos } from "./skill-data.js";
+import { ROUTES, ROUTE_MAP, NODE_MAP, TREE_NODES, ROOT_ID, CAPSTONE_NEED, nodePos, routeLabelPos } from "./skill-data.js";
+import { getUnlockedHeroes, unlockOf, GAME_TITLES } from "./hero-unlock.js";   // SPEC-133: ヒーローの条件
+import { getHero, localizedHeroName } from "./heroes.js";
 import {
   nodeRank, owns, nodeMax, nodeCost, canAfford, shortBy, routeCounts, nodeState,
   nodeVisible, nodeShown, claimableNodes, tryBuy, spentTotal,
-  treeNudge, treeGuide, guideTarget,
+  treeNudge, treeGuide, guideTarget, heroOk,
 } from "./skill-logic.js";
 import { t, tpl, getLang, onLangChange } from "./i18n.js";
 import { img, SFX } from "./constants.js";
@@ -24,7 +26,6 @@ import { computePerks, perksSummary, perkRows } from "./perks.js";   // SPEC-090
 import { naviSay, naviHide, naviLines, naviTitle, setTitleExtra } from "./navi.js";   // SPEC-093
 
 const UNIT = 108;                 // 1 マスのピクセル
-const RING_R = RING + 0.6;        // 中心から 1 段目と、 その先の「？」が収まる距離 (マス)
 const SVGNS = "http://www.w3.org/2000/svg";
 const DBL_TAP_MS = 400;
 const NOTICE_MS = 1700;
@@ -57,6 +58,17 @@ const L = (o) => (o && typeof o === "object") ? (o[getLang()] ?? o.ja ?? "") : S
 const nameOf = (n) => L(n.name);
 const KIND_KEY = { root: "tree.kind.root", repeat: "tree.kind.repeat", perk: "tree.kind.perk", capstone: "tree.kind.capstone" };
 const iconUrl = (id) => img(`Image/Extensions/${id}.png`);
+/** SPEC-133: 木の判定に使う状態 (= 保存の中身 ＋ 使えるヒーロー。 武器の極意の条件) */
+const treeMeta = () => ({ ...getMeta(), heroes: getUnlockedHeroes() });
+/** SPEC-133: 「霧隠才蔵を仲間にする」 (= ほかのタイトルなら、 その名前も) */
+function heroCondText(heroId) {
+  const hero = getHero(heroId);
+  const name = hero ? localizedHeroName(hero, getLang()) : String(heroId);
+  const u = unlockOf(heroId);
+  return u && u.game !== "survivor"
+    ? tpl(t("tree.condHeroOther", "「{name}」を仲間にする（{game} で）"), { name, game: GAME_TITLES[u.game]?.name ?? u.game })
+    : tpl(t("tree.condHero", "「{name}」を仲間にする"), { name });
+}
 
 // ---- 画面の状態 ----
 let _screen = null;       // <section id="skillTreeScreen">
@@ -108,7 +120,7 @@ export function installSkillTree() {
   onLangChange(() => { refreshTitleEntry(); renderHeroPerks(); if (_open) renderAll(); });
   // SPEC-093: 根をまだ取っていなければ、 タイトルでマインちゃんが入口を教える (= 起動中に 1 回)
   setTitleExtra(() => {
-    if (_hintSaid || _open || !treeNudge(getMeta())) return [];
+    if (_hintSaid || _open || !treeNudge(treeMeta())) return [];
     _hintSaid = true;
     return naviLines("treeHint");
   });
@@ -119,7 +131,7 @@ export function installSkillTree() {
 export function refreshTitleEntry() {
   const btn = document.getElementById("btnTitleSkillTree");
   const badge = document.getElementById("titleSkillTreeBadge");
-  const m = getMeta();
+  const m = treeMeta();
   if (btn) btn.classList.toggle("hidden", (m.runs | 0) === 0);
   // SPEC-093: 根をまだ取っていなければ、 入口を脈打たせて「NEW」 (= タイトルと結果の画面)
   const nudge = treeNudge(m);
@@ -141,7 +153,7 @@ export function refreshTitleEntry() {
 export function renderHeroPerks() {
   const el = document.getElementById("heroPerks");
   if (!el) return;
-  const m = getMeta();
+  const m = treeMeta();
   if (state.rtaMode) {
     const any = owns(m, ROOT_ID);
     el.textContent = any ? t("hero.perks.rta", "RTA ではスキルツリーの効果は切れる") : "";
@@ -177,7 +189,7 @@ export function openSkillTree({ focus = null, returnTo = null, midRun = false } 
   // 中心へ (= 描いてから寸法を測る)
   requestAnimationFrame(() => {
     if (!_open) return;
-    const guide = focus && NODE_MAP[focus] && !owns(getMeta(), focus) && nodeVisible(getMeta(), focus) ? focus : null;
+    const guide = focus && NODE_MAP[focus] && !owns(treeMeta(), focus) && nodeVisible(treeMeta(), focus) ? focus : null;
     if (guide) select(guide, true); else centerOn(ROOT_ID);
     sayOnOpen();
   });
@@ -204,7 +216,7 @@ function sayTree(step, { stay = false } = {}) {
 }
 
 function sayOnOpen() {
-  const m = getMeta();
+  const m = treeMeta();
   const g = guideLine(m);
   if (g) return sayTree(g, { stay: true });
   sayTree(claimableNodes(m).length ? "claimable" : "idle");
@@ -320,7 +332,7 @@ const statRow = (r) => h("li", { class: `stat-row ${r.changed ? "chg" : ""}`, st
 /** いまの効果の欄 (= 数値の行と、 数値でない効果の名前)。 SPEC-093 §2.2 */
 function renderStats() {
   const { stats } = _parts;
-  const m = getMeta();
+  const m = treeMeta();
   const { rows, flags } = perkRows(computePerks(m), nextPerks(m, _selected), getLang());
   const count = rows.filter((r) => r.value !== "—").length + flags.length;
   stats.classList.toggle("open", _statsOpen);
@@ -352,7 +364,7 @@ function resetBox(m) {
 
 /** 頭: 戻る・題・右に残高 (= 選んだ節の費用を「−40」と並べ、 足りないぶんは赤く。 木に重ねないので節が隠れない) */
 function renderHead() {
-  const m = getMeta();
+  const m = treeMeta();
   const n = _selected ? NODE_MAP[_selected] : null;
   const cost = n && nodeVisible(m, n.id) && nodeState(m, n.id) === "available" ? nodeCost(m, n.id) : { gum: 0, dust: 0 };
   const chip = (cls, icon, label, have, need) => h("span", { class: `tree-bal ${cls} ${need ? (have >= need ? "ok" : "ng") : ""}`, title: label, "aria-label": `${label} ${have | 0}` },
@@ -368,7 +380,7 @@ function renderHead() {
 }
 
 function renderRouteBar() {
-  const m = getMeta();
+  const m = treeMeta();
   const counts = routeCounts(m);
   clear(_parts.routeBar).append(...ROUTES.filter((r) => !r.minor).map((r) => {   // SPEC-131: エクステ別の道は一覧に出さない
     const total = TREE_NODES.filter((x) => x.route === r.id).length;
@@ -382,19 +394,8 @@ function renderRouteBar() {
   }));
 }
 
-function linkPath(a, b) {
-  const { px } = _parts;
-  const pa = px(nodePos(a));
-  const pb = px(nodePos(b));
-  // 少し曲げて「神経」のような線にする
-  const mx = (pa.x + pb.x) / 2, my = (pa.y + pb.y) / 2;
-  const dx = pb.x - pa.x, dy = pb.y - pa.y;
-  const bend = 0.12;
-  return `M${pa.x},${pa.y} Q${mx - dy * bend},${my + dx * bend} ${pb.x},${pb.y}`;
-}
-
 function renderLinks(fresh, burst) {
-  const m = getMeta();
+  const m = treeMeta();
   const { links, px } = _parts;
   clear(links);
   const defs = svg("defs");
@@ -413,22 +414,27 @@ function renderLinks(fresh, burst) {
     links.append(tx);
   }
   const still = prefersReducedMotion();
+  // SPEC-133: 見えている親から見えている子へ、 まっすぐ (= Workshop の作り)。
+  //   off: 親をまだ取っていない (= 点線) / open: 親は取った、 子はまだ (= 道の色を薄く) / on: 両方取った (= 道の色で光る)
   for (const n of TREE_NODES) {
     if (n.kind === "root" || !nodeShown(m, n.id)) continue;
-    const parent = NODE_MAP[n.parent];
-    const teaser = !nodeVisible(m, n.id);
-    const color = teaser ? "#4a4360" : ROUTE_MAP[n.route].color;
-    const on = owns(m, n.id);
-    const d = linkPath(parent, n);
-    const base = svg("path", { d, class: `link ${on ? "on" : ""} ${teaser ? "teaser" : ""}`, stroke: color });
-    links.append(base);
-    if (on && !still) links.append(svg("path", { d, class: "link-flow", stroke: color, filter: "url(#treeGlow)" }));
-    if (fresh.has(n.id) && !still) {
-      const len = base.getTotalLength?.() || 200;
-      base.style.strokeDasharray = `${len}`;
-      base.style.strokeDashoffset = `${len}`;
-      base.classList.add("grow");
-      base.style.animationDelay = `${fresh.get(n.id) * (burst ? 70 : 110)}ms`;
+    const color = ROUTE_MAP[n.route].color;
+    for (const r of n.requires ?? []) {
+      const parent = NODE_MAP[r];
+      if (!parent || !nodeShown(m, r)) continue;
+      const state = owns(m, r) && owns(m, n.id) ? "on" : owns(m, r) ? "open" : "off";
+      const pa = px(nodePos(parent)), pb = px(nodePos(n));
+      const d = `M${pa.x},${pa.y} L${pb.x},${pb.y}`;
+      const base = svg("path", { d, class: `link ${state}`, stroke: state === "off" ? "#6f6488" : color });
+      links.append(base);
+      if (state === "on" && !still) links.append(svg("path", { d, class: "link-flow", stroke: color, filter: "url(#treeGlow)" }));
+      if (fresh.has(n.id) && !still) {
+        const len = Math.hypot(pb.x - pa.x, pb.y - pa.y) || 100;
+        base.style.strokeDasharray = `${len}`;
+        base.style.strokeDashoffset = `${len}`;
+        base.classList.add("grow");
+        base.style.animationDelay = `${fresh.get(n.id) * (burst ? 70 : 110)}ms`;
+      }
     }
   }
 }
@@ -451,7 +457,7 @@ function levelText(m, n) {
 }
 
 function renderNodes(fresh, burst) {
-  const m = getMeta();
+  const m = treeMeta();
   const { nodeLayer, px } = _parts;
   clear(nodeLayer);
   const center = px(nodePos(NODE_MAP[ROOT_ID]));
@@ -501,7 +507,7 @@ function shortText(m, cost) {
 }
 
 function renderSheet() {
-  const m = getMeta();
+  const m = treeMeta();
   const { sheet } = _parts;
   clear(sheet);
   sheet.classList.toggle("idle", !_selected);
@@ -510,7 +516,8 @@ function renderSheet() {
   const n = NODE_MAP[_selected];
   const closeX = h("button", { class: "sheet-x", type: "button", "aria-label": t("menu.close", "閉じる"), onclick: () => { _selected = null; renderAll(); } }, "×");
   if (!nodeVisible(m, n.id)) {
-    const parent = NODE_MAP[n.parent];
+    // SPEC-133: 親のうち、 いま見えているもの (= requires はどれか 1 つ)
+    const parent = NODE_MAP[(n.requires ?? []).find((r) => nodeShown(m, r)) ?? n.requires?.[0] ?? ROOT_ID];
     add(
       h("div", { class: "dt-head" },
         h("div", { class: "dt-icon teaser", style: { "--c": ROUTE_MAP[n.route].color } }, "？"),
@@ -519,6 +526,7 @@ function renderSheet() {
           h("div", { class: "dt-name" }, t("tree.hidden", "？？？"))),
         closeX),
       h("p", { class: "dt-desc" }, tpl(t("tree.hiddenDesc", "「{name}」を解放すると、この先が見える。"), { name: nameOf(parent) })),
+      detailConds(m, n, nodeState(m, n.id), nodeCost(m, n.id), { hideParent: true }),
       h("button", { class: "tree-btn", type: "button", onclick: () => select(parent.id, true) }, tpl(t("tree.toParent", "「{name}」へ"), { name: nameOf(parent) })),
     );
     return;
@@ -553,10 +561,14 @@ function renderSheet() {
 }
 
 /** 条件の一覧 (= 満たしたものは ✓ で薄く、 まだのものは ✗。 Workshop の作り) */
-function detailConds(m, n, st, cost) {
+function detailConds(m, n, st, cost, { hideParent = false } = {}) {
   if (n.kind === "root" || st === "owned") return null;
   const items = [];
-  if (n.parent && NODE_MAP[n.parent].kind !== "root") items.push({ ok: owns(m, n.parent), text: tpl(t("tree.condParent", "「{name}」を解放"), { name: nameOf(NODE_MAP[n.parent]) }) });
+  // SPEC-133: 親はどれか 1 つ (= 「A または B」)・ヒーローの条件
+  const req = (n.requires ?? []).filter((r) => NODE_MAP[r]?.kind !== "root");
+  if (req.length && !hideParent) items.push({ ok: req.some((r) => owns(m, r)), text: tpl(t("tree.condParent", "「{name}」を解放"), { name: req.map((r) => nameOf(NODE_MAP[r])).join(t("tree.or", "」または「")) }) });
+  if (n.hero) items.push({ ok: heroOk(m, n), text: heroCondText(n.hero) });
+  if (n.hero && hideParent) return items.length ? h("ul", { class: "dt-conds" }, items.map((c) => h("li", { class: c.ok ? "met" : "" }, h("i", { "aria-hidden": "true" }, c.ok ? "✓" : "✗"), c.text))) : null;
   if (n.kind === "capstone") {
     const have = routeCounts(m)[n.route] || 0;
     items.push({ ok: have >= CAPSTONE_NEED, text: tpl(t("tree.condRoute", "この道のスキルを {need} つ（いま {n} つ）"), { need: CAPSTONE_NEED, n: have }) });
@@ -623,7 +635,7 @@ function notice(text, kind = "") {
 
 /** 買う (= tryBuy で確かめてから meta.js に書く)。 新しく見えた節は中心から近い順に飛び出す */
 function unlock(n) {
-  const m = getMeta();
+  const m = treeMeta();
   const r = tryBuy(m, n.id);
   if (!r.ok) {
     if (r.reason === "short") notice(shortText(m, r.cost), "bad");
@@ -637,11 +649,11 @@ function unlock(n) {
   const burst = n.kind === "root";
   playSe(SFX.LEVEL_UP, 0, 0.6);
   notice(r.rank > 1 ? tpl(t("tree.upgraded", "「{name}」Lv {lv}！"), { name: nameOf(n), lv: r.rank }) : tpl(t("tree.bought", "「{name}」を解放！"), { name: nameOf(n) }), "good");
-  const after = getMeta();
+  const after = treeMeta();
   const fresh = new Map();
   let i = 0;
   const order = TREE_NODES.filter((x) => nodeShown(after, x.id) && !before.has(x.id))
-    .sort((a, b) => (a.depth || 0) - (b.depth || 0) || (ROUTE_MAP[a.route]?.angle ?? 0) - (ROUTE_MAP[b.route]?.angle ?? 0));
+    .sort((a, b) => Math.hypot(a.x, a.y) - Math.hypot(b.x, b.y));   // SPEC-133: 中心に近い順
   for (const x of order) fresh.set(x.id, i++);
   fresh.set(n.id, 0);
   if (burst) {
@@ -664,7 +676,7 @@ function doReset(back) {
   renderAll();
   notice(tpl(t("tree.resetDone", "ツリーを作り直した。GUM {gum}・ゴールドダスト {dust} が戻った"), back), "good");
   centerOn(ROOT_ID, true);
-  const g = guideLine(getMeta());
+  const g = guideLine(treeMeta());
   if (g) sayTree(g, { stay: true });
 }
 
@@ -683,7 +695,7 @@ function shockwave() {
 function zoomToFit() {
   const { viewport, view } = _parts;
   const rect = viewport.getBoundingClientRect();
-  const r = RING_R * UNIT;
+  const r = 3.2 * UNIT;   // SPEC-133: 中心と 1・2 段目がおさまる距離 (マス)
   view.scale = Math.max(0.55, Math.min(view.scale, Math.min(rect.width, rect.height) / (2 * r)));
   centerOn(ROOT_ID, true);
 }
@@ -694,7 +706,7 @@ function tapNode(id) {
   const dbl = _lastTap.id === id && now - _lastTap.at < DBL_TAP_MS;
   _lastTap = dbl ? { id: null, at: 0 } : { id, at: now };
   if (!dbl) { playSe(SFX.UI_CLICK, 60, 1); return select(id); }
-  const m = getMeta();
+  const m = treeMeta();
   const n = NODE_MAP[id];
   if (!nodeVisible(m, id) || (owns(m, id) && n.kind !== "repeat")) return select(id);
   const r = tryBuy(m, id);

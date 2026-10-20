@@ -12,12 +12,11 @@ const ui = JSON.parse(readFileSync(new URL("../data/i18n/ui.json", import.meta.u
 
 const meta = (nodes = {}, { gum = 0, dust = 0, runs = 1 } = {}) => ({ gum, dust, runs, nodes, earned: { gum: 0, dust: 0 } });
 
-test("木はほぼ半分の大きさ (= 道の節は中心から 4.6 マス以内。 前は 7.7。 SPEC-131 のエクステ別は 5.8 まで)", () => {
-  const far = Math.max(...TREE_NODES.filter((n) => !n.mastery).map((n) => Math.hypot(nodePos(n).x, nodePos(n).y)));
-  const farM = Math.max(...TREE_NODES.filter((n) => n.mastery).map((n) => Math.hypot(nodePos(n).x, nodePos(n).y)));
-  assert.ok(farM <= 5.8, `エクステ別のいちばん遠い節 ${farM.toFixed(2)}`);
-  assert.ok(far <= 4.6, `いちばん遠い節 ${far.toFixed(2)}`);
-  assert.ok(far >= 3.8, `詰めすぎ ${far.toFixed(2)}`);
+test("木の大きさ (= SPEC-133: マス目。 道の節は根から 4 マス以内、 エクステ別を入れても 7 マス以内)", () => {
+  const main = TREE_NODES.filter((n) => !n.mastery);
+  assert.ok(Math.max(...main.map((n) => Math.max(Math.abs(n.x), Math.abs(n.y)))) <= 4);
+  assert.ok(Math.max(...TREE_NODES.map((n) => Math.max(Math.abs(n.x), Math.abs(n.y)))) <= 7);
+  assert.deepEqual(nodePos(TREE_NODES[0]), { x: 0, y: 0 });
 });
 
 test("入口を目立たせるのは、 遊んだが根を取っていないあいだだけ", () => {

@@ -24,9 +24,18 @@ export function isMaxed(meta, id) {
   return nodeRank(meta, id) >= nodeMax(NODE_MAP[id]);
 }
 
+/** SPEC-133: 仲間の条件 (= meta.heroes に入っていれば満たす。 画面が使えるヒーローを入れて渡す) */
+export function heroOk(meta, n) {
+  if (!n?.hero) return true;
+  const h = meta?.heroes;
+  if (!h) return false;
+  return typeof h.has === "function" ? h.has(Number(n.hero)) : [...h].map(Number).includes(Number(n.hero));
+}
+
 /** rank 段目の費用 (= repeat は gum × 段数。 dust は段ごとに同じ)。 純関数 */
 export function nodeCostAt(n, rank) {
   if (!n || n.kind === "root") return { gum: 0, dust: 0 };
+  if (n.hero && (rank | 0) <= 1) return { gum: 0, dust: 0 };   // SPEC-133: ヒーローを仲間にしたら 1 段目は無料
   const k = n.kind === "repeat" ? Math.max(1, rank | 0) : 1;
   return { gum: (n.cost?.gum | 0) * k, dust: n.cost?.dust | 0 };
 }
@@ -52,11 +61,13 @@ export function routeCounts(meta) {
   return c;
 }
 
-/** 取れない理由 (= 画面が文に直す)。 空なら取れる */
+/** 取れない理由 (= 画面が文に直す)。 空なら取れる。 SPEC-133: requires はどれか 1 つ・ヒーローの条件 */
 export function nodeBlockers(meta, id) {
   const n = NODE_MAP[id];
   const out = [];
-  if (n.parent && !owns(meta, n.parent)) out.push({ key: "parent", id: n.parent });
+  const req = n.requires ?? [];
+  if (req.length && !req.some((r) => owns(meta, r))) out.push({ key: "parent", id: req[0], ids: req });
+  if (!heroOk(meta, n)) out.push({ key: "hero", heroId: n.hero });
   if (n.kind === "capstone") {
     const have = routeCounts(meta)[n.route] || 0;
     if (have < CAPSTONE_NEED) out.push({ key: "route", need: CAPSTONE_NEED, n: have });
@@ -67,22 +78,34 @@ export function nodeBlockers(meta, id) {
 /** "owned" (= 上限まで取った) / "available" / "locked" */
 export function nodeState(meta, id) {
   if (isMaxed(meta, id)) return "owned";
+  if (owns(meta, id)) return "available";   // 取ってある節は上げられる (= 前の版で条件なしに取った節も)
   return nodeBlockers(meta, id).length ? "locked" : "available";
 }
 
-/** 見える (= 自分か親を取っている。 根はいつも) */
-export function nodeVisible(meta, id) {
+/** いま取れる (= SPEC-133。 Workshop の isAvailable): 根・取ってある節・条件がそろった節 */
+export function isAvailable(meta, id) {
   const n = NODE_MAP[id];
-  if (n.kind === "root") return true;
-  return owns(meta, id) || owns(meta, n.parent);
+  if (!n) return false;
+  if (n.kind === "root" || owns(meta, id)) return true;
+  return nodeBlockers(meta, id).length === 0;
 }
 
-/** その先 (= 親が見えているが、 まだ取っていない。 「？」で出す)。 根の子は根を取るまで出さない */
+/** 見える (= 名前と絵を出す)。 SPEC-133: いま取れる節 */
+export function nodeVisible(meta, id) {
+  return isAvailable(meta, id);
+}
+
+/**
+ * その先 (= 鍵のかかった姿で「？？？」)。 SPEC-133: 親がいま取れる節。 それ以外は隠す。
+ * 根の子は根を取るまで出さない (= 最初は根だけ)
+ */
 export function nodeTeaser(meta, id) {
   const n = NODE_MAP[id];
-  if (n.kind === "root" || nodeVisible(meta, id)) return false;
-  const p = NODE_MAP[n.parent];
-  return p.kind !== "root" && nodeVisible(meta, p.id);
+  if (n.kind === "root" || isAvailable(meta, id)) return false;
+  return (n.requires ?? []).some((r) => {
+    const p = NODE_MAP[r];
+    return !!p && isAvailable(meta, r) && (p.kind !== "root" || owns(meta, r));
+  });
 }
 
 export function nodeShown(meta, id) {

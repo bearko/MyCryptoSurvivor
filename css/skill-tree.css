@@ -94,9 +94,11 @@
 .tree-world { position: absolute; left: 0; top: 0; transform-origin: 0 0; will-change: transform; }
 .tree-world.glide { transition: transform 0.42s cubic-bezier(0.2, 0, 0.2, 1); }
 .tree-links { position: absolute; inset: 0; overflow: visible; pointer-events: none; }
-.tree-links .link { fill: none; stroke-width: 2.5; opacity: 0.28; }
-.tree-links .link.on { opacity: 0.9; stroke-width: 3; }
-.tree-links .link.teaser { stroke-dasharray: 4 6; opacity: 0.5; }
+/* SPEC-133: 親から子へまっすぐ。 off: 親がまだ (= 点線) / open: 親は取った (= 道の色を薄く) / on: 両方取った (= 光る) */
+.tree-links .link { fill: none; stroke-width: 4; stroke-linecap: round; }
+.tree-links .link.off { stroke-dasharray: 5 8; opacity: 0.45; stroke-width: 3; }
+.tree-links .link.open { opacity: 0.45; }
+.tree-links .link.on { opacity: 0.95; }
 .tree-links .link-flow { fill: none; stroke-width: 3; stroke-dasharray: 3 22; stroke-linecap: round; animation: tree-flow 1.6s linear infinite; opacity: 0.95; }
 .tree-links .link.grow { animation: tree-grow 0.52s cubic-bezier(0.2, 0, 0.2, 1) forwards; }
 .tree-links .route-label { font: 400 22px var(--font-display); opacity: 0.5; letter-spacing: 0.1em; }
