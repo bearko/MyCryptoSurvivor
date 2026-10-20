@@ -220,6 +220,45 @@
   opacity: 0;
 }
 .boss-countdown--tick { animation: boss-count-tick 900ms var(--ease-out) both; }
+/* SPEC-104: 再開のカウントダウン (= 戦況を見せながら、 真ん中に 3・2・1) */
+.resume-countdown {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-stage-ui);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: 18%;   /* ヒーロー (= 画面の真ん中) に重ねない */
+  gap: 0.2rem;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 28%, rgba(10, 16, 28, 0.35), rgba(10, 16, 28, 0.05) 60%);
+}
+.resume-countdown__label {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 0.2em;
+  color: var(--node-cyan, #56ccf2);
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
+}
+.resume-countdown__num {
+  font-family: var(--font-display);
+  font-size: clamp(4.5rem, 22vw, 7.5rem);
+  line-height: 1;
+  color: #fff;
+  -webkit-text-stroke: 3px #1f6f9a;
+  text-shadow: 0 0 22px rgba(86, 204, 242, 0.8), 0 6px 0 rgba(0, 0, 0, 0.5);
+}
+.resume-countdown--tick .resume-countdown__num { animation: resume-count-tick 1000ms var(--ease-out) both; }
+@keyframes resume-count-tick {
+  0%   { opacity: 0; scale: 1.7; }
+  16%  { opacity: 1; scale: 1; }
+  80%  { opacity: 1; scale: 1; }
+  100% { opacity: 0.2; scale: 0.9; }
+}
+:root[data-reduce-fx] .resume-countdown--tick .resume-countdown__num { animation: none; }
+@media (prefers-reduced-motion: reduce) { .resume-countdown--tick .resume-countdown__num { animation: none; } }
 @keyframes boss-count-tick {
   0%   { opacity: 0; scale: 1.8; }
   18%  { opacity: 1; scale: 1; }
