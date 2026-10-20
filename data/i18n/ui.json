@@ -77,6 +77,7 @@
   "shop.wallet": { "ja": "手持ち", "en": "Wallet" },
   "shop.sub": { "ja": "（あと {n} 回でボス）", "en": "(boss in {n} shops)" },
   "shop.gifts": { "ja": "🎟×{n}", "en": "🎟×{n}" },
+  "shop.giftFirst": { "ja": "ギフト券支払いを優先", "en": "Pay with gift tickets first" },
   "shop.free": { "ja": "🎟 ギフト券 ×{n}", "en": "🎟 Gift ×{n}" },
   "shop.saleTag": { "ja": "半額", "en": "SALE" },
   "shop.sold": { "ja": "お買い上げ", "en": "Sold" },

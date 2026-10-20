@@ -4,7 +4,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, existsSync } from "node:fs";
 const {
-  MERCHANTS, OPENING_MERCHANT, isShopMode, shopTimesMs, roundTo5, shopPrice, giftable, giftCost,
+  MERCHANTS, OPENING_MERCHANT, isShopMode, shopTimesMs, roundTo5, shopPrice, giftable, giftCost, isGiftFirst, setGiftFirst, GIFT_FIRST_KEY,
   pickMerchant, rerollCost, canBan, shopProgress, nextShopSec, shopHealAmount, SHOP_HEAL_RATIO, SHOP_SOON_SEC,
 } = await import("../js/battle/shop-logic.js");
 
@@ -171,4 +171,22 @@ test("取り置き・お断りは札の角のアイコン。 お断りは 2 回�
 test("お断りした品は、 番号が数でも二度と並ばない (= 文字で比べる)", () => {
   const src = readFileSync(new URL("../js/battle/levelup.js", import.meta.url), "utf8");
   assert.equal((src.match(/new Set\(\[\.\.\.bannedIn\]\.map\(String\)\)/g) ?? []).length, 2);
+});
+
+test("SPEC-130: 「ギフト券支払いを優先」は既定オンで、 切り替えを覚えておく (= 保存できなくてもオンのまま)", () => {
+  const mem = new Map();
+  const store = { getItem: (k) => (mem.has(k) ? mem.get(k) : null), setItem: (k, v) => mem.set(k, String(v)) };
+  assert.equal(isGiftFirst(store), true);
+  setGiftFirst(false, store);
+  assert.equal(mem.get(GIFT_FIRST_KEY), "0");
+  assert.equal(isGiftFirst(store), false);
+  setGiftFirst(true, store);
+  assert.equal(isGiftFirst(store), true);
+  const broken = { getItem: () => { throw new Error("blocked"); }, setItem: () => { throw new Error("blocked"); } };
+  assert.equal(isGiftFirst(broken), true);
+  assert.doesNotThrow(() => setGiftFirst(false, broken));
+  assert.ok(GIFT_FIRST_KEY.startsWith("mcs."));
+  const src = readFileSync(new URL("../js/battle/shop.js", import.meta.url), "utf8");
+  assert.match(src, /if \(_giftFirst && giftable\(offer, state\.shop\.gifts\)\) return 0;/);
+  assert.ok(readFileSync(new URL("../index.html", import.meta.url), "utf8").includes('id="shopGiftFirst"'));
 });

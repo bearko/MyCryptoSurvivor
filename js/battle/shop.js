@@ -25,7 +25,7 @@ import { playVoice } from "../voice.js";
 import { hitEnemy } from "./damage.js";
 
 import {
-  MERCHANTS, OPENING_MERCHANT, isShopMode, shopTimesMs, shopPrice, giftable, giftCost, pickMerchant, rerollCost, canBan, nextShopSec,
+  MERCHANTS, OPENING_MERCHANT, isShopMode, shopTimesMs, shopPrice, giftable, giftCost, isGiftFirst, setGiftFirst, pickMerchant, rerollCost, canBan, nextShopSec,
   shopProgress, shopHealAmount, SHOP_SOON_SEC,
 } from "./shop-logic.js";
 import { pushDamageNumber } from "./damage.js";
@@ -165,6 +165,7 @@ export function openShop({ opening = false } = {}) {
   const s = state.shop;
   if (!s || _open) return;
   _open = true;
+  _giftFirst = isGiftFirst();   // SPEC-130
   _wireOnce();
   // 帯を歩いてきた商人が店番をする (= 決まっていなければここで選ぶ)
   _merchant = MERCHANTS.find((m) => m.id === s.nextMerchant)
@@ -217,24 +218,20 @@ function _fillOffers(last = new Set(_offers.map((o) => String(o.extId)))) {
   }
 }
 
+let _giftFirst = true;   // SPEC-130: 「ギフト券支払いを優先」 (= 店を開くたびに保存から読む)
+
 function _priceOf(o, offer) {
   if (state.shop.welcome && !offer.isLL) return 0;   // 最初の店のサービス (= どれでも 1 品)
-  if (state.shop.gifts > 0 && String(_giftTarget()) === String(o.extId)) return 0;
+  // SPEC-130: 優先がオンなら、 持っている券で買える品はどれも券で (= 買うたびに残りの枚数で見直す)。 オフなら CE で払う
+  if (_giftFirst && giftable(offer, state.shop.gifts)) return 0;
   return shopPrice(offer, state.currentStageIdx ?? 0, _merchant.quirk, o.sale);
 }
 
-/** ギフト券を使う品 (= 持っている枚数で無料にできる品のうち、 いちばん高いもの。 安い品で券を使い切らない。 SPEC-127: 枚数は段で傾斜) */
-function _giftTarget() {
-  const banned = new Set(state.shop.bans);
-  let best = null, bestP = -1;
-  for (const o of _offers) {
-    if (o.sold) continue;
-    const offer = offerFor(o.extId, banned);
-    if (!giftable(offer, state.shop.gifts)) continue;
-    const p = shopPrice(offer, state.currentStageIdx ?? 0, _merchant.quirk, o.sale);
-    if (p > bestP) { best = o.extId; bestP = p; }
-  }
-  return best;
+/** SPEC-130: 「ギフト券支払いを優先」を切り替える (= 覚えておく) */
+export function toggleGiftFirst(on = !_giftFirst) {
+  _giftFirst = !!on;
+  setGiftFirst(_giftFirst);
+  renderShop();
 }
 
 export function buyOffer(extId) {
@@ -491,6 +488,11 @@ export function renderShop() {
     gift.classList.toggle("hidden", s.gifts <= 0);
     gift.textContent = tpl(t("shop.gifts", "🎟 ギフト券 ×{n}"), { n: String(s.gifts) });
   }
+  // SPEC-130: 「ギフト券支払いを優先」 (= 券を持っているときだけ出す)
+  const pref = document.getElementById("shopGiftFirstWrap");
+  if (pref) pref.classList.toggle("hidden", s.gifts <= 0);
+  const box = document.getElementById("shopGiftFirst");
+  if (box) box.checked = _giftFirst;
   const sub = document.getElementById("shopSub");
   if (sub) {
     const left = SHOP_PER_STAGE - s.nextIdx;
@@ -636,6 +638,7 @@ function _wireOnce() {
   _wired = true;
   document.getElementById("shopReroll")?.addEventListener("click", rerollShop);
   document.getElementById("shopLeave")?.addEventListener("click", closeShop);
+  document.getElementById("shopGiftFirst")?.addEventListener("change", (e) => toggleGiftFirst(e.target.checked));   // SPEC-130
   onLangChange(() => { if (_open) renderShop(); });
 }
 
