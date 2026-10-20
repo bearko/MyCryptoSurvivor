@@ -329,7 +329,19 @@ function _step(dt, now) {
   }
 }
 
+let _loopErrs = 0;
 function _loop(now) {
+  // SPEC-129: 次のコマを先に頼む。 1 コマでエラーが出ても、 戦闘のループが止まったままにならない
+  // (= 以前は最後に頼んでいたので、 例外 1 回でループが死に、 やり直しても _raf が残っていて動き出さなかった)
+  _raf = requestAnimationFrame(_loop);
+  try {
+    _frame(now);
+  } catch (e) {
+    if (_loopErrs++ < 5) console.error("[battle] frame error", e);
+  }
+}
+
+function _frame(now) {
   const dt = Math.min(0.05, (now - _lastMs) / 1000);  // タブ復帰時の暴走を防ぐ
   _lastMs = now;
   tickResumeCountdown(now);   // SPEC-104: 中断する画面を閉じたら 3 秒数えてから再開
@@ -348,5 +360,4 @@ function _loop(now) {
   }
 
   if (_ctx) renderBattle(_ctx, now);
-  _raf = requestAnimationFrame(_loop);
 }
