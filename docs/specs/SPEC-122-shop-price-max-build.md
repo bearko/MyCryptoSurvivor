@@ -2,7 +2,7 @@
 id: SPEC-122
 title: Shop Prices Tuned So a CE-Maxed, Efficient Run Just Maxes Everything by the 6th Shop — Lv.4 300 / Lv.5 1500 / LL 3000
 status: Done
-pr: TBD
+pr: 157
 phase: v1.6 Shop
 kind: Changed
 ---
