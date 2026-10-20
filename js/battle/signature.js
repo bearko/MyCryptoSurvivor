@@ -37,31 +37,37 @@ export const UINYEO = { regenPerSec: 0.8, healMul: 2 };                         
 
 const clamp01 = (v) => Math.max(0, Math.min(1, v));
 
-// ---- SPEC-110: 固有スキルの強化段 (= ショップで Lv.1 → Lv.5。 Lv.1 は上の数値そのまま) ----
-export const SIG_MAX_LEVEL = 5;
-/** 次の段の値段 (= Lv.2 / 3 / 4 / 5。 ステージの倍率は掛けない。 持ち越すので早く買うほど得) */
-export const SIG_UP_PRICE = [40, 70, 110, 160];
+// ---- SPEC-110: 固有スキルの強化段 (= ショップで Lv.1 → Lv.10。 Lv.1 は上の数値そのまま) ----
+// SPEC-123: 5 段 → 10 段。 Lv.5 の数値は SPEC-110 のまま、 Lv.6〜10 でもう一段伸ばす
+export const SIG_MAX_LEVEL = 10;
+export const SIG_MID_LEVEL = 5;
+/** 次の段の値段 (= Lv.2 〜 10。 ステージの倍率は掛けない。 持ち越すので早く買うほど得)。 後ろほど急に高い */
+export const SIG_UP_PRICE = [40, 100, 250, 500, 1000, 2000, 4000, 8000, 16000];
 
-/** Lv.1 → Lv.5 で a → b に伸ばす */
-const lerp = (a, b, lv) => a + (b - a) * clamp01(((lv | 0) - 1) / (SIG_MAX_LEVEL - 1));
+/** Lv.1 → Lv.5 で a → b、 Lv.5 → Lv.10 で b → c に伸ばす */
+const lerp = (a, b, lv, c = b) => {
+  const l = lv | 0;
+  if (l <= SIG_MID_LEVEL) return a + (b - a) * clamp01((l - 1) / (SIG_MID_LEVEL - 1));
+  return b + (c - b) * clamp01((l - SIG_MID_LEVEL) / (SIG_MAX_LEVEL - SIG_MID_LEVEL));
+};
 const r1 = (v) => Math.round(v * 100) / 100;
 
 /**
- * 強化段ごとの数値 (= SPEC-103 5 章の表)。 段 1 はいまの数値とまったく同じ
+ * 強化段ごとの数値 (= SPEC-103 5 章の表 + SPEC-123)。 段 1 はいまの数値とまったく同じ
  * @returns {object}
  */
 export function sigParams(kind, lv = 1) {
   switch (kind) {
-    case "cryptoSlash": return { dmgMul: r1(lerp(1, 3, lv)), radius: Math.round(lerp(SLASH.radius, 230, lv)) };
-    case "oneHole":     return { max: r1(lerp(ONE_HOLE.max, 3, lv)) };
-    case "poisonMist":  return { dmgMul: r1(lerp(1, 3, lv)), lifeS: r1(lerp(MIST.lifeS, 4, lv)) };
-    case "langer":      return { max: r1(lerp(LANGER.max, 2.6, lv)), range: Math.round(lerp(LANGER.range, 220, lv)) };
-    case "teslaCoil":   return { hops: Math.round(lerp(TESLA.hops, 6, lv)), everyS: r1(lerp(TESLA.everyS, 1.4, lv)) };
-    case "tetractys":   return { every: lv >= 3 ? 3 : TETRACTYS.every, steps: lv >= SIG_MAX_LEVEL ? 3 : TETRACTYS.steps };
-    case "tiger":       return { max: r1(lerp(TIGER.max, 2.2, lv)) };
-    case "queenPirate": return { boostS: r1(lerp(PIRATE.boostS, 3, lv)), pickup: r1(lerp(PIRATE.pickup, 2.2, lv)) };
-    case "phantom":     return { uses: lv >= 4 ? 2 : 1, iframeMs: Math.round(lerp(PHANTOM.iframeMs, 5000, lv)) };
-    case "uinyeo":      return { regenPerSec: r1(lerp(UINYEO.regenPerSec, 2, lv)), healMul: r1(lerp(UINYEO.healMul, 3, lv)) };
+    case "cryptoSlash": return { dmgMul: r1(lerp(1, 3, lv, 5)), radius: Math.round(lerp(SLASH.radius, 230, lv, 300)) };
+    case "oneHole":     return { max: r1(lerp(ONE_HOLE.max, 3, lv, 4)) };
+    case "poisonMist":  return { dmgMul: r1(lerp(1, 3, lv, 5)), lifeS: r1(lerp(MIST.lifeS, 4, lv, 6)) };
+    case "langer":      return { max: r1(lerp(LANGER.max, 2.6, lv, 3.4)), range: Math.round(lerp(LANGER.range, 220, lv, 280)) };
+    case "teslaCoil":   return { hops: Math.round(lerp(TESLA.hops, 6, lv, 10)), everyS: r1(lerp(TESLA.everyS, 1.4, lv, 0.9)) };
+    case "tetractys":   return { every: lv >= 8 ? 2 : lv >= 3 ? 3 : TETRACTYS.every, steps: lv >= SIG_MAX_LEVEL ? 4 : lv >= SIG_MID_LEVEL ? 3 : TETRACTYS.steps };
+    case "tiger":       return { max: r1(lerp(TIGER.max, 2.2, lv, 3)) };
+    case "queenPirate": return { boostS: r1(lerp(PIRATE.boostS, 3, lv, 5)), pickup: r1(lerp(PIRATE.pickup, 2.2, lv, 3)) };
+    case "phantom":     return { uses: lv >= 8 ? 3 : lv >= 4 ? 2 : 1, iframeMs: Math.round(lerp(PHANTOM.iframeMs, 5000, lv, 8000)) };
+    case "uinyeo":      return { regenPerSec: r1(lerp(UINYEO.regenPerSec, 2, lv, 4)), healMul: r1(lerp(UINYEO.healMul, 3, lv, 5)) };
     default:            return {};
   }
 }

@@ -64,9 +64,25 @@ test("段が上がるほど伸びる (= 下がらない)", () => {
   }
 });
 
-test("値段は Lv.2〜5 で 40 / 70 / 110 / 160", () => {
-  assert.deepEqual(SIG_UP_PRICE, [40, 70, 110, 160]);
-  assert.equal(SIG_MAX_LEVEL, 5);
+test("SPEC-123: 10 段。 値段は Lv.2〜10 で後ろほど急に高い", () => {
+  assert.equal(SIG_MAX_LEVEL, 10);
+  assert.equal(SIG_UP_PRICE.length, SIG_MAX_LEVEL - 1);
+  assert.deepEqual(SIG_UP_PRICE, [40, 100, 250, 500, 1000, 2000, 4000, 8000, 16000]);
+  for (let i = 1; i < SIG_UP_PRICE.length; i++) assert.ok(SIG_UP_PRICE[i] >= SIG_UP_PRICE[i - 1] * 2, `step ${i}`);   // 1 段ごとに 2 倍以上
+});
+
+test("SPEC-123: Lv.10 の数値 (= Lv.5 は SPEC-110 のまま)", () => {
+  assert.deepEqual(sigParams("cryptoSlash", 10), { dmgMul: 5, radius: 300 });
+  assert.deepEqual(sigParams("oneHole", 10), { max: 4 });
+  assert.deepEqual(sigParams("poisonMist", 10), { dmgMul: 5, lifeS: 6 });
+  assert.deepEqual(sigParams("langer", 10), { max: 3.4, range: 280 });
+  assert.deepEqual(sigParams("teslaCoil", 10), { hops: 10, everyS: 0.9 });
+  assert.deepEqual(sigParams("tetractys", 10), { every: 2, steps: 4 });
+  assert.deepEqual(sigParams("tiger", 10), { max: 3 });
+  assert.deepEqual(sigParams("queenPirate", 10), { boostS: 5, pickup: 3 });
+  assert.deepEqual(sigParams("phantom", 10), { uses: 3, iframeMs: 8000 });
+  assert.deepEqual(sigParams("uinyeo", 10), { regenPerSec: 4, healMul: 5 });
+  assert.deepEqual(sigParams("teslaCoil", 7), { hops: 8, everyS: 1.2 });
 });
 
 test("強化段は戦闘の中で効く (= state.shop.sigLevel)", () => {
