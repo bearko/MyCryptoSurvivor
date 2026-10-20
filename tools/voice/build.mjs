@@ -29,16 +29,28 @@ export const ADDED = [
   "hero.10001", "hero.4006", "hero.2043", "hero.2016", "hero.2003", "hero.4041", "hero.1007", "hero.2013", "hero.4052",
 ];
 
+/**
+ * SPEC-116: 2 回目の追加の録音 (= 2026-10-20。 「…_added2.wav」。 番号は 0 から。 台本は docs/voice/script-added2.csv)。
+ * 倒れたときのひとことと、 スキルツリーの案内
+ */
+export const ADDED_2 = [
+  "lose.guide", "lose.1", "lose.2", "lose.3",
+  "tree.intro.1", "tree.intro.2", "tree.root", "tree.first", "tree.noGum", "tree.done", "tree.claimable", "tree.idle", "tree.hint",
+];
+
 const OUT_DIR = "assets/voice/mine";
 const src = process.argv[2];
-const added = process.argv.includes("--added");   // 追加の録音だけ変換し、 いまの一覧に足す
-if (!src) { console.error("usage: node tools/voice/build.mjs <wav dir> [--added]"); process.exit(1); }
+const added2 = process.argv.includes("--added2");   // SPEC-116: 2 回目の追加の録音
+const added = added2 || process.argv.includes("--added");   // 追加の録音だけ変換し、 いまの一覧に足す
+const BATCH = added2 ? ADDED_2 : ADDED;
+const SUFFIX = added2 ? /_added2\.wav$/i : /_added\.wav$/i;
+if (!src) { console.error("usage: node tools/voice/build.mjs <wav dir> [--added | --added2]"); process.exit(1); }
 mkdirSync(OUT_DIR, { recursive: true });
-const wavs = readdirSync(src).filter((f) => /^\d+-.*\.wav$/i.test(f) && /_added\.wav$/i.test(f) === added);
+const wavs = readdirSync(src).filter((f) => /^\d+-.*\.wav$/i.test(f) && (added ? SUFFIX.test(f) : !/_added\d*\.wav$/i.test(f)));
 const lines = added ? { ...(await import("../../js/voice-lines.js")).VOICE_LINES } : {};
 for (const f of wavs) {
   const n = Number(f.split("-")[0]);
-  const id = (added ? ADDED : ORDER)[n];
+  const id = (added ? BATCH : ORDER)[n];
   if (!id) throw new Error(`番号 ${n} のボイスの名前がない: ${f}`);
   const out = join(OUT_DIR, `${id}.mp3`);
   // モノラル・44.1kHz・64kbps (= 声だけなので十分。 1 本 20〜40KB)
@@ -46,8 +58,8 @@ for (const f of wavs) {
   const sec = Number(execFileSync("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", out]).toString().trim());
   lines[id] = { file: out, ms: Math.round(sec * 1000) };
 }
-const ALL = [...ORDER, ...ADDED.filter((id) => !ORDER.includes(id))];
-const missing = (added ? ADDED : ORDER).filter((id) => !lines[id]);
+const ALL = [...new Set([...ORDER, ...ADDED, ...ADDED_2])];
+const missing = (added ? BATCH : ORDER).filter((id) => !lines[id]);
 if (missing.length) throw new Error(`WAV がない: ${missing.join(", ")}`);
 const body = ALL.filter((id) => lines[id]).map((id) => `  "${id}": ${JSON.stringify(lines[id])},`).join("\n");
 writeFileSync("js/voice-lines.js", `// ============================================================

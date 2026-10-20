@@ -19,15 +19,17 @@ import { stopBgm, playSe } from "../audio.js";
 import { abortRtaRun, scoreMetrics, reportRunScore, defaultPlayerName, platformUserName, setChatVisible } from "../platform.js";
 import { STAGE_TABLE } from "../constants.js";
 import { countUp, revealIn } from "../reveal.js";
-import { naviTitle, naviHide } from "../navi.js";
+import { naviTitle, naviHide, naviSay, naviLines } from "../navi.js";
+import { treeNudge } from "../skill-logic.js";   // SPEC-116
 import { presentResult } from "../result-telop.js";
 import { startTitleBgm, startMenuBgmAfterJingle } from "../ui-sound.js";
-import { grantRunRewards, runDust } from "../meta.js";
+import { grantRunRewards, runDust, getMeta } from "../meta.js";
 import { renderRewards } from "../meta-ui.js";
 import { perk } from "../perks.js";   // SPEC-090c
 import { markPlayed } from "../played.js";
 
 let _wired = false;
+let _loseN = Math.floor(Math.random() * 3);   // SPEC-116: 倒れたときのひとことの順番 (= 続けて同じにしない)
 
 /**
  * SPEC-009: HP 0 で Game Over。
@@ -65,6 +67,7 @@ export function triggerGameOver(reason = "lose") {
       revealIn(modal);
       countUp(document.getElementById("gameOverKills"), state.lastRunStats?.kills ?? 0, { durMs: 600, delayMs: 250 });
       renderRewards(document.getElementById("gameOverRewards"), state.lastRunStats?.rewards ?? {}, { delayMs: 500 });   // SPEC-090
+      sayOnLose(reason, modal);   // SPEC-116
     },
   });
   // 残っていた Level-up モーダルが有れば閉じる (= 同フレームで LV up と死亡が起きる場合)
@@ -84,8 +87,23 @@ export function triggerGameOver(reason = "lose") {
     () => !document.getElementById("gameOverModal")?.classList.contains("hidden"));
 }
 
+/**
+ * SPEC-116: 倒れたとき、 マインちゃんが画面の下の帯でスキルツリーへ誘う。
+ * スキルツリーを始めていなければ (= 根をまだ取っていない) 入口を教え、 始めていれば 3 つのひとことを順に。
+ * RTA ではスキルツリーが効かないので言わない
+ */
+function sayOnLose(reason, modal) {
+  modal?.classList.remove("gameover-modal--navi");
+  if (reason === "clear" || state.rtaMode) return;
+  const guide = treeNudge(getMeta());
+  if (!guide) _loseN += 1;
+  modal?.classList.add("gameover-modal--navi");
+  naviSay(naviLines("lose", { guide, n: _loseN }), { place: "result" });
+}
+
 export async function applyRetry() {
   document.getElementById("gameOverModal")?.classList.add("hidden");
+  naviHide();   // SPEC-116
   resumeTime();
   state.currentStageIdx = 0;       // SPEC-030: リトライは常にステージ 1 から
   // 循環 import 回避のため動的に startBattle を取得

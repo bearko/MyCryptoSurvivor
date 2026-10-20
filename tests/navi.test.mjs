@@ -54,12 +54,13 @@ test("コマとポーズの絵は mycryptoheroes の Image/Characters/navi_ain_*
 });
 
 test("モード選択とヒーロー選択は、 画面の下の専用の帯 (= ほかの UI と重ねない。 SPEC-059)", () => {
-  assert.deepEqual(NAVI_DOCK_PLACES, ["mode", "hero"]);
+  assert.deepEqual(NAVI_DOCK_PLACES, ["mode", "hero", "result"]);   // SPEC-116: 倒れたときの結果の画面
   for (const p of NAVI_DOCK_PLACES) assert.ok(!NAVI_COMM_PLACES.includes(p), `${p} は帯と小窓のどちらか一方`);
 });
 
 test("帯に出るセリフは 3 行に収まる長さ (= 帯の高さは決まっている)", () => {
-  const scenes = [naviLines("mode"), naviLines("hero"), naviLines("heroPick", { heroName: "スパルタクス", weaponName: "パンジャンドラム" })].flat();
+  const scenes = [naviLines("mode"), naviLines("hero"), naviLines("heroPick", { heroName: "スパルタクス", weaponName: "パンジャンドラム" }),
+    naviLines("lose", { guide: true }), [0, 1, 2].flatMap((n) => naviLines("lose", { n }))].flat();   // SPEC-116
   for (const l of scenes) {
     const ja = UI[l.key].ja.replace("{name}", "スパルタクス").replace("{weapon}", "パンジャンドラム");
     assert.ok(ja.length <= 45, `${l.key}: ${ja.length} 文字`);
