@@ -350,7 +350,7 @@ export const SHOP_STAGE_MUL     = [1, 1.8, 2.6];   // 雑魚の CE が ×1/×2/�
 export const SHOP_BANS          = 3;               // お断りは 1 挑戦 3 回まで
 export const SHOP_REROLL_COST   = 5;               // 払うリロールは 5 → 10 → 15 … (= 店ごとに戻る)
 export const SHOP_FREE_REROLLS  = 1;               // 無料のリロールはステージごと 1 回 (+ スキルツリーの引き直し)
-export const SHOP_GIFT_MAX_LEVEL = 4;              // ギフト券 (= マジックカード) で 無料になるのは行き先 Lv.4 まで
+export const SHOP_GIFT_COST     = [1, 1, 2, 3, 5];  // SPEC-127: 1 品を無料にするギフト券の枚数 (= 行き先 Lv.1〜5。 Common・Uncommon 1 / Rare 2 / Epic 3 / Legendary 5。 LL は不可)
 export const SHOP_HEADSTART_CE  = 20;              // スキルツリーの「先手」 1 段ぶんの CE
 
 // ============================================================

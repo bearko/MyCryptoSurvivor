@@ -25,7 +25,7 @@ import { playVoice } from "../voice.js";
 import { hitEnemy } from "./damage.js";
 
 import {
-  MERCHANTS, OPENING_MERCHANT, isShopMode, shopTimesMs, shopPrice, giftable, pickMerchant, rerollCost, canBan, nextShopSec,
+  MERCHANTS, OPENING_MERCHANT, isShopMode, shopTimesMs, shopPrice, giftable, giftCost, pickMerchant, rerollCost, canBan, nextShopSec,
   shopProgress, shopHealAmount, SHOP_SOON_SEC,
 } from "./shop-logic.js";
 import { pushDamageNumber } from "./damage.js";
@@ -222,14 +222,14 @@ function _priceOf(o, offer) {
   return shopPrice(offer, state.currentStageIdx ?? 0, _merchant.quirk, o.sale);
 }
 
-/** ギフト券を使う品 (= 無料にできる品のうち、 いちばん高いもの。 安い品で券を使い切らない) */
+/** ギフト券を使う品 (= 持っている枚数で無料にできる品のうち、 いちばん高いもの。 安い品で券を使い切らない。 SPEC-127: 枚数は段で傾斜) */
 function _giftTarget() {
   const banned = new Set(state.shop.bans);
   let best = null, bestP = -1;
   for (const o of _offers) {
     if (o.sold) continue;
     const offer = offerFor(o.extId, banned);
-    if (!giftable(offer)) continue;
+    if (!giftable(offer, state.shop.gifts)) continue;
     const p = shopPrice(offer, state.currentStageIdx ?? 0, _merchant.quirk, o.sale);
     if (p > bestP) { best = o.extId; bestP = p; }
   }
@@ -245,7 +245,7 @@ export function buyOffer(extId) {
   if (price > s.ce) return false;
   _offers.forEach((x) => { x.banArm = false; });
   if (price === 0 && s.welcome) s.welcome = false;
-  else if (price === 0) s.gifts -= 1;
+  else if (price === 0) s.gifts -= giftCost(offer) ?? 1;   // SPEC-127: 段で枚数が変わる
   else s.ce -= price;
   grantPick(extId);
   o.sold = true;
@@ -515,7 +515,7 @@ export function renderShop() {
       const short = price > s.ce;
       const chip = document.createElement("span");
       chip.className = "shop-price" + (short ? " shop-price--short" : "") + (price === 0 ? " shop-price--gift" : "") + (o.sale ? " shop-price--sale" : "");
-      chip.textContent = price === 0 ? (s.welcome ? t("shop.welcomeFree", "🎁 サービス") : t("shop.free", "🎟 ギフト券")) : `◆ ${price}`;
+      chip.textContent = price === 0 ? (s.welcome ? t("shop.welcomeFree", "🎁 サービス") : tpl(t("shop.free", "🎟 ギフト券 ×{n}"), { n: String(giftCost(offer) ?? 1) })) : `◆ ${price}`;
       if (o.sale && price > 0) chip.dataset.tag = t("shop.saleTag", "半額");
       card.appendChild(chip);
       card.classList.add("shop-card");

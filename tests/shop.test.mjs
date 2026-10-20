@@ -4,7 +4,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, existsSync } from "node:fs";
 const {
-  MERCHANTS, OPENING_MERCHANT, isShopMode, shopTimesMs, roundTo5, shopPrice, giftable,
+  MERCHANTS, OPENING_MERCHANT, isShopMode, shopTimesMs, roundTo5, shopPrice, giftable, giftCost,
   pickMerchant, rerollCost, canBan, shopProgress, nextShopSec, shopHealAmount, SHOP_HEAL_RATIO, SHOP_SOON_SEC,
 } = await import("../js/battle/shop-logic.js");
 
@@ -57,10 +57,15 @@ test("黒髭はランクアップ 2 割引・新しい品 2 割増し、 マル�
   assert.equal(shopPrice({ nextLevel: 4 }, 0, "sale", false), 2000);
 });
 
-test("ギフト券で無料になるのは行き先 Lv.4 まで (= LL はならない)", () => {
-  assert.equal(giftable({ nextLevel: 4 }), true);
-  assert.equal(giftable({ nextLevel: 5 }), false);
-  assert.equal(giftable({ nextLevel: 6, isLL: true }), false);
+test("SPEC-127: ギフト券の枚数は段で傾斜 (= LL は券では買えない)", () => {
+  // SPEC-127: 枚数は段で傾斜 (= Common・Uncommon 1 / Rare 2 / Epic 3 / Legendary 5)。 LL は券では買えない
+  assert.deepEqual([1, 2, 3, 4, 5].map((nextLevel) => giftCost({ nextLevel })), [1, 1, 2, 3, 5]);
+  assert.equal(giftCost({ nextLevel: 6, isLL: true }), null);
+  assert.equal(giftable({ nextLevel: 5 }), true);
+  assert.equal(giftable({ nextLevel: 5 }, 4), false);
+  assert.equal(giftable({ nextLevel: 3 }, 2), true);
+  assert.equal(giftable({ nextLevel: 3 }, 1), false);
+  assert.equal(giftable({ nextLevel: 6, isLL: true }, 99), false);
   assert.equal(giftable(null), false);
 });
 

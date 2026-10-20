@@ -53,7 +53,7 @@ export function tickMagicCards(_dt) {
     }
   }
   if (picked === 0) return;
-  // SPEC-109: ショップでは ギフト券 (= 次の店で 1 品無料。 行き先 Lv.4 まで)
+  // SPEC-109: ショップでは ギフト券 (= ショップの品と引き換え。 枚数は段で傾斜 (SPEC-127))
   if (state.shop) {
     addShopGift(picked);
     playSe(SFX.GEM_PICKUP, 100, 0.5);
