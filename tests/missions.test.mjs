@@ -4,7 +4,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 const {
-  MISSIONS, MISSION_MAP, NO_MODS, modsOf, pickMission, planOffer, rewardOf, missionResult,
+  MISSIONS, MISSION_MAP, NO_MODS, modsOf, pickMission, planOffer, rewardChoices, BOONS, REWARD_SIZE, missionResult,
   MISSION_CHANCE, MISSION_PER_STAGE,
 } = await import("../js/battle/missions.js");
 const { spreadMul } = await import("../js/battle/enemy-shots.js");
@@ -58,13 +58,16 @@ test("持ちかける時刻: 店のあと 10〜30 秒。 1 回目の店の前・
   }
 });
 
-test("報酬: CE はステージの値段の倍率を掛ける。 固有スキルが上がりきっていれば CE", () => {
-  assert.deepEqual(rewardOf(MISSION_MAP.ripper, { stageIdx: 0 }), { ce: 80 });
-  assert.deepEqual(rewardOf(MISSION_MAP.ripper, { stageIdx: 1 }), { ce: 145 });   // 80 × 1.8 = 144 → 145
-  assert.deepEqual(rewardOf(MISSION_MAP.lubu, { stageIdx: 0, sigLevel: 2 }), { sig: 1 });
-  assert.deepEqual(rewardOf(MISSION_MAP.lubu, { stageIdx: 2, sigLevel: 10 }), { ce: 390 });   // 150 × 2.6
-  assert.deepEqual(rewardOf(MISSION_MAP.nobunaga), { gift: 1 });
-  assert.deepEqual(rewardOf(MISSION_MAP.caocao), { ban: 1 });
+test("SPEC-125: ごほうびは ギフト券・力添え・HP 回復 の 3 つから選ぶ。 重さで大きさが変わる", () => {
+  assert.deepEqual(rewardChoices(MISSION_MAP.lubu), [{ kind: "gift", n: 2 }, { kind: "boon", boon: "power", sec: 30 }, { kind: "heal", ratio: 1 }]);
+  assert.deepEqual(rewardChoices(MISSION_MAP.ripper), [{ kind: "gift", n: 1 }, { kind: "boon", boon: "swift", sec: 20 }, { kind: "heal", ratio: 0.5 }]);
+  assert.deepEqual(rewardChoices(MISSION_MAP.nobunaga)[1], { kind: "boon", boon: "thunder", sec: 0 });   // お助けアイテムはその場で
+  assert.deepEqual(rewardChoices(MISSION_MAP.nightingale), [{ kind: "gift", n: 1 }, { kind: "boon", boon: "guard", sec: 5 }, { kind: "heal", ratio: 0.3 }]);   // 無敵は 1/3
+  for (const m of MISSIONS) {
+    assert.ok(BOONS[m.boon], `${m.id} の力添え`);
+    assert.ok(REWARD_SIZE[m.weight], `${m.id} の重さ`);
+    assert.equal(rewardChoices(m).length, 3);
+  }
 });
 
 test("達成: 時間まで生き残る。 白衣の誓いは当たると失敗、 不可能の文字はないは 200 体で達成", () => {
@@ -99,5 +102,11 @@ test("つなぎ: 戦闘の各所が効き目を読む・ショップで遊ぶと
   const html = read("index.html");
   for (const id of ["missionOffer", "missionAccept", "missionDecline", "missionBar", "missionResult"]) assert.ok(html.includes(`id="${id}"`), id);
   assert.ok(html.includes('href="css/missions.css"'));
-  for (const k of ["mission.accept", "mission.decline", "mission.clear", "mission.fail", "mission.failSub", "mission.reward.sig", "mission.reward.ce", "mission.reward.gift", "mission.reward.ban"]) assert.ok(ui[k]?.ja && ui[k]?.en, k);
+  for (const k of ["mission.accept", "mission.decline", "mission.fail", "mission.failSub", "mission.reward.gift", "mission.reward.heal", "mission.reward.pick", "mission.rewardAsk", "mission.bar.boost"]) assert.ok(ui[k]?.ja && ui[k]?.en, k);
+  // SPEC-125: ごほうびの画面・出し手のひとこと・力添えの名前・効き目のつなぎ
+  for (const id of ["missionReward", "missionRewardLine", "missionRewardChoices"]) assert.ok(html.includes(`id="${id}"`), id);
+  for (const m of MISSIONS) assert.ok(ui[`mission.${m.id}.thanks`]?.ja && ui[`mission.${m.id}.thanks`]?.en, `${m.id}.thanks`);
+  for (const b of Object.keys(BOONS)) assert.ok(ui[`mission.boon.${b}`]?.ja && ui[`mission.boon.${b}.detail`]?.en, b);
+  assert.match(read("js/battle/damage.js"), /dmg \*= boostDmgMul\(\)/);
+  assert.match(read("js/battle/player.js"), /boostSpeedMul\(\)/);
 });

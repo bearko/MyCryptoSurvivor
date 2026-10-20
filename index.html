@@ -575,6 +575,20 @@
     </div>
   </div>
 
+  <!-- SPEC-125: ミッション達成のごほうび (= 出し手のひとこと → 3 つから 1 つ選ぶ。 時間は止まっている) -->
+  <div id="missionReward" class="mission-offer mission-reward hidden" role="dialog" aria-modal="true" aria-labelledby="missionRewardHead">
+    <div class="mission-offer__band">
+      <img class="mission-offer__face" id="missionRewardFace" alt="" width="96" height="96" />
+      <div class="mission-offer__body">
+        <span class="mission-offer__kicker" id="missionRewardHead">MISSION CLEAR!</span>
+        <span class="mission-offer__giver"><span id="missionRewardGiver"></span> ・ <span id="missionRewardMission"></span></span>
+        <p class="mission-reward__line" id="missionRewardLine"></p>
+        <p class="mission-reward__ask" data-i18n="mission.rewardAsk">ごほうびを 1 つ選んでね</p>
+      </div>
+      <div class="mission-reward__choices" id="missionRewardChoices"></div>
+    </div>
+  </div>
+
   <!-- ============================================================ -->
   <!-- 4. Hero select modal (= SPEC-001 Phase 1 mock)                 -->
   <!-- ============================================================ -->

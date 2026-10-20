@@ -9,6 +9,7 @@ import { resolveCircle } from "./field-geom.js";
 import { currentBounds } from "./arena.js";
 import { dashMul } from "../perks.js";   // SPEC-090c
 import { sigSpeedMul } from "./signature.js";   // SPEC-100
+import { boostSpeedMul } from "./missions.js";   // SPEC-125
 
 const HALF_W = WORLD_W / 2;
 const HALF_H = WORLD_H / 2;
@@ -23,7 +24,7 @@ const HALF_H = WORLD_H / 2;
 export function tickPlayer(dt, input) {
   const p   = state.battle.player;
   // SPEC-090c: 逃げ足 (= 無敵時間のあいだだけ速い)
-  const mul = (state.buffs?.speedMul ?? 1) * (state.battle.contactCooldownMs > 0 ? dashMul() : 1) * sigSpeedMul();   // SPEC-100: 虎痴・女王直属海賊
+  const mul = (state.buffs?.speedMul ?? 1) * (state.battle.contactCooldownMs > 0 ? dashMul() : 1) * sigSpeedMul() * boostSpeedMul();   // SPEC-100: 虎痴・女王直属海賊。 SPEC-125: 力添え
   p.x += input.x * p.speed * mul * dt;
   p.y += input.y * p.speed * mul * dt;
   // SPEC-077: 動いている感じ (= 横に動く向きへ少し傾け、 歩くあいだ弾ませる。 見た目だけ)

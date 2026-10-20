@@ -23,6 +23,7 @@ import {
 } from "../constants.js";
 import { bossDmgDealtMul } from "../perks.js";   // SPEC-090c
 import { sigDamageMul } from "./signature.js";   // SPEC-100
+import { boostDmgMul } from "./missions.js";   // SPEC-125
 
 /**
  * 敵に damage を与える。 数字 floater + hit freeze を一括処理。
@@ -36,6 +37,7 @@ export function hitEnemy(idx, dmg) {
   if (!e) return false;
   if (e.isBoss) dmg *= bossDmgDealtMul();   // SPEC-090c: 竜の爪・竜殺し
   dmg *= sigDamageMul(e);   // SPEC-100: ワンホールショット・ランゲルライン・虎痴
+  dmg *= boostDmgMul();     // SPEC-125: ミッションのごほうびの力添え
   const dmgInt = Math.max(0, Math.round(dmg));
   if (dmgInt <= 0) return false;
   e.hp -= dmgInt;
