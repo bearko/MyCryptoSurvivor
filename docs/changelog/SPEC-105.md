@@ -1,0 +1,1 @@
+- **撃破数の節目の演出** (`js/battle/milestones.js` + `index.html` + `css/battle-ui.css`): 通算 100・250・500・1,000…体で、画面の上に大きな「1,000 体撃破！」。遊びは止めない
