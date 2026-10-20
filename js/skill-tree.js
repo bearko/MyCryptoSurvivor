@@ -19,7 +19,6 @@ import { img, SFX } from "./constants.js";
 import { playSe } from "./audio.js";
 import { ICON_GUM, ICON_DUST } from "./meta-ui.js";
 import { prefersReducedMotion } from "./motion.js";
-import { returnToTitle } from "./battle/gameover.js";
 import { state } from "./state.js";
 import { computePerks, perksSummary, perkRows } from "./perks.js";   // SPEC-090c: ヒーロー選択の 1 行 / SPEC-093: いまの効果の欄
 import { naviSay, naviHide, naviLines, naviTitle, setTitleExtra } from "./navi.js";   // SPEC-093
@@ -80,15 +79,17 @@ export function isSkillTreeOpen() { return _open; }
 export function installSkillTree() {
   _screen = document.getElementById("skillTreeScreen");
   document.getElementById("btnTitleSkillTree")?.addEventListener("click", () => openSkillTree());
-  // 結果の画面から: レポートを閉じてタイトルへ戻してから、 その上に開く
-  for (const id of ["gameOverSkillTree", "activityReportSkillTree"]) {
+  // 結果の画面から (= ゲームオーバー・全クリア・SPEC-132 のステージクリア): その画面を隠して木を開き、 閉じたら元の画面に戻す
+  for (const [id, modalId, midRun] of [
+    ["gameOverSkillTree", "gameOverModal", false],
+    ["activityReportSkillTree", "activityReportModal", false],
+    ["stageTransitionSkillTree", "stageTransitionModal", true],
+  ]) {
     const btn = document.getElementById(id);
     if (!btn) continue;
-    btn.addEventListener("click", async () => {
-      btn.disabled = true;
-      // SPEC-093: タイトルのセリフは言わせない (= すぐ木を開くので、 木のセリフを言う)
-      try { await returnToTitle({ navi: false }); } finally { btn.disabled = false; }
-      openSkillTree();
+    btn.addEventListener("click", () => {
+      const back = document.getElementById(modalId) ?? btn.closest('[role="dialog"]');
+      openSkillTree({ returnTo: back, midRun });
     });
     const ic = btn.querySelector("img");
     if (ic) ic.src = img(ICON_GUM);
@@ -122,16 +123,17 @@ export function refreshTitleEntry() {
   if (btn) btn.classList.toggle("hidden", (m.runs | 0) === 0);
   // SPEC-093: 根をまだ取っていなければ、 入口を脈打たせて「NEW」 (= タイトルと結果の画面)
   const nudge = treeNudge(m);
-  for (const id of ["btnTitleSkillTree", "gameOverSkillTree", "activityReportSkillTree"]) {
+  for (const id of ["btnTitleSkillTree", "gameOverSkillTree", "activityReportSkillTree", "stageTransitionSkillTree"]) {
     const el = document.getElementById(id);
     if (!el) continue;
     el.classList.toggle("tree-nudge", nudge);
     el.dataset.new = t("tree.new", "NEW");
   }
-  if (badge) {
-    const n = claimableNodes(m).length;
-    badge.textContent = n > 9 ? "9+" : String(n);
-    badge.classList.toggle("hidden", n === 0);
+  const n = claimableNodes(m).length;
+  for (const b of [badge, document.getElementById("stageTreeBadge")]) {   // SPEC-132: ステージクリアの画面にも、 解放できる数
+    if (!b) continue;
+    b.textContent = n > 9 ? "9+" : String(n);
+    b.classList.toggle("hidden", n === 0);
   }
 }
 
@@ -154,9 +156,18 @@ export function renderHeroPerks() {
 // ============================================================
 // 開く / 閉じる
 // ============================================================
-export function openSkillTree({ focus = null } = {}) {
+/**
+ * returnTo: 木を開くあいだ隠し、 閉じたら戻す画面 (= 結果の画面)。 無ければタイトルの上に開く
+ * midRun: 挑戦の途中 (= ステージクリア)。 「次のステージから効く」と出す
+ */
+let _returnTo = null;
+let _midRun = false;
+export function openSkillTree({ focus = null, returnTo = null, midRun = false } = {}) {
   if (_open || !_screen) return;
   _open = true;
+  _returnTo = returnTo;
+  _midRun = !!midRun;
+  _returnTo?.classList.add("hidden");   // SPEC-132: 元の画面は消さずに隠すだけ (= 閉じたらそのまま戻る)
   _selected = null;
   _resetAsk = false;
   _lastTap = { id: null, at: 0 };
@@ -209,6 +220,8 @@ export function closeSkillTree() {
   refreshTitleEntry();
   // SPEC-093: 戻った先 (= タイトル) のセリフ
   naviHide();
+  // SPEC-132: 結果の画面から開いたなら、 その画面に戻す
+  if (_returnTo) { _returnTo.classList.remove("hidden"); _returnTo = null; return; }
   if (!document.getElementById("titleScreen")?.classList.contains("hidden")) naviTitle({ greet: false });
 }
 
@@ -243,14 +256,17 @@ function buildScreen() {
     h("button", { class: "tree-tool", type: "button", "aria-label": t("tree.zoomOut", "縮める"), onclick: () => zoomStep(1 / 1.25) }, "−"),
     h("button", { class: "tree-tool", type: "button", "aria-label": t("tree.zoomIn", "広げる"), onclick: () => zoomStep(1.25) }, "＋"),
     h("button", { class: "tree-tool wide", type: "button", onclick: () => centerOn(ROOT_ID, true) }, t("tree.center", "中心へ")));
+  // SPEC-132: 戻るは木の右下 (= スマホで押しやすい。 開く前の画面に戻る)
+  const backBtn = h("button", { class: "tree-tool tree-back2", type: "button", onclick: closeSkillTree },
+    h("span", { "aria-hidden": "true" }, "◀"), h("span", {}, t("tree.backTo", "戻る")));
   // SPEC-094: 広い画面は Workshop と同じく、 右の列に「詳しい欄」と「いまの効果」を縦に並べる。 狭い画面は下の欄と右上の札
   const wide = WIDE.matches;
   _screen.classList.toggle("wide", wide);
   if (wide) {
-    main.append(viewport, tools, h("div", { class: "tree-side" }, sheet, stats));
+    main.append(viewport, tools, backBtn, h("div", { class: "tree-side" }, sheet, stats));
     clear(_screen).append(bg, head, routeBar, main);
   } else {
-    main.append(viewport, tools, stats);
+    main.append(viewport, tools, backBtn, stats);
     clear(_screen).append(bg, head, routeBar, main, sheet);
   }
 
@@ -312,7 +328,7 @@ function renderStats() {
     h("button", { class: "stats-head", type: "button", "aria-expanded": String(_statsOpen), onclick: () => { _statsOpen = !_statsOpen; renderStats(); } },
       h("b", {}, t("tree.stats", "いまの効果")), count ? h("em", { class: "num" }, String(count)) : null, h("i", { "aria-hidden": "true" }, _statsOpen ? "▴" : "▾")),
     h("div", { class: "stats-body" },
-      h("p", { class: "stats-note" }, t("tree.statsNote", "次の挑戦から効く（RTA では切れる）")),
+      h("p", { class: "stats-note" }, _midRun ? t("tree.statsNoteStage", "次のステージから効く（RTA では切れる）") : t("tree.statsNote", "次の挑戦から効く（RTA では切れる）")),
       rows.length ? h("ul", { class: "stats-list" }, rows.map(statRow)) : h("p", { class: "stats-none" }, t("tree.statsNone", "まだ効果はない")),
       flags.length ? h("p", { class: "stats-flags" }, flags.join("・")) : null,
       resetBox(m)),
@@ -344,7 +360,6 @@ function renderHead() {
     h("b", { class: "num" }, (have | 0).toLocaleString()),
     need ? h("i", { class: "num" }, `−${need}`) : null);
   clear(_parts.head).append(
-    h("button", { class: "tree-back", type: "button", "aria-label": t("tree.back", "戻る"), onclick: closeSkillTree }, "←"),
     h("div", { class: "tree-title" }, h("b", {}, t("tree.title", "スキルツリー")), h("small", {}, "SKILL TREE")),
     h("div", { class: "tree-bals" },
       chip("gum", ICON_GUM, t("meta.gum", "GUM"), m.gum, cost.gum),

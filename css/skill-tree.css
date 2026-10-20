@@ -427,3 +427,14 @@
 .tree-screen.wide .tree-sheet.idle { padding: 12px 14px; }
 .tree-screen.wide .tree-stats { flex: 1; width: auto; border-left: 0; background: none; }
 .tree-screen.wide .dt-conds { flex-direction: column; }
+
+/* SPEC-132: 戻るは木の右下 (= 縮める・広げる・中心へ と同じ高さ。 スマホで押しやすい) */
+.tree-back2 {
+  position: absolute; right: 10px; bottom: 10px; z-index: 3;
+  display: inline-flex; align-items: center; gap: 6px;
+  min-width: 96px; height: 44px; padding: 0 16px;
+  font-size: 15px;
+  border-color: var(--t-gold); color: var(--t-gold-hi);
+}
+.tree-back2 span:first-child { font-size: 12px; }
+.tree-screen.wide .tree-back2 { right: 330px; }   /* 右の列 (320px) の手前 */
