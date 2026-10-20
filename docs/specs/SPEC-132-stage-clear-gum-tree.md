@@ -2,7 +2,7 @@
 id: SPEC-132
 title: Stage Clear Grants GUM and Links to the Skill Tree; the Tree's Back Button Returns to Where You Came From (Bottom-Right)
 status: Done
-pr: TBD
+pr: 167
 phase: v1.6 Skill Tree
 kind: Changed
 ---
