@@ -440,3 +440,12 @@
 }
 .tree-back2 span:first-child { font-size: 12px; }
 .tree-screen.wide .tree-back2 { right: 330px; }   /* 右の列 (320px) の手前 */
+
+/* SPEC-134: ミニマップ (= 押す・なぞるとその場所へ)。 広い画面は左下のボタンの上、 狭い画面は右下の「戻る」の上に小さく */
+.tree-minimap {
+  position: absolute; left: 10px; bottom: 58px; z-index: 3;
+  width: 150px; height: 110px;
+  border: 1px solid var(--t-strong); border-radius: 8px;
+  cursor: crosshair; touch-action: none;
+}
+.tree-screen:not(.wide) .tree-minimap { left: auto; right: 10px; bottom: 64px; width: 90px; height: 66px; }
