@@ -46,3 +46,22 @@ test("つなぎ: 武器ごとの威力・強化の値引き・ミッションの
   assert.match(read("js/battle/missions.js"), /grantMissionGum\(missionGum\(mission\.weight/);
   assert.ok(read("index.html").includes('id="missionRewardGum"'));
 });
+
+test("SPEC-132: ステージクリアの GUM は 50 × ステージの番号 ＋ 撃破数のぶん", async () => {
+  const { stageClearGum, STAGE_CLEAR_GUM } = await import("../js/meta.js");
+  assert.equal(STAGE_CLEAR_GUM, 50);
+  assert.equal(stageClearGum(0, 1500), 50 + 100);
+  assert.equal(stageClearGum(2, 0), 150);
+});
+
+test("SPEC-132: ステージクリアの画面からスキルツリーへ (= 閉じると元の画面に戻る)・戻るは木の右下", () => {
+  const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), "utf8");
+  assert.ok(read("index.html").includes('id="stageTransitionSkillTree"'));
+  const tree = read("js/skill-tree.js");
+  assert.match(tree, /\["stageTransitionSkillTree", "stageTransitionModal", true\]/);
+  assert.match(tree, /if \(_returnTo\) \{ _returnTo\.classList\.remove\("hidden"\)/);
+  assert.match(tree, /tree-back2/);
+  assert.doesNotMatch(tree, /returnToTitle\(/, "結果の画面から開いてもタイトルに戻さない");
+  assert.match(read("js/battle/stage-transition.js"), /snap\.gum = grantStageGum\(snap\.idx, snap\.kills/);
+  assert.match(read("js/meta.js"), /stages\.filter\(\(s\) => s\.gum == null\)/, "ステージクリアでもらった撃破数は二重にしない");
+});

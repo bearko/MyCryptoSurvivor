@@ -288,6 +288,8 @@
       <div class="result-rewards hidden" id="stageTransitionRewards" data-reveal></div>
       <!-- SPEC-128: 残った CE を固有スキルへ振った結果 (= CE は次のステージへ持ち越さない) -->
       <div class="result-sigpour hidden" id="stageTransitionSig" data-reveal></div>
+      <!-- SPEC-132: ステージクリアのたびにスキルツリーへ (= 閉じるとこの画面に戻る。 次のステージから効く) -->
+      <button class="btn gameover-modal__retry result-tree-btn" id="stageTransitionSkillTree" data-reveal><img alt="" aria-hidden="true" /><span data-i18n="tree.openResult">スキルツリーへ</span><span class="tree-badge hidden" id="stageTreeBadge" aria-hidden="true"></span></button>
       <div class="result-next" id="stageTransitionSub" data-reveal></div>
       <button class="btn gameover-modal__retry" id="stageTransitionProceed"
               data-i18n="stage.proceed">次のステージへ</button>
