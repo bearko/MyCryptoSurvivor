@@ -2,7 +2,7 @@
 id: SPEC-105
 title: Kill Milestones — A Big Banner at 100 / 250 / 500 / 1,000 Kills Without Stopping Play
 status: Done
-pr: TBD
+pr: 138
 phase: v1.6 Shop
 kind: Added
 ---
