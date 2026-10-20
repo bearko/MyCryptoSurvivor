@@ -179,3 +179,53 @@
   .shop-actions { flex-wrap: wrap; }
   .shop-actions__bans { flex-basis: 100%; text-align: center; }
 }
+
+/* ============================================================
+   SPEC-110: 固有スキルの強化 (= 常設の札)
+   ============================================================ */
+.shop-body { display: grid; grid-template-columns: minmax(0, 1fr) 190px; gap: 0.6rem; align-items: start; }
+.shop-body > .shop-grid { grid-column: 1; grid-row: 1; }
+.shop-sig { grid-column: 2; grid-row: 1; }
+.shop-sig.hidden { display: none; }
+.shop-body:has(.shop-sig.hidden) { grid-template-columns: minmax(0, 1fr); }
+.shop-sig {
+  display: flex; flex-direction: column; gap: 0.45rem;
+  padding: 0.6rem;
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(187, 134, 252, 0.18), rgba(30, 26, 40, 0.9) 60%);
+  border: 1.5px solid rgba(187, 134, 252, 0.6);
+  box-shadow: 0 0 14px rgba(187, 134, 252, 0.2);
+}
+.shop-sig__head { display: flex; align-items: center; gap: 0.45rem; }
+.shop-sig__face { width: 48px; height: 48px; image-rendering: pixelated; flex: 0 0 auto; }
+.shop-sig__title { display: flex; flex-direction: column; min-width: 0; }
+.shop-sig__kicker { font-size: 0.6rem; letter-spacing: 0.2em; color: var(--tiamat); }
+.shop-sig__name { font-size: 0.9rem; color: var(--text); line-height: 1.25; }
+.shop-sig__lv { font-size: 0.75rem; color: var(--accent); font-weight: 800; }
+.shop-sig__rows { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.2rem; }
+.shop-sig__rows li { display: flex; justify-content: space-between; gap: 0.3rem; font-size: 0.72rem; color: var(--muted); }
+.shop-sig__rows li .num { color: var(--text); white-space: nowrap; }
+.shop-sig__rows li.is-up .num { color: #c9ffb0; }
+.shop-sig__buy {
+  appearance: none; border: 0; cursor: pointer;
+  padding: 0.45rem 0.3rem;
+  border-radius: var(--r-pill);
+  font-weight: 800; font-size: 0.85rem;
+  color: #1a1420;
+  background: linear-gradient(180deg, #e3c8ff, #a26ef0);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.5) inset, 0 2px 8px rgba(162, 110, 240, 0.4);
+}
+.shop-sig__buy:disabled { cursor: not-allowed; filter: grayscale(0.7); opacity: 0.6; }
+.shop-sig__note { margin: 0; font-size: 0.62rem; color: var(--muted); text-align: center; }
+
+@media (max-width: 640px) {
+  .shop-body { grid-template-columns: minmax(0, 1fr); }
+  .shop-sig { grid-column: 1; grid-row: 1; display: grid; grid-template-columns: 1fr 1fr; align-items: center; padding: 0.45rem 0.55rem; gap: 0.3rem 0.5rem; }
+  .shop-sig.hidden { display: none; }
+  .shop-body > .shop-grid { grid-row: 2; }
+  .shop-sig__head { grid-column: 1; }
+  .shop-sig__rows { grid-column: 2; grid-row: 1 / span 2; }
+  .shop-sig__buy { grid-column: 1; }
+  .shop-sig__note { display: none; }
+  .shop-sig__face { width: 40px; height: 40px; }
+}

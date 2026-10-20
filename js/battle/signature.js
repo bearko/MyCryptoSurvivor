@@ -37,24 +37,53 @@ export const UINYEO = { regenPerSec: 0.8, healMul: 2 };                         
 
 const clamp01 = (v) => Math.max(0, Math.min(1, v));
 
+// ---- SPEC-110: 固有スキルの強化段 (= ショップで Lv.1 → Lv.5。 Lv.1 は上の数値そのまま) ----
+export const SIG_MAX_LEVEL = 5;
+/** 次の段の値段 (= Lv.2 / 3 / 4 / 5。 ステージの倍率は掛けない。 持ち越すので早く買うほど得) */
+export const SIG_UP_PRICE = [40, 70, 110, 160];
+
+/** Lv.1 → Lv.5 で a → b に伸ばす */
+const lerp = (a, b, lv) => a + (b - a) * clamp01(((lv | 0) - 1) / (SIG_MAX_LEVEL - 1));
+const r1 = (v) => Math.round(v * 100) / 100;
+
+/**
+ * 強化段ごとの数値 (= SPEC-103 5 章の表)。 段 1 はいまの数値とまったく同じ
+ * @returns {object}
+ */
+export function sigParams(kind, lv = 1) {
+  switch (kind) {
+    case "cryptoSlash": return { dmgMul: r1(lerp(1, 3, lv)), radius: Math.round(lerp(SLASH.radius, 230, lv)) };
+    case "oneHole":     return { max: r1(lerp(ONE_HOLE.max, 3, lv)) };
+    case "poisonMist":  return { dmgMul: r1(lerp(1, 3, lv)), lifeS: r1(lerp(MIST.lifeS, 4, lv)) };
+    case "langer":      return { max: r1(lerp(LANGER.max, 2.6, lv)), range: Math.round(lerp(LANGER.range, 220, lv)) };
+    case "teslaCoil":   return { hops: Math.round(lerp(TESLA.hops, 6, lv)), everyS: r1(lerp(TESLA.everyS, 1.4, lv)) };
+    case "tetractys":   return { every: lv >= 3 ? 3 : TETRACTYS.every, steps: lv >= SIG_MAX_LEVEL ? 3 : TETRACTYS.steps };
+    case "tiger":       return { max: r1(lerp(TIGER.max, 2.2, lv)) };
+    case "queenPirate": return { boostS: r1(lerp(PIRATE.boostS, 3, lv)), pickup: r1(lerp(PIRATE.pickup, 2.2, lv)) };
+    case "phantom":     return { uses: lv >= 4 ? 2 : 1, iframeMs: Math.round(lerp(PHANTOM.iframeMs, 5000, lv)) };
+    case "uinyeo":      return { regenPerSec: r1(lerp(UINYEO.regenPerSec, 2, lv)), healMul: r1(lerp(UINYEO.healMul, 3, lv)) };
+    default:            return {};
+  }
+}
+
 /** ワンホールショット: その敵に当てた回数 → 倍率 */
-export function oneHoleMul(hits) {
-  return Math.min(ONE_HOLE.max, 1 + ONE_HOLE.step * Math.max(0, hits));
+export function oneHoleMul(hits, max = ONE_HOLE.max) {
+  return Math.min(max, 1 + ONE_HOLE.step * Math.max(0, hits));
 }
 
 /** ランゲルライン: 敵までの距離 → 倍率 (= すぐそばで最大、 range より遠いと ×1) */
-export function langerMul(dist) {
-  return 1 + (LANGER.max - 1) * clamp01(1 - dist / LANGER.range);
+export function langerMul(dist, { range = LANGER.range, max = LANGER.max } = {}) {
+  return 1 + (max - 1) * clamp01(1 - dist / range);
 }
 
 /** 虎痴: HP の割合 → 倍率 (= 7 割から上がりはじめ、 3 割以下で最大) */
-export function tigerMul(hpRatio) {
-  return 1 + (TIGER.max - 1) * clamp01((TIGER.start - hpRatio) / (TIGER.start - TIGER.full));
+export function tigerMul(hpRatio, max = TIGER.max) {
+  return 1 + (max - 1) * clamp01((TIGER.start - hpRatio) / (TIGER.start - TIGER.full));
 }
 
 /** テトラクテュス: n 回目のピック (1 から) で上がる段 */
-export function tetractysSteps(n) {
-  return n > 0 && n % TETRACTYS.every === 0 ? TETRACTYS.steps : 1;
+export function tetractysSteps(n, { every = TETRACTYS.every, steps = TETRACTYS.steps } = {}) {
+  return n > 0 && n % every === 0 ? steps : 1;
 }
 
 /** クリプトスラッシュ・テスラコイル・毒霧のダメージ (= レベルで伸びる) */
@@ -93,14 +122,17 @@ export function resetSignature(hero) {
 
 const sig = () => state.battle?.sig ?? null;
 const is = (kind) => sig()?.kind === kind;
+/** SPEC-110: いまの強化段 (= ショップで買う。 ショップでなければ 1) */
+export const sigLevel = () => state.shop?.sigLevel ?? 1;
+const P = () => sigParams(sig()?.kind, sigLevel());
 
 /** 敵に当てるときの倍率 (= damage.js の hitEnemy)。 その敵に当てた回数も数える */
 export function sigDamageMul(e) {
   const s = sig();
   if (!s || !e) return 1;
-  if (s.kind === "oneHole") { const m = oneHoleMul(e.sigHits ?? 0); e.sigHits = (e.sigHits ?? 0) + 1; return m; }
-  if (s.kind === "langer") { const p = state.battle.player; return langerMul(Math.hypot(e.x - p.x, e.y - p.y)); }
-  if (s.kind === "tiger") return tigerMul(hpRatio());
+  if (s.kind === "oneHole") { const m = oneHoleMul(e.sigHits ?? 0, P().max); e.sigHits = (e.sigHits ?? 0) + 1; return m; }
+  if (s.kind === "langer") { const p = state.battle.player; return langerMul(Math.hypot(e.x - p.x, e.y - p.y), P()); }
+  if (s.kind === "tiger") return tigerMul(hpRatio(), P().max);
   return 1;
 }
 
@@ -108,7 +140,7 @@ export function sigDamageMul(e) {
 export function sigSpeedMul() {
   const s = sig();
   if (!s) return 1;
-  if (s.kind === "tiger") return tigerMul(hpRatio());
+  if (s.kind === "tiger") return tigerMul(hpRatio(), P().max);
   if (s.kind === "queenPirate" && s.boostS > 0) return PIRATE.speed;
   return 1;
 }
@@ -116,29 +148,29 @@ export function sigSpeedMul() {
 /** CE を拾える範囲の倍率 (= gems.js) */
 export function sigPickupMul() {
   const s = sig();
-  return s?.kind === "queenPirate" && s.boostS > 0 ? PIRATE.pickup : 1;
+  return s?.kind === "queenPirate" && s.boostS > 0 ? P().pickup : 1;
 }
 
 /** CE が届いたとき (= gems.js) */
 export function sigOnGemsPicked(n) {
   const s = sig();
-  if (s?.kind === "queenPirate" && n > 0) s.boostS = PIRATE.boostS;
+  if (s?.kind === "queenPirate" && n > 0) s.boostS = P().boostS;
 }
 
 /** 毎秒の回復 (= buffs.js の tickRegen に足す) */
 export function sigRegenPerSec() {
-  return is("uinyeo") ? UINYEO.regenPerSec : 0;
+  return is("uinyeo") ? P().regenPerSec : 0;
 }
 
 /** 回復アイテムの効きの倍率 (= field.js) */
 export function sigHealMul() {
-  return is("uinyeo") ? UINYEO.healMul : 1;
+  return is("uinyeo") ? P().healMul : 1;
 }
 
 /** 次のピックで上がる段 (= levelup.js。 数えるのは sigOnPicked) */
 export function sigNextPickSteps() {
   const s = sig();
-  return s?.kind === "tetractys" ? tetractysSteps(s.picks + 1) : 1;
+  return s?.kind === "tetractys" ? tetractysSteps(s.picks + 1, P()) : 1;
 }
 
 /** ピックを確定したとき (= スキップは数えない) */
@@ -147,14 +179,17 @@ export function sigOnPicked() {
   if (s?.kind === "tetractys") s.picks += 1;
 }
 
-/** 倒れる一撃を受けたとき (= hurt.js)。 幻の生存者なら 1 ステージに 1 度だけ耐えて true */
+/** 倒れる一撃を受けたとき (= hurt.js)。 幻の生存者なら 1 ステージに 1 度だけ (= SPEC-110 の Lv.4 から 2 度) 耐えて true */
 export function sigTryPhantom() {
   const s = sig();
-  if (s?.kind !== "phantom" || s.phantomUsed) return false;
-  s.phantomUsed = true;
+  if (s?.kind !== "phantom") return false;
+  const { uses, iframeMs } = P();
+  if ((s.phantomCount ?? 0) >= uses) return false;
+  s.phantomCount = (s.phantomCount ?? 0) + 1;
+  s.phantomUsed = s.phantomCount >= uses;
   state.stats.hp = 1;
-  state.battle.contactCooldownMs = PHANTOM.iframeMs;
-  state.battle.player.phantomMs = PHANTOM.iframeMs;
+  state.battle.contactCooldownMs = iframeMs;
+  state.battle.player.phantomMs = iframeMs;
   return true;
 }
 
@@ -164,12 +199,13 @@ export function sigOnLevelUp(levels, hitEnemy) {
   if (s?.kind !== "cryptoSlash" || levels <= 0) return;
   const p = state.battle.player;
   const enemies = state.battle.enemies;
-  const dmg = slashDmg(state.level);
+  const { dmgMul, radius } = P();
+  const dmg = Math.round(slashDmg(state.level) * dmgMul);
   for (let i = enemies.length - 1; i >= 0; i--) {
     const e = enemies[i];
-    if (Math.hypot(e.x - p.x, e.y - p.y) <= SLASH.radius + (e.r ?? 0)) hitEnemy(i, dmg);
+    if (Math.hypot(e.x - p.x, e.y - p.y) <= radius + (e.r ?? 0)) hitEnemy(i, dmg);
   }
-  s.slashes.push({ x: p.x, y: p.y, age: 0, life: 0.35 });
+  s.slashes.push({ x: p.x, y: p.y, age: 0, life: 0.35, radius });
 }
 
 /** 毎フレーム (= battle/index.js) */
@@ -195,11 +231,12 @@ export function tickSignature(dt, hitEnemy) {
         if (s.clouds.length > MIST.cap) s.clouds.shift();
       }
     }
-    for (let i = s.clouds.length - 1; i >= 0; i--) { s.clouds[i].age += dt; if (s.clouds[i].age >= MIST.lifeS) s.clouds.splice(i, 1); }
+    const mp = P();
+    for (let i = s.clouds.length - 1; i >= 0; i--) { s.clouds[i].age += dt; if (s.clouds[i].age >= mp.lifeS) s.clouds.splice(i, 1); }
     s.mistTickAcc += dt;
     if (s.mistTickAcc >= MIST.tickS && s.clouds.length) {
       s.mistTickAcc = 0;
-      const dmg = mistDmg(state.level);
+      const dmg = Math.round(mistDmg(state.level) * mp.dmgMul);
       // 1 回に 1 体 1 度だけ (= 霧が重なっても重ねて当てない)
       for (let i = b.enemies.length - 1; i >= 0; i--) {
         const e = b.enemies[i];
@@ -209,8 +246,8 @@ export function tickSignature(dt, hitEnemy) {
     }
   }
 
-  if (s.kind === "teslaCoil" && s.t >= TESLA.everyS) {
-    const targets = chainTargets(b.enemies, p.x, p.y);
+  if (s.kind === "teslaCoil" && s.t >= P().everyS) {
+    const targets = chainTargets(b.enemies, p.x, p.y, { hops: P().hops });
     if (targets.length) {
       s.t = 0;
       const pts = [{ x: p.x, y: p.y }, ...targets.map((e) => ({ x: e.x, y: e.y }))];
@@ -234,7 +271,7 @@ export function renderSignatureWorld(ctx, camera) {
   const s = sig();
   if (!s) return;
   for (const c of s.clouds) {
-    const a = 1 - c.age / MIST.lifeS;
+    const a = Math.max(0, 1 - c.age / (P().lifeS ?? MIST.lifeS));
     ctx.globalAlpha = 0.28 * a;
     ctx.fillStyle = "#7be07b";
     ctx.beginPath();
@@ -247,7 +284,7 @@ export function renderSignatureWorld(ctx, camera) {
     ctx.strokeStyle = "#ffd56a";
     ctx.lineWidth = 6 * (1 - k) + 1;
     ctx.beginPath();
-    ctx.arc(sl.x - camera.x, sl.y - camera.y, SLASH.radius * (0.5 + 0.5 * k), 0, Math.PI * 2);
+    ctx.arc(sl.x - camera.x, sl.y - camera.y, (sl.radius ?? SLASH.radius) * (0.5 + 0.5 * k), 0, Math.PI * 2);
     ctx.stroke();
   }
   for (const bolt of s.bolts) {

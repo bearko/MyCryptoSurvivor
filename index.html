@@ -505,7 +505,11 @@
         <span class="levelup-owned__head" id="shopOwnedHead" data-i18n="levelup.owned">装備中</span>
         <div class="levelup-owned__rows" id="shopOwnedRows"></div>
       </div>
-      <div class="shop-grid" id="shopGrid" role="list"></div>
+      <div class="shop-body">
+        <!-- SPEC-110: 固有スキルの強化 (= 常設の札。 広い画面は右、 狭い画面は上) -->
+        <aside class="shop-sig hidden" id="shopSig" aria-label="signature"></aside>
+        <div class="shop-grid" id="shopGrid" role="list"></div>
+      </div>
       <div class="shop-bans hidden" id="shopBans"></div>
       <div class="levelup-modal__actions shop-actions">
         <span class="shop-actions__bans" id="shopBansLeft"></span>

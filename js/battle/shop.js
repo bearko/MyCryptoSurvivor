@@ -18,7 +18,8 @@ import { samplePicks, offerFor, grantPick, buildPickCard, renderOwnedStrip } fro
 import { perk } from "../perks.js";
 import { t, tpl, getLang, onLangChange } from "../i18n.js";
 import { playSe } from "../audio.js";
-import { sigOnLevelUp } from "./signature.js";
+import { sigOnLevelUp, sigParams, sigLevel, SIG_MAX_LEVEL, SIG_UP_PRICE } from "./signature.js";
+import { heroImg } from "../heroes.js";
 import { hitEnemy } from "./damage.js";
 
 import {
@@ -35,6 +36,7 @@ function _fresh() {
     ce: 0, gifts: 0, bans: [], bansLeft: SHOP_BANS,
     locked: [], nextIdx: 0, prevMerchant: null, purchases: 0,
     freeRerolls: 0, enteredIdx: -1, snapshot: null,
+    sigLevel: 1,   // SPEC-110: 固有スキルの強化段 (= ステージをまたいで残る)
   };
 }
 
@@ -50,7 +52,7 @@ export function resetShopForStage(stageIdx) {
     Object.assign(s, structuredClone(s.snapshot));
   } else {
     s.enteredIdx = idx;
-    s.snapshot = { ce: s.ce, gifts: s.gifts, bans: [...s.bans], bansLeft: s.bansLeft, purchases: s.purchases };
+    s.snapshot = { ce: s.ce, gifts: s.gifts, bans: [...s.bans], bansLeft: s.bansLeft, purchases: s.purchases, sigLevel: s.sigLevel };
   }
   s.locked = [];       // 装備がステージごとなので、 取り置きもステージで外れる
   s.nextIdx = 0;
@@ -177,6 +179,120 @@ export function buyOffer(extId) {
   return true;
 }
 
+/** SPEC-110: 固有スキルの次の段の値段 (= もう上がらなければ null) */
+export function sigUpPrice(lv = sigLevel()) {
+  return lv >= SIG_MAX_LEVEL ? null : SIG_UP_PRICE[lv - 1];
+}
+
+/** SPEC-110: 固有スキルを 1 段上げる (= 常設の札) */
+export function buySigUp() {
+  const s = state.shop;
+  const kind = state.battle?.sig?.kind;
+  const price = sigUpPrice(s?.sigLevel ?? 1);
+  if (!s || !kind || price == null || price > s.ce) return false;
+  s.ce -= price;
+  s.sigLevel += 1;
+  _boughtHere += 1;
+  playSe(SFX.PICK_BUFF, 100, 0.55);
+  renderShop();
+  return true;
+}
+
+/** SPEC-110: 段で伸びるもの (= 札に「いま → 次」で出す) */
+const SIG_ROWS = {
+  cryptoSlash: [["dmgMul", "×"], ["radius", "px"]],
+  oneHole:     [["max", "×"]],
+  poisonMist:  [["dmgMul", "×"], ["lifeS", "s"]],
+  langer:      [["max", "×"], ["range", "px"]],
+  teslaCoil:   [["hops", "chain"], ["everyS", "s"]],
+  tetractys:   [["every", "nth"], ["steps", "lv"]],
+  tiger:       [["max", "×"]],
+  queenPirate: [["boostS", "s"], ["pickup", "×"]],
+  phantom:     [["uses", "times"], ["iframeMs", "ms"]],
+  uinyeo:      [["regenPerSec", "hp"], ["healMul", "×"]],
+};
+
+function _fmtSig(v, unit) {
+  switch (unit) {
+    case "×": return `×${v}`;
+    case "px": return `${v}px`;
+    case "s": return tpl(t("shop.sig.sec", "{n} 秒"), { n: String(v) });
+    case "ms": return tpl(t("shop.sig.sec", "{n} 秒"), { n: String(v / 1000) });
+    case "chain": return tpl(t("shop.sig.chain", "{n} 体"), { n: String(v + 1) });
+    case "nth": return tpl(t("shop.sig.nth", "{n} 品目ごと"), { n: String(v) });
+    case "lv": return tpl(t("shop.sig.lv", "{n} 段"), { n: String(v) });
+    case "times": return tpl(t("shop.sig.times", "{n} 回"), { n: String(v) });
+    case "hp": return tpl(t("shop.sig.hp", "毎秒 {n}"), { n: String(v) });
+    default: return String(v);
+  }
+}
+
+/** SPEC-110: 常設の札 (= ヒーローの顔・固有スキルの名前・段・次の段で伸びるもの・値段) */
+function _renderSig() {
+  const el = document.getElementById("shopSig");
+  const s = state.shop;
+  const kind = state.battle?.sig?.kind;
+  const hero = state.ownedHero;
+  if (!el) return;
+  el.classList.toggle("hidden", !kind || !hero);
+  if (!kind || !hero) return;
+  const lang = getLang();
+  const lv = s.sigLevel;
+  const price = sigUpPrice(lv);
+  const now = sigParams(kind, lv);
+  const next = price == null ? null : sigParams(kind, lv + 1);
+  el.innerHTML = "";
+  const head = document.createElement("div");
+  head.className = "shop-sig__head";
+  const face = document.createElement("img");
+  face.className = "shop-sig__face";
+  face.src = heroImg(hero.heroId);
+  face.alt = "";
+  const title = document.createElement("div");
+  title.className = "shop-sig__title";
+  const kicker = document.createElement("span");
+  kicker.className = "shop-sig__kicker";
+  kicker.textContent = t("shop.sig.kicker", "固有スキル");
+  const name = document.createElement("b");
+  name.className = "shop-sig__name";
+  name.textContent = hero.passive?.[lang] ?? hero.passive?.ja ?? "";
+  const lvEl = document.createElement("span");
+  lvEl.className = "shop-sig__lv num";
+  lvEl.textContent = `Lv ${lv} / ${SIG_MAX_LEVEL}`;
+  title.append(kicker, name, lvEl);
+  head.append(face, title);
+  const rows = document.createElement("ul");
+  rows.className = "shop-sig__rows";
+  for (const [key, unit] of SIG_ROWS[kind] ?? []) {
+    const li = document.createElement("li");
+    const label = document.createElement("span");
+    label.textContent = t(`shop.sig.${kind}.${key}`, key);
+    const val = document.createElement("span");
+    val.className = "num";
+    const a = _fmtSig(now[key], unit);
+    const changed = next && next[key] !== now[key];
+    val.textContent = changed ? `${a} → ${_fmtSig(next[key], unit)}` : a;
+    if (changed) li.classList.add("is-up");
+    li.append(label, val);
+    rows.appendChild(li);
+  }
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "shop-sig__buy";
+  if (price == null) {
+    btn.disabled = true;
+    btn.textContent = t("shop.sig.max", "最大まで強化した");
+  } else {
+    btn.disabled = price > s.ce;
+    btn.textContent = tpl(t("shop.sig.buy", "Lv {n} へ ◆ {p}"), { n: String(lv + 1), p: String(price) });
+    btn.addEventListener("click", buySigUp);
+  }
+  const note = document.createElement("p");
+  note.className = "shop-sig__note";
+  note.textContent = t("shop.sig.note", "ステージをまたいで残る");
+  el.append(head, rows, btn, note);
+}
+
 export function toggleLock(extId) {
   const s = state.shop;
   const id = _offers.find((x) => String(x.extId) === String(extId) && !x.sold)?.extId;
@@ -261,6 +377,7 @@ export function renderShop() {
     sub.textContent = tpl(t("shop.sub", "あと {n} 回の店でボス"), { n: String(Math.max(0, left)) });
   }
 
+  _renderSig();   // SPEC-110
   renderOwnedStrip(document.getElementById("shopOwned"), document.getElementById("shopOwnedRows"), document.getElementById("shopOwnedHead"));
 
   const grid = document.getElementById("shopGrid");
