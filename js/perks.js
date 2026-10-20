@@ -149,9 +149,9 @@ const LINES = {
   itemPickupMul:   { ja: (v) => `アイテムの範囲 ${PCT(v)}`,  en: (v) => `Item range ${PCT(v)}` },
   iframeMul:       { ja: (v) => `無敵時間 ${PCT(v)}`,        en: (v) => `I-frames ${PCT(v)}` },
   dashMul:         { ja: () => "逃げ足",                     en: () => "Quick Escape" },
-  xpMul:           { ja: (v) => `経験値 ${PCT(v)}`,          en: (v) => `XP ${PCT(v)}` },
+  xpMul:           { ja: (v) => `拾う CE ${PCT(v)}`,         en: (v) => `CE ${PCT(v)}` },
   reroll:          { ja: (v) => `リロール ${NUM(v)}`,        en: (v) => `Rerolls ${NUM(v)}` },
-  startLevels:     { ja: (v) => `開始レベル ${NUM(v)}`,      en: (v) => `Start levels ${NUM(v)}` },
+  startLevels:     { ja: (v) => `開始の CE ＋${v * 20}`,     en: (v) => `Start CE +${v * 20}` },   // SPEC-109: 1 段 = 20 CE
   stock:           { ja: (v) => `枠 ${NUM(v)}`,              en: (v) => `Slots ${NUM(v)}` },
   skipHeal:        { ja: () => "見送りの礼",                 en: () => "Pass Reward" },
   gumMul:          { ja: (v) => `GUM ${PCT(v)}`,             en: (v) => `GUM ${PCT(v)}` },
@@ -195,9 +195,9 @@ export const STAT_ROWS = [
   { key: "pickupMul",        route: "mov", f: "pct", ja: "CE を拾う範囲",   en: "CE pickup" },
   { key: "itemPickupMul",    route: "mov", f: "pct", ja: "アイテムの範囲",  en: "Item pickup" },
   { key: "iframeMul",        route: "mov", f: "pct", ja: "無敵時間",        en: "I-frames" },
-  { key: "xpMul",            route: "grw", f: "pct", ja: "経験値",          en: "XP" },
+  { key: "xpMul",            route: "grw", f: "pct", ja: "拾う CE",         en: "CE gained" },
   { key: "reroll",           route: "grw", f: "num", ja: "リロール",        en: "Rerolls" },
-  { key: "startLevels",      route: "grw", f: "num", ja: "開始レベル",      en: "Start levels" },
+  { key: "startLevels",      route: "grw", f: "ce20", ja: "開始の CE",      en: "Start CE" },
   { key: "stock",            route: "grw", f: "num", ja: "武器と強化の枠",  en: "Slots" },
   { key: "gumMul",           route: "trs", f: "pct", ja: "GUM",             en: "GUM" },
   { key: "pots",             route: "trs", f: "num", ja: "壺",              en: "Pots" },
@@ -217,6 +217,7 @@ export function formatStat(f, v, lang = "ja") {
   const a = Math.abs(r);
   if (f === "pct") return `${sign}${Math.round(a * 100)}%`;
   if (f === "num") return `${sign}${a}`;
+  if (f === "ce20") return `${sign}${a * 20}`;   // SPEC-109: 先手は 1 段 = 20 CE
   if (f === "sec") return lang === "en" ? `+${a}s` : `＋${a} 秒`;
   if (f === "ps") return lang === "en" ? `${a}/s` : `${a}/秒`;
   if (f === "every") return lang === "en" ? `every ${a}s` : `${a} 秒ごと`;

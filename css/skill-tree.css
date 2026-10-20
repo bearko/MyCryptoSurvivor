@@ -287,7 +287,7 @@
 @media (min-width: 900px) { .tree-sheet { max-height: 34dvh; } }
 
 /* ---- 入口: タイトルのボタンの数の札 / 結果の画面のボタン ---- */
-.title-screen__tree { position: relative; }
+.title-screen__tree { position: relative; clip-path: none; }   /* 数の札と NEW を角の切り抜きで欠かさない */
 .tree-badge {
   position: absolute; top: -6px; right: -4px;
   min-width: 18px; height: 18px; padding: 0 5px;
@@ -400,10 +400,12 @@
 /* 入口 (= タイトルと結果の画面): 脈打ち、 左上に「NEW」 */
 .tree-nudge { animation: tree-nudge 1.2s ease-in-out infinite; position: relative; }
 .tree-nudge::before {
-  content: attr(data-new); position: absolute; top: -8px; left: -6px; z-index: 1;
+  content: attr(data-new); position: absolute; top: -8px; left: -6px; z-index: 1;   /* タイトルのボタン (= 角を切らない) */
   padding: 1px 6px; border-radius: 4px; background: var(--node-gold-hi, #f6e2a0); color: #221a00;
   font-size: 9px; font-weight: 800; letter-spacing: 0.06em; line-height: 1.4;
 }
+/* 結果の画面のボタンは角を切っている (= はみ出すと欠ける) ので、 NEW はボタンの中の右上に */
+.result-tree-btn.tree-nudge::before { top: 4px; left: auto; right: 10px; }
 @keyframes tree-nudge {
   0%, 100% { box-shadow: 0 0 0 0 rgba(246, 226, 160, 0.0); transform: scale(1); }
   50% { box-shadow: 0 0 0 4px rgba(246, 226, 160, 0.35), 0 0 18px rgba(246, 226, 160, 0.55); transform: scale(1.05); }
