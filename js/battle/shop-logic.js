@@ -4,7 +4,7 @@
 
 import {
   SHOP_FIRST_MS, SHOP_EVERY_MS, SHOP_PER_STAGE, SHOP_PRICE, SHOP_PRICE_LL,
-  SHOP_STAGE_MUL, SHOP_REROLL_COST, SHOP_GIFT_MAX_LEVEL,
+  SHOP_STAGE_MUL, SHOP_REROLL_COST, SHOP_GIFT_COST,
 } from "../constants.js";
 
 /** 店主 (= 商人のシャドーヒーロー。 絵は資産リポジトリの Image/Enemies/<enemyId>.png) */
@@ -66,9 +66,17 @@ export function shopPrice(offer, stageIdx = 0, quirk = null, sale = false) {
   return roundTo5(p);
 }
 
-/** ギフト券 (= マジックカード) で 無料にできる品か */
-export function giftable(offer) {
-  return !!offer && !offer.isLL && (offer.nextLevel | 0) <= SHOP_GIFT_MAX_LEVEL;
+/** SPEC-127: その品を無料にするギフト券の枚数 (= 行き先の段で傾斜。 LL は券では買えない → null) */
+export function giftCost(offer) {
+  if (!offer || offer.isLL) return null;
+  const lv = Math.max(1, Math.min(SHOP_GIFT_COST.length, offer.nextLevel | 0));
+  return SHOP_GIFT_COST[lv - 1];
+}
+
+/** ギフト券 (= マジックカード) で無料にできる品か (= gifts: 持っている枚数。 省くと枚数を問わない) */
+export function giftable(offer, gifts = Infinity) {
+  const n = giftCost(offer);
+  return n != null && n <= gifts;
 }
 
 /** 店主を選ぶ (= 同じ人が続けて来ない)。 fixed なら決まった人 */

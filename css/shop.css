@@ -224,7 +224,7 @@
   .shop-card .levelup-card__rankup { font-size: 0.5rem; }
   .shop-card .levelup-card__name { font-size: 0.78rem; }
   .shop-card .levelup-card__skill { font-size: 0.72rem; }
-  .shop-card .levelup-card__effect { font-size: 0.62rem; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .shop-card .levelup-card__effect { font-size: 0.62rem; line-height: 1.3; }   /* SPEC-127: 説明は切らない (= 効果が分からなくなる) */
   .shop-card .levelup-card__lv { font-size: 0.62rem; }
   .shop-price { padding: 0.15rem 0; font-size: 0.82rem; }
   .shop-corner { width: 26px; height: 26px; font-size: 0.8rem; top: -6px; }
@@ -411,7 +411,6 @@
   .shop-card .levelup-card__icon-wrap { aspect-ratio: auto; height: 64px; }
   .shop-card .levelup-card__icon { width: 56px; height: 56px; object-fit: contain; }
   .shop-card .levelup-card__cat { font-size: 0.62rem; }
-  .shop-card .levelup-card__effect { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   .shop-modal--intro .shop-head__line { display: none; }
   .shop-modal--intro .shop-sig { display: none; }
   .shop-modal--intro .shop-body { grid-template-columns: minmax(0, 1fr); }

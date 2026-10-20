@@ -1,0 +1,1 @@
+- **ギフト券の枚数に傾斜** (`js/constants.js` + `js/battle/shop.js`): Common・Uncommon 1 枚、Rare 2 枚、Epic 3 枚、Legendary 5 枚（Legendary も券で買える）。値札に枚数を出す。5 枚並ぶ店で説明が 2 行で切れていたのも直した
