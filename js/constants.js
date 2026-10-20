@@ -337,6 +337,22 @@ export const STOCK_LIMIT_BUFF   = 5;   // 強化系列の最大装備数
 export const REROLL_PER_BATTLE  = 3;   // SPEC-034: 1 戦闘あたりリロール可能回数 (= 2 → 3)
 
 // ============================================================
+// SPEC-109: ショップ (= レベルアップの置き換え。 作りかけのあいだは ?shop=1 のときだけ)
+// ============================================================
+export const SHOP_FIRST_MS      = [10000, 0, 0];   // ステージ 1 は 0:10、 ステージ 2・3 は開始の前 (= SPEC-103 Q2)
+export const SHOP_EVERY_MS      = 40000;           // そのあと 40 秒ごと
+export const SHOP_PER_STAGE     = 6;               // 1 ステージの店の数 (= ボスの前に終わる)
+export const SHOP_OFFERS        = 4;               // 品の枚数 (= マゼランは +1)
+export const SHOP_PRICE         = [15, 25, 40, 60, 90];   // 行き先の段 Lv.1〜5 の値段 (= ステージ 1)
+export const SHOP_PRICE_LL      = 150;             // LL ランクアップ
+export const SHOP_STAGE_MUL     = [1, 1.8, 2.6];   // 雑魚の CE が ×1/×2/×3 なので値段も上げる
+export const SHOP_BANS          = 3;               // お断りは 1 挑戦 3 回まで
+export const SHOP_REROLL_COST   = 5;               // 払うリロールは 5 → 10 → 15 … (= 店ごとに戻る)
+export const SHOP_FREE_REROLLS  = 1;               // ただのリロールはステージごと 1 回 (+ スキルツリーの引き直し)
+export const SHOP_GIFT_MAX_LEVEL = 4;              // ギフト券 (= マジックカード) で ただになるのは行き先 Lv.4 まで
+export const SHOP_HEADSTART_CE  = 20;              // スキルツリーの「先手」 1 段ぶんの CE
+
+// ============================================================
 // SPEC-026: 有限ステージ + 背景画像 + 暗色オーバーレイ
 // SPEC-030: bgPath / boss / balance はステージごと (= STAGE_TABLE) 固定値は維持
 // ============================================================

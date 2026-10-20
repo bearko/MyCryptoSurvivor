@@ -13,7 +13,9 @@ import { playSe } from "../audio.js";
 import { xpGainMul } from "../perks.js";   // SPEC-090c
 import { prefersReducedMotion } from "../motion.js";
 import { startAbsorb, absorbStep, chainPitch } from "./absorb.js";   // SPEC-102
-import { sigPickupMul, sigOnGemsPicked } from "./signature.js";   // SPEC-100
+import { sigPickupMul, sigOnGemsPicked, sigOnLevelUp } from "./signature.js";   // SPEC-100
+import { hitEnemy } from "./damage.js";
+import { addShopCe } from "./shop.js";   // SPEC-109
 
 export function spawnGem(x, y, value = GEM_VALUE) {
   const b = state.battle;
@@ -68,7 +70,8 @@ export function tickGems(dt) {
       b.xpAcc = (b.xpAcc ?? 0) + g.value * xpGainMul() * (state.buffs.ceGainMul ?? 1);   // SPEC-108: クラウン
       const whole = Math.floor(b.xpAcc + 1e-9);
       b.xpAcc -= whole;
-      state.xp += whole;
+      if (state.shop) addShopCe(whole);   // SPEC-109: ショップでは財布へ (= レベルは上がらない)
+      else state.xp += whole;
       b.gems.splice(i, 1);
       picked += 1;
     }
@@ -88,5 +91,8 @@ export function tickGems(dt) {
     state.xpToNext = Math.ceil(state.xpToNext * XP_TO_NEXT_GROWTH);
     levelUps += 1;
   }
-  if (levelUps > 0) triggerLevelUpPick(levelUps);   // SPEC-008: モーダル trigger
+  if (levelUps > 0) {
+    sigOnLevelUp(levelUps, hitEnemy);   // SPEC-100: クリプトスラッシュ (= 呼ばれていなかった)
+    triggerLevelUpPick(levelUps);       // SPEC-008: モーダル trigger
+  }
 }

@@ -120,6 +120,8 @@ export const state = {
   ownedExtensions:       [],   // [{extId, level}]
   pendingPickOptions:    [],   // [{extId, ext, currentLevel, nextLevel, isNew}]
   pendingPickIsStarter:  false,
+  // SPEC-109: ショップ (= ?shop=1 のときだけ。 財布の CE・ギフト券・お断り・取り置き)。 レベルアップで遊ぶときは null
+  shop: null,
 
   // SPEC-009: 撃破数 + リトライ用 last run snapshot
   killCount:    0,
