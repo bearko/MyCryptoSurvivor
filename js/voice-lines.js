@@ -54,10 +54,11 @@ export const VOICE_LINES = {
   "tree.intro.1": {"file":"assets/voice/mine/tree.intro.1.mp3","ms":6165},
   "tree.intro.2": {"file":"assets/voice/mine/tree.intro.2.mp3","ms":5825},
   "tree.root": {"file":"assets/voice/mine/tree.root.mp3","ms":3892},
-  "tree.first": {"file":"assets/voice/mine/tree.first.mp3","ms":4754},
+  "tree.first": {"file":"assets/voice/mine/tree.first.mp3","ms":4963},
   "tree.noGum": {"file":"assets/voice/mine/tree.noGum.mp3","ms":3474},
   "tree.done": {"file":"assets/voice/mine/tree.done.mp3","ms":6191},
   "tree.claimable": {"file":"assets/voice/mine/tree.claimable.mp3","ms":2299},
   "tree.idle": {"file":"assets/voice/mine/tree.idle.mp3","ms":2978},
   "tree.hint": {"file":"assets/voice/mine/tree.hint.mp3","ms":4519},
+  "shop.intro": {"file":"assets/voice/mine/shop.intro.mp3","ms":6113},
 };

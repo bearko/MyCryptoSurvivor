@@ -21,6 +21,7 @@ import { playSe } from "../audio.js";
 import { sigOnLevelUp, sigParams, sigLevel, SIG_MAX_LEVEL, SIG_UP_PRICE } from "./signature.js";
 import { heroImg } from "../heroes.js";
 import { naviFrameUrl, NAVI_POSES } from "../navi.js";
+import { playVoice } from "../voice.js";
 import { hitEnemy } from "./damage.js";
 
 import {
@@ -141,7 +142,11 @@ export function openShop({ opening = false } = {}) {
   _boughtHere = 0;
   _renderNext(null);
   // 最初の店 (= ステージ 1 の 0:10) はまだ CE が少ないので、 サービスで 1 品ただ (= 作者の決定 2026-10-20)
-  if (!s.welcomeGiven && (state.currentStageIdx ?? 0) === 0) { s.welcomeGiven = true; s.welcome = true; }
+  if (!s.welcomeGiven && (state.currentStageIdx ?? 0) === 0) {
+    s.welcomeGiven = true;
+    s.welcome = true;
+    playVoice("shop.intro");   // マインちゃんの説明のボイス (= 説明が出る最初の 1 回だけ)
+  }
   _gamaFree = _merchant.quirk === "freeReroll" ? 1 : 0;
   // 取り置きは同じ札で残す (= 段が上がりきった・枠がいっぱいなら外れる)
   const banned = new Set(s.bans);
@@ -419,7 +424,7 @@ export function renderShop() {
     const ain = document.getElementById("shopIntroAin");
     if (ain && !ain.getAttribute("src")) ain.src = naviFrameUrl(NAVI_POSES.smile);
     const msg = document.getElementById("shopIntroText");
-    if (msg) msg.textContent = t("shop.intro", "敵が落とす CE（◆）を集めると、 ショップで品が買えるよ。 今回はサービスで 1 品無料！ 好きなものを選んでね");
+    if (msg) msg.textContent = t("shop.intro", "敵が落とす CE を集めると、 ショップで強化ができるよ。 初回はサービスで 1 品無料だよ！");
   }
   renderOwnedStrip(document.getElementById("shopOwned"), document.getElementById("shopOwnedRows"), document.getElementById("shopOwnedHead"));
 

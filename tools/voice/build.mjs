@@ -39,14 +39,21 @@ export const ADDED_2 = [
   "tree.intro.1", "tree.intro.2", "tree.root", "tree.first", "tree.noGum", "tree.done", "tree.claimable", "tree.idle", "tree.hint",
 ];
 
+/**
+ * 3 回目の追加の録音 (= 2026-10-20。 「…_added3.wav」。 番号は 0 から)。 SPEC-115 の最初の店の説明と、
+ * tree.first の録り直し (= 「緑に光っているのが強化できるスキルだよ」。 ADDED_2 の同じ名前を差し替える)
+ */
+export const ADDED_3 = ["shop.intro", "tree.first"];
+
 const OUT_DIR = "assets/voice/mine";
 const src = process.argv[2];
 const added2 = process.argv.includes("--added2");   // SPEC-116: 2 回目の追加の録音
-const added = added2 || process.argv.includes("--added");   // 追加の録音だけ変換し、 いまの一覧に足す
-const BATCH = added2 ? ADDED_2 : ADDED;
+const added3 = process.argv.includes("--added3");   // 3 回目の追加の録音
+const added = added2 || added3 || process.argv.includes("--added");   // 追加の録音だけ変換し、 いまの一覧に足す
+const BATCH = added3 ? ADDED_3 : (added2 ? ADDED_2 : ADDED);
 const SUFFIX_ADDED2 = /-MyCryptoSurvivors_tutorial_skilltree\.wav$/i;
-const SUFFIX = added2 ? SUFFIX_ADDED2 : /_added\.wav$/i;
-if (!src) { console.error("usage: node tools/voice/build.mjs <wav dir> [--added | --added2]"); process.exit(1); }
+const SUFFIX = added3 ? /_added3\.wav$/i : (added2 ? SUFFIX_ADDED2 : /_added\.wav$/i);
+if (!src) { console.error("usage: node tools/voice/build.mjs <wav dir> [--added | --added2 | --added3]"); process.exit(1); }
 mkdirSync(OUT_DIR, { recursive: true });
 const wavs = readdirSync(src).filter((f) => /^\d+-.*\.wav$/i.test(f) && (added ? SUFFIX.test(f) : !/_added\d*\.wav$/i.test(f) && !SUFFIX_ADDED2.test(f)));
 const lines = added ? { ...(await import("../../js/voice-lines.js")).VOICE_LINES } : {};
@@ -60,7 +67,7 @@ for (const f of wavs) {
   const sec = Number(execFileSync("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", out]).toString().trim());
   lines[id] = { file: out, ms: Math.round(sec * 1000) };
 }
-const ALL = [...new Set([...ORDER, ...ADDED, ...ADDED_2])];
+const ALL = [...new Set([...ORDER, ...ADDED, ...ADDED_2, ...ADDED_3])];
 const missing = (added ? BATCH : ORDER).filter((id) => !lines[id]);
 if (missing.length) throw new Error(`WAV がない: ${missing.join(", ")}`);
 const body = ALL.filter((id) => lines[id]).map((id) => `  "${id}": ${JSON.stringify(lines[id])},`).join("\n");
