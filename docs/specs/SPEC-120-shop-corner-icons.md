@@ -2,7 +2,7 @@
 id: SPEC-120
 title: Shop Corner Icons — Lock (Top-Right) and Two-Tap Ban (Top-Left), Full Descriptions, Integer Heal, Reroll Refills Sold Slots
 status: Done
-pr: TBD
+pr: 154
 phase: v1.6 Shop
 kind: Changed
 ---
