@@ -1,0 +1,1 @@
+- **LL の解放条件** (`js/meta.js` + `js/battle/levelup.js` + `js/main.js` + `js/battle/activity-report.js`): LL ランクアップは、そのヒーローで全ステージをクリアしたことがあるときだけ（モードは問わない）。ヒーローの選択画面に条件、初めて全クリアしたら活動レポートで「LL 解放！」

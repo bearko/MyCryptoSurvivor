@@ -43,9 +43,9 @@ test("報酬のスコアは活動レポートと同じ式 (= 敗北では速さ�
 });
 
 test("壊れた保存は既定に直す", () => {
-  assert.deepEqual(normalizeMeta(null), { v: 1, gum: 0, dust: 0, nodes: {}, earned: { gum: 0, dust: 0 }, runs: 0 });
+  assert.deepEqual(normalizeMeta(null), { v: 1, gum: 0, dust: 0, nodes: {}, earned: { gum: 0, dust: 0 }, runs: 0, heroClears: {} });
   const m = normalizeMeta({ gum: "12.7", dust: -3, nodes: { vit_hp: 2, bad: 0, "x y": 3, atk_dmg: "1" }, earned: { gum: 5 }, runs: 2 });
-  assert.deepEqual(m, { v: 1, gum: 12, dust: 0, nodes: { vit_hp: 2, atk_dmg: 1 }, earned: { gum: 5, dust: 0 }, runs: 2 });
+  assert.deepEqual(m, { v: 1, gum: 12, dust: 0, nodes: { vit_hp: 2, atk_dmg: 1 }, earned: { gum: 5, dust: 0 }, runs: 2, heroClears: {} });
 });
 
 test("足す・払う・節・作り直す (= 保存される)", () => {
