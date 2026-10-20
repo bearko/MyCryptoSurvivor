@@ -2,7 +2,7 @@
 id: SPEC-130
 title: Choose Gift Tickets or CE Per Purchase — "Pay With Gift Tickets First" Checkbox, Remembered
 status: Done
-pr: TBD
+pr: 165
 phase: v1.6 Shop
 kind: Changed
 ---
