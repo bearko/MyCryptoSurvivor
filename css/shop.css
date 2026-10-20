@@ -416,3 +416,15 @@
   .shop-modal--intro .shop-body { grid-template-columns: minmax(0, 1fr); }
   .shop-intro { padding: 0.35rem 0.6rem; }
 }
+
+/* SPEC-130: 「ギフト券支払いを優先」 (= 手持ちの欄の中。 券を持っているときだけ) */
+.shop-giftpref {
+  display: flex; align-items: center; justify-content: center; gap: 4px;
+  font-size: 0.62rem; line-height: 1.2; color: #9be7ff; cursor: pointer; text-align: left;
+}
+.shop-giftpref.hidden { display: none; }
+.shop-giftpref input { width: 14px; height: 14px; margin: 0; flex: 0 0 auto; accent-color: #9be7ff; cursor: pointer; }
+@media (max-width: 640px) {
+  .shop-giftpref { font-size: 0.58rem; gap: 3px; }
+  .shop-giftpref input { width: 12px; height: 12px; }
+}

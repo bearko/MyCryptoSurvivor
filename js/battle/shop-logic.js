@@ -73,6 +73,15 @@ export function giftCost(offer) {
   return SHOP_GIFT_COST[lv - 1];
 }
 
+/** SPEC-130: 「ギフト券支払いを優先」 (= 既定はオン。 次に開いたときも覚えておく) */
+export const GIFT_FIRST_KEY = "mcs.shopGiftFirst";
+export function isGiftFirst(storage = globalThis.localStorage) {
+  try { return storage?.getItem(GIFT_FIRST_KEY) !== "0"; } catch { return true; }
+}
+export function setGiftFirst(on, storage = globalThis.localStorage) {
+  try { storage?.setItem(GIFT_FIRST_KEY, on ? "1" : "0"); } catch { /* 保存できなくても、 この店の中では効く */ }
+}
+
 /** ギフト券 (= マジックカード) で無料にできる品か (= gifts: 持っている枚数。 省くと枚数を問わない) */
 export function giftable(offer, gifts = Infinity) {
   const n = giftCost(offer);
