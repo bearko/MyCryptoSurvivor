@@ -26,7 +26,9 @@ import { hitEnemy } from "./damage.js";
 
 import {
   MERCHANTS, OPENING_MERCHANT, isShopMode, shopTimesMs, shopPrice, giftable, pickMerchant, rerollCost, canBan, nextShopSec,
+  shopProgress, shopHealAmount, SHOP_SOON_SEC,
 } from "./shop-logic.js";
+import { pushDamageNumber } from "./damage.js";
 export { isShopMode, shopTimesMs, shopProgress } from "./shop-logic.js";
 
 // ============================================================
@@ -40,6 +42,7 @@ function _fresh() {
     freeRerolls: 0, enteredIdx: -1, snapshot: null,
     sigLevel: 1,   // SPEC-110: 固有スキルの強化段 (= ステージをまたいで残る)
     welcome: false, welcomeGiven: false,   // 最初の店のサービス (= 1 品ただ。 使うまで残る)
+    nextMerchant: null,   // 次に来る商人 (= ヘッダーの帯を歩いてくる)
   };
 }
 
@@ -59,6 +62,8 @@ export function resetShopForStage(stageIdx) {
   }
   s.locked = [];       // 装備がステージごとなので、 取り置きもステージで外れる
   s.nextIdx = 0;
+  // ステージ 2・3 は開始の前の店がマルコ・ポーロ。 ステージ 1 は乱数 (= 帯を歩いてくる人を先に決めておく)
+  s.nextMerchant = idx > 0 ? OPENING_MERCHANT : pickMerchant(s.prevMerchant).id;
   s.freeRerolls = SHOP_FREE_REROLLS + perk("reroll");
   s.ce += SHOP_HEADSTART_CE * perk("startLevels");   // SPEC-090c の「先手」「天才」は CE に読み替え
   state.level = 1 + s.purchases;                      // スコアと固有スキルの伸び (= 買った品の数)
@@ -81,11 +86,11 @@ export function addShopGift(n = 1) {
 export function tickShop() {
   const s = state.shop;
   const b = state.battle;
-  if (!s || _open || !b.active || b.gameOver || b.bossSpawned) { _renderNext(null); return; }
+  if (!s || _open || !b.active || b.gameOver) return;
   const times = shopTimesMs(state.currentStageIdx ?? 0);
-  if (s.nextIdx >= times.length) { _renderNext(null); return; }
-  // 2 回目からは、 次の店までの秒を画面に出す (= 1 回目はまだ店を知らないので出さない)
-  _renderNext(s.nextIdx >= 1 ? nextShopSec(b.stageElapsedMs ?? 0, state.currentStageIdx ?? 0, s.nextIdx) : null);
+  const done = b.bossSpawned || s.nextIdx >= times.length;
+  renderShopBar(done ? null : { sec: nextShopSec(b.stageElapsedMs ?? 0, state.currentStageIdx ?? 0, s.nextIdx), ratio: shopProgress(b.stageElapsedMs ?? 0, state.currentStageIdx ?? 0, s.nextIdx), merchant: s.nextMerchant });
+  if (done) return;
   if ((b.stageElapsedMs ?? 0) >= times[s.nextIdx]) {
     const opening = s.nextIdx === 0 && (state.currentStageIdx ?? 0) > 0;
     s.nextIdx += 1;
@@ -93,29 +98,51 @@ export function tickShop() {
   }
 }
 
-let _nextSec = -1;
-/** 次の店までの秒の札 (= #shopNext)。 null なら隠す。 秒が変わったときだけ DOM を触る */
-function _renderNext(sec) {
-  const v = sec == null ? -1 : sec;
-  if (v === _nextSec) return;
-  _nextSec = v;
-  const el = globalThis.document?.getElementById("shopNext");
+// ============================================================
+// ヘッダーの「次の店まで」の帯 (= 次に来る商人が左から右へ歩いてくる。 残り 10 秒で目立つ)
+// ============================================================
+let _barKey = "";
+
+/** info: { sec, ratio, merchant } (= null は「この先に店は無い」)。 秒・商人・位置が変わったときだけ DOM を触る */
+export function renderShopBar(info) {
+  const doc = globalThis.document;
+  const el = doc?.getElementById("shopBar");
   if (!el) return;
-  el.classList.toggle("hidden", v < 0);
-  if (v < 0) return;
-  el.innerHTML = "";
-  const label = document.createElement("span");
-  label.className = "shop-next__label";
-  label.textContent = t("shop.nextLabel", "🛒 ショップまで");
-  const num = document.createElement("b");
-  num.className = "shop-next__sec";
-  num.textContent = tpl(t("shop.nextSec", "{n} 秒"), { n: String(v) });
-  el.append(label, num);
-  el.classList.toggle("shop-next--soon", v <= 5);
+  const pos = info ? Math.round(info.ratio * 200) : -1;   // 0.5% 刻みで動かす (= 毎フレーム書かない)
+  const key = info ? `${info.sec}|${info.merchant}|${pos}` : "none";
+  if (key === _barKey) return;
+  _barKey = key;
+  el.classList.remove("hidden");
+  const m = MERCHANTS.find((x) => x.id === info?.merchant);
+  const walker = doc.getElementById("shopBarWalker");
+  const fill = el.querySelector(".shop-bar__fill");
+  const sec = doc.getElementById("shopBarSec");
+  const name = doc.getElementById("shopBarName");
+  el.classList.toggle("shop-bar--done", !info);
+  el.classList.toggle("shop-bar--soon", !!info && info.sec <= SHOP_SOON_SEC);
+  if (!info) {
+    if (walker) walker.hidden = true;
+    if (fill) fill.style.width = "100%";
+    if (sec) sec.textContent = t("shop.bar.done", "店じまい");
+    if (name) name.textContent = "";
+    return;
+  }
+  const r = Math.max(0, Math.min(1, info.ratio));
+  if (fill) fill.style.width = (r * 100).toFixed(1) + "%";
+  if (walker) {
+    walker.hidden = !m;
+    walker.style.setProperty("--x", r.toFixed(3));
+    if (m && walker.dataset.id !== m.id) { walker.dataset.id = m.id; walker.src = img(`Image/Enemies/${m.enemyId}.png`); }
+  }
+  if (name) name.textContent = m ? t(`shop.m.${m.id}.name`, m.id) : "";
+  if (sec) sec.textContent = tpl(t("shop.bar.sec", "{n} 秒"), { n: String(info.sec) });
 }
 
-/** タイトルに戻る・ゲームオーバーで札を消す */
-export function hideShopNext() { _renderNext(null); }
+/** タイトルに戻る・ゲームオーバー・レベルアップで遊ぶとき (= 帯を隠す) */
+export function hideShopBar() {
+  _barKey = "";
+  globalThis.document?.getElementById("shopBar")?.classList.add("hidden");
+}
 
 // ============================================================
 // 店の画面
@@ -128,6 +155,7 @@ let _offers = [];        // [{extId, sale, sold}]
 let _paidRerolls = 0;
 let _gamaFree = 0;
 let _boughtHere = 0;
+let _healed = 0;   // この店に来たときに戻った HP (= 店の上に出す)
 
 export function isShopOpen() { return _open; }
 
@@ -136,11 +164,21 @@ export function openShop({ opening = false } = {}) {
   if (!s || _open) return;
   _open = true;
   _wireOnce();
-  _merchant = pickMerchant(s.prevMerchant, Math.random, opening ? OPENING_MERCHANT : null);
+  // 帯を歩いてきた商人が店番をする (= 決まっていなければここで選ぶ)
+  _merchant = MERCHANTS.find((m) => m.id === s.nextMerchant)
+    ?? pickMerchant(s.prevMerchant, Math.random, opening ? OPENING_MERCHANT : null);
   s.prevMerchant = _merchant.id;
+  s.nextMerchant = pickMerchant(_merchant.id).id;   // 次に来る人 (= 同じ人は続けて来ない)
   _paidRerolls = 0;
   _boughtHere = 0;
-  _renderNext(null);
+  // ウェーブの節目のひと息: 来店で HP が少し戻る (= 作者の依頼 2026-10-20)
+  _healed = shopHealAmount(state.stats.hp, state.statsMax.hp);
+  if (_healed > 0) {
+    state.stats.hp += _healed;
+    const p = state.battle.player;
+    pushDamageNumber(p.x, p.y - (p.r ?? 12) - 4, _healed, "#7dff9a");
+    playSe(SFX.PICK_HEAL, 100, 0.5);
+  }
   // 最初の店 (= ステージ 1 の 0:10) はまだ CE が少ないので、 サービスで 1 品ただ (= 作者の決定 2026-10-20)
   if (!s.welcomeGiven && (state.currentStageIdx ?? 0) === 0) {
     s.welcomeGiven = true;
@@ -388,7 +426,7 @@ export function closeShop() {
 
 /** タイトルに戻る・ゲームオーバーで、 開いていれば黙って閉じる (= pauseFlags は呼ぶ側がまとめて戻す) */
 export function hideShop() {
-  _renderNext(null);
+  hideShopBar();
   _open = false;
   _offers = [];
   document.getElementById("shopModal")?.classList.add("hidden");
@@ -413,7 +451,8 @@ export function renderShop() {
   const sub = document.getElementById("shopSub");
   if (sub) {
     const left = SHOP_PER_STAGE - s.nextIdx;
-    sub.textContent = tpl(t("shop.sub", "あと {n} 回の店でボス"), { n: String(Math.max(0, left)) });
+    sub.textContent = tpl(t("shop.sub", "あと {n} 回の店でボス"), { n: String(Math.max(0, left)) })
+      + (_healed > 0 ? tpl(t("shop.healed", "　・　来店で HP +{n}"), { n: String(_healed) }) : "");
   }
 
   _renderSig();   // SPEC-110

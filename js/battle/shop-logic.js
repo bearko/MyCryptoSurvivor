@@ -19,13 +19,27 @@ export const MERCHANTS = [
 /** ステージ 2・3 の開始の前の店は決まった人 (= 「次の地へ向かう前に」) */
 export const OPENING_MERCHANT = "marco";
 
-/** ショップで遊ぶか (= 作りかけのあいだのフラグ) */
+/**
+ * ショップで遊ぶか。 2026-10-20 から既定で ON (= 作者の決定「一旦本番に適用」)。
+ * ?shop=0 か localStorage の mcs.shop = "0" で、 今までのレベルアップに戻せる (= 比べるため)。 RTA は呼ぶ側が外す
+ */
 export function isShopMode(search = _search(), storage = _storage()) {
   try {
-    if (new URLSearchParams(search ?? "").get("shop") === "1") return true;
-    return storage?.getItem?.("mcs.shop") === "1";
-  } catch { return false; }
+    const q = new URLSearchParams(search ?? "").get("shop");
+    if (q != null) return q !== "0";
+    return storage?.getItem?.("mcs.shop") !== "0";
+  } catch { return true; }
 }
+
+/** 来店で戻る HP (= 最大 HP の割合。 ウェーブの節目のひと息) */
+export const SHOP_HEAL_RATIO = 0.1;
+export function shopHealAmount(hp, maxHp, ratio = SHOP_HEAL_RATIO) {
+  if (!(maxHp > 0) || hp <= 0) return 0;
+  return Math.max(0, Math.min(maxHp - hp, Math.round(maxHp * ratio)));
+}
+
+/** 次の店までの帯の段階 (= 残り 10 秒で目立たせる。 SHOP_SOON_SEC) */
+export const SHOP_SOON_SEC = 10;
 
 /** そのステージの店が開く時刻 (= ステージの経過 ms) */
 export function shopTimesMs(stageIdx) {

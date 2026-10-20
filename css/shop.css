@@ -160,9 +160,6 @@
   background: linear-gradient(180deg, rgba(23, 19, 31, 0), #17131f 30%);
 }
 
-/* HUD: CE の残高と次の店までの帯 */
-.hud__bar--shop .hud__bar-fill { background: linear-gradient(90deg, #8c7fb0, #bb86fc); }
-.hud__bar--shop .hud__bar-value { color: var(--xp); }
 
 /* 狭い画面は 2 列 (= 4 枚・5 枚とも)。 札の説明は詰める */
 @media (max-width: 640px) {
@@ -242,27 +239,82 @@
 .shop-intro__ain { width: 48px; height: 48px; flex: 0 0 auto; image-rendering: pixelated; object-fit: contain; }
 .shop-intro__text { margin: 0; font-size: 0.82rem; line-height: 1.45; color: var(--text); }
 
-/* 次のショップまでの秒 (= 2 回目から。 戦場の右上。 左上はマインちゃんの通信の窓なので避ける。 遊びは止めない) */
-.shop-next {
-  position: absolute;
-  top: 8px; right: 8px;
-  z-index: var(--z-stage-ui);
-  display: flex; flex-direction: column; align-items: center;
-  min-width: 4.6rem;
-  padding: 0.2rem 0.55rem 0.25rem;
-  border-radius: 10px;
-  color: #ffe9a8;
-  background: rgba(20, 16, 30, 0.75);
-  border: 1px solid rgba(240, 193, 75, 0.55);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-  pointer-events: none;
-  white-space: nowrap;
-  line-height: 1.15;
+/* ============================================================
+   ヘッダーの「次の店まで」の帯 (= XP の帯の場所。 次に来る商人が左から右へ歩いてくる)
+   ============================================================ */
+.shop-bar {
+  display: flex; align-items: center; gap: 8px;
+  flex: 1.4 1 0; min-width: 0;
 }
-.shop-next__label { font-size: 0.6rem; font-weight: 700; color: var(--muted); }
-.shop-next__sec { font-size: 1.05rem; font-weight: 800; font-variant-numeric: tabular-nums; }
-.shop-next.hidden { display: none; }
-.shop-next--soon { color: #1a1420; background: linear-gradient(180deg, #ffe08a, #e0a93a); animation: shop-next-pulse 1s ease-in-out infinite; }
-.shop-next--soon .shop-next__label { color: #4a3510; }
-@keyframes shop-next-pulse { 50% { scale: 1.08; } }
-:root[data-reduce-fx] .shop-next--soon { animation: none; }
+.shop-bar.hidden { display: none; }
+.shop-bar__label { flex: 0 0 auto; font-size: 0.72rem; color: var(--muted); white-space: nowrap; max-width: 17em; overflow: hidden; text-overflow: ellipsis; }
+.hud.hud--shop { padding-top: 9px; padding-bottom: 9px; }
+.shop-bar__label b { color: #d9c2ff; font-weight: 700; }
+.shop-bar__track {
+  --walker: 28px;
+  position: relative;
+  flex: 1 1 0; min-width: 80px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+  box-shadow: inset 0 0 0 1px rgba(187, 134, 252, 0.35);
+}
+.shop-bar__fill {
+  position: absolute; left: 0; top: 0; bottom: 0;
+  width: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(140, 127, 176, 0.5), #bb86fc);
+  transition: width 0.25s linear;
+}
+/* 商人: 帯の上を左 (= 0) から右 (= 1。 店) へ。 足もとを帯に乗せる */
+.shop-bar__walker {
+  position: absolute;
+  top: 50%;
+  margin-top: calc(var(--walker) * -0.62);   /* 足もとを帯に乗せる (= HUD の高さに収める) */
+  left: calc(var(--x, 0) * (100% - var(--walker) - 14px));
+  width: var(--walker); height: var(--walker);
+  image-rendering: pixelated;
+  filter: drop-shadow(0 0 4px rgba(187, 134, 252, 0.8)) drop-shadow(0 2px 0 rgba(0, 0, 0, 0.5));
+  transform: scaleX(-1);   /* 絵は左向きなので、 右 (= 店) を向かせる */
+  transition: left 0.25s linear;
+  animation: shop-walk 0.5s steps(2) infinite;
+  pointer-events: none;
+}
+.shop-bar__walker[hidden] { display: none; }
+@keyframes shop-walk { 50% { translate: 0 -2px; } }
+.shop-bar__goal { position: absolute; right: -4px; top: 50%; translate: 0 -50%; font-size: 1rem; line-height: 1; filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.6)); }
+.shop-bar__sec {
+  flex: 0 0 auto; min-width: 3.4em; text-align: right;
+  font-size: 0.85rem; font-weight: 800; color: #e6d6ff;
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.shop-bar__ce { flex: 0 0 auto; font-weight: 800; color: var(--xp); white-space: nowrap; }
+
+/* 残り 10 秒: 帯が金に光って脈打ち、 秒が大きくなり、 商人が跳ねる */
+.shop-bar--soon .shop-bar__track {
+  box-shadow: inset 0 0 0 1px rgba(255, 224, 138, 0.9), 0 0 10px rgba(255, 196, 64, 0.7);
+  animation: shop-bar-glow 0.8s ease-in-out infinite;
+}
+.shop-bar--soon .shop-bar__fill { background: linear-gradient(90deg, #e0a93a, #ffe08a); }
+.shop-bar--soon .shop-bar__sec {
+  color: #1a1420; font-size: 1rem;
+  padding: 0 0.45em; border-radius: 6px;
+  background: linear-gradient(180deg, #ffe08a, #e0a93a);
+  animation: shop-bar-pulse 0.8s ease-in-out infinite;
+}
+.shop-bar--soon .shop-bar__walker { animation: shop-walk 0.25s steps(2) infinite; }
+@keyframes shop-bar-glow { 50% { box-shadow: inset 0 0 0 1px #fff3c4, 0 0 18px rgba(255, 196, 64, 1); } }
+@keyframes shop-bar-pulse { 50% { scale: 1.12; } }
+.shop-bar--done .shop-bar__track { opacity: 0.45; }
+.shop-bar--done .shop-bar__sec { color: var(--muted); font-size: 0.75rem; }
+:root[data-reduce-fx] .shop-bar__walker,
+:root[data-reduce-fx] .shop-bar--soon .shop-bar__track,
+:root[data-reduce-fx] .shop-bar--soon .shop-bar__sec { animation: none; }
+
+/* スマホ: HUD の 2 段目に、 横いっぱいの帯 */
+@media (max-width: 640px) {
+  .hud.hud--shop { flex-wrap: wrap; row-gap: 4px; padding-top: 6px; padding-bottom: 6px; }
+  .hud--shop .shop-bar { flex: 1 1 100%; order: 10; padding-top: 14px; }
+  .shop-bar__label { display: none; }
+  .shop-bar__track { --walker: 28px; }
+}

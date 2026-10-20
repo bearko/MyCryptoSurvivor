@@ -195,6 +195,17 @@
         <span class="hud__bar-track"><span class="hud__bar-fill"></span></span>
         <span class="hud__bar-value num">0/5</span>
       </div>
+      <!-- 次のショップまでの帯 (= 次に来る商人が左から右へ歩いてくる。 残り 10 秒で目立つ) -->
+      <div class="shop-bar hidden" id="shopBar" role="timer" aria-live="off">
+        <span class="shop-bar__label"><span data-i18n="shop.bar.label">次の店</span> <b id="shopBarName"></b></span>
+        <span class="shop-bar__track">
+          <span class="shop-bar__fill"></span>
+          <img class="shop-bar__walker" id="shopBarWalker" alt="" width="32" height="32" hidden />
+          <span class="shop-bar__goal" aria-hidden="true">🏪</span>
+        </span>
+        <b class="shop-bar__sec num" id="shopBarSec"></b>
+        <span class="shop-bar__ce num">◆<b id="shopBarCe">0</b></span>
+      </div>
     </section>
 
     <section class="stage">
@@ -219,8 +230,6 @@
       </div>
       <!-- SPEC-061: 最後の 5 秒は真ん中に大きな数字 -->
       <div id="bossCountdown" class="boss-countdown num hidden" aria-hidden="true"></div>
-      <!-- SPEC-109: 次のショップまでの秒 (= 2 回目から) -->
-      <div id="shopNext" class="shop-next num hidden" aria-live="off"></div>
       <!-- SPEC-105: 撃破数の節目 (= 遊びは止めない) -->
       <div id="killMilestone" class="kill-milestone hidden" role="status" aria-live="polite">
         <span class="kill-milestone__rays" aria-hidden="true"></span>

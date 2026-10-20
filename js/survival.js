@@ -9,7 +9,6 @@
 import { state } from "./state.js";
 import { STATS_DECAY_PER_TICK, STATS_MAX } from "./constants.js";
 import { t, tpl } from "./i18n.js";
-import { shopProgress } from "./battle/shop-logic.js";   // SPEC-109
 
 const STAT_KEYS = ["hp"];
 
@@ -112,21 +111,17 @@ export function renderHud() {
   // XP bar
   const xpRoot = document.getElementById("hudXp");
   // SPEC-109: ショップでは「CE の残高」と「次の店まで」の帯
-  if (xpRoot && state.shop) {
-    const s = state.shop;
-    const fill  = xpRoot.querySelector(".hud__bar-fill");
-    const val   = xpRoot.querySelector(".hud__bar-value");
-    const label = xpRoot.querySelector(".hud__bar-label");
-    const ratio = shopProgress(state.battle?.stageElapsedMs ?? 0, state.currentStageIdx ?? 0, s.nextIdx);
-    if (label) label.textContent = t("hud.stats.ce", "CE");
-    if (fill) fill.style.width = (ratio * 100).toFixed(2) + "%";
-    if (val)  val.textContent  = `◆${s.ce}`;
-    xpRoot.classList.add("hud__bar--shop");
-    xpRoot.setAttribute("aria-valuenow", String(s.ce));
+  // SPEC-109: ショップでは XP の帯の代わりに「次の店まで」の帯 (= shop.js が描く)。 ここでは財布の CE だけ
+  const hud = document.getElementById("hud");
+  hud?.classList.toggle("hud--shop", !!state.shop);
+  if (state.shop) {
+    xpRoot?.classList.add("hidden");
+    const ce = document.getElementById("shopBarCe");
+    if (ce && ce.textContent !== String(state.shop.ce)) ce.textContent = String(state.shop.ce);
     return;
   }
   if (xpRoot) {
-    xpRoot.classList.remove("hud__bar--shop");
+    xpRoot.classList.remove("hidden");
     const label = xpRoot.querySelector(".hud__bar-label");
     if (label && label.textContent !== t("hud.stats.xp", "XP")) label.textContent = t("hud.stats.xp", "XP");
     const next  = Math.max(1, state.xpToNext);
