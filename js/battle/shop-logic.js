@@ -20,8 +20,8 @@ export const MERCHANTS = [
 export const OPENING_MERCHANT = "marco";
 
 /**
- * ショップで遊ぶか。 2026-10-20 から既定で ON (= 作者の決定「一旦本番に適用」)。
- * ?shop=0 か localStorage の mcs.shop = "0" で、 今までのレベルアップに戻せる (= 比べるため)。 RTA は呼ぶ側が外す
+ * ショップで遊ぶか。 2026-10-20 から既定で ON (= 作者の決定「一旦本番に適用」)。 RTA でも (= SPEC-111)。
+ * ?shop=0 か localStorage の mcs.shop = "0" で、 今までのレベルアップに戻せる (= 比べるため)
  */
 export function isShopMode(search = _search(), storage = _storage()) {
   try {
