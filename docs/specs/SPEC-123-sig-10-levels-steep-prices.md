@@ -2,7 +2,7 @@
 id: SPEC-123
 title: Signature Skill Goes to Lv.10 With Steep Prices; Extensions Rare 500 / Epic 2,000 / Legendary 10,000
 status: Done
-pr: TBD
+pr: 158
 phase: v1.6 Shop
 kind: Changed
 ---
