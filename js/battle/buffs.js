@@ -40,6 +40,7 @@ export function applyBuff(extId, level) {
     case "attackRangeUp": buffs.rangeMul         = base.rangeMul * m; break;   // SPEC-019: 液浸標本
     case "pickupRangeUp": buffs.pickupMul        = base.pickupMul * m; break;   // SPEC-019: ギョク
     case "pierceUp":      buffs.pierceBonus      = base.pierceBonus + m; break;   // SPEC-031: グンバイ
+    case "ceGainUp":      buffs.ceGainMul        = base.ceGainMul * m; break;     // SPEC-108: クラウン
     default:
       console.warn("[buffs] unknown archetype:", ext.archetype);
   }

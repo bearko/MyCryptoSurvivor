@@ -1,0 +1,1 @@
+- **クラウンシリーズ** (`data/extensions.json` + `js/battle/buffs.js` + `js/battle/gems.js`): 強化の 11 種目。クラウン → エリートクラウン → ウィズダムクラウン → 宝冠 → 冕冠 で、拾う CE が ×1.15〜×2.0

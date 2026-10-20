@@ -65,7 +65,7 @@ export function tickGems(dt) {
     }
     if (arrived) {
       // SPEC-090c: 学びの速さ (= 端数は貯めて、 整数になったぶんだけ足す)
-      b.xpAcc = (b.xpAcc ?? 0) + g.value * xpGainMul();
+      b.xpAcc = (b.xpAcc ?? 0) + g.value * xpGainMul() * (state.buffs.ceGainMul ?? 1);   // SPEC-108: クラウン
       const whole = Math.floor(b.xpAcc + 1e-9);
       b.xpAcc -= whole;
       state.xp += whole;

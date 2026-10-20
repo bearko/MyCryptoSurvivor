@@ -1804,6 +1804,68 @@
         4037,
         5037
       ]
+    },
+    {
+      "extId": 21,
+      "category": "buff",
+      "series": "Crown",
+      "archetype": "ceGainUp",
+      "iconId": 1036,
+      "seriesColor": "#f0c14b",
+      "tierNames": [
+        {
+          "ja": "クラウン",
+          "en": "Crown"
+        },
+        {
+          "ja": "エリートクラウン",
+          "en": "Elite Crown"
+        },
+        {
+          "ja": "ウィズダムクラウン",
+          "en": "Wisdom Crown"
+        },
+        {
+          "ja": "宝冠",
+          "en": "Treasure Crown"
+        },
+        {
+          "ja": "冕冠",
+          "en": "Emperor Crown"
+        }
+      ],
+      "skillName": {
+        "ja": "マジェスティ",
+        "en": "Majesty"
+      },
+      "skillDescTpl": {
+        "ja": "拾う CE ×{magnitude}（敵・壺・宝箱）",
+        "en": "CE picked up ×{magnitude} (enemies, pots, chests)"
+      },
+      "tierParams": [
+        {
+          "magnitude": 1.15
+        },
+        {
+          "magnitude": 1.3
+        },
+        {
+          "magnitude": 1.5
+        },
+        {
+          "magnitude": 1.75
+        },
+        {
+          "magnitude": 2.0
+        }
+      ],
+      "tierIconIds": [
+        1036,
+        2036,
+        3036,
+        4036,
+        5036
+      ]
     }
   ]
 }
