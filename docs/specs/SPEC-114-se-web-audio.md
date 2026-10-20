@@ -2,7 +2,7 @@
 id: SPEC-114
 title: Sound Effects on Web Audio — Fix SEs (Defeat Jingle, Shop Purchases) Going Silent After Long Fights
 status: Done
-pr: TBD
+pr: 144
 phase: v1.6 Shop
 kind: Fixed
 ---
