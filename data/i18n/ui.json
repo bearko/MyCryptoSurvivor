@@ -253,6 +253,8 @@
   "result.time":         { "ja": "時間",                           "en": "Time" },
   "meta.gum":            { "ja": "GUM",                            "en": "GUM" },
   "meta.dust":           { "ja": "ゴールドダスト",                 "en": "Gold Dust" },
+  "milestone.kills":     { "ja": "体撃破！",                       "en": "KILLS!" },
+  "milestone.aria":      { "ja": "{n} 体撃破",                     "en": "{n} kills" },
   "resume.label":        { "ja": "再開まで",                       "en": "RESUMING IN" },
   "tree.open":           { "ja": "スキルツリー",                   "en": "Skill Tree" },
   "tree.openResult":     { "ja": "スキルツリーへ",                 "en": "To Skill Tree" },

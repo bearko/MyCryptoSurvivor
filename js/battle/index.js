@@ -7,6 +7,7 @@
 // RAF ループは pauseFlags を見て update を skip するが、 描画は続ける。
 
 import { tickResumeCountdown, resetResumeCountdown } from "./resume-countdown.js";   // SPEC-104
+import { tickMilestones, resetMilestones } from "./milestones.js";   // SPEC-105
 import { state } from "../state.js";
 import {
   FACTION_COLOR, FACTION_COLOR_DEFAULT,
@@ -133,6 +134,7 @@ export function startBattle(hero) {
   b.gameOver           = false;                 // SPEC-009: 多重 trigger 防止 flag
   b.stageElapsedMs     = 0;                     // SPEC-022: ステージ経過リセット
   resetResumeCountdown({ release: true });     // SPEC-104: 新しいステージは数えずに始める
+  resetMilestones(state.run.totalKills ?? 0);  // SPEC-105: 通算の撃破数の節目
   b.bossSpawned        = false;                 // SPEC-022: ボス multi-spawn 防止
   b.bossDefeated       = false;                 // SPEC-022: ボス撃破フラグ
   b.fastForwardMs      = 0;                     // SPEC-054: 2 倍速はステージをまたがない
@@ -304,6 +306,7 @@ function _step(dt, now) {
   tickField(dt);                 // SPEC-053: 壺・宝箱を出す + お助けアイテムを拾う
   tickRegen(dt);                 // SPEC-011: Ramen 系列の HP regen
   tickCoach(dt, v.x !== 0 || v.y !== 0);   // SPEC-042: 操作ガイド
+  tickMilestones(_commTop() + 64);          // SPEC-105: 撃破数の節目 (= 止めない)
   if (state.battle.contactCooldownMs > 0) {
     state.battle.contactCooldownMs -= dt * 1000;
   }

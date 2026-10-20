@@ -217,6 +217,12 @@
       </div>
       <!-- SPEC-061: 最後の 5 秒は真ん中に大きな数字 -->
       <div id="bossCountdown" class="boss-countdown num hidden" aria-hidden="true"></div>
+      <!-- SPEC-105: 撃破数の節目 (= 遊びは止めない) -->
+      <div id="killMilestone" class="kill-milestone hidden" role="status" aria-live="polite">
+        <span class="kill-milestone__rays" aria-hidden="true"></span>
+        <span class="kill-milestone__num num">100</span>
+        <span class="kill-milestone__label">体撃破！</span>
+      </div>
       <!-- SPEC-104: 中断する画面を閉じたら 3 秒数えてから再開 -->
       <div id="resumeCountdown" class="resume-countdown hidden" role="status" aria-live="assertive">
         <span class="resume-countdown__label" data-i18n="resume.label">再開まで</span>
