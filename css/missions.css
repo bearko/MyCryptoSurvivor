@@ -187,3 +187,14 @@
 .mission-bar--boost { background: linear-gradient(90deg, rgba(255, 224, 138, 0.22), rgba(255, 224, 138, 0.05)); border-color: rgba(255, 224, 138, 0.6); }
 .mission-bar--boost .mission-bar__fill { background: linear-gradient(90deg, #c9a24a, #ffe08a); }
 .mission-bar--boost .mission-bar__title { color: #ffe08a; }
+
+/* SPEC-131: 確定報酬の GUM */
+.mission-reward__gum {
+  display: inline-flex; align-items: center; gap: 6px; align-self: flex-start;
+  margin: 2px 0 0; padding: 3px 10px 3px 6px;
+  border-radius: 999px;
+  background: rgba(255, 224, 138, 0.14); border: 1px solid rgba(255, 224, 138, 0.6);
+  font-size: 0.82rem; font-weight: 800; color: #ffe08a;
+}
+.mission-reward__gum.hidden { display: none; }
+.mission-reward__gum img { width: 20px; height: 20px; image-rendering: pixelated; }

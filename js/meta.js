@@ -14,6 +14,18 @@ import { LS_META } from "./constants.js";
 export const META_VERSION = 1;
 export const GUM_MIN = 5;
 
+/** SPEC-131: 撃破 15 体ごとに GUM ＋1 (= 倒すほど貯まる) */
+export const KILLS_PER_GUM = 15;
+export function gumForKills(kills) {
+  return Math.floor(Math.max(0, Number(kills) || 0) / KILLS_PER_GUM);
+}
+
+/** SPEC-131: ミッション達成の確定 GUM (= 重さ × ステージの番号) */
+export const MISSION_GUM = { light: 30, medium: 60, heavy: 120 };
+export function missionGum(weight, stageIdx = 0) {
+  return (MISSION_GUM[weight] ?? MISSION_GUM.medium) * (Math.max(0, stageIdx | 0) + 1);
+}
+
 /** 1 回の挑戦の GUM (= √スコア ÷ 2。 最低 GUM_MIN)。 純関数 */
 export function gumForScore(score) {
   const s = Math.max(0, Number(score) || 0);
@@ -174,12 +186,25 @@ export function runStagesForRewards() {
 
 /** 挑戦が終わったとき (= 全クリア・敗北): GUM を足して、 { gum, score } を返す */
 export function grantRunRewards(cleared, { gumMul = 0 } = {}) {
-  const score = rewardScore(runStagesForRewards(), !!cleared);
-  const gum = Math.round(gumForScore(score) * (1 + Math.max(0, Number(gumMul) || 0)));   // SPEC-090c: 金勘定・金運
+  const stages = runStagesForRewards();
+  const score = rewardScore(stages, !!cleared);
+  const kills = stages.reduce((a, s) => a + (s.kills | 0), 0);
+  // SPEC-131: 撃破数のぶんを足す。 SPEC-090c: 金勘定・金運はその合計に掛かる
+  const gum = Math.round((gumForScore(score) + gumForKills(kills)) * (1 + Math.max(0, Number(gumMul) || 0)));
   const m = addRewards({ gum });
   m.runs += 1;
   _save();
-  return { gum, score };
+  // 結果の画面には、 ミッションで先にもらったぶんも足して出す (= もう meta には入っている)
+  return { gum: gum + (state.run?.missionGum | 0), score };
+}
+
+/** SPEC-131: ミッション達成の確定 GUM (= その場で足す。 挑戦の途中でやめても失わない) */
+export function grantMissionGum(n) {
+  const gum = Math.max(0, n | 0);
+  if (gum <= 0) return 0;
+  addRewards({ gum });
+  if (state.run) state.run.missionGum = (state.run.missionGum | 0) + gum;
+  return gum;
 }
 
 /** ボスを倒したとき: ゴールドダストを足して、 その数を返す */

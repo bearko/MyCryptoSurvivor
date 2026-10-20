@@ -77,7 +77,7 @@ test("挑戦から: 倒れたときはいまのステージも数え、 ボス�
   assert.equal(runDust(), 1);
   const r = grantRunRewards(false);
   assert.equal(r.score, rewardScore(st, false));
-  assert.equal(r.gum, gumForScore(r.score));
+  assert.equal(r.gum, gumForScore(r.score) + Math.floor(1300 / 15));   // SPEC-131: 撃破 15 体ごとに ＋1
   const m = getMeta();
   assert.deepEqual([m.gum, m.dust, m.runs, m.earned.gum], [r.gum, 2, 1, r.gum]);
 });

@@ -19,6 +19,13 @@ export const ROUTES = [
   { id: "grw", name: { ja: "成長", en: "Growth" },   color: "#5ecf8a", angle: 90 },
   { id: "trs", name: { ja: "財宝", en: "Treasure" }, color: "#f0c14b", angle: 150 },
   { id: "bos", name: { ja: "ボス", en: "Boss" },     color: "#bb86fc", angle: 210 },
+  // SPEC-131: エクステ別の強化 (= 道と道のあいだ。 minor: 道の一覧には出さない・奥義は無い)
+  { id: "wpa", name: { ja: "武器の極意", en: "Weapon Mastery" }, color: "#ffb37a", angle: -60, minor: true },
+  { id: "wpb", name: { ja: "武器の極意", en: "Weapon Mastery" }, color: "#ffb37a", angle: 0,   minor: true },
+  { id: "wpc", name: { ja: "武器の極意", en: "Weapon Mastery" }, color: "#ffb37a", angle: 60,  minor: true },
+  { id: "bfa", name: { ja: "強化の目利き", en: "Buff Bargains" }, color: "#7fd6c2", angle: 120, minor: true },
+  { id: "bfb", name: { ja: "強化の目利き", en: "Buff Bargains" }, color: "#7fd6c2", angle: 180, minor: true },
+  { id: "bfc", name: { ja: "強化の目利き", en: "Buff Bargains" }, color: "#7fd6c2", angle: 240, minor: true },
 ];
 export const ROUTE_MAP = Object.fromEntries(ROUTES.map((r) => [r.id, r]));
 
@@ -84,6 +91,43 @@ export const NODES = [
   N("cap_bos",     "bos", "bos_thunder", 4,  0, "capstone", "竜殺し",     "Dragonslayer",   "ボスへの攻撃力 ＋15%、 ボスの接触・技のダメージ −25%", "Damage to bosses +15%, damage from bosses −25%", { gum: 300, dust: 5 }, 5091, { bossDmgMul: 0.15, bossDmgTakenMul: -0.25 }),
 ];
 
+/**
+ * SPEC-131: エクステ別の強化 (= 21 枚)。 根を取ると見え、 道と道のあいだに 3〜4 枚ずつ並ぶ (= 深さ 3 から外へ)。
+ *   武器: その武器の威力 ＋5%（段ごと・5 段）。 perk の名前は wdmg_<extId>
+ *   強化: その強化エクステのショップの値段 −6%（段ごと・5 段）。 perk の名前は cut_<extId>
+ */
+export const MASTERY_GUM = 40;
+export const MASTERY_MAX = 5;
+export const WEAPON_DMG_PER_RANK = 0.05;
+export const BUFF_CUT_PER_RANK = 0.06;
+export const EXT_MASTERY = [
+  // route, extId, kind, 名前 (ja / en), アイコン
+  ["wpa", 10, "w", "ブレード", "Blade", 1001], ["wpa", 7, "w", "ナイフ", "Knife", 1048], ["wpa", 5, "w", "手裏剣", "Shuriken", 1124],
+  ["wpb", 1, "w", "リボルバー", "Revolver", 1029], ["wpb", 6, "w", "レーザーガン", "Raygun", 1130], ["wpb", 4, "w", "パロット", "Parrot", 1113], ["wpb", 3, "w", "ホーキ", "Broomstick", 1080],
+  ["wpc", 2, "w", "ブック", "Book", 1008], ["wpc", 8, "w", "マレット", "Mallet", 1073], ["wpc", 9, "w", "雪だるま", "Snowman", 1126],
+  ["bfa", 19, "b", "ギョク", "Orb", 1098], ["bfa", 18, "b", "カエルの標本", "Frog Specimen", 1169], ["bfa", 21, "b", "クラウン", "Crown", 1036], ["bfa", 20, "b", "グンバイ", "Gunbai", 1037],
+  ["bfb", 16, "b", "りんご", "Apple", 1159], ["bfb", 17, "b", "オリフラム", "Oriflamme", 1140], ["bfb", 14, "b", "ホース", "Horse", 1005], ["bfb", 13, "b", "ブーツ", "Boots", 1031],
+  ["bfc", 11, "b", "アーマー", "Armor", 1004], ["bfc", 15, "b", "シールド", "Shield", 1010], ["bfc", 12, "b", "ラーメン", "Ramen", 1154],
+];
+/** エクステ別の節の置き場所 (= 中心から 3.0 マス、 そこから 0.92 マスごと。 道の節より詰めて、 木を広げすぎない) */
+export const MASTERY_R0 = 3.0;
+export const MASTERY_STEP = 0.92;
+const _depthIn = {};
+for (const [route, extId, kind, ja, en, icon] of EXT_MASTERY) {
+  const i = (_depthIn[route] = (_depthIn[route] ?? -1) + 1);
+  const depth = 3 + i;
+  const w = kind === "w";
+  NODES.push({ rad: MASTERY_R0 + i * MASTERY_STEP, ...N(
+    `${w ? "wm" : "bm"}_${extId}`, route, ROOT_ID, depth, 0, "repeat",
+    w ? `${ja}の極意` : `${ja}の目利き`, w ? `${en} Mastery` : `${en} Bargain`,
+    w ? `${ja}の威力 ＋${WEAPON_DMG_PER_RANK * 100}%（段ごと）` : `ショップで${ja}が −${BUFF_CUT_PER_RANK * 100}%（段ごと）`,
+    w ? `${en} damage +${WEAPON_DMG_PER_RANK * 100}% per rank` : `${en} costs ${BUFF_CUT_PER_RANK * 100}% less in shops per rank`,
+    { gum: MASTERY_GUM }, icon,
+    w ? { [`wdmg_${extId}`]: WEAPON_DMG_PER_RANK } : { [`cut_${extId}`]: BUFF_CUT_PER_RANK },
+    MASTERY_MAX,
+  ), extId, mastery: kind });
+}
+
 export const NODE_MAP = Object.fromEntries(NODES.map((n) => [n.id, n]));
 /** 画面に出す節 (= 根と道の上のもの。 いまはすべて) */
 export const TREE_NODES = NODES;
@@ -96,7 +140,7 @@ const LANE = 0.6;
 export function nodePos(n) {
   if (n.kind === "root") return { x: 0, y: 0 };
   const a = (ROUTE_MAP[n.route].angle * Math.PI) / 180;
-  const r = RING + (n.depth - 1) * STEP;
+  const r = n.rad ?? RING + (n.depth - 1) * STEP;   // SPEC-131: エクステ別の節は rad で詰めて置く
   const px = -Math.sin(a);
   const py = Math.cos(a);
   return { x: Math.cos(a) * r + px * n.lane * LANE, y: Math.sin(a) * r + py * n.lane * LANE };
@@ -104,8 +148,8 @@ export function nodePos(n) {
 
 /** 道の名前を置く半径 (= いちばん奥の節のさらに先) */
 export function routeLabelPos(route) {
-  const depth = Math.max(...TREE_NODES.filter((n) => n.route === route.id).map((n) => n.depth));
+  const rs = TREE_NODES.filter((n) => n.route === route.id).map((n) => n.rad ?? RING + (n.depth - 1) * STEP);
   const a = (route.angle * Math.PI) / 180;
-  const r = RING + depth * STEP;
+  const r = Math.max(...rs) + STEP;
   return { x: Math.cos(a) * r, y: Math.sin(a) * r };
 }

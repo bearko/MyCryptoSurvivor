@@ -57,12 +57,13 @@ export function roundTo5(v) {
  * 品の値段。 行き先の段 (= レアリティ) で上がり、 ステージで掛かる。 店主の癖とセールも効く
  * @param {{nextLevel:number,isLL?:boolean,isNew?:boolean}} offer
  */
-export function shopPrice(offer, stageIdx = 0, quirk = null, sale = false) {
+export function shopPrice(offer, stageIdx = 0, quirk = null, sale = false, cut = 0) {
   const lv = Math.max(1, Math.min(SHOP_PRICE.length, offer?.nextLevel | 0));
   let p = offer?.isLL ? SHOP_PRICE_LL : SHOP_PRICE[lv - 1];
   p *= SHOP_STAGE_MUL[Math.min(SHOP_STAGE_MUL.length - 1, Math.max(0, stageIdx | 0))];
   if (quirk === "pirate") p *= offer?.isNew ? 1.2 : 0.8;
   if (sale) p *= 0.5;
+  if (cut > 0) p *= 1 - cut;   // SPEC-131: 強化の目利き (= スキルツリー)
   return roundTo5(p);
 }
 
