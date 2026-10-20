@@ -5,18 +5,29 @@ import assert from "node:assert/strict";
 import { readFileSync, existsSync } from "node:fs";
 const {
   MERCHANTS, OPENING_MERCHANT, isShopMode, shopTimesMs, roundTo5, shopPrice, giftable,
-  pickMerchant, rerollCost, canBan, shopProgress, nextShopSec,
+  pickMerchant, rerollCost, canBan, shopProgress, nextShopSec, shopHealAmount, SHOP_HEAL_RATIO, SHOP_SOON_SEC,
 } = await import("../js/battle/shop-logic.js");
 
 const store = (v) => ({ getItem: (k) => (k === "mcs.shop" ? v : null) });
 
-test("ショップは ?shop=1 か mcs.shop のときだけ (= 作りかけのあいだのフラグ)", () => {
-  assert.equal(isShopMode("?shop=1", store(null)), true);
-  assert.equal(isShopMode("?debug=1&shop=1", store(null)), true);
+test("ショップは既定で ON (= 2026-10-20 本番に適用)。 ?shop=0 か mcs.shop=0 で今までのレベルアップ", () => {
+  assert.equal(isShopMode("", store(null)), true);
+  assert.equal(isShopMode("?shop=1", store("0")), true);
+  assert.equal(isShopMode("?debug=1&shop=0", store(null)), false);
+  assert.equal(isShopMode("", store("0")), false);
   assert.equal(isShopMode("", store("1")), true);
-  assert.equal(isShopMode("", store(null)), false);
-  assert.equal(isShopMode("?shop=0", store(null)), false);
-  assert.equal(isShopMode("", { getItem() { throw new Error("blocked"); } }), false);
+  assert.equal(isShopMode("", { getItem() { throw new Error("blocked"); } }), true);
+  // RTA は今のレギュレーション (= v4) のままレベルアップで計る
+  const idx = readFileSync(new URL("../js/battle/index.js", import.meta.url), "utf8");
+  assert.match(idx, /if \(isShopMode\(\) && !state\.rtaMode\)/);
+});
+
+test("来店で HP が少し戻る (= 最大 HP の 1 割。 満タンを超えない・倒れていたら戻さない)", () => {
+  assert.equal(shopHealAmount(50, 200), 20);
+  assert.equal(shopHealAmount(195, 200), 5);
+  assert.equal(shopHealAmount(200, 200), 0);
+  assert.equal(shopHealAmount(0, 200), 0);
+  assert.equal(SHOP_HEAL_RATIO, 0.1);
 });
 
 test("店の時刻: ステージ 1 は 0:10 から、 ステージ 2・3 は開始の前から 40 秒ごとに 6 回 (= SPEC-103 Q2)", () => {
@@ -108,12 +119,18 @@ test("次の店までの秒 (= 切り上げ。 もう店が無ければ null)", 
   assert.equal(nextShopSec(0, 0, 6), null);
 });
 
-test("最初の店はサービスで 1 品ただ・説明の文がある・2 回目から秒の札", () => {
+test("最初の店はサービスで 1 品ただ・説明の文がある・ヘッダーに次の店までの帯", () => {
   const shop = readFileSync(new URL("../js/battle/shop.js", import.meta.url), "utf8");
   assert.match(shop, /if \(state\.shop\.welcome && !offer\.isLL\) return 0;/);
-  assert.match(shop, /s\.nextIdx >= 1 \? nextShopSec/);
+  assert.match(shop, /info\.sec <= SHOP_SOON_SEC/);   // 残り 10 秒で目立つ
+  assert.equal(SHOP_SOON_SEC, 10);
+  // 帯を歩いてきた商人が店番をする
+  assert.match(shop, /_merchant = MERCHANTS\.find\(\(m\) => m\.id === s\.nextMerchant\)/);
   const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
-  assert.ok(html.includes('id="shopIntro"') && html.includes('id="shopNext"'));
+  assert.ok(html.includes('id="shopIntro"') && html.includes('id="shopBar"') && html.includes('id="shopBarWalker"'));
+  assert.ok(!html.includes('id="shopNext"'));
+  // 帯は HUD の中
+  assert.ok(html.indexOf('id="shopBar"') > html.indexOf('id="hud"') && html.indexOf('id="shopBar"') < html.indexOf("</section>", html.indexOf('id="hud"')));
   const ui = JSON.parse(readFileSync(new URL("../data/i18n/ui.json", import.meta.url), "utf8"));
-  for (const k of ["shop.intro", "shop.nextLabel", "shop.nextSec", "shop.welcomeFree", "coach.ce"]) assert.ok(ui[k]?.ja && ui[k]?.en, k);
+  for (const k of ["shop.intro", "shop.bar.label", "shop.bar.sec", "shop.bar.done", "shop.healed", "shop.welcomeFree", "coach.ce"]) assert.ok(ui[k]?.ja && ui[k]?.en, k);
 });

@@ -8,7 +8,7 @@
 
 import { tickResumeCountdown, resetResumeCountdown } from "./resume-countdown.js";   // SPEC-104
 import { tickMilestones, resetMilestones } from "./milestones.js";   // SPEC-105
-import { isShopMode, resetShopForStage, tickShop } from "./shop.js";   // SPEC-109
+import { isShopMode, resetShopForStage, tickShop, hideShopBar } from "./shop.js";   // SPEC-109
 import { state } from "../state.js";
 import {
   FACTION_COLOR, FACTION_COLOR_DEFAULT,
@@ -200,10 +200,12 @@ export function startBattle(hero) {
   startCoachIfFirst();   // SPEC-042: 初回のステージ 1 だけ操作ガイド
   // SPEC-090c: 先手 (= 始まってすぐ選ぶ。 各ステージの始まりに。 経験値の梯子は進めない)
   // SPEC-109: ショップで遊ぶときは CE に読み替える (= resetShopForStage)
-  if (isShopMode()) {
+  // RTA は今のレギュレーション (= v4) のままレベルアップで計る (= 記録を混ぜない。 ショップの版は SPEC-111)
+  if (isShopMode() && !state.rtaMode) {
     resetShopForStage(state.currentStageIdx ?? 0);
   } else {
     state.shop = null;
+    hideShopBar();
     const headStart = perk("startLevels");
     if (headStart > 0) { state.level += headStart; triggerLevelUpPick(headStart); }
   }
