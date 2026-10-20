@@ -2,7 +2,7 @@
 id: SPEC-104
 title: Resume Countdown — 3 Seconds Before Play Resumes After Any Pausing Screen
 status: Done
-pr: TBD
+pr: 137
 phase: v1.6 Shop
 kind: Added
 ---
