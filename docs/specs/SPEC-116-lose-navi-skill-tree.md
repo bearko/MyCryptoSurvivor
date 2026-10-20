@@ -2,7 +2,7 @@
 id: SPEC-116
 title: Mine Guides to the Skill Tree After a Defeat — First-Time Lead-In, Three Rotating Lines, Tree Intro; Voice Script
 status: Done
-pr: TBD
+pr: 146
 phase: v1.6 Shop
 kind: Added
 ---
