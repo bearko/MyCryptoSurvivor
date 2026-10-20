@@ -178,7 +178,8 @@ export function samplePicks(n, { exclude = new Set(), last = new Set(), withLL =
   return _samplePicks(n, exclude, last, withLL, banned, bias);
 }
 
-function _samplePicks(n, exclude = new Set(), last = new Set(), withLL = true, banned = new Set(), bias = null) {
+function _samplePicks(n, exclude = new Set(), last = new Set(), withLL = true, bannedIn = new Set(), bias = null) {
+  const banned = new Set([...bannedIn].map(String));   // お断りは数でも文字でも (= 比べるのは文字)
   // SPEC-101: 初期武器が Lv.5 なら、 1 枚目は必ず LL ランクアップ (= 残りの枚数を配る)
   const ll = withLL ? llOption(state.ownedExtensions, state.battle?.starterExtId, getExt, EXT_MAX_LEVEL, llUnlocked()) : null;
   if (ll) return n <= 1 ? [ll] : [ll, ..._samplePicks(n - 1, new Set([...exclude, String(ll.extId)]), last, false, banned, bias)];
@@ -226,7 +227,8 @@ function _samplePicks(n, exclude = new Set(), last = new Set(), withLL = true, b
  * SPEC-109: いまその品を買えるとしたら、 どの札になるか (= ショップの取り置きを次の店で出し直す)。
  * 段が上がりきった・枠がいっぱい・お断りした、 なら null
  */
-export function offerFor(extId, banned = new Set()) {
+export function offerFor(extId, bannedIn = new Set()) {
+  const banned = new Set([...bannedIn].map(String));   // お断りは数でも文字でも (= 比べるのは文字)
   if (banned.has(String(extId))) return null;
   const ll = llOption(state.ownedExtensions, state.battle?.starterExtId, getExt, EXT_MAX_LEVEL, llUnlocked());
   if (ll && String(ll.extId) === String(extId)) return ll;

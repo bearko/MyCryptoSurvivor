@@ -175,7 +175,7 @@ export function openShop({ opening = false } = {}) {
   // ウェーブの節目のひと息: 来店で HP が少し戻る (= 作者の依頼 2026-10-20)
   _healed = canHeal() ? shopHealAmount(state.stats.hp, state.statsMax.hp) : 0;   // SPEC-112: 不老不死の探求のあいだは戻らない
   if (_healed > 0) {
-    state.stats.hp += _healed;
+    state.stats.hp = Math.min(state.statsMax.hp, state.stats.hp + _healed);
     const p = state.battle.player;
     pushDamageNumber(p.x, p.y - (p.r ?? 12) - 4, _healed, "#7dff9a");
     playSe(SFX.PICK_HEAL, 100, 0.5);
@@ -200,13 +200,13 @@ export function openShop({ opening = false } = {}) {
 }
 
 /** 品を足りるまで引く (= 取り置きと売り切れはそのまま) */
-function _fillOffers() {
+function _fillOffers(last = new Set(_offers.map((o) => String(o.extId)))) {
   const n = SHOP_OFFERS + (_merchant.quirk === "extraOffer" ? 1 : 0);
   const keep = _offers.filter((o) => o.sold || state.shop.locked.includes(o.extId));
   const exclude = new Set(keep.map((o) => String(o.extId)));
   const bias = _merchant.quirk === "buffBias" ? "buff" : (_merchant.quirk === "newBias" ? "new" : null);
   const fresh = samplePicks(Math.max(0, n - keep.length), {
-    exclude, last: new Set(_offers.map((o) => String(o.extId))), banned: new Set(state.shop.bans), bias,
+    exclude, last, banned: new Set(state.shop.bans), bias,
   }).filter((o) => !exclude.has(String(o.extId)));
   _offers = [...keep, ...fresh.map((o) => ({ extId: o.extId, sale: false, sold: false }))];
   // マルコ・ポーロ：まだ売れていない品の 1 つを半額 (= LL は外す)
@@ -243,6 +243,7 @@ export function buyOffer(extId) {
   if (!offer) return false;
   const price = _priceOf(o, offer);
   if (price > s.ce) return false;
+  _offers.forEach((x) => { x.banArm = false; });
   if (price === 0 && s.welcome) s.welcome = false;
   else if (price === 0) s.gifts -= 1;
   else s.ce -= price;
@@ -372,10 +373,21 @@ function _renderSig() {
 
 export function toggleLock(extId) {
   const s = state.shop;
+  _offers.forEach((o) => { o.banArm = false; });
   const id = _offers.find((x) => String(x.extId) === String(extId) && !x.sold)?.extId;
   if (id == null) return;
   if (s.locked.some((x) => String(x) === String(id))) s.locked = s.locked.filter((x) => String(x) !== String(id));
   else s.locked.push(id);
+  renderShop();
+}
+
+/** お断りのアイコン: 1 回目は確かめ (= 「もう一度タップで今後表示しない」)、 2 回目でお断り */
+export function armOrBan(extId) {
+  const o = _offers.find((x) => String(x.extId) === String(extId) && !x.sold);
+  if (!o) return;
+  if (o.banArm) { banOffer(extId); return; }
+  _offers.forEach((x) => { x.banArm = false; });
+  o.banArm = true;
   renderShop();
 }
 
@@ -403,7 +415,11 @@ export function rerollShop() {
   if (_gamaFree > 0) _gamaFree -= 1;
   else if (s.freeRerolls > 0) s.freeRerolls -= 1;
   else { s.ce -= cost; _paidRerolls += 1; }
-  _fillOffers();   // 売れた品と取り置きはそのまま、 ほかを引き直す
+  // 取り置きだけ残し、 買った枠も含めて引き直す (= 作者の依頼 2026-10-20)。 前に並んでいた品は続けて出さない
+  const last = new Set(_offers.map((o) => String(o.extId)));
+  _offers = _offers.filter((o) => !o.sold && s.locked.includes(o.extId));
+  _offers.forEach((o) => { o.banArm = false; });
+  _fillOffers(last);
   renderShop();
   playSe(SFX.LEVEL_UP, 100, 0.4);
 }
@@ -414,7 +430,7 @@ export function closeShop() {
   document.getElementById("shopModal")?.classList.add("hidden");
   // SPEC-090c の「見送りの礼」: 何も買わずに出ると HP が少し戻る
   if (_boughtHere === 0) {
-    const heal = canHeal() ? Math.round(state.statsMax.hp * perk("skipHeal")) : 0;
+    const heal = canHeal() ? Math.round(Math.min(state.statsMax.hp - state.stats.hp, state.statsMax.hp * perk("skipHeal"))) : 0;
     if (heal > 0) {
       state.stats.hp = Math.min(state.statsMax.hp, state.stats.hp + heal);
       playSe(SFX.PICK_HEAL, 100, 0.55);
@@ -507,27 +523,43 @@ export function renderShop() {
       card.setAttribute("aria-disabled", short ? "true" : "false");
       card.addEventListener("click", () => { if (!buyOffer(o.extId)) playSe(SFX.GEM_PICKUP, 100, 0.2); });
 
+      // 右上に取り置き (= 押すと 🔓 → 🔒 と枠の色)、 左上にお断り (= 1 回目で確かめ、 2 回目で今後出さない)
       const locked = s.locked.some((x) => String(x) === String(o.extId));
       if (locked) wrap.classList.add("shop-offer--locked");
-      const tools = document.createElement("div");
-      tools.className = "shop-offer__tools";
       const lock = document.createElement("button");
       lock.type = "button";
-      lock.className = "shop-tool shop-tool--lock" + (locked ? " is-on" : "");
-      _toolLabel(lock, locked ? t("shop.locked", "🔒 取り置き中") : t("shop.lock", "🔓 取り置き"));
+      lock.className = "shop-corner shop-corner--lock" + (locked ? " is-on" : "");
+      lock.textContent = locked ? "🔒" : "🔓";
+      const lockLabel = locked ? t("shop.locked", "取り置き中") : t("shop.lock", "取り置き");
+      lock.setAttribute("aria-label", lockLabel);
+      lock.title = lockLabel;
       lock.setAttribute("aria-pressed", locked ? "true" : "false");
-      lock.addEventListener("click", () => toggleLock(o.extId));
-      tools.appendChild(lock);
+      lock.addEventListener("click", (e) => { e.stopPropagation(); toggleLock(o.extId); });
+      wrap.append(card, lock);
+      if (locked) {
+        const tag = document.createElement("span");
+        tag.className = "shop-offer__lockTag";
+        tag.textContent = t("shop.locked", "取り置き中");
+        wrap.appendChild(tag);
+      }
       if (canBan(offer, state.battle?.starterExtId, s.bansLeft)) {
         const ban = document.createElement("button");
         ban.type = "button";
-        ban.className = "shop-tool shop-tool--ban";
-        _toolLabel(ban, t("shop.ban", "✕ お断り"));
-        ban.title = tpl(t("shop.banHint", "{name} をこの挑戦のあいだ出さない"), { name: getSeriesName(offer.ext, lang) });
-        ban.addEventListener("click", () => banOffer(o.extId));
-        tools.appendChild(ban);
+        ban.className = "shop-corner shop-corner--ban" + (o.banArm ? " is-armed" : "");
+        ban.textContent = "✕";
+        const banLabel = tpl(t("shop.banHint", "{name} をこの挑戦のあいだ出さない"), { name: getSeriesName(offer.ext, lang) });
+        ban.setAttribute("aria-label", o.banArm ? t("shop.banArm", "もう一度タップで今後表示しない") : banLabel);
+        ban.title = banLabel;
+        ban.addEventListener("click", (e) => { e.stopPropagation(); armOrBan(o.extId); });
+        wrap.appendChild(ban);
+        if (o.banArm) {
+          wrap.classList.add("shop-offer--banArm");
+          const hint = document.createElement("span");
+          hint.className = "shop-offer__banHint";
+          hint.textContent = t("shop.banArm", "もう一度タップで今後表示しない");
+          wrap.appendChild(hint);
+        }
       }
-      wrap.append(card, tools);
       grid.appendChild(wrap);
     });
   }
@@ -566,23 +598,6 @@ export function renderShop() {
       ? t("shop.leaveHeal", "何も買わずに出る（HP 回復）")
       : t("shop.leave", "次のウェーブへ ▶");
   }
-}
-
-/** 取り置き・お断りの文字 (= 印と言葉を分けて、 狭いときは印だけ出せるように) */
-function _toolLabel(btn, text) {
-  const m = /^(\S+)\s+(.*)$/.exec(text);
-  btn.textContent = "";
-  const i = document.createElement("span");
-  i.className = "shop-tool__i";
-  i.textContent = m ? m[1] : text;
-  btn.appendChild(i);
-  if (m) {
-    const l = document.createElement("span");
-    l.className = "shop-tool__l";
-    l.textContent = " " + m[2];
-    btn.appendChild(l);
-  }
-  btn.setAttribute("aria-label", text);
 }
 
 function _text(id, v) {

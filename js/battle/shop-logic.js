@@ -35,7 +35,8 @@ export function isShopMode(search = _search(), storage = _storage()) {
 export const SHOP_HEAL_RATIO = 0.1;
 export function shopHealAmount(hp, maxHp, ratio = SHOP_HEAL_RATIO) {
   if (!(maxHp > 0) || hp <= 0) return 0;
-  return Math.max(0, Math.min(maxHp - hp, Math.round(maxHp * ratio)));
+  // HP は自然回復で小数になる (= 満タンまでの残りも小数)。 回復量は四捨五入した整数にする
+  return Math.max(0, Math.round(Math.min(maxHp - hp, maxHp * ratio)));
 }
 
 /** 次の店までの帯の段階 (= 残り 10 秒で目立たせる。 SHOP_SOON_SEC) */
