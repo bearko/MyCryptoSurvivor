@@ -128,3 +128,62 @@
 :root[data-reduce-fx] .mission-offer__band,
 :root[data-reduce-fx] .mission-bar--soon,
 :root[data-reduce-fx] .mission-result--in { animation: none; }
+
+/* ---- SPEC-125: 達成のごほうび (= 出し手のひとこと → 3 つから 1 つ) ---- */
+.mission-reward .mission-offer__band { --tone: #ffe08a; }
+.mission-reward .mission-offer__kicker { color: #ffe08a; text-shadow: 0 0 10px rgba(255, 196, 64, 0.7); font-size: 0.8rem; }
+.mission-reward__line {
+  position: relative;
+  margin: 4px 0 2px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  font-size: 0.92rem; line-height: 1.5; color: #fff;
+}
+.mission-reward__line::before {
+  content: ""; position: absolute; left: -7px; top: 12px;
+  border: 6px solid transparent; border-right-color: rgba(255, 255, 255, 0.18); border-left: 0;
+}
+.mission-reward__ask { margin: 2px 0 0; font-size: 0.78rem; color: var(--muted); }
+.mission-reward__choices {
+  grid-column: 1 / -1;
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+}
+.mission-reward__choice {
+  position: relative;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 10px 6px 9px;
+  min-height: 108px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(255, 224, 138, 0.55);
+  background: linear-gradient(180deg, #3a2d55, #211833);
+  color: #fff; cursor: pointer; text-align: center;
+  font: inherit;
+  transition: transform 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
+}
+.mission-reward__choice:hover, .mission-reward__choice:focus-visible {
+  transform: translateY(-2px);
+  border-color: #ffe08a;
+  box-shadow: 0 0 16px rgba(255, 196, 64, 0.45);
+  outline: none;
+}
+.mission-reward__choice--gift { border-color: rgba(155, 231, 255, 0.6); }
+.mission-reward__choice--heal { border-color: rgba(126, 224, 138, 0.6); }
+.mission-reward__icon { font-size: 1.7rem; line-height: 1.1; }
+.mission-reward__name { font-weight: 800; font-size: 0.9rem; line-height: 1.25; }
+.mission-reward__detail { font-size: 0.72rem; line-height: 1.35; color: var(--muted); }
+.mission-reward__key {
+  position: absolute; top: 4px; right: 6px;
+  font-size: 0.62rem; color: rgba(255, 255, 255, 0.45);
+}
+@media (max-width: 480px) {
+  .mission-reward .mission-offer__band { grid-template-columns: auto 1fr; }
+  .mission-reward .mission-offer__face { width: 64px; height: 64px; }
+  .mission-reward__choice { min-height: 96px; padding: 8px 4px; }
+  .mission-reward__name { font-size: 0.82rem; }
+  .mission-reward__detail { font-size: 0.66rem; }
+}
+.mission-bar--boost { background: linear-gradient(90deg, rgba(255, 224, 138, 0.22), rgba(255, 224, 138, 0.05)); border-color: rgba(255, 224, 138, 0.6); }
+.mission-bar--boost .mission-bar__fill { background: linear-gradient(90deg, #c9a24a, #ffe08a); }
+.mission-bar--boost .mission-bar__title { color: #ffe08a; }

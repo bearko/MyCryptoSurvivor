@@ -185,21 +185,28 @@ function _pickupItems() {
   }
 }
 
+/** HP を最大 HP の ratio だけ戻す (= パンケーキ・SPEC-125 のミッションのごほうび) */
+export function healBy(ratio) {
+  const b = state.battle;
+  if (!canHeal()) {   // SPEC-112: 不老不死の探求 (= 拾っても戻らない)
+    pushDamageNumber(b.player.x, b.player.y - b.player.r - 4, "×", "#9a9aa8", "lg");
+    return 0;
+  }
+  const max = state.statsMax.hp;
+  const before = state.stats.hp;
+  state.stats.hp = Math.min(max, before + Math.round(max * ratio));
+  const healed = Math.round(state.stats.hp - before);
+  if (healed > 0) pushDamageNumber(b.player.x, b.player.y - b.player.r - 4, `+${healed}`, "#7ee08a", "lg");
+  fxBurst(b.player.x, b.player.y, "#7ee08a", 12, 120);
+  playSe(SFX.PICK_HEAL, 120, 0.5);
+  return healed;
+}
+
 /** アイテムの効果 */
 export function applyItem(kind) {
   const b = state.battle;
   if (kind === "heal") {
-    if (!canHeal()) {   // SPEC-112: 不老不死の探求 (= 拾っても戻らない)
-      pushDamageNumber(b.player.x, b.player.y - b.player.r - 4, "×", "#9a9aa8", "lg");
-      return;
-    }
-    const max = state.statsMax.hp;
-    const before = state.stats.hp;
-    state.stats.hp = Math.min(max, before + Math.round(max * healRatio() * sigHealMul()));   // SPEC-100: 宮廷医女は倍
-    const healed = Math.round(state.stats.hp - before);
-    if (healed > 0) pushDamageNumber(b.player.x, b.player.y - b.player.r - 4, `+${healed}`, "#7ee08a", "lg");
-    fxBurst(b.player.x, b.player.y, "#7ee08a", 12, 120);
-    playSe(SFX.PICK_HEAL, 120, 0.5);
+    healBy(healRatio() * sigHealMul());   // SPEC-100: 宮廷医女は倍
   } else if (kind === "watch") {
     // SPEC-054: 実時間 10 秒、 ゲーム全体が 2 倍速 (= index.js の _loop が 1 コマで 2 回進める)。 続けて拾うと延びる
     b.fastForwardMs = (b.fastForwardMs ?? 0) + WATCH_DURATION_MS;
