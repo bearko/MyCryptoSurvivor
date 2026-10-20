@@ -186,7 +186,7 @@
   z-index: 280;
   pointer-events: auto;
 }
-@media (max-width: 899px) {
+@media (max-width: 860px) {   /* SPEC-135: スキルツリーの分かれ目にそろえる */
   .navi--comm[data-place="tree"] .navi__bubble,
   .navi--comm[data-place="tree"] .navi__measure { --bubble-max: min(calc(100vw - 196px), 260px); }
 }

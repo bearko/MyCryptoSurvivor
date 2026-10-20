@@ -81,7 +81,7 @@ let _lastTap = { id: null, at: 0 };
 let _statsOpen = false;   // 狭い画面の「いまの効果」の札 (= 既定は閉じる)
 let _hintSaid = false;    // タイトルの案内 (= 起動中に 1 回)
 const NAVI_TREE_HIDE_MS = 2600;
-const WIDE = typeof matchMedia === "function" ? matchMedia("(min-width: 900px)") : { matches: false, addEventListener() {} };
+const WIDE = typeof matchMedia === "function" ? matchMedia("(min-width: 861px)") : { matches: false, addEventListener() {} };   // SPEC-135: Workshop と同じ 860px で分ける
 
 export function isSkillTreeOpen() { return _open; }
 
@@ -107,7 +107,7 @@ export function installSkillTree() {
     if (ic) ic.src = img(ICON_GUM);
   }
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && _open) closeSkillTree(); });
-  // 幅が 900px をまたいだら組み直す (= 右の列 ⇔ 下の欄)。 見ている場所と選んだ節はそのまま
+  // 幅が 860px をまたいだら組み直す (= 右の列 ⇔ 下の欄)。 見ている場所と選んだ節はそのまま
   WIDE.addEventListener?.("change", () => {
     if (!_open || !_parts) return;
     const view = { ..._parts.view };
@@ -718,6 +718,8 @@ function select(id, move = false) {
   renderHead();
   renderSheet();
   renderStats();
+  // SPEC-135: 欄の先頭は選んだノードの詳しい欄 (= 選ぶたびに一番上へ)
+  if (_parts) { _parts.sheet.scrollTop = 0; _parts.sheet.closest(".tree-side")?.scrollTo?.(0, 0); }
   if (move) centerOn(id, true);
 }
 

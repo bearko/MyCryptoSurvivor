@@ -286,7 +286,7 @@
 .reset-link:hover { color: var(--t-ng); }
 .stats-reset.ask p { margin: 0 0 6px; font-size: 11px; color: var(--t-ink2); }
 .reset-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-@media (min-width: 900px) { .tree-sheet { max-height: 34dvh; } }
+@media (min-width: 861px) { .tree-sheet { max-height: 34dvh; } }
 
 /* ---- 入口: タイトルのボタンの数の札 / 結果の画面のボタン ---- */
 .title-screen__tree { position: relative; clip-path: none; }   /* 数の札と NEW を角の切り抜きで欠かさない */
@@ -332,7 +332,7 @@
   border-radius: var(--r-sm);
 }
 
-/* ---- SPEC-093: いまの効果の欄 (= 900px 以上は木の右の列。 狭い画面は右上の札で、 見出しを押すと開く) ---- */
+/* ---- SPEC-093: いまの効果の欄 (= 861px 以上は木の右の列。 狭い画面は右上の札で、 見出しを押すと開く) ---- */
 .tree-stats {
   position: relative; z-index: 3; flex: none; width: 220px;
   display: flex; flex-direction: column; min-height: 0;
@@ -360,7 +360,7 @@
 .stat-row.chg { background: rgba(94, 207, 138, 0.12); }
 .stat-row.chg .stat-k { color: var(--t-ink); }
 .stats-flags { margin: 8px 0 0; font-size: 11px; line-height: 1.5; color: var(--t-gold-hi); }
-@media (max-width: 899px) {
+@media (max-width: 860px) {
   .tree-stats {
     position: absolute; top: 8px; right: 8px; width: min(210px, 56vw); max-height: calc(100% - 16px);
     border: 1px solid var(--t-line); border-radius: var(--r-sm);
@@ -417,7 +417,7 @@
 
 /* ---- SPEC-094: 広い画面の右の列 (= 上に詳しい欄、 下にいまの効果) ---- */
 .tree-screen.wide .tree-side {
-  position: relative; z-index: 3; flex: none; width: 320px; min-height: 0;
+  position: relative; z-index: 3; flex: none; width: 340px; min-height: 0;   /* SPEC-135: Workshop と同じ 340px */
   display: flex; flex-direction: column;
   background: linear-gradient(180deg, rgba(30, 24, 44, 0.96), rgba(14, 11, 20, 0.96));
   border-left: 1px solid var(--t-line);
@@ -439,7 +439,7 @@
   border-color: var(--t-gold); color: var(--t-gold-hi);
 }
 .tree-back2 span:first-child { font-size: 12px; }
-.tree-screen.wide .tree-back2 { right: 330px; }   /* 右の列 (320px) の手前 */
+.tree-screen.wide .tree-back2 { right: 350px; }   /* 右の列 (340px) の手前 */
 
 /* SPEC-134: ミニマップ (= 押す・なぞるとその場所へ)。 広い画面は左下のボタンの上、 狭い画面は右下の「戻る」の上に小さく */
 .tree-minimap {
@@ -449,3 +449,14 @@
   cursor: crosshair; touch-action: none;
 }
 .tree-screen:not(.wide) .tree-minimap { left: auto; right: 10px; bottom: 64px; width: 90px; height: 66px; }
+
+/* SPEC-135: 狭い画面 (= 860px 以下) は上に木、 下に欄 (= 画面の 46% まで)。 詳しい欄を小さくして、 名前・効果・ボタンがスクロールなしで入るように */
+@media (max-width: 860px) {
+  .tree-sheet { max-height: 46dvh; padding: 8px 10px calc(10px + var(--safe-b, 0px)); }
+  .tree-sheet .dt-icon { width: 44px; height: 44px; border-radius: 10px; }
+  .tree-sheet .dt-icon img { width: 36px; height: 36px; }
+  .tree-sheet .dt-name { font-size: 16px; }
+  .tree-sheet .dt-desc { margin: 6px 0 4px; font-size: 13px; line-height: 1.45; }
+  .tree-sheet .dt-conds { margin: 4px 0; font-size: 12px; }
+  .tree-sheet .tree-btn { padding-top: 8px; padding-bottom: 8px; font-size: 15px; }
+}
