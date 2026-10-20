@@ -57,7 +57,7 @@ test("黒髭はランクアップ 2 割引・新しい品 2 割増し、 マル�
   assert.equal(shopPrice({ nextLevel: 4 }, 0, "sale", false), 2000);
 });
 
-test("ギフト券でただになるのは行き先 Lv.4 まで (= LL はならない)", () => {
+test("ギフト券で無料になるのは行き先 Lv.4 まで (= LL はならない)", () => {
   assert.equal(giftable({ nextLevel: 4 }), true);
   assert.equal(giftable({ nextLevel: 5 }), false);
   assert.equal(giftable({ nextLevel: 6, isLL: true }), false);
@@ -120,7 +120,7 @@ test("次の店までの秒 (= 切り上げ。 もう店が無ければ null)", 
   assert.equal(nextShopSec(0, 0, 6), null);
 });
 
-test("最初の店はサービスで 1 品ただ・説明の文がある・ヘッダーに次の店までの帯", () => {
+test("最初の店はサービスで 1 品無料・説明の文がある・ヘッダーに次の店までの帯", () => {
   const shop = readFileSync(new URL("../js/battle/shop.js", import.meta.url), "utf8");
   assert.match(shop, /if \(state\.shop\.welcome && !offer\.isLL\) return 0;/);
   assert.match(shop, /info\.sec <= SHOP_SOON_SEC/);   // 残り 10 秒で目立つ
