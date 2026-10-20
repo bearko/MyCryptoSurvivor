@@ -2,7 +2,7 @@
 id: SPEC-133
 title: Skill Tree on an Integer Grid (Ported From MyCryptoWorkshop) — Branches by Direction, requires, Hero-Gated Weapon Mastery
 status: Done
-pr: TBD
+pr: 169
 phase: v1.6 Skill Tree
 kind: Changed
 ---
