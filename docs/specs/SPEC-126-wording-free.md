@@ -2,7 +2,7 @@
 id: SPEC-126
 title: Wording — Replace "ただ" With "無料" (Shop Reroll, Gift Ticket, Merchant Line, Help)
 status: Done
-pr: TBD
+pr: 161
 phase: v1.6 Shop
 kind: Changed
 ---
