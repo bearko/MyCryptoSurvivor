@@ -97,14 +97,33 @@ export function naviLines(scene, ctx = {}) {
       if (i === 0 && ctx.rta) lines.push({ key: "navi.stage.rta", pose: "wink", voice: "stage.rta" });
       return lines;
     }
-    // SPEC-093: スキルツリーの案内と、 木を開いたときのひとこと (= ボイスはまだ無い)
+    // SPEC-093: スキルツリーの案内と、 木を開いたときのひとこと。 SPEC-116: ボイスの名前を付けた (= 録ったら鳴る)
     case "treeHint":
-      return [{ key: "navi.tree.hint", pose: "pointer" }];
+      return [{ key: "navi.tree.hint", pose: "pointer", voice: "tree.hint" }];
     case "tree": {
       const key = { root: "navi.tree.root", first: "navi.tree.first", noGum: "navi.tree.noGum", done: "navi.tree.done", claimable: "navi.tree.claimable", idle: "navi.tree.idle" }[ctx.step];
       if (!key) return [];
       const pose = { root: "pointer", first: "pointer", noGum: "cross", done: "hooray", claimable: "sparkle", idle: "wink" }[ctx.step];
-      return [{ key, pose }];
+      const line = { key, pose, voice: `tree.${ctx.step}` };
+      // SPEC-116: はじめて木を開いたとき (= 根をまだ取っていない) は、 強化のしかたと「ずっと引き継がれる」ことから話す
+      if (ctx.step === "root") {
+        return [
+          { key: "navi.tree.intro.1", pose: "hooray", voice: "tree.intro.1" },
+          { key: "navi.tree.intro.2", pose: "sparkle", voice: "tree.intro.2" },
+          line,
+        ];
+      }
+      return [line];
+    }
+    // SPEC-116: 倒れたとき (= 結果の画面の下の帯)。 スキルツリーを始めていなければ入口へ誘う。 始めていれば 3 つから順に
+    case "lose": {
+      if (ctx.guide) return [{ key: "navi.lose.guide", pose: "pointer", voice: "lose.guide" }];
+      const list = [
+        { key: "navi.lose.1", pose: "teary", voice: "lose.1" },
+        { key: "navi.lose.2", pose: "smile", voice: "lose.2" },
+        { key: "navi.lose.3", pose: "wink", voice: "lose.3" },
+      ];
+      return [list[Math.abs(ctx.n | 0) % list.length]];
     }
     case "tip": {
       // SPEC-068: 初めてのアイテム・仕掛け・敵のひとこと。 key は navi-tips.js の TIP_KEYS
@@ -273,7 +292,7 @@ function _onBubble() {
 }
 
 /** 通信の帯 (= 画面の下の専用の帯。 ほかの UI と重ねない) にする置き場所 (SPEC-059) */
-export const NAVI_DOCK_PLACES = ["mode", "hero"];
+export const NAVI_DOCK_PLACES = ["mode", "hero", "result"];   // SPEC-116: 倒れたときの結果の画面
 /** 通信窓 (= 顔だけの小窓) にする置き場所 */
 export const NAVI_COMM_PLACES = ["battle", "tree"];
 

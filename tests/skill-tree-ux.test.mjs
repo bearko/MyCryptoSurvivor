@@ -59,7 +59,7 @@ test("欄の行は perks の表の数値の効果をすべて持ち、 値の書
 
 test("マインちゃんの案内のセリフには文がある (= JP / EN)", () => {
   const all = [...naviLines("treeHint"), ...["root", "first", "noGum", "done", "claimable", "idle"].flatMap((step) => naviLines("tree", { step }))];
-  assert.equal(all.length, 7);
+  assert.equal(all.length, 9);   // SPEC-116: 根の段は「強化のしかた」「ずっと引き継がれる」の 2 つから
   for (const l of all) assert.ok(ui[l.key]?.ja && ui[l.key]?.en, l.key);
   assert.deepEqual(naviLines("tree", { step: "nope" }), []);
   for (const k of ["tree.stats", "tree.statsNote", "tree.statsNone", "tree.guide", "tree.new"]) assert.ok(ui[k]?.ja && ui[k]?.en, k);

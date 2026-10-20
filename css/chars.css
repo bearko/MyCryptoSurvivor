@@ -546,3 +546,7 @@
 :root[data-reduce-fx] .hero-stage__name { transition: none; }
 :root[data-reduce-fx] .stage-intro--in,
 :root[data-reduce-fx] .stage-intro--in .stage-intro__hero { animation: none; opacity: 1; }
+
+/* SPEC-116: 倒れたときの結果の画面の下の帯 (= 結果の画面より手前。 結果の画面は帯のぶん下を空ける) */
+.navi--dock[data-place="result"] { z-index: calc(var(--z-modal-top) + 5); }
+.gameover-modal.gameover-modal--navi { padding-bottom: calc(var(--navi-dock-h) + 16px + var(--safe-b)); }
