@@ -43,7 +43,7 @@ import { playSe, unlockAudio, suspendBgm, resumeBgm } from "./audio.js";
 import { SFX } from "./constants.js";
 import { APP_VERSION } from "./constants.js";
 import { initPlatform, setChatVisible, reportMetaAchievements } from "./platform.js";
-import { getMeta, onMetaChange } from "./meta.js";
+import { getMeta, onMetaChange, hasHeroCleared } from "./meta.js";
 import { installModalA11y } from "./modal-a11y.js";
 import { img } from "./constants.js";
 import { installReduceFxAttr } from "./motion.js";
@@ -498,7 +498,15 @@ function renderHeroDetail(heroId) {
     if (wSkill) wSkill.textContent = getSkillName(ext, lang);
     if (wDesc)  wDesc.textContent  = getSkillDesc(ext, 1, lang);
     const wLL = $("#heroDetailWeaponLL");   // SPEC-101
-    if (wLL) wLL.textContent = ext.ll ? tpl(t("hero.detail.ll", "LL: {name}"), { name: ext.ll.name[lang] ?? ext.ll.name.ja }) : "";
+    if (wLL) {
+      // SPEC-106: LL はそのヒーローで全ステージをクリアすると解放 (= まだなら条件を出す。 名前は伏せない)
+      const open = hasHeroCleared(getMeta(), hero.heroId);
+      const llName = ext.ll ? (ext.ll.name[lang] ?? ext.ll.name.ja) : "";
+      wLL.textContent = !ext.ll ? "" : open
+        ? tpl(t("hero.detail.ll", "LL: {name}"), { name: llName })
+        : tpl(t("hero.detail.llLocked", "LL：このヒーローで全ステージをクリアすると解放（{name}）"), { name: llName });
+      wLL.classList.toggle("hero-detail__weapon-ll--locked", !!ext.ll && !open);
+    }
   } else {
     if (wIcon)  wIcon.removeAttribute("src");
     if (wName)  wName.textContent  = "";

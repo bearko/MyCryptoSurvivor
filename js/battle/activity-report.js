@@ -13,10 +13,10 @@
 
 import { state, pauseTime, resumeTime } from "../state.js";
 import {
-  STAGE_TABLE, APP_VERSION, SFX,
+  STAGE_TABLE, APP_VERSION, SFX, HERO_STARTING_WEAPON,
   computeRegulationMul,
 } from "../constants.js";
-import { t, tpl, onLangChange } from "../i18n.js";
+import { t, tpl, onLangChange, getLang } from "../i18n.js";
 import { getExt, getTierName, extTierImg } from "../extensions.js";
 import { heroImg } from "../heroes.js";
 import { formatElapsed } from "../survival.js";
@@ -26,7 +26,7 @@ import { returnToTitle } from "./gameover.js";
 import { countUp, revealIn } from "../reveal.js";
 import { presentResult } from "../result-telop.js";
 import { startMenuBgmAfterJingle } from "../ui-sound.js";
-import { grantRunRewards, runDust } from "../meta.js";
+import { grantRunRewards, runDust, addHeroClear } from "../meta.js";   // + SPEC-106
 import { renderRewards } from "../meta-ui.js";
 import { perk } from "../perks.js";   // SPEC-090c
 import {
@@ -40,11 +40,23 @@ let _wired = false;
  * 活動レポート modal を開く。 全ステージ clear 時のみ呼ばれる前提。
  * 失敗 (= HP 0) は従来 triggerGameOver() で別 path。
  */
-let _rewards = null;   // SPEC-090: この挑戦の GUM とゴールドダスト (= レポートを描くとき)
+let _rewards = null;
+
+/** SPEC-106: LL が解放された (= レポートの報酬の下に虹色の 1 行) */
+function showLLUnlocked(extId) {
+  const ext = getExt(extId);
+  const box = document.getElementById("activityReportLL");
+  if (!ext?.ll || !box) return;
+  const lang = getLang();
+  box.textContent = tpl(t("report.llUnlocked", "LL 解放！ 次から「{name}」にランクアップできる"), { name: ext.ll.name[lang] ?? ext.ll.name.ja });
+  box.classList.remove("hidden");
+}   // SPEC-090: この挑戦の GUM とゴールドダスト (= レポートを描くとき)
 
 export function triggerActivityReport() {
   pauseTime();
   markPlayed();   // SPEC-088: 1 回遊び終えた (= 次から ABSOLUTE・RTA が選べる)
+  // SPEC-106: そのヒーローで全ステージをクリアした (= 初めてなら LL の解放を知らせる)
+  const llFirst = addHeroClear(state.ownedHero?.heroId) && !!getExt(HERO_STARTING_WEAPON[state.ownedHero?.heroId])?.ll;
   _rewards = { ...grantRunRewards(true, { gumMul: perk("gumMul") }), dust: runDust() };   // SPEC-090: 全クリアの GUM (+ SPEC-090c 金勘定)
   // SPEC-041: 共通基盤の総合スコア (= 全クリア)
   state.run.scoreSent = true;
@@ -70,6 +82,7 @@ export function triggerActivityReport() {
       const scoreEl = document.getElementById("activityReportScore");
       if (scoreEl) countUp(scoreEl, Number(scoreEl.dataset.score) || 0, { durMs: 800, delayMs: 450 });
       renderRewards(document.getElementById("activityReportRewards"), _rewards ?? {}, { delayMs: 900 });   // SPEC-090
+      if (llFirst) showLLUnlocked(HERO_STARTING_WEAPON[state.ownedHero?.heroId]);   // SPEC-106
     },
   });
 }

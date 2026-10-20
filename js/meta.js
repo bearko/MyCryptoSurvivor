@@ -59,7 +59,32 @@ export function normalizeMeta(raw) {
     nodes,
     earned: { gum: int(r.earned?.gum), dust: int(r.earned?.dust) },
     runs: int(r.runs),
+    heroClears: _heroClears(r.heroClears),   // SPEC-106: ヒーローごとの全クリアの回数
   };
+}
+
+function _heroClears(raw) {
+  const out = {};
+  if (raw && typeof raw === "object" && !Array.isArray(raw)) {
+    for (const [k, v] of Object.entries(raw)) { const n = Math.max(0, Math.floor(Number(v) || 0)); if (n > 0 && /^\d{1,6}$/.test(k)) out[k] = n; }
+  }
+  return out;
+}
+
+/** そのヒーローで全ステージをクリアしたことがあるか (= SPEC-106。 LL の解放。 純関数) */
+export function hasHeroCleared(meta, heroId) {
+  return heroId != null && (meta?.heroClears?.[String(heroId)] | 0) > 0;
+}
+
+/** 全ステージをクリアした (= 活動レポート)。 初めてなら true (= LL の解放を知らせる) */
+export function addHeroClear(heroId) {
+  if (heroId == null) return false;
+  const m = getMeta();
+  const k = String(heroId);
+  const first = !(m.heroClears[k] > 0);
+  m.heroClears[k] = (m.heroClears[k] | 0) + 1;
+  _save();
+  return first;
 }
 
 let _meta = null;

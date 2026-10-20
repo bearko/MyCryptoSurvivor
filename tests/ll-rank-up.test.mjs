@@ -55,3 +55,17 @@ test("真・ミョルニルの雷は近い順に落ちる (= 壺は狙わない)
   const es = [{ id: 1, x: 300, y: 0 }, { id: 2, x: 100, y: 0 }, { id: 3, x: 50, y: 0, isProp: true }, { id: 4, x: 900, y: 0 }];
   assert.deepEqual(nearestEnemies(es, 0, 0, 700, 5).map((e) => e.id), [2, 1]);
 });
+
+test("SPEC-106：LL の札は、そのヒーローで全ステージをクリアしたことがあるときだけ", async () => {
+  const { hasHeroCleared, normalizeMeta } = await import("../js/meta.js");
+  const blade = WEAPONS.find((e) => e.ll)?.extId;
+  assert.ok(blade != null);
+  const owned = [{ extId: blade, level: EXT_MAX_LEVEL }];
+  assert.ok(llOption(owned, blade, getExt, EXT_MAX_LEVEL, true), "解放ずみなら出る");
+  assert.equal(llOption(owned, blade, getExt, EXT_MAX_LEVEL, false), null, "まだなら出ない");
+  const m = normalizeMeta({ heroClears: { 10001: 2, x: 3, 4006: -1, 2003: "1" } });
+  assert.deepEqual(m.heroClears, { 10001: 2, 2003: 1 }, "壊れた値は落とす");
+  assert.equal(hasHeroCleared(m, 10001), true);
+  assert.equal(hasHeroCleared(m, 4006), false);
+  assert.equal(hasHeroCleared(m, null), false);
+});

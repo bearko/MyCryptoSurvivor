@@ -5,6 +5,7 @@
 // pauseFlags 不変条件: openNext で pauseTime、 close で resumeTime。
 // pending count を持っているので、 1 フレーム複数 LV up でも連鎖して開く。
 
+import { getMeta, hasHeroCleared } from "../meta.js";   // SPEC-106
 import { state, pauseTime, resumeTime } from "../state.js";
 import { perk, stockLimit } from "../perks.js";   // SPEC-090c
 import {
@@ -155,17 +156,22 @@ export function rankUpKind(opt, maxLevel = EXT_MAX_LEVEL) {
  * SPEC-101: LL ランクアップの札を出すか (= 純関数)。 ヒーローの初期武器が Lv.5 で、 その系列に LL 版があるとき
  * @returns {object|null} 候補 (= 1 枚目に置く)
  */
-export function llOption(owned, starterExtId, getExtFn, maxLevel = EXT_MAX_LEVEL) {
-  if (starterExtId == null) return null;
+export function llOption(owned, starterExtId, getExtFn, maxLevel = EXT_MAX_LEVEL, unlocked = true) {
+  if (starterExtId == null || !unlocked) return null;   // SPEC-106: そのヒーローで全ステージをクリアしたことがあるときだけ
   const o = (owned ?? []).find((x) => String(x.extId) === String(starterExtId));
   const ext = getExtFn(starterExtId);
   if (!o || !ext?.ll || o.level !== maxLevel) return null;
   return { extId: starterExtId, ext, currentLevel: maxLevel, nextLevel: LL_LEVEL, isNew: false, isLL: true };
 }
 
+/** SPEC-106: いまのヒーローの LL が解放されているか */
+function llUnlocked() {
+  return hasHeroCleared(getMeta(), state.ownedHero?.heroId);
+}
+
 function _samplePicks(n, exclude = new Set(), last = new Set(), withLL = true) {
   // SPEC-101: 初期武器が Lv.5 なら、 1 枚目は必ず LL ランクアップ (= 残りの枚数を配る)
-  const ll = withLL ? llOption(state.ownedExtensions, state.battle?.starterExtId, getExt) : null;
+  const ll = withLL ? llOption(state.ownedExtensions, state.battle?.starterExtId, getExt, EXT_MAX_LEVEL, llUnlocked()) : null;
   if (ll) return n <= 1 ? [ll] : [ll, ..._samplePicks(n - 1, new Set([...exclude, String(ll.extId)]), last, false)];
   const ownedById = new Map(state.ownedExtensions.map(o => [String(o.extId), o]));
 
@@ -244,7 +250,7 @@ export function applyPick(extId) {
   // SPEC-100: テトラクテュス (= ピタゴラス) は 4 回目ごとのピックで 2 段上がる
   const steps = sigNextPickSteps();
   // SPEC-101: Lv.5 の初期武器を選んだら LL (= Lv.5 の武器が候補に出るのは LL の札だけ)
-  const toLL  = !!llOption(state.ownedExtensions, state.battle?.starterExtId, getExt) && String(extId) === String(state.battle?.starterExtId);
+  const toLL  = !!llOption(state.ownedExtensions, state.battle?.starterExtId, getExt, EXT_MAX_LEVEL, llUnlocked()) && String(extId) === String(state.battle?.starterExtId);
   // 段は下げない (= LL の武器がもう一度選ばれても Lv.5 に戻さない)
   const next  = Math.max(owned?.level ?? 0, toLL ? LL_LEVEL : Math.min(EXT_MAX_LEVEL, (owned?.level ?? 0) + steps));
   if (owned) owned.level = next;
