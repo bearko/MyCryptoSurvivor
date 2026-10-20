@@ -146,3 +146,24 @@ test("スマホのショップ: 装備中と手持ちを 1 行 (= 8:2)・ボス�
   assert.match(css, /\.shop-status \{ display: grid; grid-template-columns: minmax\(0, 8fr\) minmax\(0, 2fr\);/);
   assert.match(css, /\.shop-grid\[data-n="5"\] \{ grid-template-columns: repeat\(3, minmax\(0, 1fr\)\); \}/);
 });
+
+test("来店の回復は四捨五入した整数 (= HP が自然回復で小数でも)", () => {
+  assert.equal(shopHealAmount(140.214, 147), 7);          // 満タンまで 6.786 → 7
+  assert.ok(Number.isInteger(shopHealAmount(100.5, 147)));
+  assert.equal(shopHealAmount(146.6, 147), 0);            // 0.4 → 0
+});
+
+test("取り置き・お断りは札の角のアイコン。 お断りは 2 回で確定、 リロールは買った枠も引き直す", () => {
+  const shop = readFileSync(new URL("../js/battle/shop.js", import.meta.url), "utf8");
+  assert.match(shop, /shop-corner shop-corner--lock/);
+  assert.match(shop, /shop-corner shop-corner--ban/);
+  assert.match(shop, /if \(o\.banArm\) \{ banOffer\(extId\); return; \}/);
+  assert.match(shop, /_offers = _offers\.filter\(\(o\) => !o\.sold && s\.locked\.includes\(o\.extId\)\);/);
+  const ui = JSON.parse(readFileSync(new URL("../data/i18n/ui.json", import.meta.url), "utf8"));
+  assert.equal(ui["shop.banArm"].ja, "もう一度タップで今後表示しない");
+});
+
+test("お断りした品は、 番号が数でも二度と並ばない (= 文字で比べる)", () => {
+  const src = readFileSync(new URL("../js/battle/levelup.js", import.meta.url), "utf8");
+  assert.equal((src.match(/new Set\(\[\.\.\.bannedIn\]\.map\(String\)\)/g) ?? []).length, 2);
+});
