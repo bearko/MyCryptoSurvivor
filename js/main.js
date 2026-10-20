@@ -627,7 +627,7 @@ function showHeroUnlockToast(heroIds) {
   el.classList.remove("hidden", "hero-unlock-toast--out");
   void el.offsetWidth;
   el.classList.add("hero-unlock-toast--in");
-  playSe(SFX.HERO_PICK);
+  playSe(SFX.HERO_UNLOCK, 0, 0.6);   // SPEC-098: 仲間になったファンファーレ (= 選ぶときの音とは別)
   clearTimeout(_unlockToastTimer);
   _unlockToastTimer = setTimeout(() => {
     el.classList.add("hero-unlock-toast--out");
