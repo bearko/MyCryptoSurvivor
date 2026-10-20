@@ -228,6 +228,7 @@ export function closeSkillTree() {
   clearTimeout(_noticeTimer);
   _screen?.classList.add("hidden");
   if (_screen) clear(_screen);
+  _parts?.ac?.abort();   // SPEC-134: window の受け口を外す
   _parts = null;
   refreshTitleEntry();
   // SPEC-093: 戻った先 (= タイトル) のセリフ
@@ -235,6 +236,84 @@ export function closeSkillTree() {
   // SPEC-132: 結果の画面から開いたなら、 その画面に戻す
   if (_returnTo) { _returnTo.classList.remove("hidden"); _returnTo = null; return; }
   if (!document.getElementById("titleScreen")?.classList.contains("hidden")) naviTitle({ greet: false });
+}
+
+// ============================================================
+// SPEC-134: 動かし方 (= MyCryptoWorkshop の作り。 パン・ピンチ・ホイール・ミニマップ・道へ移動・全体を表示)
+// ============================================================
+const MAX_ZOOM = 1.6;
+const MINIMAP_W = 150, MINIMAP_H = 110;
+/** マス目の範囲 (= 全体を表示・ミニマップ・ズームの下限に使う) */
+const BOUNDS = TREE_NODES.reduce((b, n) => ({ x0: Math.min(b.x0, n.x), x1: Math.max(b.x1, n.x), y0: Math.min(b.y0, n.y), y1: Math.max(b.y1, n.y) }), { x0: 0, x1: 0, y0: 0, y1: 0 });
+
+/** ズームの範囲: 上限 1.6。 下限は木全体が余白 1.5 マスつきで収まる倍率 (= 0.35 を超えない) */
+function clampZoom(z) {
+  const r = _parts.viewport.getBoundingClientRect();
+  const margin = 1.5;
+  const fit = Math.min(r.width / ((BOUNDS.x1 - BOUNDS.x0 + margin * 2) * UNIT), r.height / ((BOUNDS.y1 - BOUNDS.y0 + margin * 2) * UNIT));
+  const min = r.width > 0 && r.height > 0 ? Math.min(0.35, fit) : 0.35;
+  return Math.min(MAX_ZOOM, Math.max(min, z));
+}
+
+/** マス目の (gx, gy) を表示の真ん中へ */
+function panTo(gx, gy, animate = false) {
+  if (!_parts) return;
+  const { viewport, world, view, px } = _parts;
+  const p = px({ x: gx, y: gy });
+  const rect = viewport.getBoundingClientRect();
+  view.x = rect.width / 2 - p.x * view.scale;
+  view.y = rect.height / 2 - p.y * view.scale;
+  world.classList.toggle("glide", animate && !prefersReducedMotion());
+  applyView();
+  if (animate) setTimeout(() => world.classList.remove("glide"), 450);
+}
+
+/** 道の中心 (= いま取れる節の平均。 無ければ見えている節、 それも無ければ道全体) */
+export function branchCenter(routeId, m) {
+  const all = TREE_NODES.filter((n) => n.route === routeId);
+  const open = all.filter((n) => nodeVisible(m, n.id) && nodeState(m, n.id) === "available");
+  const seen = all.filter((n) => nodeShown(m, n.id));
+  const ns = open.length ? open : seen.length ? seen : all;
+  return { x: ns.reduce((a, n) => a + n.x, 0) / ns.length, y: ns.reduce((a, n) => a + n.y, 0) / ns.length };
+}
+
+/** 全体を表示 (= いちばん引いて、 木の真ん中へ) */
+function overview() {
+  _parts.view.scale = clampZoom(0);
+  panTo((BOUNDS.x0 + BOUNDS.x1) / 2, (BOUNDS.y0 + BOUNDS.y1) / 2, true);
+}
+
+/** ミニマップ (= 見えている節を点で。 取った節は塗り、 まだは輪。 いま見えている範囲は枠) */
+function drawMinimap() {
+  const cv = _parts?.minimap;
+  const ctx = cv?.getContext?.("2d");
+  if (!ctx) return;
+  const W = cv.width, H = cv.height;
+  const spanX = BOUNDS.x1 - BOUNDS.x0 + 2, spanY = BOUNDS.y1 - BOUNDS.y0 + 2;
+  const mx = (gx) => ((gx - BOUNDS.x0 + 1) / spanX) * W;
+  const my = (gy) => ((gy - BOUNDS.y0 + 1) / spanY) * H;
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = "rgba(12, 9, 18, 0.88)";
+  ctx.fillRect(0, 0, W, H);
+  const m = treeMeta();
+  for (const n of TREE_NODES) {
+    if (!nodeShown(m, n.id)) continue;
+    const has = owns(m, n.id);
+    const color = n.route ? ROUTE_MAP[n.route].color : "#f6e2a0";
+    ctx.globalAlpha = has ? 1 : nodeVisible(m, n.id) ? 0.8 : 0.3;
+    ctx.fillStyle = color; ctx.strokeStyle = color; ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(mx(n.x), my(n.y), 5, 0, Math.PI * 2);
+    if (has) ctx.fill(); else ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+  const { viewport, view, px } = _parts;
+  const rect = viewport.getBoundingClientRect();
+  const o = px({ x: 0, y: 0 });   // マス目 (0, 0) の world 座標
+  const toG = (sx, sy) => ({ x: ((sx - view.x) / view.scale - o.x) / UNIT, y: ((sy - view.y) / view.scale - o.y) / UNIT });
+  const a = toG(0, 0), b = toG(rect.width, rect.height);
+  ctx.strokeStyle = "#fff"; ctx.lineWidth = 2;
+  ctx.strokeRect(mx(a.x), my(a.y), mx(b.x) - mx(a.x), my(b.y) - my(a.y));
 }
 
 // ============================================================
@@ -267,7 +346,10 @@ function buildScreen() {
   const tools = h("div", { class: "tree-tools" },
     h("button", { class: "tree-tool", type: "button", "aria-label": t("tree.zoomOut", "縮める"), onclick: () => zoomStep(1 / 1.25) }, "−"),
     h("button", { class: "tree-tool", type: "button", "aria-label": t("tree.zoomIn", "広げる"), onclick: () => zoomStep(1.25) }, "＋"),
-    h("button", { class: "tree-tool wide", type: "button", onclick: () => centerOn(ROOT_ID, true) }, t("tree.center", "中心へ")));
+    h("button", { class: "tree-tool wide", type: "button", onclick: () => centerOn(ROOT_ID, true) }, t("tree.center", "中心へ")),
+    h("button", { class: "tree-tool wide", type: "button", onclick: overview }, t("tree.overview", "全体")));   // SPEC-134
+  // SPEC-134: ミニマップ (= 押す・なぞるとその場所へ。 1 本目の指だけ)
+  const minimap = h("canvas", { class: "tree-minimap", width: MINIMAP_W * 2, height: MINIMAP_H * 2, "aria-label": t("tree.minimap", "ミニマップ") });
   // SPEC-132: 戻るは木の右下 (= スマホで押しやすい。 開く前の画面に戻る)
   const backBtn = h("button", { class: "tree-tool tree-back2", type: "button", onclick: closeSkillTree },
     h("span", { "aria-hidden": "true" }, "◀"), h("span", {}, t("tree.backTo", "戻る")));
@@ -275,33 +357,46 @@ function buildScreen() {
   const wide = WIDE.matches;
   _screen.classList.toggle("wide", wide);
   if (wide) {
-    main.append(viewport, tools, backBtn, h("div", { class: "tree-side" }, sheet, stats));
+    main.append(viewport, minimap, tools, backBtn, h("div", { class: "tree-side" }, sheet, stats));
     clear(_screen).append(bg, head, routeBar, main);
   } else {
-    main.append(viewport, tools, backBtn, stats);
+    main.append(viewport, minimap, tools, backBtn, stats);
     clear(_screen).append(bg, head, routeBar, main, sheet);
   }
 
   const view = { x: 0, y: 0, scale: window.innerWidth < 560 ? 0.62 : 0.85 };
-  _parts = { head, routeBar, viewport, world, links, nodeLayer, notice, sheet, stats, view, px, W, H };
+  _parts?.ac?.abort();   // 前に組んだ画面の window の受け口を外す
+  _parts = { head, routeBar, viewport, world, links, nodeLayer, notice, sheet, stats, view, px, W, H, minimap, ac: new AbortController() };
   installPanZoom();
+  installMinimap();
 }
 
 const applyView = () => {
   const { world, view } = _parts;
   world.style.transform = `translate(${view.x}px, ${view.y}px) scale(${view.scale})`;
+  drawMinimap();   // SPEC-134
 };
 
 function centerOn(id, animate = false) {
-  if (!_parts) return;
-  const { viewport, world, view, px } = _parts;
-  const p = px(nodePos(NODE_MAP[id]));
-  const rect = viewport.getBoundingClientRect();
-  view.x = rect.width / 2 - p.x * view.scale;
-  view.y = rect.height / 2 - p.y * view.scale;
-  world.classList.toggle("glide", animate && !prefersReducedMotion());
-  applyView();
-  if (animate) setTimeout(() => world.classList.remove("glide"), 450);
+  const n = NODE_MAP[id];
+  if (n) panTo(n.x, n.y, animate);
+}
+
+function installMinimap() {
+  const { minimap } = _parts;
+  const jump = (e) => {
+    const r = minimap.getBoundingClientRect();
+    const gx = BOUNDS.x0 - 1 + ((e.clientX - r.left) / r.width) * (BOUNDS.x1 - BOUNDS.x0 + 2);
+    const gy = BOUNDS.y0 - 1 + ((e.clientY - r.top) / r.height) * (BOUNDS.y1 - BOUNDS.y0 + 2);
+    panTo(gx, gy);
+  };
+  minimap.addEventListener("pointerdown", (e) => {
+    if (!e.isPrimary) return;   // 2 本目の指はピンチのもの
+    e.stopPropagation();
+    jump(e);
+    try { minimap.setPointerCapture(e.pointerId); } catch (_) {}
+  });
+  minimap.addEventListener("pointermove", (e) => { if (minimap.hasPointerCapture?.(e.pointerId)) jump(e); });
 }
 
 // ============================================================
@@ -315,6 +410,7 @@ function renderAll(fresh = new Map(), burst = false) {
   renderNodes(fresh, burst);
   renderSheet();
   renderStats();
+  drawMinimap();
 }
 
 /** 選んだ節を買ったあとの表 (= 買えない・上限なら null)。 SPEC-093 */
@@ -389,7 +485,7 @@ function renderRouteBar() {
       class: `route-pip ${n ? "on" : ""}`, type: "button",
       style: { "--c": r.color },
       title: tpl(t("tree.routeNodes", "{name}：{n} / {total}"), { name: L(r.name), n, total }),
-      onclick: () => centerOn(TREE_NODES.find((x) => x.route === r.id && x.depth === 1).id, true),
+      onclick: () => { const c = branchCenter(r.id, treeMeta()); panTo(c.x, c.y, true); },   // SPEC-134: その道のいま取れる節の真ん中へ
     }, h("span", {}, L(r.name)), h("em", { class: "num" }, `${n}/${total}`));
   }));
 }
@@ -719,66 +815,91 @@ function tapNode(id) {
   unlock(n);
 }
 
-// ---- パン・ズーム ----
+// ---- パン・ズーム (= SPEC-134: Workshop の作り) ----
+// pointerdown は表示領域、 move と up は window で受ける (= 領域の外へ出ても続く)。 新しい 1 本目の指が来たら、
+// 取りこぼした古い指を忘れる。 動いた量が 6px を超えたら、 そのあとのタップは節を選ばない
 function installPanZoom() {
-  const { viewport, view } = _parts;
+  const { viewport, view, ac } = _parts;
+  const opt = { signal: ac.signal };
   const pointers = new Map();
-  let drag = null;
-  let pinch = null;
-  viewport.addEventListener("pointerdown", (e) => {
+  let drag = null, pinch = null, moved = false, target = null;
+  const local = (x, y) => { const r = viewport.getBoundingClientRect(); return { x: x - r.left, y: y - r.top }; };
+  const startPinch = () => {
+    const [a, b] = [...pointers.values()];
+    const mid = local((a.x + b.x) / 2, (a.y + b.y) / 2);
+    // 指の中点の下にある盤面の点が、 拡大縮小しても指の下に残るように
+    pinch = { dist: Math.hypot(a.x - b.x, a.y - b.y) || 1, scale: view.scale, wx: (mid.x - view.x) / view.scale, wy: (mid.y - view.y) / view.scale };
+    drag = null;
+  };
+  const down = (e) => {
+    if (pointers.has(e.pointerId)) return;
+    if (e.isPrimary) pointers.clear();   // 新しい手ぶりの 1 本目: 取りこぼした指を忘れる
     pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    try { viewport.setPointerCapture(e.pointerId); } catch (_) {}
-    if (pointers.size === 1) drag = { x: e.clientX, y: e.clientY, vx: view.x, vy: view.y, moved: 0, target: e.target.closest?.(".tnode") };
-    if (pointers.size === 2) {
-      const [a, b] = [...pointers.values()];
-      pinch = { d: Math.hypot(a.x - b.x, a.y - b.y), scale: view.scale, cx: (a.x + b.x) / 2, cy: (a.y + b.y) / 2, vx: view.x, vy: view.y };
-      drag = null;
+    if (pointers.size === 1) {
+      moved = false; pinch = null;
+      target = e.target.closest?.(".tnode") ?? null;
+      drag = { x: e.clientX, y: e.clientY, vx: view.x, vy: view.y };
+    } else {
+      moved = true; target = null;
+      startPinch();
     }
-  });
-  viewport.addEventListener("pointermove", (e) => {
+  };
+  viewport.addEventListener("pointerdown", down, opt);
+  // 2 本目の指は、 どこに置いてもピンチに加わる (= ミニマップやボタンの上でも)
+  window.addEventListener("pointerdown", (e) => { if (pointers.size > 0 && e.pointerType === "touch" && !e.isPrimary) down(e); }, { capture: true, signal: ac.signal });
+  window.addEventListener("pointermove", (e) => {
     if (!pointers.has(e.pointerId)) return;
     pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    if (pinch && pointers.size === 2) {
+    if (pinch && pointers.size >= 2) {
       const [a, b] = [...pointers.values()];
-      const next = Math.min(1.6, Math.max(0.4, (pinch.scale * Math.hypot(a.x - b.x, a.y - b.y)) / pinch.d));
-      zoomAt(next, pinch.cx, pinch.cy, pinch);
+      const mid = local((a.x + b.x) / 2, (a.y + b.y) / 2);
+      view.scale = clampZoom((pinch.scale * Math.hypot(a.x - b.x, a.y - b.y)) / pinch.dist);
+      view.x = mid.x - pinch.wx * view.scale;
+      view.y = mid.y - pinch.wy * view.scale;
+      applyView();
     } else if (drag) {
-      view.x = drag.vx + e.clientX - drag.x;
-      view.y = drag.vy + e.clientY - drag.y;
-      drag.moved = Math.max(drag.moved, Math.hypot(e.clientX - drag.x, e.clientY - drag.y));
+      const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+      if (Math.abs(dx) + Math.abs(dy) > 6) moved = true;
+      view.x = drag.vx + dx;
+      view.y = drag.vy + dy;
       applyView();
     }
-  });
-  const up = (e) => {
-    if (drag && drag.moved < 6 && drag.target) tapNode(drag.target.dataset.id);
+  }, opt);
+  const end = (e) => {
+    if (!pointers.has(e.pointerId)) return;
+    // 動かさずに離した 1 本の指は、 節のタップ (= 1 度目は選ぶ・2 度目で買う)
+    if (e.type === "pointerup" && !moved && pointers.size === 1 && target) tapNode(target.dataset.id);
     pointers.delete(e.pointerId);
-    if (pointers.size < 2) pinch = null;
-    if (!pointers.size) drag = null;
+    pinch = null;
+    // ピンチのあと 1 本だけ残ったら、 そこからドラッグを続ける
+    const rest = [...pointers.values()][0];
+    drag = rest ? { x: rest.x, y: rest.y, vx: view.x, vy: view.y } : null;
+    if (!rest) target = null;
   };
-  viewport.addEventListener("pointerup", up);
-  viewport.addEventListener("pointercancel", up);
+  window.addEventListener("pointerup", end, opt);
+  window.addEventListener("pointercancel", end, opt);
+  // ホイールはカーソルの位置を軸に
   viewport.addEventListener("wheel", (e) => {
     e.preventDefault();
-    const next = Math.min(1.6, Math.max(0.4, view.scale * (e.deltaY < 0 ? 1.1 : 0.9)));
-    zoomAt(next, e.clientX, e.clientY);
-  }, { passive: false });
+    const p = local(e.clientX, e.clientY);
+    zoomAt(view.scale * (e.deltaY < 0 ? 1.1 : 1 / 1.1), p.x, p.y);
+  }, { passive: false, signal: ac.signal });
 }
 
-/** 縮める・広げるのボタン (= 木の真ん中を軸に) */
+/** 縮める・広げるのボタン (= 表示の真ん中を軸に) */
 function zoomStep(k) {
   const r = _parts.viewport.getBoundingClientRect();
-  zoomAt(Math.min(1.6, Math.max(0.4, _parts.view.scale * k)), r.left + r.width / 2, r.top + r.height / 2);
+  zoomAt(_parts.view.scale * k, r.width / 2, r.height / 2);
 }
 
-function zoomAt(next, cx, cy, from) {
-  const { viewport, view } = _parts;
-  const rect = viewport.getBoundingClientRect();
-  const ox = cx - rect.left, oy = cy - rect.top;
-  const base = from || { vx: view.x, vy: view.y, scale: view.scale };
-  const wx = (ox - base.vx) / base.scale;
-  const wy = (oy - base.vy) / base.scale;
+/** 表示領域の点 (px, py) を動かさずに拡大縮小する */
+function zoomAt(z, px, py) {
+  const { view } = _parts;
+  const next = clampZoom(z);
+  const wx = (px - view.x) / view.scale;
+  const wy = (py - view.y) / view.scale;
   view.scale = next;
-  view.x = ox - wx * next;
-  view.y = oy - wy * next;
+  view.x = px - wx * next;
+  view.y = py - wy * next;
   applyView();
 }
