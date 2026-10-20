@@ -30,8 +30,9 @@ export const ADDED = [
 ];
 
 /**
- * SPEC-116: 2 回目の追加の録音 (= 2026-10-20。 「…_added2.wav」。 番号は 0 から。 台本は docs/voice/script-added2.csv)。
- * 倒れたときのひとことと、 スキルツリーの案内
+ * SPEC-116: 2 回目の追加の録音 (= 2026-10-20。 番号は 0 から。 台本は docs/voice/script-added2.csv)。
+ * 倒れたときのひとことと、 スキルツリーの案内。 作者のファイル名は「番号-セリフ-MyCryptoSurvivors_tutorial_skilltree.wav」
+ * (= アンダースコアが使えないのでハイフンで区切る)
  */
 export const ADDED_2 = [
   "lose.guide", "lose.1", "lose.2", "lose.3",
@@ -43,10 +44,11 @@ const src = process.argv[2];
 const added2 = process.argv.includes("--added2");   // SPEC-116: 2 回目の追加の録音
 const added = added2 || process.argv.includes("--added");   // 追加の録音だけ変換し、 いまの一覧に足す
 const BATCH = added2 ? ADDED_2 : ADDED;
-const SUFFIX = added2 ? /_added2\.wav$/i : /_added\.wav$/i;
+const SUFFIX_ADDED2 = /-MyCryptoSurvivors_tutorial_skilltree\.wav$/i;
+const SUFFIX = added2 ? SUFFIX_ADDED2 : /_added\.wav$/i;
 if (!src) { console.error("usage: node tools/voice/build.mjs <wav dir> [--added | --added2]"); process.exit(1); }
 mkdirSync(OUT_DIR, { recursive: true });
-const wavs = readdirSync(src).filter((f) => /^\d+-.*\.wav$/i.test(f) && (added ? SUFFIX.test(f) : !/_added\d*\.wav$/i.test(f)));
+const wavs = readdirSync(src).filter((f) => /^\d+-.*\.wav$/i.test(f) && (added ? SUFFIX.test(f) : !/_added\d*\.wav$/i.test(f) && !SUFFIX_ADDED2.test(f)));
 const lines = added ? { ...(await import("../../js/voice-lines.js")).VOICE_LINES } : {};
 for (const f of wavs) {
   const n = Number(f.split("-")[0]);

@@ -544,7 +544,7 @@ function detailConds(m, n, st, cost) {
   if (n.parent && NODE_MAP[n.parent].kind !== "root") items.push({ ok: owns(m, n.parent), text: tpl(t("tree.condParent", "「{name}」を解放"), { name: nameOf(NODE_MAP[n.parent]) }) });
   if (n.kind === "capstone") {
     const have = routeCounts(m)[n.route] || 0;
-    items.push({ ok: have >= CAPSTONE_NEED, text: tpl(t("tree.condRoute", "この道の節を {need} つ（いま {n} つ）"), { need: CAPSTONE_NEED, n: have }) });
+    items.push({ ok: have >= CAPSTONE_NEED, text: tpl(t("tree.condRoute", "この道のスキルを {need} つ（いま {n} つ）"), { need: CAPSTONE_NEED, n: have }) });
   }
   const s = shortBy(m, cost);
   if (cost.gum) items.push({ ok: !s.gum, text: s.gum ? tpl(t("tree.condGumShort", "GUM {need}（あと {n}）"), { need: cost.gum, n: s.gum }) : tpl(t("tree.condGum", "GUM {need}"), { need: cost.gum }) });
@@ -582,7 +582,7 @@ function renderIdle(add, m) {
   add(first
     ? h("button", { class: "sheet-go ok", type: "button", onclick: () => select(first.id, true) },
       tpl(t("tree.claimable", "▶ 解放できます：{name}{more}（タップで移動）"), { name: nameOf(first), more: claimable.length > 1 ? tpl(t("tree.claimableMore", " ほか {n}"), { n: claimable.length - 1 }) : "" }))
-    : h("p", { class: "sheet-note" }, t("tree.idleHint", "挑戦を終えると GUM が、ボスを倒すとゴールドダストが貯まる。節を 2 回押すと解放。")));
+    : h("p", { class: "sheet-note" }, t("tree.idleHint", "挑戦を終えると GUM が、ボスを倒すとゴールドダストが貯まる。スキルを 2 回押すと解放。")));
 }
 
 // ============================================================
