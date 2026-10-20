@@ -23,7 +23,7 @@ const heroesRaw = JSON.parse(readFileSync(new URL("../data/heroes.json", import.
 const heroes = Array.isArray(heroesRaw) ? heroesRaw : (heroesRaw.heroes ?? Object.values(heroesRaw));
 
 test("ボイスのファイルがすべてある (= MP3。 長さも分かっている)", () => {
-  assert.equal(Object.keys(VOICE_LINES).length, 56);   // 台本 35 本 ＋ 追加の録音 8 本 (= 許褚は差し替え。 SPEC-097) ＋ 倒れたとき・スキルツリー 13 本 (= SPEC-116)
+  assert.equal(Object.keys(VOICE_LINES).length, 57);   // 台本 35 本 ＋ 追加の録音 8 本 (= 許褚は差し替え。 SPEC-097) ＋ 倒れたとき・スキルツリー 13 本 (= SPEC-116) ＋ 最初の店の説明 1 本
   for (const [id, v] of Object.entries(VOICE_LINES)) {
     assert.match(v.file, /^assets\/voice\/mine\/[\w.]+\.mp3$/, id);
     assert.ok(existsSync(new URL(`../${v.file}`, import.meta.url)), v.file);
@@ -51,7 +51,7 @@ test("マインちゃんのどのセリフにもボイスがある", () => {
     assert.ok(ui[l.key]?.ja && ui[l.key]?.en, `${l.key} の文`);
   }
   // 使っていないボイスはない (= タイトルコールは main.js が鳴らす。 SPEC-097 で外したものを除く)
-  const used = new Set(all.map((l) => l.voice).concat("title.call", ...RETIRED_VOICES));
+  const used = new Set(all.map((l) => l.voice).concat("title.call", "shop.intro", ...RETIRED_VOICES));   // shop.intro は shop.js が鳴らす
   for (const id of Object.keys(VOICE_LINES)) assert.ok(used.has(id), `${id} を使っていない`);
 });
 
