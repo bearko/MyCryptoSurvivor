@@ -18,17 +18,17 @@ function buy(m, id) {
   return r;
 }
 
-test("節は根 ＋ 36 ＋ エクステ別 21 で、 id が重ならず、 親が同じ道にある", () => {
-  assert.equal(NODES.length, 58);   // SPEC-131: エクステ別 (= 武器 10 ・ 強化 11)
+test("節は根 ＋ 36 ＋ エクステ別 21 で、 id が重ならず、 requires の先が実在する (= SPEC-133)", () => {
+  assert.equal(NODES.length, 58);
   assert.equal(new Set(NODES.map((n) => n.id)).size, 58);
   assert.equal(NODE_MAP[ROOT_ID].kind, "root");
+  assert.deepEqual(NODE_MAP[ROOT_ID].requires, []);
   for (const n of NODES) {
     if (n.kind === "root") continue;
     assert.ok(ROUTE_MAP[n.route], `${n.id} の道`);
-    const p = NODE_MAP[n.parent];
-    assert.ok(p, `${n.id} の親 ${n.parent}`);
-    assert.ok(p.kind === "root" || p.route === n.route, `${n.id} の親は同じ道`);
-    assert.ok(p.kind === "root" ? (n.depth === 1 || !!n.mastery) : p.depth < n.depth, `${n.id} の親は浅い`);   // SPEC-131: エクステ別は根の子
+    assert.ok(Array.isArray(n.requires) && n.requires.length > 0, `${n.id} の requires`);
+    for (const r of n.requires) assert.ok(NODE_MAP[r], `${n.id} の親 ${r} がある`);
+    assert.ok(Number.isInteger(n.x) && Number.isInteger(n.y), `${n.id} はマス目の上`);
     assert.ok(["repeat", "perk", "capstone"].includes(n.kind), `${n.id} の種類`);
     assert.ok(n.name?.ja && n.name?.en && n.desc?.ja && n.desc?.en, `${n.id} の名前と説明 (ja/en)`);
     assert.ok(Number.isInteger(n.icon) && n.icon > 0, `${n.id} の絵`);
@@ -38,23 +38,40 @@ test("節は根 ＋ 36 ＋ エクステ別 21 で、 id が重ならず、 親�
   }
 });
 
-test("どの道も 6 節で、 深さ 1 が根の子・深さ 4 が奥義。 奥義とボスの道はゴールドダストが要る", () => {
-  assert.equal(ROUTES.filter((r) => !r.minor).length, 6);
-  for (const r of ROUTES.filter((r) => !r.minor)) {
+test("配置 (= SPEC-133): 2 つの節が同じマスに無い・離れ小島が無い (= 8 方向で隣り合うものをたどると、 根からすべてに届く)", () => {
+  const cells = new Map();
+  for (const n of TREE_NODES) {
+    const k = `${n.x},${n.y}`;
+    assert.ok(!cells.has(k), `${n.id} と ${cells.get(k)} が ${k} で重なる`);
+    cells.set(k, n.id);
+  }
+  const seen = new Set([ROOT_ID]);
+  const queue = [NODE_MAP[ROOT_ID]];
+  while (queue.length) {
+    const a = queue.pop();
+    for (const b of TREE_NODES) {
+      if (seen.has(b.id) || Math.abs(a.x - b.x) > 1 || Math.abs(a.y - b.y) > 1) continue;
+      seen.add(b.id);
+      queue.push(b);
+    }
+  }
+  assert.deepEqual(TREE_NODES.filter((n) => !seen.has(n.id)).map((n) => `${n.id}@${n.x},${n.y}`), []);
+});
+
+test("どの道も 6 節で、 1 段目が根の子・奥義は 3 段目から。 道は軸に沿って伸びる。 奥義とボスの道はゴールドダストが要る", () => {
+  const main = ROUTES.filter((r) => !r.minor);
+  assert.equal(main.length, 6);
+  for (const r of main) {
     const ns = TREE_NODES.filter((n) => n.route === r.id);
     assert.equal(ns.length, 6, r.id);
     const d1 = ns.filter((n) => n.depth === 1);
-    assert.equal(d1.length, 1); assert.equal(d1[0].parent, ROOT_ID);
+    assert.equal(d1.length, 1); assert.deepEqual(d1[0].requires, [ROOT_ID]);
+    assert.deepEqual([d1[0].x, d1[0].y], r.d1, `${r.id} の 1 段目`);
     const caps = ns.filter((n) => n.kind === "capstone");
-    assert.equal(caps.length, 1); assert.equal(caps[0].depth, 4);
+    assert.equal(caps.length, 1);
+    assert.deepEqual(caps[0].requires.map((id) => NODE_MAP[id].depth), [3, 3], `${r.id} の奥義は 3 段目から`);
+    assert.deepEqual([caps[0].x, caps[0].y], [r.d1[0] + r.axis[0] * 3, r.d1[1] + r.axis[1] * 3], `${r.id} の奥義は軸の 3 つ先`);
     assert.ok(caps[0].cost.dust >= 3, `${r.id} の奥義はダスト`);
-    assert.deepEqual(ns.map((n) => n.depth).sort(), [1, 2, 2, 3, 3, 4]);
-  }
-  // SPEC-131: エクステ別の道 (= 奥義は無く、 どれも根の子で 5 段・ダスト不要)
-  for (const r of ROUTES.filter((r) => r.minor)) {
-    const ns = TREE_NODES.filter((n) => n.route === r.id);
-    assert.ok(ns.length >= 3 && ns.length <= 4, r.id);
-    for (const n of ns) assert.deepEqual([n.parent, n.kind, n.max, n.cost.dust | 0], [ROOT_ID, "repeat", 5, 0], n.id);
   }
   for (const n of TREE_NODES.filter((n) => n.route === "bos")) assert.ok(n.cost.dust >= 1, `${n.id} はダストで買う`);
   for (const n of TREE_NODES.filter((n) => n.route && n.route !== "bos" && n.kind !== "capstone")) assert.equal(n.cost.dust | 0, 0, `${n.id} はダスト不要`);
@@ -74,32 +91,64 @@ test("座標: 根は中心、 同じ道は同じ向きに伸び、 隣り合う�
   }
 });
 
-test("費用: 強化は段ごとに × 段数、 常時と奥義は固定。 木ぜんぶで 26,000 GUM 前後 (= SPEC-131 でエクステ別 21 × 600)・ダスト 32", () => {
+test("費用: 強化は段ごとに × 段数、 常時と奥義は固定。 武器の極意の 1 段目は無料 (= SPEC-133)。 ダスト 32", () => {
   assert.deepEqual(nodeCostAt(NODE_MAP.vit_hp, 1), { gum: 40, dust: 0 });
   assert.deepEqual(nodeCostAt(NODE_MAP.vit_hp, 3), { gum: 120, dust: 0 });
   assert.deepEqual(nodeCostAt(NODE_MAP.bos_thunder, 2), { gum: 160, dust: 1 });
   assert.deepEqual(nodeCostAt(NODE_MAP.vit_pancake, 1), { gum: 150, dust: 0 });
   assert.deepEqual(nodeCostAt(NODE_MAP.cap_bos, 1), { gum: 300, dust: 5 });
   assert.deepEqual(nodeCostAt(NODE_MAP[ROOT_ID], 1), { gum: 0, dust: 0 });
+  assert.deepEqual(nodeCostAt(NODE_MAP.wm_5, 1), { gum: 0, dust: 0 }, "ヒーローを仲間にしたら 1 段目は無料");
+  assert.deepEqual(nodeCostAt(NODE_MAP.wm_5, 2), { gum: 80, dust: 0 });
+  assert.deepEqual(nodeCostAt(NODE_MAP.bm_19, 1), { gum: 40, dust: 0 }, "強化の目利きは持ち主がいないので 40 から");
   const total = treeTotal();
-  assert.equal(total.gum, 13610 + 21 * 600, `GUM ${total.gum}`);
+  assert.equal(total.gum, 13610 + 21 * 600 - 10 * 40, `GUM ${total.gum}`);
   assert.equal(total.dust, 32, "奥義 21 ＋ ボスの道 11");
 });
 
-test("見え方: 最初は根だけ。 根を取ると 1 段目が見え、 2 段目は「？」", () => {
+test("見え方 (= SPEC-133): 最初は根だけ。 根を取ると 1 段目が見え、 2 段目は「？」。 奥義はまだ出ない", () => {
   const m = meta();
   assert.deepEqual(TREE_NODES.filter((n) => nodeShown(m, n.id)).map((n) => n.id), [ROOT_ID]);
   assert.equal(nodeState(m, ROOT_ID), "available");
   assert.equal(claimableNodes(m).map((n) => n.id).join(), ROOT_ID, "0 GUM でも根は取れる");
   assert.equal(buy(m, ROOT_ID).ok, true);
   const vis = TREE_NODES.filter((n) => nodeVisible(m, n.id)).map((n) => n.id);
-  const mastery = TREE_NODES.filter((n) => n.mastery).map((n) => n.id);   // SPEC-131: エクステ別も根を取ると見える
-  assert.equal(mastery.length, 21);
-  assert.deepEqual(vis.sort(), [ROOT_ID, "atk_dmg", "bos_thunder", "grw_xp", "mov_speed", "trs_gum", "vit_hp", ...mastery].sort());
-  const teas = TREE_NODES.filter((n) => nodeTeaser(m, n.id));
-  assert.equal(teas.length, 18, "2 段目の 12 節と、 6 つの奥義が「？」(= 道の終わりが最初から見える)");
-  assert.ok(teas.every((n) => n.depth === 2 || n.kind === "capstone"));
+  assert.deepEqual(vis.sort(), [ROOT_ID, "atk_dmg", "bos_thunder", "grw_xp", "mov_speed", "trs_gum", "vit_hp"].sort());
+  const teas = TREE_NODES.filter((n) => nodeTeaser(m, n.id)).map((n) => n.id);
+  assert.equal(teas.length, 12 + 2, "2 段目の 12 節と、 武器・強化の入口 (= ブレード・ギョク) が「？？？」");
+  assert.ok(teas.includes("wm_10") && teas.includes("bm_19"));
+  assert.ok(!TREE_NODES.some((n) => n.kind === "capstone" && nodeShown(m, n.id)), "奥義はまだ見せない");
   assert.equal(nodeShown(m, "vit_pancake"), false, "3 段目はまだ出ない");
+});
+
+test("武器の極意 (= SPEC-133): ヒーローを仲間にしていれば 1 段目が無料。 本作のヒーローは数珠つなぎ、 ほかのタイトルは分岐", () => {
+  const m = { ...meta(1000, 0), heroes: new Set([10001, 4006]) };
+  buy(m, ROOT_ID); buy(m, "atk_dmg");
+  assert.equal(nodeVisible(m, "wm_10"), true, "ブレード (= 最初から仲間) は攻撃の 1 段目で開く");
+  const r = buy(m, "wm_10");
+  assert.deepEqual([r.ok, r.cost.gum], [true, 0]);
+  assert.equal(buy(m, "wm_1").ok, true, "リボルバーも最初から仲間");
+  // 手裏剣は霧隠才蔵がまだ → 見えるが鍵 (= 「？？？」)
+  assert.equal(nodeTeaser(m, "wm_5"), true);
+  assert.deepEqual(nodeBlockers(m, "wm_5"), [{ key: "hero", heroId: 2043 }]);
+  m.heroes.add(2043);
+  assert.equal(nodeVisible(m, "wm_5"), true);
+  // 雪だるまは手裏剣の先 (= 数珠つなぎ)。 ほかのタイトルのヒーローはブレード・リボルバーから分岐
+  assert.deepEqual(NODE_MAP.wm_9.requires, ["wm_5"]);
+  for (const id of ["wm_2", "wm_3"]) assert.deepEqual(NODE_MAP[id].requires, ["wm_10"]);
+  for (const id of ["wm_8", "wm_4"]) assert.deepEqual(NODE_MAP[id].requires, ["wm_1"]);
+  m.heroes.add(1006);
+  assert.equal(nodeVisible(m, "wm_2"), true, "ピタゴラスを先に仲間にしても、 ブックはすぐ開ける");
+  // 仲間にしていないヒーローの節は、 GUM があっても取れない
+  assert.equal(tryBuy(m, "wm_4").reason, "hidden");
+  assert.equal(nodeBlockers({ ...m, heroes: undefined }, "wm_10")[0].key, "hero", "使えるヒーローが分からなければ取れない");
+});
+
+test("取ってある節は、 条件が変わっても上げられる (= 前の版で根から取った極意)", () => {
+  const m = { ...meta(1000, 0, { [ROOT_ID]: 1, wm_7: 1 }), heroes: new Set([10001, 4006]) };
+  assert.equal(nodeVisible(m, "wm_7"), true);
+  assert.equal(nodeState(m, "wm_7"), "available");
+  assert.equal(tryBuy(m, "wm_7").ok, true);
 });
 
 test("買う: 見えない・足りない・条件が合わないは通らない。 段を上げると費用が上がる", () => {
@@ -117,8 +166,8 @@ test("買う: 見えない・足りない・条件が合わないは通らない
   assert.equal(nodeShown(m, "vit_pancake"), true, "その先は「？」");
   assert.equal(tryBuy(m, "vit_pancake").reason, "hidden");
   assert.equal(nodeState(m, "cap_vit"), "locked");
-  assert.deepEqual(nodeBlockers(m, "cap_vit"), [{ key: "route", need: CAPSTONE_NEED, n: 1 }]);
-  assert.equal(tryBuy(m, "cap_vit").reason, "locked");
+  assert.deepEqual(nodeBlockers(m, "cap_vit"), [{ key: "parent", id: "vit_pancake", ids: ["vit_pancake", "vit_phoenix"] }, { key: "route", need: CAPSTONE_NEED, n: 1 }]);
+  assert.equal(nodeShown(m, "cap_vit"), false, "奥義は 3 段目に届くまで見せない (= SPEC-133)");
 });
 
 test("奥義: その道の節を 4 つ取ると買える (= 段は数えない)。 ダストも要る", () => {

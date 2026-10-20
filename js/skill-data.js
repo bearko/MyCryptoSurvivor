@@ -2,30 +2,30 @@
 // skill-data.js — スキルツリーの節 (= SPEC-090 §3)。 データだけ (= DOM も state も触らない)
 // ============================================================
 //
-// 真ん中に根、 そこから 6 本の道が 60° ずつ。 各道は深さ 1〜4 で、 深さ 4 が奥義。
-//   route  : 道 (vit 生存 / atk 攻撃 / mov 機動 / grw 成長 / trs 財宝 / bos ボス)
-//   parent : 木の上の親。 親を取ると見える (= その先は「？」で見せる)
-//   depth  : 中心からの段数 / lane: 横のずれ (-1 左 / 0 / +1 右)
-//   kind   : root (0 GUM) / repeat (段ごとに費用 × 段数) / perk (1 回) / capstone (道の節 4 つ ＋ ダスト)
-//   cost   : { gum, dust }。 repeat は gum × 次の段数 (= dust は段ごとに同じ)
-//   fx     : 1 段ぶんの効果 (= SPEC-090c が state.buffs と定数に写す。 ここでは数だけ)
-//   icon   : MCH のエクステンション (= Image/Extensions/<id>.png)
+// SPEC-133: 整数のマス目に置く (= MyCryptoWorkshop の作り)。 根 (0, 0) から道を方向ごとに分け、 道の主な流れは軸に沿って、
+// その脇の節は隣の列に並べる。 線は requires の親から子へまっすぐ引く。
+//   route    : 道 (vit 生存 / atk 攻撃 / mov 機動 / grw 成長 / trs 財宝 / bos ボス / wm 武器の極意 / bm 強化の目利き)
+//   x, y     : マス目の位置 (= 1 マス = UNIT px。 y は下が正)
+//   requires : どれか 1 つを取っていれば開く (= 根の子は根)
+//   hero     : そのヒーローを仲間にしていることも要る (= SPEC-133。 そのときは 1 段目が無料)
+//   kind     : root (0 GUM) / repeat (段ごとに費用 × 段数) / perk (1 回) / capstone (道の節 4 つ ＋ ダスト)
+//   cost     : { gum, dust }。 repeat は gum × 次の段数 (= dust は段ごとに同じ)
+//   fx       : 1 段ぶんの効果 (= SPEC-090c が state.buffs と定数に写す。 ここでは数だけ)
+//   icon     : MCH のエクステンション (= Image/Extensions/<id>.png)
+// 道の節は (parent・depth・lane) で書き、 下の ROUTE_LAYOUT でマス目に写す (= 座標を手で書かない)。
 // 名前と説明は { ja, en }。 画面が getLang() で引く。
 
+// d1: 1 段目の位置 / axis: 道の流れ (= 2 段目・3 段目・奥義) / side: 脇の列 / label: 道の名前の見出し (= 手で決めた位置)
 export const ROUTES = [
-  { id: "vit", name: { ja: "生存", en: "Survival" }, color: "#e76060", angle: -90 },
-  { id: "atk", name: { ja: "攻撃", en: "Attack" },   color: "#f0a04b", angle: -30 },
-  { id: "mov", name: { ja: "機動", en: "Mobility" }, color: "#56ccf2", angle: 30 },
-  { id: "grw", name: { ja: "成長", en: "Growth" },   color: "#5ecf8a", angle: 90 },
-  { id: "trs", name: { ja: "財宝", en: "Treasure" }, color: "#f0c14b", angle: 150 },
-  { id: "bos", name: { ja: "ボス", en: "Boss" },     color: "#bb86fc", angle: 210 },
-  // SPEC-131: エクステ別の強化 (= 道と道のあいだ。 minor: 道の一覧には出さない・奥義は無い)
-  { id: "wpa", name: { ja: "武器の極意", en: "Weapon Mastery" }, color: "#ffb37a", angle: -60, minor: true },
-  { id: "wpb", name: { ja: "武器の極意", en: "Weapon Mastery" }, color: "#ffb37a", angle: 0,   minor: true },
-  { id: "wpc", name: { ja: "武器の極意", en: "Weapon Mastery" }, color: "#ffb37a", angle: 60,  minor: true },
-  { id: "bfa", name: { ja: "強化の目利き", en: "Buff Bargains" }, color: "#7fd6c2", angle: 120, minor: true },
-  { id: "bfb", name: { ja: "強化の目利き", en: "Buff Bargains" }, color: "#7fd6c2", angle: 180, minor: true },
-  { id: "bfc", name: { ja: "強化の目利き", en: "Buff Bargains" }, color: "#7fd6c2", angle: 240, minor: true },
+  { id: "atk", name: { ja: "攻撃", en: "Attack" },   color: "#f0a04b", d1: [0, -1], axis: [0, -1], side: [1, 0],  label: [0.5, -5.2] },
+  { id: "bos", name: { ja: "ボス", en: "Boss" },     color: "#bb86fc", d1: [-1, -1], axis: [0, -1], side: [-1, 0], label: [-1.5, -5.2] },
+  { id: "mov", name: { ja: "機動", en: "Mobility" }, color: "#56ccf2", d1: [1, 0],  axis: [1, 0],  side: [0, 1],  label: [5.6, 0] },
+  { id: "trs", name: { ja: "財宝", en: "Treasure" }, color: "#f0c14b", d1: [0, 1],  axis: [0, 1],  side: [1, 0],  label: [0.5, 5.2] },
+  { id: "vit", name: { ja: "生存", en: "Survival" }, color: "#e76060", d1: [-1, 1], axis: [0, 1],  side: [-1, 0], label: [-1.5, 5.2] },
+  { id: "grw", name: { ja: "成長", en: "Growth" },   color: "#5ecf8a", d1: [-1, 0], axis: [-1, 0], side: [0, -1], label: [-5.6, -0.5] },
+  // SPEC-131 / SPEC-133: エクステ別 (= minor: 上の道の一覧には出さない・奥義は無い)
+  { id: "wm", name: { ja: "武器の極意", en: "Weapon Mastery" }, color: "#ffb37a", minor: true, label: [2.5, -8.1] },
+  { id: "bm", name: { ja: "強化の目利き", en: "Buff Bargains" }, color: "#7fd6c2", minor: true, label: [3, 6.1] },
 ];
 export const ROUTE_MAP = Object.fromEntries(ROUTES.map((r) => [r.id, r]));
 
@@ -91,65 +91,83 @@ export const NODES = [
   N("cap_bos",     "bos", "bos_thunder", 4,  0, "capstone", "竜殺し",     "Dragonslayer",   "ボスへの攻撃力 ＋15%、 ボスの接触・技のダメージ −25%", "Damage to bosses +15%, damage from bosses −25%", { gum: 300, dust: 5 }, 5091, { bossDmgMul: 0.15, bossDmgTakenMul: -0.25 }),
 ];
 
+// ---- 道の節をマス目へ (= 1 段目 d1、 2・3 段目は軸の上 (lane -1) と脇の列 (lane +1)、 奥義は軸の 3 つ先) ----
+for (const n of NODES) {
+  if (n.kind === "root") { Object.assign(n, { x: 0, y: 0, requires: [] }); continue; }
+  const r = ROUTES.find((x) => x.id === n.route);
+  const sideCol = n.depth === 1 || n.kind === "capstone" ? 0 : (n.lane > 0 ? 1 : (n.depth === 3 ? (NODES.find((p) => p.id === n.parent)?.lane > 0 ? 1 : 0) : 0));
+  const k = n.kind === "capstone" ? 3 : n.depth - 1;
+  n.x = r.d1[0] + r.axis[0] * k + r.side[0] * sideCol;
+  n.y = r.d1[1] + r.axis[1] * k + r.side[1] * sideCol;
+  // 奥義は 3 段目のどちらかから (= 道の節 4 つの条件はそのまま)。 ほかは親 1 つ
+  n.requires = n.kind === "capstone"
+    ? NODES.filter((p) => p.route === n.route && p.depth === 3).map((p) => p.id)
+    : [n.parent];
+}
+
 /**
- * SPEC-131: エクステ別の強化 (= 21 枚)。 根を取ると見え、 道と道のあいだに 3〜4 枚ずつ並ぶ (= 深さ 3 から外へ)。
- *   武器: その武器の威力 ＋5%（段ごと・5 段）。 perk の名前は wdmg_<extId>
- *   強化: その強化エクステのショップの値段 −6%（段ごと・5 段）。 perk の名前は cut_<extId>
+ * SPEC-131: エクステ別の強化 (= 21 枚・各 5 段)
+ *   武器: その武器の威力 ＋5%（段ごと）。 perk の名前は wdmg_<extId>
+ *   強化: その強化エクステのショップの値段 −6%（段ごと）。 perk の名前は cut_<extId>
+ * SPEC-133: 武器はその武器を使うヒーローを仲間にしていることが条件で、 そのとき 1 段目は無料。
+ *   本作で仲間になるヒーローは、 仲間になる順に数珠つなぎ (= ブレード → リボルバー → 手裏剣 → 雪だるま → ナイフ → レーザーガン)。
+ *   ほかのタイトルで仲間になるヒーローは、 最初から使える 2 人の武器 (= ブレード・リボルバー) から分岐 (= 先に仲間にしても開ける)。
+ *   強化は持ち主がいないので、 財宝の 1 段目から数珠つなぎ。
  */
 export const MASTERY_GUM = 40;
 export const MASTERY_MAX = 5;
 export const WEAPON_DMG_PER_RANK = 0.05;
 export const BUFF_CUT_PER_RANK = 0.06;
+// route, extId, kind, 名前 (ja / en), アイコン, x, y, requires, hero
 export const EXT_MASTERY = [
-  // route, extId, kind, 名前 (ja / en), アイコン
-  ["wpa", 10, "w", "ブレード", "Blade", 1001], ["wpa", 7, "w", "ナイフ", "Knife", 1048], ["wpa", 5, "w", "手裏剣", "Shuriken", 1124],
-  ["wpb", 1, "w", "リボルバー", "Revolver", 1029], ["wpb", 6, "w", "レーザーガン", "Raygun", 1130], ["wpb", 4, "w", "パロット", "Parrot", 1113], ["wpb", 3, "w", "ホーキ", "Broomstick", 1080],
-  ["wpc", 2, "w", "ブック", "Book", 1008], ["wpc", 8, "w", "マレット", "Mallet", 1073], ["wpc", 9, "w", "雪だるま", "Snowman", 1126],
-  ["bfa", 19, "b", "ギョク", "Orb", 1098], ["bfa", 18, "b", "カエルの標本", "Frog Specimen", 1169], ["bfa", 21, "b", "クラウン", "Crown", 1036], ["bfa", 20, "b", "グンバイ", "Gunbai", 1037],
-  ["bfb", 16, "b", "りんご", "Apple", 1159], ["bfb", 17, "b", "オリフラム", "Oriflamme", 1140], ["bfb", 14, "b", "ホース", "Horse", 1005], ["bfb", 13, "b", "ブーツ", "Boots", 1031],
-  ["bfc", 11, "b", "アーマー", "Armor", 1004], ["bfc", 15, "b", "シールド", "Shield", 1010], ["bfc", 12, "b", "ラーメン", "Ramen", 1154],
+  ["wm", 10, "w", "ブレード", "Blade", 1001, 2, -2, ["atk_dmg"], 10001],
+  ["wm", 1, "w", "リボルバー", "Revolver", 1029, 2, -3, ["wm_10"], 4006],
+  ["wm", 5, "w", "手裏剣", "Shuriken", 1124, 2, -4, ["wm_1"], 2043],
+  ["wm", 9, "w", "雪だるま", "Snowman", 1126, 2, -5, ["wm_5"], 2016],
+  ["wm", 7, "w", "ナイフ", "Knife", 1048, 2, -6, ["wm_9"], 2003],
+  ["wm", 6, "w", "レーザーガン", "Raygun", 1130, 2, -7, ["wm_7"], 4041],
+  ["wm", 2, "w", "ブック", "Book", 1008, 3, -2, ["wm_10"], 1006],
+  ["wm", 3, "w", "ホーキ", "Broomstick", 1080, 3, -1, ["wm_10"], 1007],
+  ["wm", 8, "w", "マレット", "Mallet", 1073, 3, -3, ["wm_1"], 2013],
+  ["wm", 4, "w", "パロット", "Parrot", 1113, 3, -4, ["wm_1"], 4052],
+  ["bm", 19, "b", "ギョク", "Orb", 1098, 1, 1, ["trs_gum"]],
+  ["bm", 18, "b", "カエルの標本", "Frog Specimen", 1169, 2, 2, ["bm_19"]],
+  ["bm", 21, "b", "クラウン", "Crown", 1036, 2, 3, ["bm_18"]],
+  ["bm", 20, "b", "グンバイ", "Gunbai", 1037, 2, 4, ["bm_21"]],
+  ["bm", 16, "b", "りんご", "Apple", 1159, 2, 5, ["bm_20"]],
+  ["bm", 17, "b", "オリフラム", "Oriflamme", 1140, 3, 5, ["bm_16"]],
+  ["bm", 14, "b", "ホース", "Horse", 1005, 3, 4, ["bm_17"]],
+  ["bm", 13, "b", "ブーツ", "Boots", 1031, 3, 3, ["bm_14"]],
+  ["bm", 11, "b", "アーマー", "Armor", 1004, 3, 2, ["bm_13"]],
+  ["bm", 15, "b", "シールド", "Shield", 1010, 4, 2, ["bm_11"]],
+  ["bm", 12, "b", "ラーメン", "Ramen", 1154, 4, 3, ["bm_15"]],
 ];
-/** エクステ別の節の置き場所 (= 中心から 3.0 マス、 そこから 0.92 マスごと。 道の節より詰めて、 木を広げすぎない) */
-export const MASTERY_R0 = 3.0;
-export const MASTERY_STEP = 0.92;
-const _depthIn = {};
-for (const [route, extId, kind, ja, en, icon] of EXT_MASTERY) {
-  const i = (_depthIn[route] = (_depthIn[route] ?? -1) + 1);
-  const depth = 3 + i;
+for (const [route, extId, kind, ja, en, icon, x, y, requires, hero] of EXT_MASTERY) {
   const w = kind === "w";
-  NODES.push({ rad: MASTERY_R0 + i * MASTERY_STEP, ...N(
-    `${w ? "wm" : "bm"}_${extId}`, route, ROOT_ID, depth, 0, "repeat",
-    w ? `${ja}の極意` : `${ja}の目利き`, w ? `${en} Mastery` : `${en} Bargain`,
-    w ? `${ja}の威力 ＋${WEAPON_DMG_PER_RANK * 100}%（段ごと）` : `ショップで${ja}が −${BUFF_CUT_PER_RANK * 100}%（段ごと）`,
-    w ? `${en} damage +${WEAPON_DMG_PER_RANK * 100}% per rank` : `${en} costs ${BUFF_CUT_PER_RANK * 100}% less in shops per rank`,
-    { gum: MASTERY_GUM }, icon,
-    w ? { [`wdmg_${extId}`]: WEAPON_DMG_PER_RANK } : { [`cut_${extId}`]: BUFF_CUT_PER_RANK },
-    MASTERY_MAX,
-  ), extId, mastery: kind });
+  NODES.push({
+    ...N(
+      `${w ? "wm" : "bm"}_${extId}`, route, requires[0], 0, 0, "repeat",
+      w ? `${ja}の極意` : `${ja}の目利き`, w ? `${en} Mastery` : `${en} Bargain`,
+      w ? `${ja}の威力 ＋${WEAPON_DMG_PER_RANK * 100}%（段ごと）` : `ショップで${ja}が −${BUFF_CUT_PER_RANK * 100}%（段ごと）`,
+      w ? `${en} damage +${WEAPON_DMG_PER_RANK * 100}% per rank` : `${en} costs ${BUFF_CUT_PER_RANK * 100}% less in shops per rank`,
+      { gum: MASTERY_GUM }, icon,
+      w ? { [`wdmg_${extId}`]: WEAPON_DMG_PER_RANK } : { [`cut_${extId}`]: BUFF_CUT_PER_RANK },
+      MASTERY_MAX,
+    ),
+    x, y, requires, extId, mastery: kind, ...(hero ? { hero } : {}),
+  });
 }
 
 export const NODE_MAP = Object.fromEntries(NODES.map((n) => [n.id, n]));
 /** 画面に出す節 (= 根と道の上のもの。 いまはすべて) */
 export const TREE_NODES = NODES;
 
-// 画面上の座標 (1 = 1 マス)。 中心から道の角度の向きに段数ぶん伸ばし、 lane で横にずらす
-// SPEC-093: 参考作の比率 (2.6 / 1.7 / 0.98) のほぼ半分に詰めた (= 1 画面に見える節を増やす。 隣どうしは約 100px 離れる)
-export const RING = 1.5;
-const STEP = 0.95;
-const LANE = 0.6;
+// 画面上の座標 (1 = 1 マス)。 SPEC-133: マス目そのもの
 export function nodePos(n) {
-  if (n.kind === "root") return { x: 0, y: 0 };
-  const a = (ROUTE_MAP[n.route].angle * Math.PI) / 180;
-  const r = n.rad ?? RING + (n.depth - 1) * STEP;   // SPEC-131: エクステ別の節は rad で詰めて置く
-  const px = -Math.sin(a);
-  const py = Math.cos(a);
-  return { x: Math.cos(a) * r + px * n.lane * LANE, y: Math.sin(a) * r + py * n.lane * LANE };
+  return { x: n.x, y: n.y };
 }
 
-/** 道の名前を置く半径 (= いちばん奥の節のさらに先) */
+/** 道の名前の見出し (= 道ごとに手で決めた位置) */
 export function routeLabelPos(route) {
-  const rs = TREE_NODES.filter((n) => n.route === route.id).map((n) => n.rad ?? RING + (n.depth - 1) * STEP);
-  const a = (route.angle * Math.PI) / 180;
-  const r = Math.max(...rs) + STEP;
-  return { x: Math.cos(a) * r, y: Math.sin(a) * r };
+  return { x: route.label[0], y: route.label[1] };
 }
