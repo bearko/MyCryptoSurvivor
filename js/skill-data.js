@@ -60,12 +60,12 @@ export const NODES = [
   N("cap_mov",     "mov", "mov_speed", 4,  0, "capstone", "疾風",         "Gale",           "移動速度 ＋8%、 無敵時間 ＋30%", "Move speed +8%, invincibility +30%",          { gum: 300, dust: 3 },   5120, { speedMul: 0.08, iframeMul: 0.30 }),
 
   // ---- 成長 (緑) ----
-  N("grw_xp",      "grw", ROOT_ID,     1,  0, "repeat",   "学びの速さ",   "Fast Learner",   "経験値 ＋4%（段ごと）", "XP +4% per rank",                                       { gum: 40 },             1008, { xpMul: 0.04 }, 5),
+  N("grw_xp",      "grw", ROOT_ID,     1,  0, "repeat",   "学びの速さ",   "Fast Learner",   "拾う CE ＋4%（段ごと）", "CE gained +4% per rank",                                       { gum: 40 },             1008, { xpMul: 0.04 }, 5),
   N("grw_reroll",  "grw", "grw_xp",    2, -1, "repeat",   "引き直し",     "Redraw",         "リロール ＋1（段ごと）", "Rerolls +1 per rank",                                  { gum: 100 },            1178, { reroll: 1 }, 2),
-  N("grw_start",   "grw", "grw_xp",    2,  1, "repeat",   "先手",         "Head Start",     "開始時にレベルアップ 1 回（段ごと）", "Start each run with 1 level-up per rank",  { gum: 120 },            1016, { startLevels: 1 }, 2),
+  N("grw_start",   "grw", "grw_xp",    2,  1, "repeat",   "先手",         "Head Start",     "ステージの始めに CE ＋20（段ごと）", "Start each stage with +20 CE per rank",  { gum: 120 },            1016, { startLevels: 1 }, 2),
   N("grw_stock",   "grw", "grw_reroll", 3, -1, "perk",    "大きな鞄",     "Big Bag",        "武器と強化の枠 ＋1", "Weapon and buff slots +1",                                 { gum: 250 },            4142, { stock: 1 }),
-  N("grw_skip",    "grw", "grw_start", 3,  1, "perk",     "見送りの礼",   "Pass Reward",    "スキップすると HP 10% 回復", "Skipping a level-up heals 10% HP",                 { gum: 120 },            1154, { skipHeal: 0.10 }),
-  N("cap_grw",     "grw", "grw_xp",    4,  0, "capstone", "天才",         "Prodigy",        "開始時にレベルアップ ＋2 回、 リロール ＋2", "Start with +2 level-ups, rerolls +2", { gum: 300, dust: 3 }, 4003, { startLevels: 2, reroll: 2 }),
+  N("grw_skip",    "grw", "grw_start", 3,  1, "perk",     "見送りの礼",   "Pass Reward",    "何も買わずに店を出ると HP 10% 回復", "Leaving a shop without buying heals 10% HP",                 { gum: 120 },            1154, { skipHeal: 0.10 }),
+  N("cap_grw",     "grw", "grw_xp",    4,  0, "capstone", "天才",         "Prodigy",        "ステージの始めに CE ＋40、 リロール ＋2", "Start each stage with +40 CE, rerolls +2", { gum: 300, dust: 3 }, 4003, { startLevels: 2, reroll: 2 }),
 
   // ---- 財宝 (金) ----
   N("trs_gum",     "trs", ROOT_ID,     1,  0, "repeat",   "金勘定",       "Bookkeeping",    "挑戦で得る GUM ＋5%（段ごと）", "GUM from runs +5% per rank",                   { gum: 40 },             4121, { gumMul: 0.05 }, 5),
