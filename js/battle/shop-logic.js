@@ -84,6 +84,13 @@ export function shopProgress(elapsedMs, stageIdx, nextIdx) {
   return Math.max(0, Math.min(1, (elapsedMs - from) / (to - from)));
 }
 
+/** 次の店までの秒 (= 切り上げ。 HUD の下の札) */
+export function nextShopSec(elapsedMs, stageIdx, nextIdx) {
+  const times = shopTimesMs(stageIdx);
+  if (nextIdx >= times.length) return null;
+  return Math.max(0, Math.ceil((times[nextIdx] - elapsedMs) / 1000));
+}
+
 function _search() { try { return globalThis.location?.search ?? ""; } catch { return ""; } }
 function _storage() { try { return globalThis.localStorage ?? null; } catch { return null; } }
 

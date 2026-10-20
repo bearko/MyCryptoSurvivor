@@ -20,10 +20,11 @@ import { t, tpl, getLang, onLangChange } from "../i18n.js";
 import { playSe } from "../audio.js";
 import { sigOnLevelUp, sigParams, sigLevel, SIG_MAX_LEVEL, SIG_UP_PRICE } from "./signature.js";
 import { heroImg } from "../heroes.js";
+import { naviFrameUrl, NAVI_POSES } from "../navi.js";
 import { hitEnemy } from "./damage.js";
 
 import {
-  MERCHANTS, OPENING_MERCHANT, isShopMode, shopTimesMs, shopPrice, giftable, pickMerchant, rerollCost, canBan,
+  MERCHANTS, OPENING_MERCHANT, isShopMode, shopTimesMs, shopPrice, giftable, pickMerchant, rerollCost, canBan, nextShopSec,
 } from "./shop-logic.js";
 export { isShopMode, shopTimesMs, shopProgress } from "./shop-logic.js";
 
@@ -37,6 +38,7 @@ function _fresh() {
     locked: [], nextIdx: 0, prevMerchant: null, purchases: 0,
     freeRerolls: 0, enteredIdx: -1, snapshot: null,
     sigLevel: 1,   // SPEC-110: 固有スキルの強化段 (= ステージをまたいで残る)
+    welcome: false, welcomeGiven: false,   // 最初の店のサービス (= 1 品ただ。 使うまで残る)
   };
 }
 
@@ -78,15 +80,41 @@ export function addShopGift(n = 1) {
 export function tickShop() {
   const s = state.shop;
   const b = state.battle;
-  if (!s || _open || !b.active || b.gameOver || b.bossSpawned) return;
+  if (!s || _open || !b.active || b.gameOver || b.bossSpawned) { _renderNext(null); return; }
   const times = shopTimesMs(state.currentStageIdx ?? 0);
-  if (s.nextIdx >= times.length) return;
+  if (s.nextIdx >= times.length) { _renderNext(null); return; }
+  // 2 回目からは、 次の店までの秒を画面に出す (= 1 回目はまだ店を知らないので出さない)
+  _renderNext(s.nextIdx >= 1 ? nextShopSec(b.stageElapsedMs ?? 0, state.currentStageIdx ?? 0, s.nextIdx) : null);
   if ((b.stageElapsedMs ?? 0) >= times[s.nextIdx]) {
     const opening = s.nextIdx === 0 && (state.currentStageIdx ?? 0) > 0;
     s.nextIdx += 1;
     openShop({ opening });
   }
 }
+
+let _nextSec = -1;
+/** 次の店までの秒の札 (= #shopNext)。 null なら隠す。 秒が変わったときだけ DOM を触る */
+function _renderNext(sec) {
+  const v = sec == null ? -1 : sec;
+  if (v === _nextSec) return;
+  _nextSec = v;
+  const el = globalThis.document?.getElementById("shopNext");
+  if (!el) return;
+  el.classList.toggle("hidden", v < 0);
+  if (v < 0) return;
+  el.innerHTML = "";
+  const label = document.createElement("span");
+  label.className = "shop-next__label";
+  label.textContent = t("shop.nextLabel", "🛒 ショップまで");
+  const num = document.createElement("b");
+  num.className = "shop-next__sec";
+  num.textContent = tpl(t("shop.nextSec", "{n} 秒"), { n: String(v) });
+  el.append(label, num);
+  el.classList.toggle("shop-next--soon", v <= 5);
+}
+
+/** タイトルに戻る・ゲームオーバーで札を消す */
+export function hideShopNext() { _renderNext(null); }
 
 // ============================================================
 // 店の画面
@@ -111,6 +139,9 @@ export function openShop({ opening = false } = {}) {
   s.prevMerchant = _merchant.id;
   _paidRerolls = 0;
   _boughtHere = 0;
+  _renderNext(null);
+  // 最初の店 (= ステージ 1 の 0:10) はまだ CE が少ないので、 サービスで 1 品ただ (= 作者の決定 2026-10-20)
+  if (!s.welcomeGiven && (state.currentStageIdx ?? 0) === 0) { s.welcomeGiven = true; s.welcome = true; }
   _gamaFree = _merchant.quirk === "freeReroll" ? 1 : 0;
   // 取り置きは同じ札で残す (= 段が上がりきった・枠がいっぱいなら外れる)
   const banned = new Set(s.bans);
@@ -142,6 +173,7 @@ function _fillOffers() {
 }
 
 function _priceOf(o, offer) {
+  if (state.shop.welcome && !offer.isLL) return 0;   // 最初の店のサービス (= どれでも 1 品)
   if (state.shop.gifts > 0 && String(_giftTarget()) === String(o.extId)) return 0;
   return shopPrice(offer, state.currentStageIdx ?? 0, _merchant.quirk, o.sale);
 }
@@ -167,7 +199,8 @@ export function buyOffer(extId) {
   if (!offer) return false;
   const price = _priceOf(o, offer);
   if (price > s.ce) return false;
-  if (price === 0) s.gifts -= 1;
+  if (price === 0 && s.welcome) s.welcome = false;
+  else if (price === 0) s.gifts -= 1;
   else s.ce -= price;
   grantPick(extId);
   o.sold = true;
@@ -350,6 +383,7 @@ export function closeShop() {
 
 /** タイトルに戻る・ゲームオーバーで、 開いていれば黙って閉じる (= pauseFlags は呼ぶ側がまとめて戻す) */
 export function hideShop() {
+  _renderNext(null);
   _open = false;
   _offers = [];
   document.getElementById("shopModal")?.classList.add("hidden");
@@ -378,6 +412,15 @@ export function renderShop() {
   }
 
   _renderSig();   // SPEC-110
+  // 最初の店: CE を集めて買うことと、 サービスの 1 品
+  const intro = document.getElementById("shopIntro");
+  if (intro) {
+    intro.classList.toggle("hidden", !s.welcome);
+    const ain = document.getElementById("shopIntroAin");
+    if (ain && !ain.getAttribute("src")) ain.src = naviFrameUrl(NAVI_POSES.smile);
+    const msg = document.getElementById("shopIntroText");
+    if (msg) msg.textContent = t("shop.intro", "敵が落とす CE（◆）を集めると、 ショップで品が買えるよ。 今回はサービスで 1 品無料！ 好きなものを選んでね");
+  }
   renderOwnedStrip(document.getElementById("shopOwned"), document.getElementById("shopOwnedRows"), document.getElementById("shopOwnedHead"));
 
   const grid = document.getElementById("shopGrid");
@@ -405,7 +448,7 @@ export function renderShop() {
       const short = price > s.ce;
       const chip = document.createElement("span");
       chip.className = "shop-price" + (short ? " shop-price--short" : "") + (price === 0 ? " shop-price--gift" : "") + (o.sale ? " shop-price--sale" : "");
-      chip.textContent = price === 0 ? t("shop.free", "🎟 ギフト券") : `◆ ${price}`;
+      chip.textContent = price === 0 ? (s.welcome ? t("shop.welcomeFree", "🎁 サービス") : t("shop.free", "🎟 ギフト券")) : `◆ ${price}`;
       if (o.sale && price > 0) chip.dataset.tag = t("shop.saleTag", "半額");
       card.appendChild(chip);
       card.classList.add("shop-card");

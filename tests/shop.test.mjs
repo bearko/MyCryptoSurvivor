@@ -5,7 +5,7 @@ import assert from "node:assert/strict";
 import { readFileSync, existsSync } from "node:fs";
 const {
   MERCHANTS, OPENING_MERCHANT, isShopMode, shopTimesMs, roundTo5, shopPrice, giftable,
-  pickMerchant, rerollCost, canBan, shopProgress,
+  pickMerchant, rerollCost, canBan, shopProgress, nextShopSec,
 } = await import("../js/battle/shop-logic.js");
 
 const store = (v) => ({ getItem: (k) => (k === "mcs.shop" ? v : null) });
@@ -98,4 +98,22 @@ test("画面とつなぎ: 店の窓・CSS・i18n・店主の名前", () => {
   assert.match(gems, /if \(state\.shop\) addShopCe\(whole\)/);
   const cards = readFileSync(new URL("../js/battle/magic-cards.js", import.meta.url), "utf8");
   assert.match(cards, /addShopGift\(picked\)/);
+});
+
+test("次の店までの秒 (= 切り上げ。 もう店が無ければ null)", () => {
+  assert.equal(nextShopSec(10000, 0, 1), 40);     // 0:10 の店のあと → 0:50 まで 40 秒
+  assert.equal(nextShopSec(49001, 0, 1), 1);
+  assert.equal(nextShopSec(50000, 0, 1), 0);
+  assert.equal(nextShopSec(5000, 1, 1), 35);      // ステージ 2: 0:40 まで
+  assert.equal(nextShopSec(0, 0, 6), null);
+});
+
+test("最初の店はサービスで 1 品ただ・説明の文がある・2 回目から秒の札", () => {
+  const shop = readFileSync(new URL("../js/battle/shop.js", import.meta.url), "utf8");
+  assert.match(shop, /if \(state\.shop\.welcome && !offer\.isLL\) return 0;/);
+  assert.match(shop, /s\.nextIdx >= 1 \? nextShopSec/);
+  const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
+  assert.ok(html.includes('id="shopIntro"') && html.includes('id="shopNext"'));
+  const ui = JSON.parse(readFileSync(new URL("../data/i18n/ui.json", import.meta.url), "utf8"));
+  for (const k of ["shop.intro", "shop.nextLabel", "shop.nextSec", "shop.welcomeFree", "coach.ce"]) assert.ok(ui[k]?.ja && ui[k]?.en, k);
 });
