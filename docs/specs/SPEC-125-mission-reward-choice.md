@@ -2,7 +2,7 @@
 id: SPEC-125
 title: Mission Rewards Become a Choice of Three — Gift Ticket, a Giver-Themed Boon, or Healing — After a Line From the Giver
 status: Done
-pr: TBD
+pr: 160
 phase: v1.6 Mission
 kind: Changed
 ---
