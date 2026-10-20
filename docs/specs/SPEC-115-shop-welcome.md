@@ -2,7 +2,7 @@
 id: SPEC-115
 title: Shop Onboarding — First Shop Explains CE and Gives One Free Item; Countdown to the Next Shop
 status: Done
-pr: TBD
+pr: 145
 phase: v1.6 Shop
 kind: Changed
 ---
