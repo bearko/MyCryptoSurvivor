@@ -9,6 +9,7 @@
 import { state, pauseTime, resumeTime } from "../state.js";
 import { resetResumeCountdown } from "./resume-countdown.js";   // SPEC-104
 import { hideShop } from "./shop.js";   // SPEC-109
+import { hideMissionUi } from "./missions.js";   // SPEC-112
 import { t, tpl, onLangChange } from "../i18n.js";
 import {
   getPlayerName, setPlayerName, submitScore, getRankingApiUrl,
@@ -55,6 +56,7 @@ export function triggerGameOver(reason = "lose") {
     rewards: reason !== "clear" ? { ...grantRunRewards(false, { gumMul: perk("gumMul") }), dust: runDust() } : null,
   };
   pauseTime();
+  hideMissionUi();   // SPEC-112: 受けていたミッションの帯を消す
   _wireOnce();
   _renderGameOverModal();
   const modal = document.getElementById("gameOverModal");
@@ -143,6 +145,7 @@ export async function returnToTitle({ navi = true } = {}) {
     document.getElementById(id)?.classList.add("hidden");
   }
   hideShop();   // SPEC-109
+  hideMissionUi();   // SPEC-112
   // pauseFlags を 0 にリセット (= タイトル画面では時間停止扱い)
   while (state.pauseFlags > 0) resumeTime();
   resetResumeCountdown();   // SPEC-104: 数えている途中なら消す
@@ -159,6 +162,7 @@ export async function returnToTitle({ navi = true } = {}) {
   state.killCount       = 0;
   state.lastRunStats    = null;
   state.shop            = null;   // SPEC-109
+  state.mission         = null;   // SPEC-112
   state.run.stages.length = 0;
   state.run.totalKills    = 0;
   state.run.totalElapsedMs = 0;

@@ -14,6 +14,7 @@ import { fxPlayerHurt, fxBurst } from "./fx.js";
 import { triggerGameOver } from "./gameover.js";
 import { contactCooldownMs, bossDmgTakenMul, perk, PHOENIX_HP_RATIO, PHOENIX_IFRAME_MS } from "../perks.js";
 import { sigTryPhantom } from "./signature.js";   // SPEC-100
+import { missionMods, missionOnHurt } from "./missions.js";   // SPEC-112
 
 /**
  * @param {number} raw   元のダメージ (= 強化の被ダメ倍率はここで掛ける)
@@ -23,11 +24,12 @@ import { sigTryPhantom } from "./signature.js";   // SPEC-100
 export function hurtPlayer(raw, { boss = false, shake = boss } = {}) {
   const b = state.battle;
   if (b.gameOver || b.contactCooldownMs > 0) return false;
-  let taken = raw * (state.buffs?.dmgTakenMul ?? 1);
+  let taken = raw * (state.buffs?.dmgTakenMul ?? 1) * missionMods().dmgMul;   // SPEC-112: 四面楚歌
   if (boss) taken *= bossDmgTakenMul();
   const takenInt = Math.max(1, Math.round(taken));
   state.stats.hp = Math.max(0, state.stats.hp - takenInt);
   b.contactCooldownMs = contactCooldownMs();
+  missionOnHurt();   // SPEC-112: 白衣の誓い (= 1 回でも当たると失敗)
   pushDamageNumber(b.player.x, b.player.y - b.player.r - 4, takenInt, "#ff7676");
   playSe(SFX.PLAYER_DAMAGED, 200, 0.55);
   fxPlayerHurt(shake);

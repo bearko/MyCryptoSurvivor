@@ -10,6 +10,7 @@ import { getExt, getCategory } from "../extensions.js";
 import { STATS_INITIAL } from "../constants.js";
 import { perks, perkBuffBase } from "../perks.js";   // SPEC-090c: スキルツリーの土台
 import { sigRegenPerSec } from "./signature.js";   // SPEC-100
+import { canHeal } from "./missions.js";   // SPEC-112
 
 /**
  * pick された buff を即時適用。 weapon entry が来た場合は何もしない (= 呼出側で分岐前提)。
@@ -53,6 +54,7 @@ export function tickRegen(dt) {
   const r = state.buffs.regenPerSec + sigRegenPerSec();   // SPEC-100: 宮廷医女
   if (r <= 0) return;
   if (state.stats.hp <= 0) return;     // 死亡中は回復しない
+  if (!canHeal()) return;              // SPEC-112: 不老不死の探求
   const max = state.statsMax.hp;
   const next = state.stats.hp + r * dt;
   state.stats.hp = next > max ? max : next;

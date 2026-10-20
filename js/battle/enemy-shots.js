@@ -14,6 +14,7 @@ import { hurtPlayer } from "./hurt.js";   // SPEC-090c
 import { getObstacleRects } from "./field.js";
 import { resolveCircle, circleHitsAnyRect } from "./field-geom.js";
 import { naviTipOnce } from "../navi-tips.js";
+import { missionMods } from "./missions.js";   // SPEC-112
 
 export const SHOOTER_KEEP_RATIO = 0.72;    // 保つ距離 = 画面の半分 × これ (= 楕円)
 export const SHOOTER_KEEP_MIN_PX = 160;    // 小さい画面でも、 これより近くには寄らない
@@ -50,6 +51,13 @@ export function shooterMode(dx, dy, keep, band = SHOOTER_BAND) {
 /** 画面に映っているか (= 純関数。 自分は画面の真ん中) */
 export function shooterOnScreen(dx, dy, vw, vh, margin = SHOOTER_ONSCREEN_MARGIN_PX) {
   return Math.abs(dx) <= vw / 2 - margin && Math.abs(dy) <= vh / 2 - margin;
+}
+
+/** SPEC-112: 1 発を mul 発に (= 真ん中と、 左右に少しずつ) */
+export function spreadMul(a, mul, step = 0.14) {
+  const out = [a];
+  for (let k = 1; out.length < mul; k++) { out.push(a + k * step); if (out.length < mul) out.push(a - k * step); }
+  return out;
 }
 
 /** 撃ち方ごとの弾の速度 (= 純関数)。 aimed: 狙って 1 発、 spread3: 3 方向、 spread5: 5 方向 (= SPEC-107 の連射) */
@@ -112,7 +120,10 @@ export function tickShooter(e, dt, px, py) {
   e.aiming = false;
   e.fireCdMs = nextFireMs(e.shot.everyMs);
   const shots = b.enemyShots;
-  for (const a of shotAngles(e.shot.pattern, e.aimAngle)) {
+  // SPEC-112: 三段撃ち (= 1 発ごとに左右へ少しずらした弾を足して 3 倍)
+  const mul = missionMods().shotMul;
+  const angles = shotAngles(e.shot.pattern, e.aimAngle).flatMap((a) => (mul > 1 ? spreadMul(a, mul) : [a]));
+  for (const a of angles) {
     if (shots.length >= MAX_ENEMY_SHOTS) break;
     shots.push({
       id: b.nextEntityId++,

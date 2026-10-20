@@ -33,6 +33,7 @@ import { resolveCircle, slideAlongWall } from "./field-geom.js";
 import { tickShooter, nextFireMs } from "./enemy-shots.js";
 import { threatTier, rollVariant, applyVariant, crossLine, crossedOut, CROSS, VARIANTS } from "./threat.js";   // SPEC-107
 import { showThreatNotice } from "./milestones.js";   // SPEC-107
+import { missionMods } from "./missions.js";   // SPEC-112
 import {
   floodMul, packAngles, separateEnemies, stageMaxEnemies, spawnBudget,
   densityTarget, screenDensity, densityShortfall, DENSITY_CHECK_MS, DENSITY_GAIN, DENSITY_MAX_PER_CHECK,
@@ -92,20 +93,22 @@ export function tickEnemies(dt, nowMs) {
   const absSpawnMul = state.absolute?.spawnMul ?? 1;
   const cap = stageMaxEnemies(stage);   // SPEC-065 / SPEC-078: ステージごと (= 320 / 440 / 600)
   // SPEC-065: 大群のステージは、 中盤から湧きが速まる
+  const mods = missionMods();   // SPEC-112: ミッションの効き目 (= 無ければ効かない値)
   const spawnInterval = ENEMY_SPAWN_INTERVAL_MS * (stage.spawnIntervalMul ?? 1)
-    / Math.max(0.1, absSpawnMul) / floodMul(stage.flood, b.stageElapsedMs);
+    / Math.max(0.1, absSpawnMul) / floodMul(stage.flood, b.stageElapsedMs) / mods.spawnMul;
   // SPEC-078: 経った時間ぶん湧かせる (= 1 コマに何体でも。 湧きを大きく速めても上限で止まる)
   // SPEC-079: ボス戦のあいだは湧かない
   const bud = spawnBudget(b.spawnAcc, dms, spawnInterval, b.bossSpawned ? 0 : cap - b.enemies.length);
   b.spawnAcc = bud.acc;
   if (bud.n > 0) {
-    const pool = currentPool(b.stageElapsedMs);
+    const pool = mods.shooterOnly ? shooterPool(stage) : currentPool(b.stageElapsedMs);   // SPEC-112: 三段撃ち・女王の威光
     for (let k = 0; k < bud.n; k++) spawnEnemyAtRing(pool[Math.floor(Math.random() * pool.length)]);
     b.lastEnemySpawnMs = nowMs;
   }
 
   // SPEC-078: 画面の敵の密度を、 時刻ごとの目標まで足す (= 強い武器でどんどん倒しても、 ボスの直前は画面が敵で埋まる)
-  const dn = b.bossSpawned ? null : stage.density;   // SPEC-079: ボス戦のあいだは足さない・寄せ直さない
+  // SPEC-079: ボス戦のあいだは足さない・寄せ直さない。 SPEC-112: 撃つ敵だけのミッションのあいだも足さない (= 弾で画面が埋まらない)
+  const dn = (b.bossSpawned || mods.shooterOnly) ? null : stage.density;
   if (dn && b.enemies.length < cap) {
     b.densityCheckMs = (b.densityCheckMs ?? 0) - dms;
     if (b.densityCheckMs <= 0) {
@@ -142,7 +145,7 @@ export function tickEnemies(dt, nowMs) {
 
   // SPEC-065: 群れ (= 1 方向から、 まとまって押し寄せる)
   const fl = stage.flood;
-  if (fl && !b.bossSpawned && b.stageElapsedMs >= Math.max(fl.packFromMs, b.nextPackMs ?? 0)) {
+  if (fl && !b.bossSpawned && !mods.shooterOnly && b.stageElapsedMs >= Math.max(fl.packFromMs, b.nextPackMs ?? 0)) {
     b.nextPackMs = b.stageElapsedMs + fl.packEveryMs;
     const pool = currentPool(b.stageElapsedMs);
     const halfW = b.viewport.w / 2 + ENEMY_SPAWN_MARGIN_PX;
@@ -205,25 +208,33 @@ export function tickEnemies(dt, nowMs) {
     } else if (e.isBoss && bossHoldsStill(e)) {
       // SPEC-080: 型の最中 (= 予備動作・突進・立て直し) は boss-moves.js が動かす
     } else if ((e.hitFreezeMs ?? 0) <= 0) {
-      e.x += (dx / d) * e.speed * dt;
-      e.y += (dy / d) * e.speed * dt;
+      const sp = e.isBoss ? e.speed : e.speed * mods.speedMul;   // SPEC-112: 東方遠征・乱世の奸雄
+      e.x += (dx / d) * sp * dt;
+      e.y += (dy / d) * sp * dt;
       // SPEC-053: 建物にめりこんだら押し出し、 壁に沿ってプレイヤーへ回りこむ
       if (rects.length) {
         let res = resolveCircle(e.x, e.y, e.r, rects);
         if (res.hit) {
           const s = slideAlongWall(res.nx, res.ny, px - res.x, py - res.y);
-          res = resolveCircle(res.x + s.x * e.speed * dt, res.y + s.y * e.speed * dt, e.r, rects);
+          res = resolveCircle(res.x + s.x * sp * dt, res.y + s.y * sp * dt, e.r, rects);
           e.x = res.x; e.y = res.y;
         }
       }
     }
 
-    if (b.contactCooldownMs <= 0 && d < e.r + b.player.r) {
+    // SPEC-112: 乱世の奸雄 (= 敵が小さい) は当たりも小さく
+    if (b.contactCooldownMs <= 0 && d < (e.isBoss ? e.r : e.r * mods.sizeMul) + b.player.r) {
       hurtPlayer(e.dmg, { boss: !!e.isBoss });   // SPEC-090c: 被弾は 1 か所 (= hurt.js)。 ボスなら大きく揺らす
     }
   }
   // SPEC-107: 走りきった横断の敵を片づける
   if (b.enemies.some((e) => e.gone)) b.enemies = b.enemies.filter((e) => !e.gone);
+}
+
+/** SPEC-112: 撃つ敵だけを湧かせるとき (= ステージの撃つ敵。 決まっていなければ 166) */
+export function shooterPool(stage) {
+  const ids = stage?.shooters?.ids;
+  return ids && ids.length ? ids : [166];
 }
 
 /** SPEC-107: 横断の列の予告と出現 */

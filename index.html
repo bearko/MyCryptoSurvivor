@@ -52,6 +52,8 @@
   <link rel="stylesheet" href="css/skill-tree.css" />
   <!-- SPEC-109: ショップ -->
   <link rel="stylesheet" href="css/shop.css" />
+  <!-- SPEC-112: ミッション -->
+  <link rel="stylesheet" href="css/missions.css" />
 </head>
 <body>
 
@@ -206,6 +208,14 @@
         <b class="shop-bar__sec num" id="shopBarSec"></b>
         <span class="shop-bar__ce num">◆<b id="shopBarCe">0</b></span>
       </div>
+      <!-- SPEC-112: 受けているミッション (= 残り時間と条件。 HUD の下の段) -->
+      <div class="mission-bar hidden" id="missionBar" role="status">
+        <img class="mission-bar__face" id="missionBarFace" alt="" width="28" height="28" />
+        <b class="mission-bar__title" id="missionBarTitle"></b>
+        <span class="mission-bar__goal" id="missionBarGoal"></span>
+        <span class="mission-bar__track"><span class="mission-bar__fill"></span></span>
+        <b class="mission-bar__sec num" id="missionBarSec"></b>
+      </div>
     </section>
 
     <section class="stage">
@@ -230,6 +240,8 @@
       </div>
       <!-- SPEC-061: 最後の 5 秒は真ん中に大きな数字 -->
       <div id="bossCountdown" class="boss-countdown num hidden" aria-hidden="true"></div>
+      <!-- SPEC-112: ミッションの結果 (= 遊びは止めない) -->
+      <div id="missionResult" class="mission-result hidden" aria-live="polite"><b class="mission-result__head"></b><span class="mission-result__sub"></span></div>
       <!-- SPEC-105: 撃破数の節目 (= 遊びは止めない) -->
       <div id="killMilestone" class="kill-milestone hidden" role="status" aria-live="polite">
         <span class="kill-milestone__rays" aria-hidden="true"></span>
@@ -531,6 +543,30 @@
         <span class="shop-actions__bans" id="shopBansLeft"></span>
         <button class="btn btn--secondary levelup-modal__reroll shop-actions__reroll" id="shopReroll" type="button">リロール</button>
         <button class="btn btn--primary shop-actions__leave" id="shopLeave" type="button">次のウェーブへ ▶</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SPEC-112: ミッションの持ちかけ (= シャドーヒーローのカットイン。 時間を止めて 受ける / 断る) -->
+  <!-- ============================================================ -->
+  <div id="missionOffer" class="mission-offer hidden" role="dialog" aria-modal="true" aria-labelledby="missionOfferTitle">
+    <div class="mission-offer__band">
+      <img class="mission-offer__face" id="missionOfferFace" alt="" width="96" height="96" />
+      <div class="mission-offer__body">
+        <span class="mission-offer__kicker">MISSION <span class="mission-offer__weight" id="missionOfferWeight"></span></span>
+        <span class="mission-offer__giver" id="missionOfferGiver"></span>
+        <h2 class="mission-offer__title" id="missionOfferTitle"></h2>
+        <p class="mission-offer__desc" id="missionOfferDesc"></p>
+        <dl class="mission-offer__terms">
+          <dt data-i18n="mission.term.time">時間</dt><dd id="missionOfferTime"></dd>
+          <dt data-i18n="mission.term.goal">条件</dt><dd id="missionOfferGoal"></dd>
+          <dt data-i18n="mission.term.reward">報酬</dt><dd id="missionOfferReward"></dd>
+        </dl>
+        <div class="mission-offer__actions">
+          <button class="btn btn--ghost mission-offer__no" id="missionDecline" type="button" data-i18n="mission.decline">断る（N）</button>
+          <button class="btn mission-offer__yes" id="missionAccept" type="button" data-i18n="mission.accept">受ける（Y）</button>
+        </div>
       </div>
     </div>
   </div>
