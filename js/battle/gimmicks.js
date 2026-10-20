@@ -12,7 +12,7 @@
 import { state } from "../state.js";
 import { STAGE_TABLE, WORLD_W, WORLD_H, CHEST_DROPS, SFX } from "../constants.js";
 import { stageMaxEnemies } from "./horde.js";
-import { hitEnemy } from "./damage.js";
+import { hitEnemy, pushDamageNumber } from "./damage.js";   // SPEC-129: pushDamageNumber が抜けていて、 木馬が出るとステージ 3 が止まっていた
 import { hurtPlayer } from "./hurt.js";   // SPEC-090c
 import { fxBurst } from "./fx.js";
 import { playSe } from "../audio.js";
