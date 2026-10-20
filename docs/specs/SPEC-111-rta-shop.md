@@ -2,7 +2,7 @@
 id: SPEC-111
 title: RTA Uses the Shop Too (Same Regulation v4) — Shop and Missions in Every Mode
 status: Done
-pr: TBD
+pr: 153
 phase: v1.6 Shop
 kind: Changed
 ---
