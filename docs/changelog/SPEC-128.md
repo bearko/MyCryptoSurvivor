@@ -1,0 +1,1 @@
+- **固有スキルを 15 段に・残った CE は固有スキルへ** (`js/battle/signature.js` + `js/battle/shop.js` + `js/battle/stage-transition.js`): Lv.11〜15 を足した（24,000〜120,000 CE）。ステージの終わりに財布の CE を固有スキルへ自動で振り、端数は次の段への積み立てに。CE は持ち越さず、ギフト券は持ち越す

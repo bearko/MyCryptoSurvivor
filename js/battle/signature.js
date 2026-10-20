@@ -37,39 +37,60 @@ export const UINYEO = { regenPerSec: 0.8, healMul: 2 };                         
 
 const clamp01 = (v) => Math.max(0, Math.min(1, v));
 
-// ---- SPEC-110: 固有スキルの強化段 (= ショップで Lv.1 → Lv.10。 Lv.1 は上の数値そのまま) ----
-// SPEC-123: 5 段 → 10 段。 Lv.5 の数値は SPEC-110 のまま、 Lv.6〜10 でもう一段伸ばす
-export const SIG_MAX_LEVEL = 10;
+// ---- SPEC-110: 固有スキルの強化段 (= ショップで Lv.1 → Lv.15。 Lv.1 は上の数値そのまま) ----
+// SPEC-123: 5 段 → 10 段。 SPEC-128: 10 段 → 15 段 (= カンストのハードルを上げる)。
+// Lv.5・Lv.10 の数値はそのまま、 Lv.11〜15 でもう一段伸ばす
+export const SIG_MAX_LEVEL = 15;
 export const SIG_MID_LEVEL = 5;
-/** 次の段の値段 (= Lv.2 〜 10。 ステージの倍率は掛けない。 持ち越すので早く買うほど得)。 後ろほど急に高い */
-export const SIG_UP_PRICE = [40, 100, 250, 500, 1000, 2000, 4000, 8000, 16000];
+export const SIG_HIGH_LEVEL = 10;
+/** 次の段の値段 (= Lv.2 〜 15。 ステージの倍率は掛けない)。 Lv.10 までは 1 段ごとに 2 倍、 その先は 1.5 倍 */
+export const SIG_UP_PRICE = [40, 100, 250, 500, 1000, 2000, 4000, 8000, 16000, 24000, 36000, 54000, 81000, 120000];
 
-/** Lv.1 → Lv.5 で a → b、 Lv.5 → Lv.10 で b → c に伸ばす */
-const lerp = (a, b, lv, c = b) => {
+/** Lv.1 → 5 → 10 → 15 で a → b → c → d に伸ばす (= 区切りごとにまっすぐ) */
+const lerp = (a, b, lv, c = b, d = c) => {
   const l = lv | 0;
   if (l <= SIG_MID_LEVEL) return a + (b - a) * clamp01((l - 1) / (SIG_MID_LEVEL - 1));
-  return b + (c - b) * clamp01((l - SIG_MID_LEVEL) / (SIG_MAX_LEVEL - SIG_MID_LEVEL));
+  if (l <= SIG_HIGH_LEVEL) return b + (c - b) * clamp01((l - SIG_MID_LEVEL) / (SIG_HIGH_LEVEL - SIG_MID_LEVEL));
+  return c + (d - c) * clamp01((l - SIG_HIGH_LEVEL) / (SIG_MAX_LEVEL - SIG_HIGH_LEVEL));
 };
 const r1 = (v) => Math.round(v * 100) / 100;
 
 /**
- * 強化段ごとの数値 (= SPEC-103 5 章の表 + SPEC-123)。 段 1 はいまの数値とまったく同じ
+ * 強化段ごとの数値 (= SPEC-103 5 章の表 + SPEC-123 + SPEC-128)。 段 1 はいまの数値とまったく同じ
  * @returns {object}
  */
 export function sigParams(kind, lv = 1) {
   switch (kind) {
-    case "cryptoSlash": return { dmgMul: r1(lerp(1, 3, lv, 5)), radius: Math.round(lerp(SLASH.radius, 230, lv, 300)) };
-    case "oneHole":     return { max: r1(lerp(ONE_HOLE.max, 3, lv, 4)) };
-    case "poisonMist":  return { dmgMul: r1(lerp(1, 3, lv, 5)), lifeS: r1(lerp(MIST.lifeS, 4, lv, 6)) };
-    case "langer":      return { max: r1(lerp(LANGER.max, 2.6, lv, 3.4)), range: Math.round(lerp(LANGER.range, 220, lv, 280)) };
-    case "teslaCoil":   return { hops: Math.round(lerp(TESLA.hops, 6, lv, 10)), everyS: r1(lerp(TESLA.everyS, 1.4, lv, 0.9)) };
-    case "tetractys":   return { every: lv >= 8 ? 2 : lv >= 3 ? 3 : TETRACTYS.every, steps: lv >= SIG_MAX_LEVEL ? 4 : lv >= SIG_MID_LEVEL ? 3 : TETRACTYS.steps };
-    case "tiger":       return { max: r1(lerp(TIGER.max, 2.2, lv, 3)) };
-    case "queenPirate": return { boostS: r1(lerp(PIRATE.boostS, 3, lv, 5)), pickup: r1(lerp(PIRATE.pickup, 2.2, lv, 3)) };
-    case "phantom":     return { uses: lv >= 8 ? 3 : lv >= 4 ? 2 : 1, iframeMs: Math.round(lerp(PHANTOM.iframeMs, 5000, lv, 8000)) };
-    case "uinyeo":      return { regenPerSec: r1(lerp(UINYEO.regenPerSec, 2, lv, 4)), healMul: r1(lerp(UINYEO.healMul, 3, lv, 5)) };
+    case "cryptoSlash": return { dmgMul: r1(lerp(1, 3, lv, 5, 7)), radius: Math.round(lerp(SLASH.radius, 230, lv, 300, 360)) };
+    case "oneHole":     return { max: r1(lerp(ONE_HOLE.max, 3, lv, 4, 5)) };
+    case "poisonMist":  return { dmgMul: r1(lerp(1, 3, lv, 5, 7)), lifeS: r1(lerp(MIST.lifeS, 4, lv, 6, 8)) };
+    case "langer":      return { max: r1(lerp(LANGER.max, 2.6, lv, 3.4, 4.2)), range: Math.round(lerp(LANGER.range, 220, lv, 280, 330)) };
+    case "teslaCoil":   return { hops: Math.round(lerp(TESLA.hops, 6, lv, 10, 14)), everyS: r1(lerp(TESLA.everyS, 1.4, lv, 0.9, 0.6)) };
+    case "tetractys":   return { every: lv >= 8 ? 2 : lv >= 3 ? 3 : TETRACTYS.every, steps: lv >= SIG_MAX_LEVEL ? 5 : lv >= SIG_HIGH_LEVEL ? 4 : lv >= SIG_MID_LEVEL ? 3 : TETRACTYS.steps };
+    case "tiger":       return { max: r1(lerp(TIGER.max, 2.2, lv, 3, 3.8)) };
+    case "queenPirate": return { boostS: r1(lerp(PIRATE.boostS, 3, lv, 5, 7)), pickup: r1(lerp(PIRATE.pickup, 2.2, lv, 3, 3.8)) };
+    case "phantom":     return { uses: lv >= 13 ? 4 : lv >= 8 ? 3 : lv >= 4 ? 2 : 1, iframeMs: Math.round(lerp(PHANTOM.iframeMs, 5000, lv, 8000, 10000)) };
+    case "uinyeo":      return { regenPerSec: r1(lerp(UINYEO.regenPerSec, 2, lv, 4, 6)), healMul: r1(lerp(UINYEO.healMul, 3, lv, 5, 7)) };
     default:            return {};
   }
+}
+
+/**
+ * SPEC-128: ステージの終わりに、 残った CE を固有スキルへ自動で振る (= CE は次のステージへ持ち越さない)。
+ * 段の値段に届くたびに上がり、 届かない端数は「次の段への積み立て」 (= invested) に残る。 最大の段なら振れない
+ * @returns {{ level:number, invested:number, spent:number, wasted:number }}
+ */
+export function pourCeIntoSig({ ce = 0, level = 1, invested = 0 } = {}, prices = SIG_UP_PRICE, max = SIG_MAX_LEVEL) {
+  let lv = Math.max(1, level | 0);
+  let inv = Math.max(0, invested);
+  let left = Math.max(0, Math.floor(ce));
+  let spent = 0;
+  while (lv < max && left > 0) {
+    const need = prices[lv - 1] - inv;
+    if (left >= need) { left -= need; spent += need; lv += 1; inv = 0; }
+    else { inv += left; spent += left; left = 0; }
+  }
+  return { level: lv, invested: lv >= max ? 0 : inv, spent, wasted: left };
 }
 
 /** ワンホールショット: その敵に当てた回数 → 倍率 */
