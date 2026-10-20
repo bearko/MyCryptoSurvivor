@@ -2,7 +2,7 @@
 id: SPEC-135
 title: Skill Tree Screen Split From MyCryptoWorkshop — 860px Breakpoint, 340px Side Panel on PC, Compact 46dvh Panel on Phones
 status: Done
-pr: TBD
+pr: 173
 phase: v1.6 Skill Tree
 kind: Changed
 ---
