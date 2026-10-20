@@ -69,6 +69,7 @@ export function perkBuffBase(p = NO_PERKS) {
     rangeMul:         1 + p.rangeMul,
     pickupMul:        1 + p.pickupMul,
     pierceBonus:      p.pierce,
+    ceGainMul:        1,   // SPEC-108: クラウン (= 拾う CE の倍率。 スキルツリーの「学びの速さ」とは別に掛かる)
   };
 }
 

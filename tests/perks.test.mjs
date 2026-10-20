@@ -87,7 +87,7 @@ test("定数の差し替え: state.perks が無ければ元のまま、 あれ�
 });
 
 test("強化の土台: 何も無ければ 0 / 1、 取っていればその倍率 (= 強化エクステンションはこれに掛かる)", () => {
-  assert.deepEqual(perkBuffBase(NO_PERKS), { hpMaxBonus: 0, regenPerSec: 0, speedMul: 1, cdMul: 1, dmgTakenMul: 1, dmgMul: 1, bulletCountBonus: 0, rangeMul: 1, pickupMul: 1, pierceBonus: 0 });
+  assert.deepEqual(perkBuffBase(NO_PERKS), { hpMaxBonus: 0, regenPerSec: 0, speedMul: 1, cdMul: 1, dmgTakenMul: 1, dmgMul: 1, bulletCountBonus: 0, rangeMul: 1, pickupMul: 1, pierceBonus: 0, ceGainMul: 1 });
   const b = perkBuffBase(computePerks(meta({ root: 1, atk_dmg: 2, atk_cd: 3, vit_regen: 2, atk_pierce: 1, atk_bullet: 1, cap_atk: 1 })));
   assert.deepEqual([b.dmgMul, b.cdMul, b.regenPerSec, b.pierceBonus, b.bulletCountBonus], [1.16, 0.94, 0.4, 1, 2]);
 });
