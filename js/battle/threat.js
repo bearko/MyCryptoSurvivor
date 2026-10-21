@@ -51,8 +51,8 @@ export const VARIANT_SPRITES = Object.freeze({
  * ステージ 1 の 1〜2 分で T1 (= 巨大・疾走) に入り、 初めての人が倒れていた (= 共通基盤の記録と自動プレイで確かめた)。
  * 2 回目からは今までどおり (= RTA・レギュレーション・総合スコアに効く難しさは変えない)
  */
-export function runThreatTier(kills, { firstRun = false } = {}) {
-  return firstRun ? 0 : threatTier(kills);
+export function runThreatTier(kills, { firstRun = false, easy = false } = {}) {
+  return firstRun || easy ? 0 : threatTier(kills);   // SPEC-147: EASY も T0 のまま
 }
 
 /** そのステージの撃破数 → 段階 (= 純関数) */

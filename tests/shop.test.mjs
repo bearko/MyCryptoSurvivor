@@ -19,7 +19,7 @@ test("ショップは既定で ON (= 2026-10-20 本番に適用)。 ?shop=0 か 
   assert.equal(isShopMode("", { getItem() { throw new Error("blocked"); } }), true);
   // SPEC-111: RTA でもショップ (= rtaMode で外さない)
   const idx = readFileSync(new URL("../js/battle/index.js", import.meta.url), "utf8");
-  assert.match(idx, /if \(isShopMode\(\) && !state\.run\?\.firstRun\) \{/);   // SPEC-146: 初めての挑戦はショップを出さない
+  assert.match(idx, /if \(isShopMode\(\)\) \{/);   // SPEC-147: ステージ 1 からショップ (= SPEC-146 の「初回はショップなし」は外した)
   assert.doesNotMatch(idx, /isShopMode\(\) && !state\.rtaMode/);
 });
 

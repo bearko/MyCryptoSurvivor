@@ -33,6 +33,8 @@ import {
   getPlayerName, setPlayerName, submitScore, getRankingApiUrl,
 } from "../ranking-client.js";
 import { markPlayed } from "../played.js";
+import { isEasy, markEasyCleared } from "../easy.js";   // SPEC-147
+import { showLesson } from "../lesson.js";   // SPEC-147
 
 let _wired = false;
 
@@ -54,13 +56,15 @@ function showLLUnlocked(extId) {
 
 export function triggerActivityReport() {
   pauseTime();
-  markPlayed();   // SPEC-088: 1 回遊び終えた (= 次から ABSOLUTE・RTA が選べる)
+  const easy = isEasy();   // SPEC-147: EASY は ABSOLUTE・RTA を開かず、 LL も共通基盤も送らない。 代わりに EASY クリアを覚える
+  if (!easy) markPlayed();   // SPEC-088: 1 回遊び終えた (= 次から ABSOLUTE・RTA が選べる)
+  if (easy) markEasyCleared();
   // SPEC-106: そのヒーローで全ステージをクリアした (= 初めてなら LL の解放を知らせる)
-  const llFirst = addHeroClear(state.ownedHero?.heroId) && !!getExt(HERO_STARTING_WEAPON[state.ownedHero?.heroId])?.ll;
+  const llFirst = !easy && addHeroClear(state.ownedHero?.heroId) && !!getExt(HERO_STARTING_WEAPON[state.ownedHero?.heroId])?.ll;
   _rewards = { ...grantRunRewards(true, { gumMul: perk("gumMul") }), dust: runDust() };   // SPEC-090: 全クリアの GUM (+ SPEC-090c 金勘定)
   // SPEC-041: 共通基盤の総合スコア (= 全クリア)
   state.run.scoreSent = true;
-  reportRunScore(scoreMetrics({
+  if (!easy) reportRunScore(scoreMetrics({
     run: state.run, cleared: true, reportScore: computeScore(state.run),
     regulation: state.regulation, absolute: state.absolute,   // SPEC-051: 倍率は共通基盤が計算する
   }));
@@ -84,6 +88,7 @@ export function triggerActivityReport() {
       renderRewards(document.getElementById("activityReportRewards"), _rewards ?? {}, { delayMs: 900 });   // SPEC-090
       renderGumBreakdown(document.getElementById("activityReportGum"), _rewards);   // SPEC-136
       if (llFirst) showLLUnlocked(HERO_STARTING_WEAPON[state.ownedHero?.heroId]);   // SPEC-106
+      if (easy) showLesson("s3.clear");   // SPEC-147
     },
   });
 }
@@ -93,6 +98,14 @@ function _wireOnce() {
   _wired = true;
   document.getElementById("activityReportRetry")
     ?.addEventListener("click", _onRetryClick);
+  // SPEC-147: EASY をクリアしたら NORMAL へ (= タイトルを通さずにモード選択へ)
+  document.getElementById("activityReportToNormal")
+    ?.addEventListener("click", async () => {
+      document.getElementById("activityReportModal")?.classList.add("hidden");
+      await returnToTitle({ navi: false });
+      const m = await import("../main.js");
+      m.openModeSelectFromTitle?.();
+    });
   // SPEC-052: タイトルに戻る (= ゲームオーバーと同じ処理)
   document.getElementById("activityReportToTitle")
     ?.addEventListener("click", () => {
@@ -200,7 +213,11 @@ function _renderReport() {
 
   // タイトル
   const titleEl = document.getElementById("activityReportTitle");
-  if (titleEl) titleEl.textContent = t("report.title", "活動レポート");
+  if (titleEl) titleEl.textContent = isEasy() ? t("report.easyTitle", "EASY クリア！") : t("report.title", "活動レポート");
+  // SPEC-147: EASY は「NORMAL に挑む」を一番上に。 ランキングは送らない (= 短いステージの点なので)
+  const toNormal = document.getElementById("activityReportToNormal");
+  if (toNormal) { toNormal.classList.toggle("hidden", !isEasy()); toNormal.textContent = t("report.toNormal", "NORMAL に挑む ▶"); }
+  document.querySelector("#activityReportModal .gameover-modal__form")?.classList.toggle("hidden", isEasy());
 
   // SPEC-038: ヒーローはアイコン + 名前で大きく表示
   const heroEl = document.getElementById("activityReportHero");

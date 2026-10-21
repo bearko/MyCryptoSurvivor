@@ -33,6 +33,11 @@ test("storage が無い・投げるときは、 ロックされたまま (= 何�
 test("初プレイは ABSOLUTE と RTA がロック。 NORMAL はいつでも", () => {
   assert.deepEqual(lockedModes(false), ["ABSOLUTE", "RTA"]);
   assert.deepEqual(lockedModes(true), []);
+  // SPEC-147: NORMAL は EASY をクリアするまで (= 前から遊んでいる人は開いている)
+  assert.deepEqual(lockedModes(false, false), ["NORMAL", "ABSOLUTE", "RTA"]);
+  assert.deepEqual(lockedModes(true, false), []);
+  assert.equal(isModeLocked("NORMAL", false, false), true);
+  assert.equal(isModeLocked("NORMAL", false, true), false);
   assert.deepEqual([...LOCKED_UNTIL_PLAYED], ["ABSOLUTE", "RTA"]);
   assert.equal(isModeLocked("NORMAL", false), false);
   assert.equal(isModeLocked("ABSOLUTE", false), true);
@@ -45,14 +50,15 @@ test("終えたときに記録する (= ゲームオーバーと活動レポー�
   const read = (p) => readFileSync(new URL(p, import.meta.url), "utf8");
   assert.match(read("../js/battle/gameover.js"), /markPlayed\(\)/, "ゲームオーバーで記録");
   assert.match(read("../js/battle/activity-report.js"), /markPlayed\(\)/, "全クリアで記録");
-  assert.match(read("../js/mode-select.js"), /isModeLocked\(rta \? "RTA" : regulation, hasPlayed\(\)\)/, "選ぶところでも止める");
+  assert.match(read("../js/mode-select.js"), /isModeLocked\(rta \? "RTA" : regulation, hasPlayed\(\), hasClearedEasy\(\)\)/, "選ぶところでも止める (= SPEC-147: EASY のクリアも見る)");
   const html = read("../index.html");
   for (const [cardId, lockId] of [["modeCardAbsolute", "modeCardAbsoluteLock"], ["modeCardRta", "modeCardRtaLock"]]) {
     const start = html.indexOf(`id="${cardId}"`), end = html.indexOf("</article>", start);
     assert.ok(start > 0 && end > start);
     assert.ok(html.slice(start, end).includes(`id="${lockId}"`), `${lockId} は ${cardId} の中`);
   }
-  assert.ok(!html.slice(html.indexOf('id="modeCardNormal"'), html.indexOf("</article>", html.indexOf('id="modeCardNormal"'))).includes("mode-card__lock"), "NORMAL にロックの行は無い");
+  // SPEC-147: NORMAL にも EASY のロックの行 (= 文は別)
+  assert.ok(html.slice(html.indexOf('id="modeCardNormal"'), html.indexOf("</article>", html.indexOf('id="modeCardNormal"'))).includes('id="modeCardNormalLock"'), "NORMAL のロックの行は EASY のもの");
   const ui = JSON.parse(read("../data/i18n/ui.json"));
   assert.ok(ui["mode.locked"]?.ja && ui["mode.locked"]?.en);
   assert.match(ui["mode.locked"].ja, /NORMAL を 1 回/);

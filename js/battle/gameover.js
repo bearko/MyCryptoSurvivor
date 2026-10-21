@@ -28,6 +28,10 @@ import { grantRunRewards, runDust, getMeta } from "../meta.js";
 import { renderRewards, renderGumBreakdown } from "../meta-ui.js";
 import { perk } from "../perks.js";   // SPEC-090c
 import { markPlayed } from "../played.js";
+import { isEasy } from "../easy.js";   // SPEC-147
+import { showLesson } from "../lesson.js";   // SPEC-147
+import { owns } from "../skill-logic.js";   // SPEC-147
+import { ROOT_ID } from "../skill-data.js";   // SPEC-147
 
 let _wired = false;
 let _loseN = Math.floor(Math.random() * 3);   // SPEC-116: 倒れたときのひとことの順番 (= 続けて同じにしない)
@@ -40,13 +44,13 @@ let _loseN = Math.floor(Math.random() * 3);   // SPEC-116: 倒れたときのひ
 export function triggerGameOver(reason = "lose") {
   if (state.battle.gameOver) return;
   state.battle.gameOver = true;
-  markPlayed();   // SPEC-088: 1 回遊び終えた (= 次から ABSOLUTE・RTA が選べる)
+  if (!isEasy()) markPlayed();   // SPEC-088: 1 回遊び終えた (= 次から ABSOLUTE・RTA が選べる)。 SPEC-147: EASY では開かない
   // SPEC-040: 倒れたら RTA の計測は中断 (= 再走は startBattle で新しい計測になる)。
   // "clear" は最後の区切りを送ったあとなので触らない
   if (reason !== "clear") abortRtaRun();
   // SPEC-041: 共通基盤の総合スコア (= 倒れるまでに終えたステージの節目の点)
   if (reason !== "clear") state.run.scoreSent = true;
-  if (reason !== "clear") reportRunScore(scoreMetrics({ run: state.run, cleared: false, regulation: state.regulation, absolute: state.absolute }));
+  if (reason !== "clear" && !isEasy()) reportRunScore(scoreMetrics({ run: state.run, cleared: false, regulation: state.regulation, absolute: state.absolute }));   // SPEC-147: EASY は送らない
   state.lastRunStats = {
     elapsed: state.elapsedTicks,
     level:   state.level,
@@ -98,6 +102,7 @@ export function triggerGameOver(reason = "lose") {
 function sayOnLose(reason, modal) {
   modal?.classList.remove("gameover-modal--navi");
   if (reason === "clear" || state.rtaMode) return;
+  if (isEasy()) { showLesson("s3.lose"); return; }   // SPEC-147: 説明はレッスンで
   const guide = treeNudge(getMeta());
   if (!guide) _loseN += 1;
   modal?.classList.add("gameover-modal--navi");
@@ -113,6 +118,7 @@ export function retryLabel() {
 export function onBackFromTree({ bought = 0 } = {}) {
   const modal = document.getElementById("gameOverModal");
   if (!modal || modal.classList.contains("hidden") || state.rtaMode) return;
+  easyRetryGate();   // SPEC-147: 根を取ったら「もう一度挑む」が出る
   const btn = document.getElementById("gameOverRetry");
   btn?.classList.remove("gameover-modal__again--pulse"); void btn?.offsetWidth;
   btn?.classList.add("gameover-modal__again--pulse");
@@ -243,9 +249,19 @@ function _heroName() {
   return n?.ja ?? n?.en ?? null;
 }
 
+/** SPEC-147: EASY で倒れたら、 根 (= 覚醒) を取るまで「もう一度挑む」を出さず、 スキルツリーへ誘う */
+export function easyRetryGate() {
+  const again = document.getElementById("gameOverRetry");
+  const tree = document.getElementById("gameOverSkillTree");
+  const gate = isEasy() && !owns(getMeta(), ROOT_ID);
+  again?.classList.toggle("hidden", gate);
+  tree?.classList.toggle("gameover-modal__again--pulse", gate);
+}
+
 function _renderGameOverModal() {
   const again = document.getElementById("gameOverRetry");
   if (again) again.textContent = retryLabel();   // SPEC-146
+  easyRetryGate();   // SPEC-147
   const stats = state.lastRunStats;
   if (!stats) return;
   // SPEC-027: ボス撃破 / 5 分耐久 はクリア表記、 死亡は従来通りゲームオーバー

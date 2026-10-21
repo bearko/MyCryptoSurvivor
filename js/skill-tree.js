@@ -8,6 +8,8 @@
 // 入口: タイトルの「スキルツリー」(= 1 回も遊んでいなければ出さない) と、 結果の画面の「スキルツリーへ」。
 
 import { richNode } from "./rich-text.js";   // SPEC-144
+import { isEasy } from "./easy.js";   // SPEC-147
+import { showLesson } from "./lesson.js";   // SPEC-147
 import { getMeta, onMetaChange, spend, setNodeRank, resetNodes } from "./meta.js";
 import { ROUTES, ROUTE_MAP, NODE_MAP, TREE_NODES, ROOT_ID, CAPSTONE_NEED, nodePos, routeLabelPos } from "./skill-data.js";
 import { getUnlockedHeroes, unlockOf, GAME_TITLES } from "./hero-unlock.js";   // SPEC-133: ヒーローの条件
@@ -766,6 +768,7 @@ function unlock(n) {
   if (!spend(r.cost)) return;
   setNodeRank(n.id, r.rank);
   _bought += 1;   // SPEC-146
+  if (n.kind === "root" && isEasy()) showLesson("s3.root");   // SPEC-147: 覚醒
   const burst = n.kind === "root";
   playSe(SFX.LEVEL_UP, 0, 0.6);
   notice(r.rank > 1 ? tpl(t("tree.upgraded", "「{name}」Lv {lv}！"), { name: nameOf(n), lv: r.rank }) : tpl(t("tree.bought", "「{name}」を解放！"), { name: nameOf(n) }), "good");

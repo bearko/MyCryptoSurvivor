@@ -27,6 +27,8 @@ import { roundTo5 } from "./shop-logic.js";
 import { naviTipModal } from "../navi-tips.js";   // SPEC-137: 初めてのミッションでマインちゃんが説明
 import { naviHide } from "../navi.js";
 import { setRichText } from "../rich-text.js";   // SPEC-144
+import { easyStage, isEasy } from "../easy.js";   // SPEC-147
+import { showLesson } from "../lesson.js";   // SPEC-147
 
 // ============================================================
 // 純関数 (= tests/missions.test.mjs)
@@ -240,6 +242,15 @@ export function tickMissions() {
     return;
   }
 
+  // SPEC-147: EASY は決まった時刻に 1 回だけ (= ステージ 2。 ★1・短め)。 ほかのステージでは出さない
+  const ez = easyStage();
+  if (ez) {
+    if (ez.missionAtMs != null && !m.easyDone && now >= ez.missionAtMs && !b.bossSpawned) {
+      m.easyDone = true;
+      _openOffer(MISSION_MAP.alexander, { star: 1, durS: ez.missionDurS ?? 20 });
+    }
+    return;
+  }
   // 新しいウェーブ (= 店を出た) になったら、 このウェーブで持ちかけるかを決める
   if (m.wave !== s.nextIdx) {
     m.wave = s.nextIdx;
@@ -256,26 +267,30 @@ export function tickMissions() {
 
 let _star = 1;   // SPEC-137: 持ちかけで選んでいる★
 
-function _openOffer(mission) {
+let _forced = null;   // SPEC-147: EASY は ★と秒を決め打ち (= { star, durS })
+
+function _openOffer(mission, forced = null) {
   if (!mission || _offer) return;
   _offer = mission;
-  _star = loadStar();
+  _forced = forced;
+  _star = forced?.star ?? loadStar();
   _wireOnce();
   pauseTime();
   _renderOffer();
   document.getElementById("missionOffer")?.classList.remove("hidden");
   playSe(SFX.GIMMICK_WARN, 100, 0.5);
   // SPEC-137: 初めてのミッションだけ、 マインちゃんが受け方と★を説明する (= 画面の下の通信の帯)
-  _naviShown = naviTipModal("mission.offer", [
+  _naviShown = isEasy() ? false : naviTipModal("mission.offer", [
     { key: "navi.mission.1", pose: "pointer" },
     { key: "navi.mission.2", pose: "wink" },
   ]);
+  if (isEasy()) showLesson("s2.mission");   // SPEC-147: 説明はレッスンで (= 上に重なる)
 }
 let _naviShown = false;
 
 /** SPEC-137: ★を選ぶ (= 1・2・3 のキーでも)。 覚えておく */
 export function pickStar(star) {
-  if (!_offer) return;
+  if (!_offer || _forced) return;
   _star = clampStar(star);
   saveStar(_star);
   _renderOffer();
@@ -289,7 +304,7 @@ export function acceptMission() {
   const m = state.mission;
   m.count += 1;
   m.prevId = mission.id;
-  const tier = tierOf(mission, _star);
+  const tier = { ...tierOf(mission, _star), ...(_forced?.durS ? { durS: _forced.durS } : {}) };
   m.active = { id: mission.id, star: _star, untilMs: (state.battle.stageElapsedMs ?? 0) + tier.durS * 1000, durS: tier.durS, startKills: state.killCount, hit: false };
   _closeOffer();
   _renderBar();
@@ -335,6 +350,7 @@ function _openReward(mission, star = 1) {
   if (!mission || _reward) return;
   _reward = mission;
   _rewardStar = clampStar(star);
+  if (isEasy()) showLesson("s2.reward");   // SPEC-147
   _wireOnce();
   pauseTime();
   _renderReward();
@@ -440,6 +456,7 @@ function _renderOffer() {
   if (w) w.dataset.star = String(star);
   set("missionOfferWeight", "★".repeat(star));
   for (const btn of document.querySelectorAll("#missionOfferStars [data-star]")) {
+    btn.disabled = !!_forced;   // SPEC-147: EASY は★を選ばせない
     const on = Number(btn.dataset.star) === star;
     btn.setAttribute("aria-checked", on ? "true" : "false");
     btn.classList.toggle("is-on", on);
@@ -462,7 +479,7 @@ function _renderBar() {
   const remain = Math.max(0, a.untilMs - (state.battle.stageElapsedMs ?? 0));
   const sec = Math.ceil(remain / 1000);
   const kills = state.killCount - a.startKills;
-  const tier = tierOf(mission, a.star);
+  const tier = { ...tierOf(mission, a.star), durS: a.durS ?? tierOf(mission, a.star).durS };
   const key = `${a.id}|${a.star}|${sec}|${tier.goal?.kills ? kills : ""}|${a.hit}|${Math.round((remain / (tier.durS * 1000)) * 100)}`;
   if (key === _barKey) return;
   _barKey = key;

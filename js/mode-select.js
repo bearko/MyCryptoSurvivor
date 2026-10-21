@@ -19,6 +19,7 @@ import { playWipe } from "./transition.js";
 import { naviTitle } from "./navi.js";
 import { startTitleBgm } from "./ui-sound.js";
 import { hasPlayed, isModeLocked } from "./played.js";
+import { hasClearedEasy } from "./easy.js";   // SPEC-147
 
 let _wired   = false;
 let _onPick  = null;   // (regulation) => void、 hero select に進む callback
@@ -45,16 +46,22 @@ export function showModeSelect() {
 
 /** SPEC-088: ロックの札。 カードは見せたまま薄くし、 ボタン・スライダー・リンクを押せなくして、 開く条件を 1 行 */
 const _LOCKABLE = [
+  { mode: "NORMAL",   cardId: "modeCardNormal",   lockId: "modeCardNormalLock" },   // SPEC-147: EASY をクリアするまで
   { mode: "ABSOLUTE", cardId: "modeCardAbsolute", lockId: "modeCardAbsoluteLock" },
   { mode: "RTA",      cardId: "modeCardRta",      lockId: "modeCardRtaLock" },
 ];
 
 function _applyLocks() {
   const played = hasPlayed();
+  const easyCleared = hasClearedEasy();
+  // SPEC-147: EASY の札 (= 初めての人には光らせる。 クリア済みなら印)
+  const easyCard = _$("modeCardEasy");
+  easyCard?.classList.toggle("mode-card--recommend", !played && !easyCleared);
+  _$("modeCardEasyDone")?.classList.toggle("hidden", !easyCleared);
   for (const { mode, cardId, lockId } of _LOCKABLE) {
     const card = _$(cardId);
     if (!card) continue;
-    const locked = isModeLocked(mode, played);
+    const locked = isModeLocked(mode, played, easyCleared);
     card.classList.toggle("mode-card--locked", locked);
     card.setAttribute("aria-disabled", String(locked));
     card.querySelectorAll("button, input").forEach((el) => { el.disabled = locked; });
@@ -74,6 +81,7 @@ function _wireOnce() {
   if (_wired) return;
   _wired = true;
 
+  _$("btnModeEasy")?.addEventListener("click", () => _pick(REGULATION_NORMAL, { easy: true }));   // SPEC-147
   _$("btnModeNormal")?.addEventListener("click", () => _pick(REGULATION_NORMAL));
   _$("btnModeAbsolute")?.addEventListener("click", () => _pick(REGULATION_ABSOLUTE));
   // SPEC-040: RTA は NORMAL のルール + rtaMode
@@ -98,11 +106,12 @@ function _wireOnce() {
   });
 }
 
-function _pick(regulation, { rta = false, absolute = null } = {}) {
-  // SPEC-088: 初プレイは NORMAL だけ (= ボタンは disabled にしてあるが、 ここでも止める)
-  if (isModeLocked(rta ? "RTA" : regulation, hasPlayed())) return;
+function _pick(regulation, { rta = false, absolute = null, easy = false } = {}) {
+  // SPEC-088: 初プレイは NORMAL だけ (= ボタンは disabled にしてあるが、 ここでも止める)。 SPEC-147: NORMAL は EASY のあと
+  if (!easy && isModeLocked(rta ? "RTA" : regulation, hasPlayed(), hasClearedEasy())) return;
   state.regulation = regulation;
   state.rtaMode = rta;
+  state.easyMode = !!easy;   // SPEC-147
   if (regulation === REGULATION_NORMAL) {
     state.absolute = { spawnMul: 1, hpMul: 1, dmgMul: 1, speedMul: 1 };
   } else if (absolute) {
@@ -160,6 +169,12 @@ function _renderLabels() {
   const ti = _$("modeSelectTitle"); if (ti) ti.textContent = t("mode.title", "ゲームモード");
   const sb = _$("modeSelectSub");   if (sb) sb.textContent = t("mode.sub",   "難易度を選んで進む");
   const nd = _$("modeCardNormalDesc"); if (nd) nd.textContent = t("mode.normalDesc", "通常のバランス。 全 4 軸が 1.0×。 スコア倍率 1.00。");
+  // SPEC-147: EASY
+  const ed = _$("modeCardEasyDesc"); if (ed) ed.textContent = t("mode.easyDesc", "短い 3 ステージで、 遊び方をマインちゃんが案内。 クリアは 1 回でよい。");
+  const em = _$("modeCardEasyMul");  if (em) em.textContent = t("mode.easyMul", "案内つき");
+  const eo = _$("modeCardEasyDone"); if (eo) eo.textContent = t("mode.easyDone", "✓ クリア済み");
+  const bE = _$("btnModeEasy");      if (bE) bE.textContent = t("mode.startEasy", "EASY で始める");
+  const nl = _$("modeCardNormalLock"); if (nl) nl.textContent = t("mode.lockedNormal", "🔒 EASY をクリアすると選べるようになる");
   const ad = _$("modeCardAbsoluteDesc"); if (ad) ad.textContent = t("mode.absoluteDesc", "難易度を 4 軸で自分でチューニング。 きつくするほどスコア倍率 UP、 楽にすると DOWN。");
   const bN = _$("btnModeNormal");    if (bN) bN.textContent = t("mode.startNormal", "これで始める");
   const bA = _$("btnModeAbsolute");  if (bA) bA.textContent = t("mode.startAbsolute", "これで始める");
@@ -171,7 +186,7 @@ function _renderLabels() {
   const bRA = _$("btnModeRtaAbs");     if (bRA) bRA.textContent = t("mode.startRtaAbs", "ABSOLUTE ×2.0 で RTA");
   const rlA = _$("modeRtaRankingAbs"); if (rlA) rlA.textContent = t("mode.rtaRankingAbs", "RTA ランキング（ABSOLUTE ×2.0）");
   // SPEC-088: ロックの 1 行 (= ABSOLUTE と RTA で同じ文)
-  document.querySelectorAll(".mode-card__lock").forEach((el) => {
+  document.querySelectorAll(".mode-card__lock:not(.mode-card__lock--easy)").forEach((el) => {
     el.textContent = t("mode.locked", "🔒 NORMAL を 1 回遊ぶと選べるようになる");
   });
   // slider のラベル

@@ -6,12 +6,13 @@
 // - ボス戦: 枠の外を暗くし、 枠の縁を赤く光らせる (= 閉じてくる動きもこの縁で見える)
 
 import { state } from "../state.js";
-import { BOSS_SPAWN_AT_MS, BOSS_WARNING_LEAD_MS, ENEMY_SPECS, STAGE_TABLE, BOSS_CHAR_SCALE } from "../constants.js";
+import { ENEMY_SPECS, STAGE_TABLE, BOSS_CHAR_SCALE } from "../constants.js";
+import { bossSpawnAtMs, bossWarnLeadMs } from "../easy.js";   // SPEC-147: EASY は短い
 import { ARENA, BOSS_SPAWN_POS, currentBounds } from "./arena.js";
 
 /** 予告のあいだか (= 純関数) */
-export function bossMarkerActive(elapsedMs, bossSpawned) {
-  return !bossSpawned && elapsedMs >= BOSS_SPAWN_AT_MS - BOSS_WARNING_LEAD_MS && elapsedMs < BOSS_SPAWN_AT_MS;
+export function bossMarkerActive(elapsedMs, bossSpawned, bossAt = bossSpawnAtMs(), lead = bossWarnLeadMs()) {
+  return !bossSpawned && elapsedMs >= bossAt - lead && elapsedMs < bossAt;
 }
 
 function _bossRadius() {
