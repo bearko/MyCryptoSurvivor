@@ -250,7 +250,11 @@ export function buyOffer(extId) {
   else if (price === 0) s.gifts -= giftCost(offer) ?? 1;   // SPEC-127: 段で枚数が変わる
   else s.ce -= price;
   grantPick(extId);
-  o.sold = true;
+  // SPEC-163: 同じ札を続けて買える (= 買っても札は残り、 次の段の値段になる)。 15 段を 1 回の店で何段も登れる。
+  //   もう上がらない (= 最大・LL のあと) なら売り切れ。 セールは 1 回だけ
+  o.sale = false;
+  o.sold = !offerFor(extId, new Set(s.bans));
+  o.bought = (o.bought | 0) + 1;
   s.locked = s.locked.filter((id) => String(id) !== String(extId));
   s.purchases += 1;
   _boughtHere += 1;

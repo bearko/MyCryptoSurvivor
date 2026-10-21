@@ -23,7 +23,7 @@ export const EASY_HERO_MUL = 0.6;
  *   bossAtMs / warnMs : ボスが出る時刻と、 その前の予告
  *   shopTimesMs       : 店が開く時刻 (= SPEC-152: 開幕の店は出さない。 CE は持ち越さないので選べるものが無い)
  *   spawnIntervalMs   : 雑魚の湧きの間隔 (= flood・density・寄せ直しは使わない)
- *   enemyHpMul / enemyDmgMul / bossHpMul / bossDmgMul (= NORMAL のボスは Lv.40 向けなので、 EASY では HP を大きく下げる)
+ *   enemyHpMul / enemyDmgMul / bossHpMul / bossDmgMul (= NORMAL のボスは育った装備向けなので、 EASY では HP を大きく下げる。 SPEC-163: ステージ 1 は 12,000 × 0.015 = 180、 ステージ 2 は 45,000 × 0.032 = 1,440 で、 SPEC-154 のときと同じ)
  *   chestTimesMs      : 宝箱
  *   rareAtMs          : レアエネミーを必ず出す時刻 (= null なら出さない)
  *   missionAtMs       : ミッションを必ず持ちかける時刻 (= ★1・durS)
@@ -31,9 +31,10 @@ export const EASY_HERO_MUL = 0.6;
  */
 export const EASY_STAGES = Object.freeze([
   // SPEC-149: 敵の数は 1/3 (= 湧きの間隔 ×3)。 ステージ 1 は動かなくても倒れない
-  { bossAtMs: 15000, warnMs: 4000,  shopTimesMs: [10000],  spawnIntervalMs: 960, enemyHpMul: 0.5, enemyDmgMul: 0.25, bossHpMul: 0.003, bossDmgMul: 0.25, chestTimesMs: [5000],  rareAtMs: null, missionAtMs: null, thunderAtBoss: false },
+  { bossAtMs: 15000, warnMs: 4000,  shopTimesMs: [10000],  spawnIntervalMs: 960, enemyHpMul: 0.5, enemyDmgMul: 0.25, bossHpMul: 0.015, bossDmgMul: 0.25, chestTimesMs: [5000],  rareAtMs: null, missionAtMs: null, thunderAtBoss: false },
   // SPEC-154: EASY は 2 ステージ。 ステージ 2 は負ける設計 (= 根を取ってから復活して勝つ)。 レアとミッションもここで必ず体験する
-  { bossAtMs: 30000, warnMs: 5000,  shopTimesMs: [15000],  spawnIntervalMs: 570, enemyHpMul: 1.6, enemyDmgMul: 2.2,  bossHpMul: 0.016, bossDmgMul: 0.7,  chestTimesMs: [10000], rareAtMs: 5000, missionAtMs: 8000, missionDurS: 15, thunderAtBoss: true },
+  //   SPEC-163: 攻撃 ×2.2 → ×1.7・ボスの攻撃 ×0.7 → ×0.6 (= 不慣れな人 (K 0.5) が根を取っても倒れていた。 根なしはそれでも倒れる)
+  { bossAtMs: 30000, warnMs: 5000,  shopTimesMs: [15000],  spawnIntervalMs: 570, enemyHpMul: 1.6, enemyDmgMul: 1.7,  bossHpMul: 0.032, bossDmgMul: 0.6,  chestTimesMs: [10000], rareAtMs: 5000, missionAtMs: 8000, missionDurS: 15, thunderAtBoss: true },
 ]);
 
 /** レッスンの番号 (= 出す順。 文は data/i18n/ui.json の lesson.<番号>、 ボイスは lesson.<番号>) */

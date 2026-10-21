@@ -44,10 +44,10 @@ test("店の時刻: ステージ 1 は 0:10 から、 ステージ 2・3 は開�
 
 test("値段は行き先の段で上がり、 ステージで ×1.8・×2.6 (= 5 の倍数)", () => {
   // SPEC-162: 15 段 (= Lv10 まで合計 3,555・Lv15 まで 24,555)
-  assert.deepEqual([1, 2, 3, 4, 5, 10, 15].map((nextLevel) => shopPrice({ nextLevel })), [15, 25, 40, 80, 150, 1400, 7000]);
+  assert.deepEqual([1, 2, 3, 4, 5, 10, 15].map((nextLevel) => shopPrice({ nextLevel })), [15, 20, 30, 50, 90, 800, 3300]);   // SPEC-163
   assert.equal(shopPrice({ nextLevel: 16, isLL: true }), 20000);
   assert.equal(shopPrice({ nextLevel: 1 }, 1), 25);   // 15 × 1.8 = 27 → 25
-  assert.equal(shopPrice({ nextLevel: 15 }, 2), 18200);  // 7000 × 2.6
+  assert.equal(shopPrice({ nextLevel: 15 }, 2), 8580);  // 3300 × 2.6
   for (const st of [0, 1, 2]) for (let lv = 1; lv <= 15; lv++) assert.equal(shopPrice({ nextLevel: lv }, st) % 5, 0);
   // 上の段ほど高い
   for (const st of [0, 1, 2]) for (let lv = 1; lv < 15; lv++) assert.ok(shopPrice({ nextLevel: lv + 1 }, st) > shopPrice({ nextLevel: lv }, st));
@@ -55,10 +55,10 @@ test("値段は行き先の段で上がり、 ステージで ×1.8・×2.6 (= 5
 });
 
 test("黒髭はランクアップ 2 割引・新しい品 2 割増し、 マルコ・ポーロのセールは半額", () => {
-  assert.equal(shopPrice({ nextLevel: 10, isNew: false }, 0, "pirate"), 1120);   // 1400 × 0.8 (= SPEC-162)
+  assert.equal(shopPrice({ nextLevel: 10, isNew: false }, 0, "pirate"), 640);   // 800 × 0.8 (= SPEC-163)
   assert.equal(shopPrice({ nextLevel: 1, isNew: true }, 0, "pirate"), 20);    // 15 × 1.2 = 18 → 20
-  assert.equal(shopPrice({ nextLevel: 10 }, 0, "sale", true), 700);
-  assert.equal(shopPrice({ nextLevel: 10 }, 0, "sale", false), 1400);
+  assert.equal(shopPrice({ nextLevel: 10 }, 0, "sale", true), 400);
+  assert.equal(shopPrice({ nextLevel: 10 }, 0, "sale", false), 800);
 });
 
 test("SPEC-127: ギフト券の枚数は段で傾斜 (= LL は券では買えない)", () => {

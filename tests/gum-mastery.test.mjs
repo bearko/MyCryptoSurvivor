@@ -39,7 +39,7 @@ test("SPEC-139: 仕込みのぶんは値段とギフト券の枚数に入れな�
   const { giftCost } = await import("../js/battle/shop-logic.js");
   assert.equal(shopPrice({ nextLevel: 3, priceLevel: 1 }, 0), 15);
   assert.equal(giftCost({ nextLevel: 3, priceLevel: 1 }), 1);
-  assert.equal(shopPrice({ nextLevel: 3 }, 0), 40, "priceLevel が無ければ今までどおり (= SPEC-162 の表)");
+  assert.equal(shopPrice({ nextLevel: 3 }, 0), 30, "priceLevel が無ければ今までどおり (= SPEC-163 の表)");
   const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), "utf8");
   assert.match(read("js/battle/levelup.js"), /const bonus = owned \? 0 : startLevelBonus\(extId\)/);
   assert.match(read("js/battle/levelup.js"), /Math\.random\(\) < mainWeaponChance\(\)/);
@@ -47,8 +47,8 @@ test("SPEC-139: 仕込みのぶんは値段とギフト券の枚数に入れな�
 });
 
 test("値引きはショップの値段に掛かる (= 5 の倍数に丸める)", () => {
-  assert.equal(shopPrice({ nextLevel: 10 }, 0, null, false, 0.3), 980);   // 1400 × 0.7 (= SPEC-162)
-  assert.equal(shopPrice({ nextLevel: 10 }, 0, null, false, 0), 1400);
+  assert.equal(shopPrice({ nextLevel: 10 }, 0, null, false, 0.3), 560);   // 800 × 0.7 (= SPEC-163)
+  assert.equal(shopPrice({ nextLevel: 10 }, 0, null, false, 0), 800);
 });
 
 test("つなぎ: 武器ごとの威力・強化の値引き・ミッションの GUM", () => {

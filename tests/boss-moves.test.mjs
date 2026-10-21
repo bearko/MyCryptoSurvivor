@@ -34,7 +34,7 @@ test("どのステージのボスにも型があり、 HP は強くなる", () =
   for (const s of STAGE_TABLE) {
     const def = BOSS_MOVES[s.bossEnemyId];
     assert.ok(def, `boss ${s.bossEnemyId}`);
-    assert.ok(def.hpMul > 1);
+    assert.ok(def.hpMul >= 1);   // SPEC-163: 最終値は ENEMY_SPECS に書き、 倍率は 1
     assert.ok(def.moves.charge > 0, "どのボスも突進する");
     assert.ok(Object.keys(def.moves).length >= 2, "型は 2 つ以上");
     for (const k of Object.keys(def.moves)) assert.ok(MOVE_ORDER.includes(k));

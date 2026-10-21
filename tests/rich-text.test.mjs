@@ -20,9 +20,9 @@ test("数字 (= 符号・単位つき) ・用語・「」の中を切り分け�
 });
 
 test("得意武器は確率 (= 段 × 20%) で書く", () => {
-  assert.equal(MAIN_CHANCE_PER_RANK, 0.2);
-  assert.match(NODE_MAP.wm_main.desc.ja, /確率 20%（段ごとに ＋20%。 最大 60%）/);
-  assert.deepEqual([1, 2, 3].map((r) => formatStat("main", r)), ["20%", "40%", "60%"]);
+  assert.equal(MAIN_CHANCE_PER_RANK, 0.15);   // SPEC-163: 土台 50% に足す
+  assert.match(NODE_MAP.wm_main.desc.ja, /確率 50% → 65%（段ごとに ＋15%。 最大 95%）/);   // SPEC-163
+  assert.deepEqual([1, 2, 3].map((r) => formatStat("main", r)), ["65%", "80%", "95%"]);
   const lv = readFileSync(new URL("../js/battle/levelup.js", import.meta.url), "utf8");
   assert.match(lv, /\[mainE, \.\.\.pickFromPool\(eligible\.filter\(\(e\) => e !== mainE\), n - 1/);
 });

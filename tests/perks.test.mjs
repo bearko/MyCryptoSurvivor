@@ -26,9 +26,9 @@ const meta = (nodes) => ({ gum: 0, dust: 0, nodes });
 test("何も取っていなければ全部 0。 段 × fx を足し、 値を置くものは置く", () => {
   assert.deepEqual(computePerks(meta({})), { ...NO_PERKS });
   const p = computePerks(meta({ root: 1, vit_hp: 3, vit_armor: 2, atk_cd: 5, vit_pancake: 1, cap_vit: 1, trs_rare: 1, grw_reroll: 2 }));
-  assert.equal(p.hpMul, 0.12 + 0.20, "頑丈なからだ 3 段 ＋ 鉄壁");
-  assert.equal(p.dmgTakenMul, -0.06 - 0.10, "厚い皮 2 段 ＋ 鉄壁");
-  assert.equal(p.cdMul, -0.1);
+  assert.equal(p.hpMul, 0.18 + 0.20, "頑丈なからだ 3 段 ＋ 鉄壁 (= SPEC-163: 6%/段)");
+  assert.equal(p.dmgTakenMul, -0.08 - 0.10, "厚い皮 2 段 ＋ 鉄壁 (= SPEC-163: 4%/段)");
+  assert.equal(p.cdMul, -0.15);
   assert.equal(p.pancakeHeal, 0.4, "置く");
   assert.equal(p.rareIntervalSec, 45, "置く");
   assert.equal(p.reroll, 2);
@@ -38,7 +38,7 @@ test("何も取っていなければ全部 0。 段 × fx を足し、 値を置
 
 test("RTA では切る (= perksForRun)", () => {
   const m = meta({ root: 1, atk_dmg: 5 });
-  assert.equal(perksForRun(m).dmgMul, 0.15);
+  assert.equal(perksForRun(m).dmgMul, 0.25);   // SPEC-163: 5%/段
   assert.deepEqual(perksForRun(m, { rta: true }), { ...NO_PERKS });
 });
 
@@ -82,14 +82,14 @@ test("定数の差し替え: state.perks が無ければ元のまま、 あれ�
   assert.equal(bossDmgDealtMul(), 1.35, "竜の爪 4 段 ＋ 竜殺し");
   assert.equal(bossDmgTakenMul(), 0.75);
   assert.equal(dashMul(), 1.4);
-  assert.equal(baseMaxHp(100), 140, "頑丈なからだ 5 段 ＋ 鉄壁");
+  assert.equal(baseMaxHp(100), 150, "頑丈なからだ 5 段 ＋ 鉄壁 (= SPEC-163: 30% + 20%)");
   state.perks = null;
 });
 
 test("強化の土台: 何も無ければ 0 / 1、 取っていればその倍率 (= 強化エクステンションはこれに掛かる)", () => {
   assert.deepEqual(perkBuffBase(NO_PERKS), { hpMaxBonus: 0, regenPerSec: 0, speedMul: 1, cdMul: 1, dmgTakenMul: 1, dmgMul: 1, bulletCountBonus: 0, rangeMul: 1, pickupMul: 1, pierceBonus: 0, ceGainMul: 1 });
   const b = perkBuffBase(computePerks(meta({ root: 1, atk_dmg: 2, atk_cd: 3, vit_regen: 2, atk_pierce: 1, atk_bullet: 1, cap_atk: 1 })));
-  assert.deepEqual([b.dmgMul, b.cdMul, b.regenPerSec, b.pierceBonus, b.bulletCountBonus], [1.16, 0.94, 0.4, 1, 2]);
+  assert.deepEqual([b.dmgMul, b.cdMul, b.regenPerSec, b.pierceBonus, b.bulletCountBonus], [1.2, 0.91, 0.4, 1, 2]);   // SPEC-163: 鋭い一撃 5%・手早さ 3%
 });
 
 test("抽選の表の重み", () => {
@@ -102,8 +102,8 @@ test("抽選の表の重み", () => {
 test("画面の 1 行: 効いているものだけ、 日本語と英語", () => {
   assert.deepEqual(perksSummary(NO_PERKS), []);
   const p = computePerks(meta({ root: 1, vit_hp: 2, atk_dmg: 2, grw_reroll: 1, vit_phoenix: 1, atk_cd: 1 }));
-  assert.deepEqual(perksSummary(p, "ja"), ["最大 HP ＋8%", "不死鳥", "攻撃 ＋6%", "CD −2%", "リロール ＋1"]);
-  assert.deepEqual(perksSummary(p, "en"), ["Max HP ＋8%", "Phoenix", "Attack ＋6%", "CD −2%", "Rerolls ＋1"]);
+  assert.deepEqual(perksSummary(p, "ja"), ["最大 HP ＋12%", "不死鳥", "攻撃 ＋10%", "CD −3%", "リロール ＋1"]);   // SPEC-163
+  assert.deepEqual(perksSummary(p, "en"), ["Max HP ＋12%", "Phoenix", "Attack ＋10%", "CD −3%", "Rerolls ＋1"]);
 });
 
 test("名前を変えた節は読み替える (= mov_wall → mov_dash。 払った GUM を失わない)", () => {

@@ -254,9 +254,11 @@ export const ENEMY_SPECS = {
   124:  { hp:   55, dmg: 14, speed: 75, radius: 14, xpValue:   2 },
   134:  { hp:   95, dmg: 18, speed: 70, radius: 16, xpValue:   4 },
   164:  { hp:  160, dmg: 22, speed: 65, radius: 19, xpValue:   7 },
-  171:  { hp: 3000, dmg: 30, speed: 45, radius: 48, xpValue:  60 },
-  373:  { hp: 4500, dmg: 30, speed: 50, radius: 52, xpValue: 100 },   // 覚醒魔王ファオ
-  1189: { hp: 6000, dmg: 30, speed: 55, radius: 50, xpValue: 150 },   // yamap
+  // SPEC-163: ボスの HP は、 そのステージのボスの時刻に育っている装備の単体 DPS で 20〜30 秒。 SPEC-080 の ×20 / ×15 (= BOSS_MOVES.hpMul) をやめて最終値をここに書く
+  //   (= 3000×20 / 4500×20 / 6000×15 = 60,000 / 90,000 / 90,000 → 12,000 / 45,000 / 100,000)
+  171:  { hp: 12000, dmg: 30, speed: 45, radius: 48, xpValue:  60 },    // SPEC-163: ボスの HP はここが最終値 (= BOSS_MOVES.hpMul は 1)。 4:00 の装備の単体 DPS 400〜600 で 20〜30 秒
+  373:  { hp: 45000, dmg: 30, speed: 50, radius: 52, xpValue: 100 },   // 覚醒魔王ファオ (= SPEC-163: 引き継いだ装備の単体 DPS 1,500〜2,500 で 20〜30 秒)
+  1189: { hp: 100000, dmg: 30, speed: 55, radius: 50, xpValue: 150 },  // yamap (= SPEC-163: 単体 DPS 3,000〜4,500 で 25〜30 秒)
   // SPEC-033: rare enemies (= ~2× normal hp、 +20-30 xp)
   // SPEC-034: radius × 1.5 (= 視認性向上、 当たり判定もそのまま大きく)
   147:  { hp:  160, dmg: 16, speed: 78, radius: 21, xpValue:  20, isRare: true },   // クリーパー フラペチーノ ドッピオ (= 14 → 21)
@@ -356,8 +358,9 @@ export const SHOP_EVERY_MS      = 40000;           // そのあと 40 秒ごと
 export const SHOP_PER_STAGE     = 6;               // 1 ステージの店の数 (= ボスの前に終わる)
 export const SHOP_OFFERS        = 4;               // 品の枚数 (= マゼランは +1)
 // SPEC-162: 行き先の段 Lv.1〜15 の値段 (= ステージ 1)。 装備と CE がステージをまたいで残るので、 1 回の挑戦で 15 段を登る前提。
-//   Lv10 (= 今までの最大) まで合計 3,555、 Lv15 まで合計 24,555。 ステージ 2・3 は SHOP_STAGE_MUL
-export const SHOP_PRICE         = [15, 25, 40, 80, 150, 260, 420, 650, 950, 1400, 2000, 2800, 3900, 5300, 7000];
+//   SPEC-163: 序盤の CE の収入 (= 1 秒に 1〜2) で 2 分までに主武器を Lv.4〜5 にできる傾き。
+//   Lv10 (= 今までの最大) まで合計 2,285、 Lv15 まで合計 12,785。 ステージ 2・3 は SHOP_STAGE_MUL
+export const SHOP_PRICE         = [15, 20, 30, 50, 90, 150, 240, 380, 560, 800, 1100, 1500, 2000, 2600, 3300];
 export const SHOP_PRICE_LL      = 20000;           // LL ランクアップ (= Lv.5 の 2 倍。 SPEC-122)
 export const SHOP_STAGE_MUL     = [1, 1.8, 2.6];   // 雑魚の CE が ×1/×2/×3 なので値段も上げる
 export const SHOP_BANS          = 3;               // お断りは 1 挑戦 3 回まで
@@ -406,15 +409,16 @@ export const STAGE_TABLE = [
     enemyHpMul:        1.0,
     enemyDmgMul:       1.0,
     xpMul:             1.0,
-    spawnIntervalMul:  1.0,
+    // SPEC-163: 始まりの湧きを DPS の期待値 (= 初期武器 Lv.1 で 15〜25/秒) に合わせる (= 0.8 秒 → 1.1 秒に 1 体)
+    spawnIntervalMul:  1.4,
     // SPEC-062: 撃ってくる敵 (= fromMs から everyMs ごとに 1 体。 同時に max 体まで)
     shooters: { fromMs: 90000, everyMs: 10000, max: 3, ids: [166] },
     gimmick: "beads",    // SPEC-064: そろばんの珠
-    // SPEC-078: 0:30 からボスの直前 (= 3:50) にかけて湧きを速め、 画面の敵の密度を目標 (= density) に保つ。
-    //   ボスの直前に画面の半分を敵が埋める
-    flood: { fromMs: 30000, fullMs: 230000, maxMul: 12, packFromMs: 120000, packEveryMs: 12000, packSize: 16, pow: 2.5 },
-    density: { fromMs: 20000, fullMs: 230000, max: 0.85 },
-    maxEnemies: 320,
+    // SPEC-078 → SPEC-163: 洪水はゆるく (= ×12 → ×4、 pow 2.5 → 1.8)。 2:00 の群れ 16 体で「どばーっ」と来て圧死していたので、
+    //   群れは 3:00 から 6 体 (20 秒ごと)。 密度の目標は 0.85 → 0.3 (= 1:30 から)。 装備が育つ速さ (= CE の収入) と同じ傾きで敵を増やす
+    flood: { fromMs: 40000, fullMs: 230000, maxMul: 4, packFromMs: 180000, packEveryMs: 20000, packSize: 6, pow: 1.8 },
+    density: { fromMs: 90000, fullMs: 230000, max: 0.3 },
+    maxEnemies: 260,
   },
   {
     idx: 1,
@@ -429,16 +433,17 @@ export const STAGE_TABLE = [
     ],
     bossAttack: "fao",
     bossAttackExtId: 5055,            // とっておきのフルーツパフェ
-    enemyHpMul:        1.5,
-    enemyDmgMul:       1.25,
+    // SPEC-163: 装備が引き継がれる (= SPEC-162) ので、 数ではなく HP で強くする (= ×1.5 → ×2.2)。 湧きの始まりはステージ 1 より少し速いだけ
+    enemyHpMul:        2.2,
+    enemyDmgMul:       1.4,
     xpMul:             2.0,
-    spawnIntervalMul:  0.85,
+    spawnIntervalMul:  1.1,
     shooters: { fromMs: 45000, everyMs: 7000, max: 6, ids: [166, 136] },   // SPEC-062
     gimmick: "punch",    // SPEC-064: パンチカード
-    // SPEC-078: ボスの直前に画面の 3/4 を敵が埋める
-    flood: { fromMs: 20000, fullMs: 230000, maxMul: 16, packFromMs: 120000, packEveryMs: 10000, packSize: 20, pow: 2.5 },
-    density: { fromMs: 15000, fullMs: 230000, max: 1.45 },
-    maxEnemies: 440,
+    // SPEC-078 → SPEC-163: 洪水 ×16 → ×7、 群れは 2:00 から 10 体 (15 秒ごと)、 密度は 1.45 → 0.6 (= 引き継いだ装備でも 3:00〜3:50 に 100〜150 体で圧死していたので、 v7 でここだけゆるめた)
+    flood: { fromMs: 30000, fullMs: 230000, maxMul: 7, packFromMs: 120000, packEveryMs: 15000, packSize: 10, pow: 1.8 },
+    density: { fromMs: 40000, fullMs: 230000, max: 0.6 },
+    maxEnemies: 380,
   },
   {
     idx: 2,
@@ -453,16 +458,17 @@ export const STAGE_TABLE = [
     ],
     bossAttack: "yamap",
     bossAttackExtId: 5002,            // グランダルメ
-    enemyHpMul:        2.0,
-    enemyDmgMul:       1.5,
-    xpMul:             3.0,
-    spawnIntervalMul:  0.7,
+    // SPEC-163: HP ×2.0 → ×3.5 (= 引き継いだ装備が Lv.7〜10 まで育っている前提)。 湧きの始まりはステージ 2 より少し速いだけ
+    enemyHpMul:        3.5,
+    enemyDmgMul:       1.8,
+    xpMul:             3.5,
+    spawnIntervalMul:  0.9,
     shooters: { fromMs: 30000, everyMs: 5000, max: 9, ids: [166, 136] },   // SPEC-062
     gimmick: "trojan",   // SPEC-064: トロイの木馬
-    // SPEC-065: 中盤から大群。 SPEC-078: ボスの直前に画面の 9 割を敵が埋める (= 湧きを大きく速め、 上限も上げる)
-    flood: { fromMs: 15000, fullMs: 230000, maxMul: 20, packFromMs: 90000, packEveryMs: 8000, packSize: 28, pow: 2.5 },
-    density: { fromMs: 10000, fullMs: 230000, max: 1.65 },
-    maxEnemies: 600,
+    // SPEC-065 / SPEC-078 → SPEC-163: 洪水 ×20 → ×9、 群れは 1:40 から 18 体、 密度は 1.65 → 0.95
+    flood: { fromMs: 20000, fullMs: 230000, maxMul: 9, packFromMs: 100000, packEveryMs: 10000, packSize: 18, pow: 1.8 },
+    density: { fromMs: 30000, fullMs: 230000, max: 0.95 },
+    maxEnemies: 480,
   },
 ];
 
