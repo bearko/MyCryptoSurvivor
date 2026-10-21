@@ -99,6 +99,7 @@ export function startBattle(hero) {
     state.run.totalElapsedMs = 0;
     state.run.scoreSent = false;
     state.run.missionGum = 0;   // SPEC-131
+    state.run.missionClears = 0;   // SPEC-136: 内訳の「ミッション達成 n 回」
   }
 
   const b = state.battle;

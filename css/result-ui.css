@@ -699,3 +699,26 @@
 .result-sigpour__face { width: 28px; height: 28px; image-rendering: pixelated; }
 .result-sigpour__rest { font-size: 0.72rem; color: var(--muted); }
 .result-sigpour--up .result-sigpour__main { color: #e9d8ff; font-weight: 800; text-shadow: 0 0 10px rgba(187, 134, 252, 0.7); }
+
+/* ============================================================
+   SPEC-136: GUM の内訳 (= 遊んだぶんが GUM になった式)
+   ============================================================ */
+.gum-bd {
+  margin: 0 auto 0.3rem; width: 100%; max-width: 30rem;
+  padding: 0.45rem 0.7rem 0.5rem;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.28); border: 1px solid rgba(196, 163, 90, 0.35);
+  font-size: 0.72rem; color: #e9e2cf; text-align: left;
+}
+.gum-bd.hidden { display: none; }
+.gum-bd__title { margin: 0 0 0.2rem; font-size: 0.66rem; letter-spacing: 0.1em; color: var(--muted); }
+.gum-bd__row { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.2fr) auto; gap: 0.5rem; align-items: baseline; padding: 0.12rem 0; }
+.gum-bd__k { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gum-bd__k b { font-weight: 700; color: #fff; margin-left: 0.25rem; }
+.gum-bd__f { color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gum-bd__v { text-align: right; font-weight: 800; color: #f6e2a0; white-space: nowrap; }
+.gum-bd__sum { margin-top: 0.2rem; padding-top: 0.25rem; border-top: 1px dashed rgba(196, 163, 90, 0.4); font-size: 0.8rem; }
+@media (max-width: 400px) {
+  .gum-bd { font-size: 0.66rem; padding: 0.4rem 0.55rem; }
+  .gum-bd__row { gap: 0.35rem; }
+}

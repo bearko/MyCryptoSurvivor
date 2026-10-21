@@ -18,7 +18,7 @@ import { formatElapsed } from "../survival.js";
 import { countUp, revealIn } from "../reveal.js";
 import { presentResult } from "../result-telop.js";
 import { grantBossDust, grantStageGum } from "../meta.js";
-import { renderRewards } from "../meta-ui.js";
+import { renderRewards, renderGumBreakdown } from "../meta-ui.js";
 import { perk } from "../perks.js";   // SPEC-090c
 import { pourShopCeIntoSig } from "./shop.js";   // SPEC-128
 import { heroImg } from "../heroes.js";
@@ -64,7 +64,11 @@ export function triggerStageEndOrTransition() {
   // SPEC-132: ステージクリアの GUM (= 50 × ステージの番号 ＋ 撃破数のぶん)。 結果の画面とスキルツリーへの導線のため、 ここで足す
   {
     const snap = state.run.stages.find(s => s.idx === (state.currentStageIdx ?? 0));
-    if (snap && snap.gum == null) snap.gum = grantStageGum(snap.idx, snap.kills, { gumMul: perk("gumMul") });
+    if (snap && snap.gum == null) {
+      // SPEC-136: 内訳 (= 生存時間・撃破数・ステージクリア) を控えて、 結果の画面に式で出す
+      const r = grantStageGum(snap, { gumMul: perk("gumMul") });
+      Object.assign(snap, { gum: r.gum, gumRows: r.rows, gumBonus: r.bonus, gumMul: r.mul });
+    }
   }
 
   // SPEC-039 / SPEC-096: 共通基盤のアチーブメント (= ステージ 1・2・全クリア・ファオ・ボス 3 体・RTA・ABSOLUTE ×2.0)
@@ -105,6 +109,7 @@ export function triggerStageEndOrTransition() {
       revealIn(modal);
       countUp(document.getElementById("stageTransitionKills"), snap?.kills ?? 0, { durMs: 600, delayMs: 250 });
       renderRewards(document.getElementById("stageTransitionRewards"), { gum: snap?.gum ?? 0, dust: snap?.dust ?? 0 }, { delayMs: 500 });   // SPEC-090 + SPEC-132
+      renderGumBreakdown(document.getElementById("stageTransitionGum"), { rows: snap?.gumRows ?? [], bonus: snap?.gumBonus ?? 0, mul: snap?.gumMul ?? 0 });   // SPEC-136
     },
   });
 }

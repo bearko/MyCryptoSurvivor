@@ -3,14 +3,15 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
-const { gumForKills, KILLS_PER_GUM, missionGum, MISSION_GUM } = await import("../js/meta.js");
+const { gumRows, GUM_RATE, missionGum, MISSION_GUM } = await import("../js/meta.js");
 const { EXT_MASTERY, NODE_MAP, ROOT_ID } = await import("../js/skill-data.js");
 const { computePerks, perkRows } = await import("../js/perks.js");
 const { shopPrice } = await import("../js/battle/shop-logic.js");
 
-test("撃破 15 体ごとに GUM ＋1", () => {
-  assert.equal(KILLS_PER_GUM, 15);
-  assert.deepEqual([0, 14, 15, 1500, 15645].map(gumForKills), [0, 0, 1, 100, 1043]);
+test("SPEC-136: 撃破 20 体ごとに GUM ＋1", () => {
+  assert.equal(GUM_RATE.killsPer, 20);
+  const k = (kills) => gumRows({ kills }).find((r) => r.key === "kills")?.gum ?? 0;
+  assert.deepEqual([0, 19, 20, 1500, 15645].map(k), [0, 0, 1, 75, 782]);
 });
 
 test("ミッションの確定 GUM は 重さ × ステージの番号", () => {
@@ -47,11 +48,12 @@ test("つなぎ: 武器ごとの威力・強化の値引き・ミッションの
   assert.ok(read("index.html").includes('id="missionRewardGum"'));
 });
 
-test("SPEC-132: ステージクリアの GUM は 50 × ステージの番号 ＋ 撃破数のぶん", async () => {
-  const { stageClearGum, STAGE_CLEAR_GUM } = await import("../js/meta.js");
-  assert.equal(STAGE_CLEAR_GUM, 50);
-  assert.equal(stageClearGum(0, 1500), 50 + 100);
-  assert.equal(stageClearGum(2, 0), 150);
+test("SPEC-132 + 136: ステージクリアの GUM は 50 × ステージの番号 ＋ 生存時間 ＋ 撃破数のぶん", () => {
+  assert.equal(GUM_RATE.stage, 50);
+  const sum = (rows) => rows.reduce((a, r) => a + r.gum, 0);
+  assert.equal(sum(gumRows({ stageNos: [1], kills: 1500 })), 50 + 75);
+  assert.equal(sum(gumRows({ stageNos: [3] })), 150);
+  assert.equal(sum(gumRows({ stageNos: [1], sec: 274.6 })), 50 + 275, "秒は結果の時間の表示と同じく四捨五入");
 });
 
 test("SPEC-132: ステージクリアの画面からスキルツリーへ (= 閉じると元の画面に戻る)・戻るは木の右下", () => {
@@ -62,6 +64,6 @@ test("SPEC-132: ステージクリアの画面からスキルツリーへ (= 閉
   assert.match(tree, /if \(_returnTo\) \{ _returnTo\.classList\.remove\("hidden"\)/);
   assert.match(tree, /tree-back2/);
   assert.doesNotMatch(tree, /returnToTitle\(/, "結果の画面から開いてもタイトルに戻さない");
-  assert.match(read("js/battle/stage-transition.js"), /snap\.gum = grantStageGum\(snap\.idx, snap\.kills/);
+  assert.match(read("js/battle/stage-transition.js"), /grantStageGum\(snap, \{ gumMul: perk\("gumMul"\) \}\)/);
   assert.match(read("js/meta.js"), /stages\.filter\(\(s\) => s\.gum == null\)/, "ステージクリアでもらった撃破数は二重にしない");
 });

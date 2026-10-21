@@ -25,7 +25,7 @@ import { treeNudge } from "../skill-logic.js";   // SPEC-116
 import { presentResult } from "../result-telop.js";
 import { startTitleBgm, startMenuBgmAfterJingle } from "../ui-sound.js";
 import { grantRunRewards, runDust, getMeta } from "../meta.js";
-import { renderRewards } from "../meta-ui.js";
+import { renderRewards, renderGumBreakdown } from "../meta-ui.js";
 import { perk } from "../perks.js";   // SPEC-090c
 import { markPlayed } from "../played.js";
 
@@ -52,7 +52,7 @@ export function triggerGameOver(reason = "lose") {
     level:   state.level,
     kills:   state.killCount,
     reason,                  // SPEC-027: "lose" | "clear" でタイトル分岐に使う
-    // SPEC-090: 倒れても GUM (= スコアから)。 ゴールドダストはこの挑戦で倒したボスのぶん
+    // SPEC-090: 倒れても GUM。 SPEC-136: 遊んだぶん (= 生存時間・撃破数・到達レベル・残ったギフト券) を式で。 ゴールドダストはこの挑戦で倒したボスのぶん
     rewards: reason !== "clear" ? { ...grantRunRewards(false, { gumMul: perk("gumMul") }), dust: runDust() } : null,
   };
   pauseTime();
@@ -69,6 +69,7 @@ export function triggerGameOver(reason = "lose") {
       revealIn(modal);
       countUp(document.getElementById("gameOverKills"), state.lastRunStats?.kills ?? 0, { durMs: 600, delayMs: 250 });
       renderRewards(document.getElementById("gameOverRewards"), state.lastRunStats?.rewards ?? {}, { delayMs: 500 });   // SPEC-090
+      renderGumBreakdown(document.getElementById("gameOverGum"), state.lastRunStats?.rewards);   // SPEC-136
       sayOnLose(reason, modal);   // SPEC-116
     },
   });

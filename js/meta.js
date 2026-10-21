@@ -14,35 +14,58 @@ import { LS_META } from "./constants.js";
 export const META_VERSION = 1;
 export const GUM_MIN = 5;
 
-/** SPEC-131: 撃破 15 体ごとに GUM ＋1 (= 倒すほど貯まる) */
-export const KILLS_PER_GUM = 15;
-export function gumForKills(kills) {
-  return Math.floor(Math.max(0, Number(kills) || 0) / KILLS_PER_GUM);
+/**
+ * SPEC-136: GUM は「遊んだぶん」をそれぞれ値にして足す (= 内訳と計算式を結果の画面に出す)。
+ *   生存時間 1 GUM / 秒・撃破 20 体ごとに 1 GUM・ステージクリア 50 GUM × ステージの番号・到達レベル 5 GUM / Lv・
+ *   残ったギフト券 30 GUM / 枚。 スキルツリーの「金勘定」「金運」はその合計に掛かる。 ミッションの GUM は別 (= その場で入る)
+ */
+export const GUM_RATE = Object.freeze({ sec: 1, killsPer: 20, kill: 1, stage: 50, level: 5, gift: 30 });
+
+/**
+ * 内訳の行 (= 純関数)。 0 の行は出さない
+ *   c: { sec, kills, stageNos: [1, 2], level, gifts }
+ *   返す: [{ key, n, rate, gum, stageNos? }]
+ */
+export function gumRows({ sec = 0, kills = 0, stageNos = [], level = 0, gifts = 0 } = {}) {
+  const fl = (v) => Math.floor(v + 1e-9);
+  const rows = [];
+  const S = Math.max(0, Math.round(Number(sec) || 0)), K = Math.max(0, kills | 0), L = Math.max(0, level | 0), G = Math.max(0, gifts | 0);
+  const nos = (stageNos ?? []).map((x) => x | 0).filter((x) => x > 0);
+  if (S) rows.push({ key: "sec", n: S, rate: GUM_RATE.sec, gum: fl(S * GUM_RATE.sec) });
+  // 撃破は 20 体ごとに 1 GUM (= 端数を出さない。 ステージごとに足しても、 合計の式とずれない)
+  if (K) { const u = Math.floor(K / GUM_RATE.killsPer); rows.push({ key: "kills", kills: K, n: u, rate: GUM_RATE.kill, gum: u * GUM_RATE.kill }); }
+  if (nos.length) rows.push({ key: "stage", n: nos.reduce((a, x) => a + x, 0), rate: GUM_RATE.stage, gum: GUM_RATE.stage * nos.reduce((a, x) => a + x, 0), stageNos: nos });
+  if (L) rows.push({ key: "level", n: L, rate: GUM_RATE.level, gum: L * GUM_RATE.level });
+  if (G) rows.push({ key: "gifts", n: G, rate: GUM_RATE.gift, gum: G * GUM_RATE.gift });
+  return rows;
 }
 
-/** SPEC-132: ステージクリアの GUM を足して、 その数を返す (= 金勘定・金運の倍率も掛ける) */
-export function grantStageGum(stageIdx, kills, { gumMul = 0 } = {}) {
-  const gum = Math.round(stageClearGum(stageIdx, kills) * (1 + Math.max(0, Number(gumMul) || 0)));
-  addRewards({ gum });
-  return gum;
+/** 行をまとめる (= ステージごとの行を、 この挑戦の行に。 純関数) */
+export function mergeGumRows(...lists) {
+  const order = ["sec", "kills", "stage", "level", "gifts"];
+  const by = new Map();
+  for (const r of lists.flat()) {
+    const o = by.get(r.key) ?? { key: r.key, n: 0, rate: r.rate, gum: 0, ...(r.key === "kills" ? { kills: 0 } : {}), ...(r.key === "stage" ? { stageNos: [] } : {}) };
+    o.n += r.n; o.gum += r.gum;
+    if (r.key === "kills") o.kills += r.kills | 0;
+    if (r.key === "stage") o.stageNos.push(...(r.stageNos ?? []));
+    by.set(r.key, o);
+  }
+  return order.filter((k) => by.has(k)).map((k) => by.get(k));
+}
+
+/** 行の合計と、 スキルツリーの倍率のぶん (= 純関数) */
+export function gumTotal(rows, gumMul = 0) {
+  const base = rows.reduce((a, r) => a + r.gum, 0);
+  const mul = Math.max(0, Number(gumMul) || 0);
+  const bonus = Math.round(base * mul);
+  return { base, mul, bonus, total: base + bonus };
 }
 
 /** SPEC-131: ミッション達成の確定 GUM (= 重さ × ステージの番号) */
 export const MISSION_GUM = { light: 30, medium: 60, heavy: 120 };
 export function missionGum(weight, stageIdx = 0) {
   return (MISSION_GUM[weight] ?? MISSION_GUM.medium) * (Math.max(0, stageIdx | 0) + 1);
-}
-
-/** SPEC-132: ステージクリアの GUM (= 50 × ステージの番号 ＋ そのステージの撃破数のぶん)。 純関数 */
-export const STAGE_CLEAR_GUM = 50;
-export function stageClearGum(stageIdx, kills) {
-  return STAGE_CLEAR_GUM * (Math.max(0, stageIdx | 0) + 1) + gumForKills(kills);
-}
-
-/** 1 回の挑戦の GUM (= √スコア ÷ 2。 最低 GUM_MIN)。 純関数 */
-export function gumForScore(score) {
-  const s = Math.max(0, Number(score) || 0);
-  return Math.max(GUM_MIN, Math.round(Math.sqrt(s) / 2));
 }
 
 /** ボスを倒したときのゴールドダスト (= ステージの番号。 0 始まりの idx に 1 を足す)。 純関数 */
@@ -197,20 +220,47 @@ export function runStagesForRewards() {
   return done;
 }
 
-/** 挑戦が終わったとき (= 全クリア・敗北): GUM を足して、 { gum, score } を返す */
+/** SPEC-136: ステージクリアの GUM (= そのステージの生存時間・撃破数・ステージクリア)。 足して { gum, rows, ...total } を返す */
+export function grantStageGum(stage, { gumMul = 0 } = {}) {
+  const rows = gumRows({ sec: (stage?.elapsedMs ?? 0) / 1000, kills: stage?.kills ?? 0, stageNos: [(stage?.idx ?? 0) + 1] });
+  const t = gumTotal(rows, gumMul);
+  addRewards({ gum: t.total });
+  return { gum: t.total, rows, ...t };
+}
+
+/**
+ * 挑戦が終わったとき (= 全クリア・敗北): まだ GUM にしていないぶん (= いまのステージ・到達レベル・残ったギフト券) を足し、
+ * 結果の画面に出す「この挑戦の内訳」 (= ステージクリアとミッションでもらったぶんも合わせて) を返す。
+ * 残ったギフト券はここで GUM に換える (= 財布から消す)
+ */
 export function grantRunRewards(cleared, { gumMul = 0 } = {}) {
   const stages = runStagesForRewards();
   const score = rewardScore(stages, !!cleared);
-  // SPEC-132: ステージクリアで GUM をもらったステージの撃破数は、 もう数えない (= 二重にしない)
-  const kills = stages.filter((s) => s.gum == null).reduce((a, s) => a + (s.kills | 0), 0);
-  // SPEC-131: 撃破数のぶんを足す。 SPEC-090c: 金勘定・金運はその合計に掛かる
-  const gum = Math.round((gumForScore(score) + gumForKills(kills)) * (1 + Math.max(0, Number(gumMul) || 0)));
-  const m = addRewards({ gum });
+  const gifts = Math.max(0, state.shop?.gifts | 0);
+  const level = Math.max(...stages.map((s) => s.level | 0), state.level | 0, 1);
+  // まだ GUM にしていないぶん
+  const open = stages.filter((s) => s.gum == null);
+  // 撃破の端数は挑戦ぜんぶで持ち越す (= 内訳の「1 GUM × n（20 体ごと）」が、 合計の撃破数どおりになる)
+  const paid = stages.filter((s) => s.gum != null);
+  const allK = stages.reduce((a, s) => a + (s.kills | 0), 0);
+  const paidUnits = paid.reduce((a, s) => a + ((s.gumRows ?? []).find((r) => r.key === "kills")?.n ?? 0), 0);
+  const openK = open.reduce((a, s) => a + (s.kills | 0), 0);
+  const killUnits = Math.max(0, Math.floor(allK / GUM_RATE.killsPer) - paidUnits);
+  const killRow = openK > 0 ? [{ key: "kills", kills: openK, n: killUnits, rate: GUM_RATE.kill, gum: killUnits * GUM_RATE.kill }] : [];
+  const nowRows = mergeGumRows(...open.map((s) => gumRows({ sec: (s.elapsedMs ?? 0) / 1000 })), killRow, gumRows({ level, gifts }));
+  const now = { rows: nowRows, ...gumTotal(nowRows, gumMul) };
+  const m = addRewards({ gum: now.total });
   m.runs += 1;
   _save();
-  // 結果の画面には、 ミッションで先にもらったぶんも足して出す (= もう meta には入っている)
-  const stageGum = stages.reduce((a, s) => a + (s.gum | 0), 0);
-  return { gum: gum + (state.run?.missionGum | 0) + stageGum, score };
+  if (state.shop) state.shop.gifts = 0;   // SPEC-136: 残ったギフト券は GUM に換えた
+  // この挑戦の内訳 (= ステージクリアで足した行と、 いま足した行をまとめる。 合計とずれない)
+  const rows = mergeGumRows(...stages.filter((s) => s.gum != null).map((s) => s.gumRows ?? []), now.rows);
+  const paidStages = stages.filter((s) => s.gum != null).reduce((a, s) => a + (s.gum | 0), 0);
+  const missionGum = state.run?.missionGum | 0;
+  const missions = state.run?.missionClears | 0;
+  const bonus = stages.reduce((a, s) => a + (s.gumBonus | 0), 0) + now.bonus;
+  const gum = paidStages + now.total + missionGum;
+  return { gum, score, rows, missions, missionGum, bonus, mul: now.mul };
 }
 
 /** SPEC-131: ミッション達成の確定 GUM (= その場で足す。 挑戦の途中でやめても失わない) */
@@ -218,7 +268,10 @@ export function grantMissionGum(n) {
   const gum = Math.max(0, n | 0);
   if (gum <= 0) return 0;
   addRewards({ gum });
-  if (state.run) state.run.missionGum = (state.run.missionGum | 0) + gum;
+  if (state.run) {
+    state.run.missionGum = (state.run.missionGum | 0) + gum;
+    state.run.missionClears = (state.run.missionClears | 0) + 1;   // SPEC-136: 内訳の「ミッション達成 n 回」
+  }
   return gum;
 }
 
