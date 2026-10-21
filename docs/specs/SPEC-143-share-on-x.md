@@ -2,7 +2,7 @@
 id: SPEC-143
 title: Mine Suggests Posting on X After Clearing Stage 1 — Post Button Opens X With #MyCryptoGames and the Game URL, 100 GUM Once
 status: Done
-pr: TBD
+pr: 181
 phase: v1.6 Growth
 kind: Added
 ---
