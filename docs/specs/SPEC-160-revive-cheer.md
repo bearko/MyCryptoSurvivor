@@ -2,7 +2,7 @@
 id: SPEC-160
 title: On the Second Death Onward the REVIVE Screen Opens Straight Away and Mine Encourages From the Bottom Dock (Icon and Bubble) Before the Advice, With No Extra Screen
 status: Done
-pr: TBD
+pr: 200
 phase: v1.7 Onboarding
 kind: Changed
 ---
