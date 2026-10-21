@@ -258,6 +258,8 @@ export function tickFx(dt) {
 export function shakeOffset() {
   const fx = state.battle.fx;
   if (!fx || fx.shakeMs <= 0 || fx.shake <= 0 || prefersReducedMotion()) return { x: 0, y: 0 };
+  // SPEC-152: 止まっているあいだ (= レッスン・店・倒れた) は揺らさない。 tickFx が進まないので揺れが残り、 画面を覆う暗い層がずれたままになっていた
+  if (state.pauseFlags > 0 || state.battle.gameOver) return { x: 0, y: 0 };
   const m = fx.shake * Math.min(1, fx.shakeMs / 160);
   return { x: (Math.random() * 2 - 1) * m, y: (Math.random() * 2 - 1) * m };
 }

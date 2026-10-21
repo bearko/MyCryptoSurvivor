@@ -43,8 +43,10 @@ export function shopHealAmount(hp, maxHp, ratio = SHOP_HEAL_RATIO) {
 export const SHOP_SOON_SEC = 10;
 
 /** そのステージの店が開く時刻 (= ステージの経過 ms) */
-export function shopTimesMs(stageIdx) {
-  const first = SHOP_FIRST_MS[Math.min(SHOP_FIRST_MS.length - 1, Math.max(0, stageIdx | 0))];
+export function shopTimesMs(stageIdx, { atStart = true } = {}) {
+  const idx = Math.min(SHOP_FIRST_MS.length - 1, Math.max(0, stageIdx | 0));
+  // SPEC-152: ステージ 2・3 の開幕の店は節「先行オープン」で開く。 無ければステージ 1 と同じ 0:10 から
+  const first = idx > 0 && !atStart ? SHOP_FIRST_MS[0] : SHOP_FIRST_MS[idx];
   return Array.from({ length: SHOP_PER_STAGE }, (_, i) => first + i * SHOP_EVERY_MS);
 }
 

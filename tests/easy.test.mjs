@@ -14,7 +14,7 @@ const store = () => { const m = new Map(); return { getItem: (k) => m.get(k) ?? 
 
 test("ステージの作り: ボスは 0:15 / 0:30 / 0:45、 ステージ 2 にレアとミッション、 ステージ 3 の予告で雷鼓。 ショップはステージ 1 から", () => {
   assert.deepEqual(EASY_STAGES.map((s) => s.bossAtMs), [15000, 30000, 45000]);
-  assert.deepEqual(EASY_STAGES.map((s) => s.shopTimesMs), [[10000], [0, 15000], [0, 15000, 30000]]);
+  assert.deepEqual(EASY_STAGES.map((s) => s.shopTimesMs), [[10000], [15000], [15000, 30000]]);   // SPEC-152: 開幕の店は出さない
   for (const s of EASY_STAGES) {
     assert.ok(s.warnMs < s.bossAtMs);
     for (const sh of s.shopTimesMs) assert.ok(sh < s.bossAtMs - s.warnMs, "店はボスの予告より前");
