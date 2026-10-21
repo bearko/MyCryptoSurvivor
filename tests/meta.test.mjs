@@ -11,20 +11,26 @@ globalThis.localStorage = {
 };
 
 const {
-  gumForScore, dustForStage, rewardScore, normalizeMeta, getMeta, addRewards, spend, setNodeRank, nodeRank, resetNodes,
+  gumRows, mergeGumRows, gumTotal, GUM_RATE, dustForStage, rewardScore, normalizeMeta, getMeta, addRewards, spend, setNodeRank, nodeRank, resetNodes,
   grantRunRewards, grantBossDust, runDust, runStagesForRewards, _reloadMeta, GUM_MIN,
 } = await import("../js/meta.js");
 const { computeScore } = await import("../js/battle/activity-report.js");
 const { state } = await import("../js/state.js");
 const { LS_META } = await import("../js/constants.js");
 
-test("GUM は √スコア ÷ 2 (= 最低 5)", () => {
-  assert.equal(gumForScore(18000), 67);
-  assert.equal(gumForScore(520000), 361);
-  assert.equal(gumForScore(2800000), 837);
-  assert.equal(gumForScore(0), GUM_MIN);
-  assert.equal(gumForScore(-5), GUM_MIN);
-  assert.equal(gumForScore("x"), GUM_MIN);
+test("SPEC-136: GUM は遊んだぶんの式 (= 秒 1 ・ 撃破 20 体で 1 ・ ステージ 50 × 番号 ・ Lv 5 ・ ギフト券 30)", () => {
+  assert.deepEqual({ ...GUM_RATE }, { sec: 1, killsPer: 20, kill: 1, stage: 50, level: 5, gift: 30 });
+  const rows = gumRows({ sec: 274.6, kills: 6994, stageNos: [1], level: 31, gifts: 3 });
+  assert.deepEqual(rows.map((r) => [r.key, r.n, r.gum]), [["sec", 275, 275], ["kills", 349, 349], ["stage", 1, 50], ["level", 31, 155], ["gifts", 3, 90]]);
+  assert.equal(rows.find((r) => r.key === "kills").kills, 6994);
+  assert.deepEqual(gumRows({}), [], "0 の行は出さない");
+  assert.deepEqual(gumRows({ sec: -3, kills: "x", gifts: -1 }), []);
+  const m = mergeGumRows(gumRows({ sec: 100, kills: 30, stageNos: [1] }), gumRows({ sec: 50, kills: 25, stageNos: [2] }));
+  assert.deepEqual(m.map((r) => [r.key, r.n, r.gum]), [["sec", 150, 150], ["kills", 2, 2], ["stage", 3, 150]]);
+  assert.deepEqual(m.find((r) => r.key === "stage").stageNos, [1, 2]);
+  assert.deepEqual(gumTotal(rows, 0.1), { base: 919, mul: 0.1, bonus: 92, total: 1011 });
+  assert.deepEqual(gumTotal(rows), { base: 919, mul: 0, bonus: 0, total: 919 });
+  assert.ok(GUM_MIN > 0);
 });
 
 test("ゴールドダストはステージ 1/2/3 のボスで 1/2/3", () => {
@@ -69,6 +75,7 @@ test("挑戦から: 倒れたときはいまのステージも数え、 ボス�
   state.run = { stages: [{ idx: 0, kills: 1000, level: 20, elapsedMs: 250000, ownedExtensions: [{ extId: 1 }], dust: 1 }], totalKills: 1000, totalElapsedMs: 250000 };
   state.killCount = 300; state.level = 24; state.ownedExtensions = [{ extId: 1, level: 3 }, { extId: 13, level: 1 }];
   state.battle.stageElapsedMs = 80000;
+  state.shop = { gifts: 2 };
   const st = runStagesForRewards();
   assert.equal(st.length, 2);
   assert.equal(st[1].kills, 300);
@@ -77,7 +84,29 @@ test("挑戦から: 倒れたときはいまのステージも数え、 ボス�
   assert.equal(runDust(), 1);
   const r = grantRunRewards(false);
   assert.equal(r.score, rewardScore(st, false));
-  assert.equal(r.gum, gumForScore(r.score) + Math.floor(1300 / 15));   // SPEC-131: 撃破 15 体ごとに ＋1
+  // SPEC-136: 生存 250 ＋ 80 秒 ・ 撃破 1300 体 (= 65) ・ Lv.24 (= 120) ・ ギフト券 2 枚 (= 60)
+  assert.equal(r.gum, 330 + 65 + 120 + 60);
+  assert.deepEqual(r.rows.map((x) => [x.key, x.gum]), [["sec", 330], ["kills", 65], ["level", 120], ["gifts", 60]]);
+  assert.equal(state.shop.gifts, 0, "残ったギフト券は GUM に換わる");
   const m = getMeta();
   assert.deepEqual([m.gum, m.dust, m.runs, m.earned.gum], [r.gum, 2, 1, r.gum]);
+});
+
+test("SPEC-136: ステージクリアでもらったぶんは二重にしない (= 内訳には並べる)", () => {
+  store.clear(); _reloadMeta();
+  state.currentStageIdx = 1;
+  const rows0 = gumRows({ sec: 200, kills: 400, stageNos: [1] });
+  state.run = { stages: [{ idx: 0, kills: 400, level: 20, elapsedMs: 200000, gum: 270, gumRows: rows0, gumBonus: 0 }], totalKills: 400, totalElapsedMs: 200000, missionGum: 90, missionClears: 2 };
+  state.killCount = 100; state.level = 22; state.battle.stageElapsedMs = 60000;
+  state.shop = { gifts: 0 };
+  const r = grantRunRewards(false);
+  assert.equal(r.gum, 270 + (60 + 5 + 110) + 90);
+  assert.deepEqual(r.rows.map((x) => [x.key, x.gum]), [["sec", 260], ["kills", 25], ["stage", 50], ["level", 110]]);
+  assert.deepEqual([r.missions, r.missionGum], [2, 90]);
+  assert.equal(getMeta().gum, 60 + 5 + 110, "いま払うのはステージクリアのあとのぶんだけ");
+  // 撃破の端数は持ち越す: 390 ＋ 30 = 420 体 → 21 (= ステージ 1 で 19 ・ いま 2)
+  state.run.stages[0].kills = 390; state.run.stages[0].gumRows = gumRows({ sec: 200, kills: 390, stageNos: [1] }); state.killCount = 30;
+  const r2 = grantRunRewards(false);
+  assert.equal(r2.rows.find((x) => x.key === "kills").n, 21);
+  assert.equal(r2.rows.find((x) => x.key === "kills").kills, 420);
 });

@@ -286,6 +286,8 @@
       <div class="result-tiles" id="stageTransitionTiles" data-reveal></div>
       <!-- SPEC-090: ボスを倒したときのゴールドダスト -->
       <div class="result-rewards hidden" id="stageTransitionRewards" data-reveal></div>
+      <!-- SPEC-136: GUM の内訳 (= 遊んだぶんが GUM になった式) -->
+      <div class="gum-bd hidden" id="stageTransitionGum" data-reveal></div>
       <!-- SPEC-128: 残った CE を固有スキルへ振った結果 (= CE は次のステージへ持ち越さない) -->
       <div class="result-sigpour hidden" id="stageTransitionSig" data-reveal></div>
       <!-- SPEC-132: ステージクリアのたびにスキルツリーへ (= 閉じるとこの画面に戻る。 次のステージから効く) -->
@@ -367,6 +369,8 @@
       </div>
       <!-- SPEC-090: この挑戦で得た GUM とゴールドダスト -->
       <div class="result-rewards hidden" id="gameOverRewards" data-reveal></div>
+      <!-- SPEC-136: GUM の内訳 (= 遊んだぶんが GUM になった式) -->
+      <div class="gum-bd hidden" id="gameOverGum" data-reveal></div>
       <button class="btn gameover-modal__retry result-tree-btn" id="gameOverSkillTree" data-reveal><img alt="" aria-hidden="true" /><span data-i18n="tree.openResult">スキルツリーへ</span></button>
       <div class="gameover-modal__form">
         <label class="gameover-form__label" for="gameOverName" data-i18n="gameover.namelabel">プレイヤー名</label>
@@ -465,6 +469,8 @@
       <div class="report-totals" id="activityReportTotals" data-reveal></div>
       <!-- SPEC-090: この挑戦で得た GUM とゴールドダスト -->
       <div class="result-rewards hidden" id="activityReportRewards" data-reveal></div>
+      <!-- SPEC-136: GUM の内訳 (= 遊んだぶんが GUM になった式) -->
+      <div class="gum-bd hidden" id="activityReportGum" data-reveal></div>
       <!-- SPEC-106: そのヒーローで初めて全クリア → LL の解放 -->
       <p class="report-ll hidden" id="activityReportLL" role="status"></p>
       <button class="btn gameover-modal__retry result-tree-btn" id="activityReportSkillTree" data-reveal><img alt="" aria-hidden="true" /><span data-i18n="tree.openResult">スキルツリーへ</span></button>

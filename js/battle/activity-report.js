@@ -27,7 +27,7 @@ import { countUp, revealIn } from "../reveal.js";
 import { presentResult } from "../result-telop.js";
 import { startMenuBgmAfterJingle } from "../ui-sound.js";
 import { grantRunRewards, runDust, addHeroClear } from "../meta.js";   // + SPEC-106
-import { renderRewards } from "../meta-ui.js";
+import { renderRewards, renderGumBreakdown } from "../meta-ui.js";
 import { perk } from "../perks.js";   // SPEC-090c
 import {
   getPlayerName, setPlayerName, submitScore, getRankingApiUrl,
@@ -82,6 +82,7 @@ export function triggerActivityReport() {
       const scoreEl = document.getElementById("activityReportScore");
       if (scoreEl) countUp(scoreEl, Number(scoreEl.dataset.score) || 0, { durMs: 800, delayMs: 450 });
       renderRewards(document.getElementById("activityReportRewards"), _rewards ?? {}, { delayMs: 900 });   // SPEC-090
+      renderGumBreakdown(document.getElementById("activityReportGum"), _rewards);   // SPEC-136
       if (llFirst) showLLUnlocked(HERO_STARTING_WEAPON[state.ownedHero?.heroId]);   // SPEC-106
     },
   });
