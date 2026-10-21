@@ -167,11 +167,13 @@ for (const [route, extId, kind, ja, en, icon, x, y, requires, hero] of EXT_MASTE
  *   仕込み (= sl_<extId>): 手に入れたとき、 最初から Lv ＋1（段ごと・2 段まで）。 値段は Lv.1 のまま。 perk は slv_<extId>
  *     成長の「先手」から左上へ、 くしの形 (= 右端の柱を上へ、 各段を左へ)。 上 2 段が武器、 下 3 段が強化
  *   武器の目利き (= wc_<extId>): ショップでその武器が −6%（段ごと）。 perk は強化と同じ cut_<extId>。 目利きの右に 2 列
- *   得意武器 (= wm_main): ショップとレベルアップで、 そのヒーローの初期武器が出やすい (= 候補に 2 枚ずつ重ねる。 3 段まで)
+ *   得意武器 (= wm_main): ショップとレベルアップで札を引くたびに、 その確率で初期武器の札が必ず並ぶ (= SPEC-144: 20% / 40% / 60%)
  */
 export const START_LV_GUM = 150;
 export const START_LV_MAX = 2;
 export const MAIN_BIAS_MAX = 3;
+/** SPEC-144: 得意武器 1 段で、 札を引くときに初期武器が必ず並ぶ確率 (= 20% / 40% / 60%) */
+export const MAIN_CHANCE_PER_RANK = 0.2;
 const WEAPONS = EXT_MASTERY.filter((e) => e[2] === "w");
 const BUFFS = EXT_MASTERY.filter((e) => e[2] === "b");
 // 仕込みのマス (= 行ごとに右端から左へ。 右端が柱)
@@ -203,7 +205,7 @@ WEAPONS.forEach(([, extId, , ja, en, icon], i) => {
 });
 NODES.push({
   ...N("wm_main", "wm", "atk_dmg", 0, 0, "repeat", "得意武器", "Favored Weapon",
-    "ショップとレベルアップで、 ヒーローの初期武器が出やすい（段ごと）", "Your hero's starting weapon shows up more often in shops and level-ups (per rank)",
+    "ショップとレベルアップで札が並ぶたびに、 初期武器の札が必ず並ぶ確率 20%（段ごとに ＋20%。 最大 60%）", "Each time shop or level-up cards are dealt, 20% chance per rank (max 60%) that your starting weapon is guaranteed among them",
     { gum: 100 }, 3001, { mainBias: 1 }, MAIN_BIAS_MAX),
   x: 1, y: -1, requires: ["atk_dmg"],
 });

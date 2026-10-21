@@ -7,7 +7,7 @@
 
 import { getMeta, hasHeroCleared } from "../meta.js";   // SPEC-106
 import { state, pauseTime, resumeTime } from "../state.js";
-import { perk, stockLimit, startLevelBonus } from "../perks.js";   // SPEC-090c / SPEC-139
+import { perk, stockLimit, startLevelBonus, mainWeaponChance } from "../perks.js";   // SPEC-090c / SPEC-139
 import {
   EXT_ROSTER, extImg, extTierImg, getExt, getCategory,
   getTierName, getSkillName, getSkillDesc,
@@ -203,15 +203,16 @@ function _samplePicks(n, exclude = new Set(), last = new Set(), withLL = true, b
     return true;
   });
 
-  // SPEC-139: 得意武器 (= 初期武器を段ごとに 2 枚ずつ重ねる)
-  const mainN = perk("mainBias") * 2;
-  const mainE = mainN > 0 ? eligible.find((e) => String(e.extId) === String(state.battle?.starterExtId)) : null;
-  if (mainE) eligible = eligible.concat(Array(mainN).fill(mainE));
   // SPEC-109: 店主の癖 (= 強化が出やすい・まだ持っていない系列が出やすい)。 候補を重ねて出やすくする
   if (bias === "buff") eligible = eligible.concat(eligible.filter((e) => e.category === "buff"));
   if (bias === "new") eligible = eligible.concat(eligible.filter((e) => !ownedById.has(String(e.extId))));
   // SPEC-013: 重複防止、 最低 1 weapon。 SPEC-067: このレベルアップで出したものは避ける
-  const result = pickFromPool(eligible, n, { exclude, last });
+  // SPEC-144: 得意武器 (= その確率で、 初期武器の札を必ず 1 枚目に並べる。 並べられないとき (= 段が上がりきった・お断り) は何もしない)
+  const mainE = n > 0 && Math.random() < mainWeaponChance()
+    ? eligible.find((e) => String(e.extId) === String(state.battle?.starterExtId) && !exclude.has(String(e.extId))) : null;
+  const result = mainE
+    ? [mainE, ...pickFromPool(eligible.filter((e) => e !== mainE), n - 1, { exclude, last })]
+    : pickFromPool(eligible, n, { exclude, last });
   for (const e of result) _shown.add(String(e.extId));
 
   return result.map(e => {

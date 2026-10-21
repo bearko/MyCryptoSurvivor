@@ -2011,3 +2011,10 @@ a.title-screen__next[href]:hover { border-color: var(--accent); }
 @media (prefers-reduced-motion: reduce) {
   .stage-intro--in { animation: none; opacity: 1; }
 }
+
+/* ============================================================
+   SPEC-144: 説明の文の色分け (= 数字は金・用語は水色・「」の中は白の太字。 js/rich-text.js)
+   ============================================================ */
+.rt-num { color: #ffd36b; font-weight: 800; font-variant-numeric: tabular-nums; }
+.rt-term { color: #7fdcff; font-weight: 700; }
+.rt-quote { color: #fff; font-weight: 800; }

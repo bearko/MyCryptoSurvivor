@@ -7,6 +7,7 @@
 // 押すと選ぶ、 2 度押しで買う (= 確認は挟まない)。 根を買うと金の輪が広がって 1 段目が飛び出す。
 // 入口: タイトルの「スキルツリー」(= 1 回も遊んでいなければ出さない) と、 結果の画面の「スキルツリーへ」。
 
+import { richNode } from "./rich-text.js";   // SPEC-144
 import { getMeta, onMetaChange, spend, setNodeRank, resetNodes } from "./meta.js";
 import { ROUTES, ROUTE_MAP, NODE_MAP, TREE_NODES, ROOT_ID, CAPSTONE_NEED, nodePos, routeLabelPos } from "./skill-data.js";
 import { getUnlockedHeroes, unlockOf, GAME_TITLES } from "./hero-unlock.js";   // SPEC-133: ヒーローの条件
@@ -621,7 +622,7 @@ function renderSheet() {
           h("div", { class: "dt-tags" }, h("span", { class: "route-tag", style: { "--c": ROUTE_MAP[n.route].color } }, L(ROUTE_MAP[n.route].name))),
           h("div", { class: "dt-name" }, t("tree.hidden", "？？？"))),
         closeX),
-      h("p", { class: "dt-desc" }, tpl(t("tree.hiddenDesc", "「{name}」を解放すると、この先が見える。"), { name: nameOf(parent) })),
+      richNode("p", "dt-desc", tpl(t("tree.hiddenDesc", "「{name}」を解放すると、この先が見える。"), { name: nameOf(parent) })),   // SPEC-144: 数字と用語に色
       detailConds(m, n, nodeState(m, n.id), nodeCost(m, n.id), { hideParent: true }),
       h("button", { class: "tree-btn", type: "button", onclick: () => select(parent.id, true) }, tpl(t("tree.toParent", "「{name}」へ"), { name: nameOf(parent) })),
     );
@@ -649,7 +650,7 @@ function renderSheet() {
         h("div", { class: "dt-name" }, nameOf(n)),
         pips),
       closeX),
-    h("p", { class: "dt-desc" }, L(n.desc)),
+    richNode("p", "dt-desc", L(n.desc)),   // SPEC-144: 数字と用語に色
     detailConds(m, n, st, cost),
     detailChanges(m, n.id),
     actionButton(m, n, st, cost, afford),
@@ -664,7 +665,7 @@ function detailConds(m, n, st, cost, { hideParent = false } = {}) {
   const req = (n.requires ?? []).filter((r) => NODE_MAP[r]?.kind !== "root");
   if (req.length && !hideParent) items.push({ ok: req.some((r) => owns(m, r)), text: tpl(t("tree.condParent", "「{name}」を解放"), { name: req.map((r) => nameOf(NODE_MAP[r])).join(t("tree.or", "」または「")) }) });
   if (n.hero) items.push({ ok: heroOk(m, n), text: heroCondText(n.hero) });
-  if (n.hero && hideParent) return items.length ? h("ul", { class: "dt-conds" }, items.map((c) => h("li", { class: c.ok ? "met" : "" }, h("i", { "aria-hidden": "true" }, c.ok ? "✓" : "✗"), c.text))) : null;
+  if (n.hero && hideParent) return items.length ? h("ul", { class: "dt-conds" }, items.map((c) => h("li", { class: c.ok ? "met" : "" }, h("i", { "aria-hidden": "true" }, c.ok ? "✓" : "✗"), richNode("span", "", c.text)))) : null;
   if (n.kind === "capstone") {
     const have = routeCounts(m)[n.route] || 0;
     items.push({ ok: have >= CAPSTONE_NEED, text: tpl(t("tree.condRoute", "この道のスキルを {need} つ（いま {n} つ）"), { need: CAPSTONE_NEED, n: have }) });
@@ -673,7 +674,7 @@ function detailConds(m, n, st, cost, { hideParent = false } = {}) {
   if (cost.gum) items.push({ ok: !s.gum, text: s.gum ? tpl(t("tree.condGumShort", "GUM {need}（あと {n}）"), { need: cost.gum, n: s.gum }) : tpl(t("tree.condGum", "GUM {need}"), { need: cost.gum }) });
   if (cost.dust) items.push({ ok: !s.dust, text: s.dust ? tpl(t("tree.condDustShort", "ゴールドダスト {need}（あと {n}）"), { need: cost.dust, n: s.dust }) : tpl(t("tree.condDust", "ゴールドダスト {need}"), { need: cost.dust }) });
   if (!items.length) return null;
-  return h("ul", { class: "dt-conds" }, items.map((c) => h("li", { class: c.ok ? "met" : "" }, h("i", { "aria-hidden": "true" }, c.ok ? "✓" : "✗"), c.text)));
+  return h("ul", { class: "dt-conds" }, items.map((c) => h("li", { class: c.ok ? "met" : "" }, h("i", { "aria-hidden": "true" }, c.ok ? "✓" : "✗"), richNode("span", "", c.text))));
 }
 
 /** 解放・強化のボタン (= 金のグラデーション。 費用は中に並べる) */
