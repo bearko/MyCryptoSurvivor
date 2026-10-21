@@ -102,16 +102,16 @@ export function installSkillTree() {
   _screen = document.getElementById("skillTreeScreen");
   document.getElementById("btnTitleSkillTree")?.addEventListener("click", () => openSkillTree());
   // 結果の画面から (= ゲームオーバー・全クリア・SPEC-132 のステージクリア): その画面を隠して木を開き、 閉じたら元の画面に戻す
-  for (const [id, modalId, midRun, retry] of [
+  for (const [id, modalId, midRun, retry, next] of [
     ["gameOverSkillTree", "gameOverModal", false, true],   // SPEC-146: 倒れたあとは木から「もう一度挑む」
     ["activityReportSkillTree", "activityReportModal", false],
-    ["stageTransitionSkillTree", "stageTransitionModal", true],
+    ["stageTransitionSkillTree", "stageTransitionModal", true, false, true],   // SPEC-161: ステージクリアからは木から「次のノードに挑む」
   ]) {
     const btn = document.getElementById(id);
     if (!btn) continue;
     btn.addEventListener("click", () => {
       const back = document.getElementById(modalId) ?? btn.closest('[role="dialog"]');
-      openSkillTree({ returnTo: back, midRun, retry: !!retry });
+      openSkillTree({ returnTo: back, midRun, retry: !!retry, next: !!next });
     });
     const ic = btn.querySelector("img");
     if (ic) ic.src = img(ICON_GUM);
@@ -187,13 +187,15 @@ export function renderHeroPerks() {
 let _returnTo = null;
 let _midRun = false;
 let _retry = false;   // SPEC-146: 倒れたあとに開いた (= 「もう一度挑む」を木の右下に)
+let _next = false;    // SPEC-161: ステージクリアから開いた (= 同じ場所に「次のノードに挑む」。 元の画面に戻らず次のステージへ)
 let _bought = 0;      // SPEC-146: 開いているあいだに取った・上げた数
-export function openSkillTree({ focus = null, returnTo = null, midRun = false, retry = false } = {}) {
+export function openSkillTree({ focus = null, returnTo = null, midRun = false, retry = false, next = false } = {}) {
   if (_open || !_screen) return;
   _open = true;
   _returnTo = returnTo;
   _midRun = !!midRun;
   _retry = !!retry;
+  _next = !!next && !retry;
   _bought = 0;
   _returnTo?.classList.add("hidden");   // SPEC-132: 元の画面は消さずに隠すだけ (= 閉じたらそのまま戻る)
   document.getElementById("reviveFx")?.classList.add("revive-fx--hold");   // SPEC-152: 渦の canvas は木より上なので、 開いているあいだは隠す
@@ -244,6 +246,13 @@ function retryFromTree() {
   _returnTo = null;   // 結果の画面には戻さない
   closeSkillTree();
   import("./battle/gameover.js").then((g) => g.applyRetry()).catch(() => {});
+}
+
+/** SPEC-161: 木からそのまま「次のノードに挑む」 (= ステージクリアの画面に戻らずに次のステージへ) */
+function nextFromTree() {
+  _returnTo = null;   // ステージクリアの画面には戻さない (= 隠れたまま。 次のステージが始まる)
+  closeSkillTree();
+  import("./battle/stage-transition.js").then((m) => m.proceedToNextStage()).catch(() => {});
 }
 
 export function closeSkillTree() {
@@ -385,8 +394,11 @@ function buildScreen() {
   const backBtn = h("button", { class: "tree-tool tree-back2", type: "button", onclick: closeSkillTree },
     h("span", { "aria-hidden": "true" }, "◀"), h("span", {}, t("tree.backTo", "戻る")));
   // SPEC-146: 倒れたあとに開いたときは、 戻るの上に「もう一度挑む」 (= 強くして、 そのまま挑む)
+  // SPEC-161: ステージクリアから開いたときは、 同じ場所に「次のノードに挑む」
   const retryBtn = _retry ? h("button", { class: "tree-tool tree-retry", type: "button", onclick: retryFromTree },
-    h("span", {}, t("tree.retryNow", "復活する")), h("span", { "aria-hidden": "true" }, "▶")) : null;
+    h("span", {}, t("tree.retryNow", "復活する")), h("span", { "aria-hidden": "true" }, "▶"))
+    : (_next ? h("button", { class: "tree-tool tree-retry tree-next", type: "button", onclick: nextFromTree },
+      h("span", {}, t("tree.nextNode", "次のノードに挑む")), h("span", { "aria-hidden": "true" }, "▶")) : null);
   // SPEC-094: 広い画面は Workshop と同じく、 右の列に「詳しい欄」と「いまの効果」を縦に並べる。 狭い画面は下の欄と右上の札
   const wide = isWide();
   _screen.classList.toggle("wide", wide);

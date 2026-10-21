@@ -320,6 +320,7 @@
   "revive.flash": { "ja": "REVIVE!", "en": "REVIVE!" },
   "navi.revive.intro": { "ja": "めげないで！この「王妃の黄金時計」のチカラで復活させてあげる！チカラを引き継げるようにスキルツリーで強化しよう！", "en": "Don't give up! I'll bring you back with the Golden Watch of the Queen! Strengthen the Skill Tree so your power carries over!" },
   "tree.retryNow": { "ja": "復活する", "en": "Revive" },
+  "tree.nextNode": { "ja": "次のノードに挑む", "en": "Next node" },
   "navi.afterTree.bought": { "ja": "強くなったね！ さっきより楽に戦えるはず。さっそく「復活」しよう！", "en": "You got stronger! It should be easier this time. Hit “Revive”!" },
   "navi.afterTree.none": { "ja": "GUM は挑むたびに貯まるよ。まずは「復活する」で稼ごう！", "en": "You earn GUM every run. Hit “Revive” to earn more!" },
   "gameover.retry":      { "ja": "リトライ",                        "en": "Retry" },

@@ -139,7 +139,8 @@ export function triggerStageEndOrTransition() {
 /**
  * 「次のステージへ」 click → state.currentStageIdx++ → startBattle 再呼出
  */
-async function _onProceedClick() {
+/** 次のステージへ (= 「次のステージへ」のボタン。 SPEC-161: スキルツリーの「次のノードに挑む」からも。 ステージクリアの画面は隠したまま) */
+export async function proceedToNextStage() {
   clearTimeout(_shareTimer);   // SPEC-143
   removeConfetti();   // SPEC-149
   closeSharePrompt();
@@ -150,6 +151,7 @@ async function _onProceedClick() {
   const m = await import("./index.js");
   m.startBattle(state.ownedHero);
 }
+const _onProceedClick = () => proceedToNextStage();
 
 function _wireOnce() {
   if (_wired) return;

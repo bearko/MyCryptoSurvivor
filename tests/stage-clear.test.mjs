@@ -40,3 +40,17 @@ test("2 列にするかは窓ではなく置き場 (= ドックを引いた幅) 
   assert.ok(!/@media \(min-width: 980px\) \{\s*\/\* PC: 内訳/.test(css), "窓の幅の判定は消した");
   assert.match(css, /\.result-split \.result-more-body \{ grid-column: 1; grid-row: 1 \/ span 9;/);
 });
+
+test("SPEC-161: ステージクリアから開いた木には「復活する」と同じ場所に「次のノードに挑む」。 押すと元の画面に戻らず次のステージへ", () => {
+  const tree = read("../js/skill-tree.js");
+  assert.match(tree, /\["stageTransitionSkillTree", "stageTransitionModal", true, false, true\]/);
+  assert.match(tree, /_next = !!next && !retry;/);
+  assert.match(tree, /h\("button", \{ class: "tree-tool tree-retry tree-next", type: "button", onclick: nextFromTree \}/, "同じ場所 (= .tree-retry)");
+  assert.match(tree, /function nextFromTree\(\) \{\n\s+_returnTo = null;[\s\S]*?closeSkillTree\(\);\n\s+import\("\.\/battle\/stage-transition\.js"\)\.then\(\(m\) => m\.proceedToNextStage\(\)\)/);
+  const st = read("../js/battle/stage-transition.js");
+  assert.match(st, /export async function proceedToNextStage\(\)/);
+  assert.match(st, /const _onProceedClick = \(\) => proceedToNextStage\(\);/);
+  const ui = JSON.parse(read("../data/i18n/ui.json"));
+  assert.equal(ui["tree.nextNode"].ja, "次のノードに挑む");
+  assert.ok(ui["tree.nextNode"].en);
+});
