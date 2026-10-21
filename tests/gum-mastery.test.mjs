@@ -42,7 +42,7 @@ test("SPEC-139: 仕込みのぶんは値段とギフト券の枚数に入れな�
   assert.equal(shopPrice({ nextLevel: 3 }, 0), 500, "priceLevel が無ければ今までどおり");
   const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), "utf8");
   assert.match(read("js/battle/levelup.js"), /const bonus = owned \? 0 : startLevelBonus\(extId\)/);
-  assert.match(read("js/battle/levelup.js"), /const mainN = perk\("mainBias"\) \* 2;/);
+  assert.match(read("js/battle/levelup.js"), /Math\.random\(\) < mainWeaponChance\(\)/);
   assert.match(read("js/battle/index.js"), /level: Math\.min\(EXT_MAX_LEVEL, 1 \+ startLevelBonus\(starterId\)\)/);
 });
 

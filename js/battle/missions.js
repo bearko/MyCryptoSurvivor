@@ -26,6 +26,7 @@ import { ICON_GUM } from "../meta-ui.js";   // SPEC-125: 力添え (= お助け�
 import { roundTo5 } from "./shop-logic.js";
 import { naviTipModal } from "../navi-tips.js";   // SPEC-137: 初めてのミッションでマインちゃんが説明
 import { naviHide } from "../navi.js";
+import { setRichText } from "../rich-text.js";   // SPEC-144
 
 // ============================================================
 // 純関数 (= tests/missions.test.mjs)
@@ -431,7 +432,7 @@ function _renderOffer() {
   if (face && face.dataset.id !== mission.id) { face.dataset.id = mission.id; face.src = _face(mission); }
   set("missionOfferGiver", t(`mission.${mission.id}.giver`, mission.id));
   set("missionOfferTitle", t(`mission.${mission.id}.title`, mission.id));
-  set("missionOfferDesc", missionDesc(mission, star));
+  setRichText(document.getElementById("missionOfferDesc"), missionDesc(mission, star));   // SPEC-144: 数字と用語に色
   set("missionOfferTime", tpl(t("mission.time", "{n} 秒"), { n: String(tier.durS) }));
   set("missionOfferGoal", _goalText(tier));
   set("missionOfferReward", rewardSummary(mission, star, stageIdx));
@@ -535,7 +536,7 @@ function _renderReward() {
     btn.innerHTML = `<span class="mission-reward__icon"></span><span class="mission-reward__name"></span><span class="mission-reward__detail"></span><span class="mission-reward__key"></span>`;
     btn.querySelector(".mission-reward__icon").textContent = icons[c.kind === "boon" ? c.boon : c.kind] ?? "★";
     btn.querySelector(".mission-reward__name").textContent = name;
-    btn.querySelector(".mission-reward__detail").textContent = detail;
+    setRichText(btn.querySelector(".mission-reward__detail"), detail);   // SPEC-144
     btn.querySelector(".mission-reward__key").textContent = String(i + 1);
     btn.addEventListener("click", () => pickReward(i));
     box.appendChild(btn);
