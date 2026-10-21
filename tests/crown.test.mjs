@@ -28,8 +28,10 @@ test("クラウンを付けると、 拾う CE に倍率が掛かる", async () 
   for (const e of EXT) EXT_DEFS[String(e.extId)] = e;
   resetBuffs();
   assert.equal(state.buffs.ceGainMul, 1);
-  applyBuff(21, 3);
-  assert.equal(state.buffs.ceGainMul, 1.5);
-  applyBuff(21, 5);
+  applyBuff(21, 1);
+  assert.equal(state.buffs.ceGainMul, 1.15);
+  applyBuff(21, 10);   // SPEC-162: Lv10 が今までの 5 段目
   assert.equal(state.buffs.ceGainMul, 2);
+  applyBuff(21, 15);
+  assert.ok(state.buffs.ceGainMul > 2, "Lv11〜15 はその先");
 });

@@ -23,7 +23,6 @@ import { owns } from "../skill-logic.js";   // SPEC-154
 import { ROOT_ID } from "../skill-data.js";   // SPEC-154
 import { renderRewards, renderGumBreakdown } from "../meta-ui.js";
 import { perk } from "../perks.js";   // SPEC-090c
-import { pourShopCeIntoSig } from "./shop.js";   // SPEC-128
 import { heroImg } from "../heroes.js";
 import { loadShare, shouldOfferShare, openSharePrompt, closeSharePrompt } from "../share-x.js";   // SPEC-143
 import { isEasy, stageCount } from "../easy.js";   // SPEC-147 / SPEC-154
@@ -106,9 +105,7 @@ export function triggerStageEndOrTransition() {
   }
 
   state.battle.gameOver = true;   // ループ tick の重複 trigger 防止 (= 既存規約)
-  // SPEC-128: 残った CE を固有スキルへ (= 次のステージへは持ち越さない。 ギフト券は持ち越す)
-  const endSnap = state.run.stages.find(s => s.idx === endIdx);
-  if (state.shop && endSnap && endSnap.sigPour === undefined) endSnap.sigPour = pourShopCeIntoSig();
+  // SPEC-128 → SPEC-162: 残った CE は固有スキルへ振らず、 装備と一緒に次のステージへ持ち越す (= 固有スキルは店で上げる)
   pauseTime();
   _wireOnce();
   _renderTransitionModal();

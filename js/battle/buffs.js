@@ -8,6 +8,7 @@
 import { state } from "../state.js";
 import { recordHeal } from "./run-stats.js";   // SPEC-148
 import { getExt, getCategory } from "../extensions.js";
+import { levelParams } from "../ext-level.js";   // SPEC-162
 import { STATS_INITIAL } from "../constants.js";
 import { perks, perkBuffBase } from "../perks.js";   // SPEC-090c: スキルツリーの土台
 import { sigRegenPerSec } from "./signature.js";   // SPEC-100
@@ -19,7 +20,7 @@ import { canHeal } from "./missions.js";   // SPEC-112
 export function applyBuff(extId, level) {
   const ext = getExt(extId);
   if (!ext || getCategory(ext) !== "buff") return;
-  const params = ext.tierParams?.[Math.max(0, (level | 0) - 1)] ?? {};
+  const params = levelParams(ext, level);   // SPEC-162: 15 段に伸ばした数値
   const m = params.magnitude ?? 0;
   const buffs = state.buffs;
   const base  = perkBuffBase(perks());   // SPEC-090c: スキルツリーの土台に掛ける (= 絶対値ではなく、 土台 × tier)

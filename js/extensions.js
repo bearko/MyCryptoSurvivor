@@ -8,6 +8,7 @@
 // 内蔵し、 武器も強化も同じ shape で扱う。
 
 import { img, LL_LEVEL } from "./constants.js";
+import { rankOf, levelParams } from "./ext-level.js";   // SPEC-162: 15 段階
 import { loadJson } from "./data-loader.js";
 
 export const EXT_ROSTER = [];
@@ -71,7 +72,7 @@ export function extImg(extOrId) {
 export function extTierImg(ext, level) {
   if (!ext) return img(`Image/Extensions/0.png`);
   if (isLLLevel(ext, level)) return img(`Image/Extensions/${ext.ll.extId}.png`);   // SPEC-101
-  const idx = Math.max(0, Math.min((ext.tierIconIds?.length ?? 1) - 1, (level | 0) - 1));
+  const idx = Math.max(0, Math.min((ext.tierIconIds?.length ?? 1) - 1, rankOf(level) - 1));   // SPEC-162: 3 段ごとに絵が変わる
   const id = ext.tierIconIds?.[idx] ?? ext.iconId;
   return img(`Image/Extensions/${id}.png`);
 }
@@ -79,13 +80,13 @@ export function extTierImg(ext, level) {
 /**
  * tier index (0..4) でローカライズ済の tier 名を返す。
  * @param {object} ext - extension entry
- * @param {number} level - 1..5 (= tier index = level-1)
+ * @param {number} level - 1..15 (= SPEC-162: ランクは 3 段ごと)
  * @param {string} lang
  */
 export function getTierName(ext, level, lang) {
   if (!ext) return "";
   if (isLLLevel(ext, level)) return ext.ll.name[lang] ?? ext.ll.name.ja ?? "";   // SPEC-101
-  const idx = Math.max(0, Math.min((ext.tierNames?.length ?? 1) - 1, (level | 0) - 1));
+  const idx = Math.max(0, Math.min((ext.tierNames?.length ?? 1) - 1, rankOf(level) - 1));   // SPEC-162: 3 段ごとに名前が変わる
   const t = ext.tierNames?.[idx];
   if (!t) return "";
   return t[lang] ?? t.ja ?? t.en ?? "";
@@ -99,8 +100,7 @@ export function getSkillDesc(ext, level, lang) {
   if (!ext) return "";
   if (isLLLevel(ext, level)) return ext.ll.desc[lang] ?? ext.ll.desc.ja ?? "";   // SPEC-101
   const tplObj = ext.skillDescTpl;
-  const idx = Math.max(0, Math.min((ext.tierParams?.length ?? 1) - 1, (level | 0) - 1));
-  const params = ext.tierParams?.[idx] ?? {};
+  const params = levelParams(ext, level);   // SPEC-162: 15 段に伸ばした数値
   const tplStr = (tplObj && (tplObj[lang] ?? tplObj.ja ?? tplObj.en)) ?? "";
   return _fill(tplStr, params);
 }

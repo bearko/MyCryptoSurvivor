@@ -11,6 +11,7 @@
 // ヒーロー選択を閉じたら止める。
 
 import { state } from "./state.js";
+import { levelOfRank } from "./ext-level.js";   // SPEC-162
 import {
   HERO_STARTING_WEAPON, HERO_STARTING_WEAPON_DEFAULT, PLAYER_RADIUS, CHAR_SCALE, ENEMY_SPECS, ENEMY_COLOR,
 } from "./constants.js";
@@ -94,7 +95,7 @@ function _spawnWave(b, tier) {
 
 function _makeBattle(hero, tier) {
   const extId = HERO_STARTING_WEAPON[hero.heroId] ?? HERO_STARTING_WEAPON_DEFAULT;
-  const w = weaponFromExt(extId, tier);
+  const w = weaponFromExt(extId, levelOfRank(tier));   // SPEC-162: 見せるのはランクの最初の段 (1・4・7)
   const v = _vw();
   const b = {
     active: false,

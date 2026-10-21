@@ -157,7 +157,7 @@ test("画面とつなぎ: 常設の札・i18n", () => {
 
 test("SPEC-128: ステージの終わりに財布を固有スキルへ振る (= ショップ・つなぎ)", () => {
   const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), "utf8");
-  assert.match(read("js/battle/stage-transition.js"), /endSnap\.sigPour = pourShopCeIntoSig\(\)/);
+  assert.ok(!/pourShopCeIntoSig\(\)/.test(read("js/battle/stage-transition.js")), "SPEC-162: 残った CE は振らずに持ち越す");
   const shop = read("js/battle/shop.js");
   assert.match(shop, /s\.ce = 0;/);
   assert.match(shop, /sigCe: s\.sigCe \?\? 0/);   // やり直しでは入ったときの積み立てに戻す

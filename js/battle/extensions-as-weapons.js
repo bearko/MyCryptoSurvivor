@@ -11,6 +11,7 @@
 import { state } from "../state.js";
 import { getExt, getCategory } from "../extensions.js";
 import { EXT_MAX_LEVEL, LL_LEVEL, SERIES_COLOR_DEFAULT } from "../constants.js";
+import { rankOf, levelParams } from "../ext-level.js";   // SPEC-162
 
 /**
  * @param {number|string} extId
@@ -23,8 +24,8 @@ export function weaponFromExt(extId, level) {
   // SPEC-101: LL (= 6 段目) はその系列に LL 版があるときだけ。 数値は ext.ll.params
   const isLL   = !!ext.ll && (level | 0) >= LL_LEVEL;
   const lv     = isLL ? LL_LEVEL : Math.max(1, Math.min(EXT_MAX_LEVEL, level | 0));
-  const params = isLL ? ext.ll.params : (ext.tierParams?.[lv - 1] ?? {});
-  const tierIcon = isLL ? ext.ll.extId : (ext.tierIconIds?.[lv - 1] ?? ext.iconId ?? null);
+  const params = isLL ? ext.ll.params : levelParams(ext, lv);   // SPEC-162: 15 段に伸ばした数値
+  const tierIcon = isLL ? ext.ll.extId : (ext.tierIconIds?.[rankOf(lv) - 1] ?? ext.iconId ?? null);
   const color  = ext.seriesColor ?? SERIES_COLOR_DEFAULT;
   return {
     extId,

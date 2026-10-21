@@ -6,6 +6,7 @@ import {
   SHOP_FIRST_MS, SHOP_EVERY_MS, SHOP_PER_STAGE, SHOP_PRICE, SHOP_PRICE_LL,
   SHOP_STAGE_MUL, SHOP_REROLL_COST, SHOP_GIFT_COST,
 } from "../constants.js";
+import { rankOf } from "../ext-level.js";   // SPEC-162
 
 /** 店主 (= 商人のシャドーヒーロー。 絵は資産リポジトリの Image/Enemies/<enemyId>.png) */
 export const MERCHANTS = [
@@ -72,8 +73,8 @@ export function shopPrice(offer, stageIdx = 0, quirk = null, sale = false, cut =
 /** SPEC-127: その品を無料にするギフト券の枚数 (= 行き先の段で傾斜。 LL は券では買えない → null) */
 export function giftCost(offer) {
   if (!offer || offer.isLL) return null;
-  const lv = Math.max(1, Math.min(SHOP_GIFT_COST.length, (offer.priceLevel ?? offer.nextLevel) | 0));
-  return SHOP_GIFT_COST[lv - 1];
+  const rank = rankOf((offer.priceLevel ?? offer.nextLevel) | 0);   // SPEC-162: 段ではなくランク
+  return SHOP_GIFT_COST[Math.max(1, Math.min(SHOP_GIFT_COST.length, rank)) - 1];
 }
 
 /** SPEC-130: 「ギフト券支払いを優先」 (= 既定はオン。 次に開いたときも覚えておく) */

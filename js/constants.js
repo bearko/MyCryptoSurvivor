@@ -94,8 +94,11 @@ export const XP_TO_NEXT_GROWTH = 1.2;   // SPEC-065: 1.3 → 1.2 (= Lv15 まで�
 // ============================================================
 // Extensions as weapons + Level-up pick (= SPEC-008)
 // ============================================================
-export const EXT_MAX_LEVEL          = 5;
-export const LL_LEVEL               = 6;   // SPEC-101: ヒーローの初期武器だけ、 Lv.5 のあとに LL がある
+// SPEC-162: 15 段階 (= 3 段ごとにランク。 Lv10 が今までの Lv5 の強さ、 Lv11〜15 はその先。 js/ext-level.js)
+export const EXT_MAX_LEVEL          = 15;
+export const EXT_RANK_SIZE          = 3;    // 何段ごとにランク (= 絵と名前) が上がるか
+export const LL_LEVEL               = 16;   // SPEC-101: ヒーローの初期武器だけ、 Lv.15 のあとに LL がある
+export const EXT_START_LEVEL_STEP   = 2;    // SPEC-139 の仕込み 1 段 = 何段ぶんか (= 15 段になったので 1 段では薄い)
 export const PROJECTILE_LIFE_MS     = 1500;
 // SPEC-073: パンジャンドラムが転がる速さ (= 1 秒に約 1.6 回転。 進む左右の向きで回る向きが変わる)
 export const PANJANDRUM_SPIN_RAD_S = 10;
@@ -352,13 +355,15 @@ export const SHOP_FIRST_MS      = [10000, 0, 0];   // ステージ 1 は 0:10、
 export const SHOP_EVERY_MS      = 40000;           // そのあと 40 秒ごと
 export const SHOP_PER_STAGE     = 6;               // 1 ステージの店の数 (= ボスの前に終わる)
 export const SHOP_OFFERS        = 4;               // 品の枚数 (= マゼランは +1)
-export const SHOP_PRICE         = [15, 30, 500, 2000, 10000];   // 行き先の段 Lv.1〜5 の値段 (= ステージ 1)。 SPEC-123: Rare 500 / Epic 2,000 / Legendary 10,000 (= 全部最大はステージをまたいで目指す)
+// SPEC-162: 行き先の段 Lv.1〜15 の値段 (= ステージ 1)。 装備と CE がステージをまたいで残るので、 1 回の挑戦で 15 段を登る前提。
+//   Lv10 (= 今までの最大) まで合計 3,555、 Lv15 まで合計 24,555。 ステージ 2・3 は SHOP_STAGE_MUL
+export const SHOP_PRICE         = [15, 25, 40, 80, 150, 260, 420, 650, 950, 1400, 2000, 2800, 3900, 5300, 7000];
 export const SHOP_PRICE_LL      = 20000;           // LL ランクアップ (= Lv.5 の 2 倍。 SPEC-122)
 export const SHOP_STAGE_MUL     = [1, 1.8, 2.6];   // 雑魚の CE が ×1/×2/×3 なので値段も上げる
 export const SHOP_BANS          = 3;               // お断りは 1 挑戦 3 回まで
 export const SHOP_REROLL_COST   = 5;               // 払うリロールは 5 → 10 → 15 … (= 店ごとに戻る)
 export const SHOP_FREE_REROLLS  = 1;               // 無料のリロールはステージごと 1 回 (+ スキルツリーの引き直し)
-export const SHOP_GIFT_COST     = [1, 1, 2, 3, 5];  // SPEC-127: 1 品を無料にするギフト券の枚数 (= 行き先 Lv.1〜5。 Common・Uncommon 1 / Rare 2 / Epic 3 / Legendary 5。 LL は不可)
+export const SHOP_GIFT_COST     = [1, 1, 2, 3, 5];  // SPEC-127: 1 品を無料にするギフト券の枚数 (= 行き先のランク 1〜5。 Common・Uncommon 1 / Rare 2 / Epic 3 / Legendary 5。 LL は不可。 SPEC-162: 段ではなくランク)
 export const SHOP_HEADSTART_CE  = 20;              // スキルツリーの「先手」 1 段ぶんの CE
 
 // ============================================================

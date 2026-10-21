@@ -51,7 +51,7 @@
   "levelup.rankUpLL":        { "ja": "LL ランクアップ",            "en": "LL RANK UP" },
   "hero.detail.llLocked":    { "ja": "LL：このヒーローで全ステージをクリアすると解放（{name}）", "en": "LL: clear all stages with this hero to unlock ({name})" },
   "report.llUnlocked":       { "ja": "LL 解放！ 次から「{name}」にランクアップできる", "en": "LL unlocked! From now on you can rank up to \"{name}\"" },
-  "hero.detail.ll":          { "ja": "Lv.5 のあと LL：{name}",     "en": "After Lv.5, LL: {name}" },
+  "hero.detail.ll":          { "ja": "Lv.15 のあと LL：{name}",    "en": "After Lv.15, LL: {name}" },
   "levelup.tetractys":       { "ja": "テトラクテュス：このピックは 2 段上がる", "en": "Tetractys: this pick rises 2 levels" },
   "hero.select.count":       { "ja": "解放 {n} / {total}",          "en": "Unlocked {n} / {total}" },
   "hero.lock.label":         { "ja": "ロック中",                   "en": "Locked" },

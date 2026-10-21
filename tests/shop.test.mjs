@@ -43,32 +43,35 @@ test("店の時刻: ステージ 1 は 0:10 から、 ステージ 2・3 は開�
 });
 
 test("値段は行き先の段で上がり、 ステージで ×1.8・×2.6 (= 5 の倍数)", () => {
-  assert.deepEqual([1, 2, 3, 4, 5].map((nextLevel) => shopPrice({ nextLevel })), [15, 30, 500, 2000, 10000]);
-  assert.equal(shopPrice({ nextLevel: 6, isLL: true }), 20000);
+  // SPEC-162: 15 段 (= Lv10 まで合計 3,555・Lv15 まで 24,555)
+  assert.deepEqual([1, 2, 3, 4, 5, 10, 15].map((nextLevel) => shopPrice({ nextLevel })), [15, 25, 40, 80, 150, 1400, 7000]);
+  assert.equal(shopPrice({ nextLevel: 16, isLL: true }), 20000);
   assert.equal(shopPrice({ nextLevel: 1 }, 1), 25);   // 15 × 1.8 = 27 → 25
-  assert.equal(shopPrice({ nextLevel: 5 }, 2), 26000);  // 10000 × 2.6
-  for (const st of [0, 1, 2]) for (const lv of [1, 2, 3, 4, 5]) assert.equal(shopPrice({ nextLevel: lv }, st) % 5, 0);
+  assert.equal(shopPrice({ nextLevel: 15 }, 2), 18200);  // 7000 × 2.6
+  for (const st of [0, 1, 2]) for (let lv = 1; lv <= 15; lv++) assert.equal(shopPrice({ nextLevel: lv }, st) % 5, 0);
   // 上の段ほど高い
-  for (const st of [0, 1, 2]) for (const lv of [1, 2, 3, 4]) assert.ok(shopPrice({ nextLevel: lv + 1 }, st) > shopPrice({ nextLevel: lv }, st));
+  for (const st of [0, 1, 2]) for (let lv = 1; lv < 15; lv++) assert.ok(shopPrice({ nextLevel: lv + 1 }, st) > shopPrice({ nextLevel: lv }, st));
   assert.equal(roundTo5(1), 5);
 });
 
 test("黒髭はランクアップ 2 割引・新しい品 2 割増し、 マルコ・ポーロのセールは半額", () => {
-  assert.equal(shopPrice({ nextLevel: 3, isNew: false }, 0, "pirate"), 400);   // 500 × 0.8
+  assert.equal(shopPrice({ nextLevel: 10, isNew: false }, 0, "pirate"), 1120);   // 1400 × 0.8 (= SPEC-162)
   assert.equal(shopPrice({ nextLevel: 1, isNew: true }, 0, "pirate"), 20);    // 15 × 1.2 = 18 → 20
-  assert.equal(shopPrice({ nextLevel: 4 }, 0, "sale", true), 1000);
-  assert.equal(shopPrice({ nextLevel: 4 }, 0, "sale", false), 2000);
+  assert.equal(shopPrice({ nextLevel: 10 }, 0, "sale", true), 700);
+  assert.equal(shopPrice({ nextLevel: 10 }, 0, "sale", false), 1400);
 });
 
 test("SPEC-127: ギフト券の枚数は段で傾斜 (= LL は券では買えない)", () => {
   // SPEC-127: 枚数は段で傾斜 (= Common・Uncommon 1 / Rare 2 / Epic 3 / Legendary 5)。 LL は券では買えない
-  assert.deepEqual([1, 2, 3, 4, 5].map((nextLevel) => giftCost({ nextLevel })), [1, 1, 2, 3, 5]);
-  assert.equal(giftCost({ nextLevel: 6, isLL: true }), null);
-  assert.equal(giftable({ nextLevel: 5 }), true);
-  assert.equal(giftable({ nextLevel: 5 }, 4), false);
-  assert.equal(giftable({ nextLevel: 3 }, 2), true);
-  assert.equal(giftable({ nextLevel: 3 }, 1), false);
-  assert.equal(giftable({ nextLevel: 6, isLL: true }, 99), false);
+  // SPEC-162: 段ではなくランク (= 3 段ごと) で傾斜
+  assert.deepEqual([1, 4, 7, 10, 13].map((nextLevel) => giftCost({ nextLevel })), [1, 1, 2, 3, 5]);
+  assert.deepEqual([2, 3, 6, 9, 12, 15].map((nextLevel) => giftCost({ nextLevel })), [1, 1, 1, 2, 3, 5]);
+  assert.equal(giftCost({ nextLevel: 16, isLL: true }), null);
+  assert.equal(giftable({ nextLevel: 13 }), true);
+  assert.equal(giftable({ nextLevel: 13 }, 4), false);
+  assert.equal(giftable({ nextLevel: 7 }, 2), true);
+  assert.equal(giftable({ nextLevel: 7 }, 1), false);
+  assert.equal(giftable({ nextLevel: 16, isLL: true }, 99), false);
   assert.equal(giftable(null), false);
 });
 
