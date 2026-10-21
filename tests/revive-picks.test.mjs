@@ -75,7 +75,10 @@ test("復活の画面: おすすめの欄は木のボタンの上。 買えた�
 
 test("復活のしかたの説明 (= マインちゃんの全身と時計) は初回だけ。 2 回目からは渦に入ったらそのまま REVIVE の画面", () => {
   const go = read("../js/battle/gameover.js");
-  assert.match(go, /if \(hasSeenRevive\(\)\) \{ show\(\); return; \}\n\s+markReviveSeen\(\);\n\s+const lines = naviLines\("revive"\);/);
+  assert.match(go, /if \(hasSeenRevive\(\)\) \{ show\(\); return; \}\n\s+markReviveSeen\(\);\n\s+_introSaid = true;\n\s+const lines = naviLines\("revive"\);/);
+  // SPEC-160: 2 回目からは画面の下の帯のマインちゃんがまず励ます (= 画面遷移は増やさない)
+  assert.match(go, /if \(!_introSaid && !lines\.length\) \{ _loseN \+= 1; lines\.push\(\.\.\.naviLines\("lose", \{ n: _loseN \}\)\); \}/);
+  assert.match(go, /if \(isEasy\(\) && showLesson\("s2\.lose"\)\) return;/, "EASY も 2 回目からは励まし");
   assert.match(go, /const lines = state\.battle\.heroDissolved \|\| hasSeenRevive\(\) \? \[\] : naviLines\("revive"\);/, "帯でも言い直さない");
   assert.match(read("../js/constants.js"), /export const LS_REVIVE_SEEN = `\$\{LS_PREFIX\}\.reviveSeen`;/);
   // 設定の「もう一度聞く」で忘れる
