@@ -514,6 +514,8 @@
   "tree.claimableMore":  { "ja": " ほか {n}",                      "en": " +{n}" },
   "tree.idleHint":       { "ja": "挑戦を終えると GUM が、ボスを倒すとゴールドダストが貯まる。スキルを 2 回押すと解放。", "en": "Runs earn GUM, bosses drop Gold Dust. Double-tap a skill to unlock it." },
   "tree.center":         { "ja": "中心へ",                         "en": "Center" },
+  "tree.chatHide":       { "ja": "チャットをたたむ",               "en": "Hide chat" },
+  "tree.chatShow":       { "ja": "チャットをひらく",               "en": "Show chat" },
   "tree.reset":          { "ja": "ツリーを作り直す（全額戻る）",   "en": "Reset tree (full refund)" },
   "tree.zoomIn":         { "ja": "広げる",                         "en": "Zoom in" },
   "tree.zoomOut":        { "ja": "縮める",                         "en": "Zoom out" },

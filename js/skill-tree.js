@@ -10,6 +10,8 @@
 import { richNode } from "./rich-text.js";   // SPEC-144
 import { isEasy } from "./easy.js";   // SPEC-147
 import { showLesson } from "./lesson.js";   // SPEC-147
+import { chatDockWidth, onChatDockChange } from "./chat-dock.js";   // SPEC-156
+import { chatLayout, chatShown, setChatCollapsed } from "./platform.js";   // SPEC-156
 import { getMeta, onMetaChange, spend, setNodeRank, resetNodes } from "./meta.js";
 import { ROUTES, ROUTE_MAP, NODE_MAP, TREE_NODES, ROOT_ID, CAPSTONE_NEED, nodePos, routeLabelPos } from "./skill-data.js";
 import { getUnlockedHeroes, unlockOf, GAME_TITLES } from "./hero-unlock.js";   // SPEC-133: ヒーローの条件
@@ -85,6 +87,9 @@ let _statsOpen = false;   // 狭い画面の「いまの効果」の札 (= 既�
 let _hintSaid = false;    // タイトルの案内 (= 起動中に 1 回)
 const NAVI_TREE_HIDE_MS = 2600;
 const WIDE = typeof matchMedia === "function" ? matchMedia("(min-width: 861px)") : { matches: false, addEventListener() {} };   // SPEC-135: Workshop と同じ 860px で分ける
+const WIDE_MIN = 861;
+/** SPEC-156: 広い画面か (= 窓の幅からチャットのドックのぶんを引いて見る) */
+const isWide = () => (typeof window !== "undefined" ? window.innerWidth : 0) - chatDockWidth() >= WIDE_MIN;
 
 export function isSkillTreeOpen() { return _open; }
 
@@ -111,14 +116,16 @@ export function installSkillTree() {
   }
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && _open) closeSkillTree(); });
   // 幅が 860px をまたいだら組み直す (= 右の列 ⇔ 下の欄)。 見ている場所と選んだ節はそのまま
-  WIDE.addEventListener?.("change", () => {
+  const rebuild = () => {
     if (!_open || !_parts) return;
     const view = { ..._parts.view };
     buildScreen();
     Object.assign(_parts.view, view);
     applyView();
     renderAll();
-  });
+  };
+  WIDE.addEventListener?.("change", rebuild);
+  onChatDockChange(rebuild);   // SPEC-156: ドックを畳む・広げると、 木の幅が変わる
   onMetaChange(() => { refreshTitleEntry(); });
   onLangChange(() => { refreshTitleEntry(); renderHeroPerks(); if (_open) renderAll(); });
   // SPEC-093: 根をまだ取っていなければ、 タイトルでマインちゃんが入口を教える (= 起動中に 1 回)
@@ -379,7 +386,7 @@ function buildScreen() {
   const retryBtn = _retry ? h("button", { class: "tree-tool tree-retry", type: "button", onclick: retryFromTree },
     h("span", {}, t("tree.retryNow", "復活する")), h("span", { "aria-hidden": "true" }, "▶")) : null;
   // SPEC-094: 広い画面は Workshop と同じく、 右の列に「詳しい欄」と「いまの効果」を縦に並べる。 狭い画面は下の欄と右上の札
-  const wide = WIDE.matches;
+  const wide = isWide();
   _screen.classList.toggle("wide", wide);
   if (wide) {
     main.append(viewport, minimap, tools, backBtn, ...(retryBtn ? [retryBtn] : []), h("div", { class: "tree-side" }, sheet, stats));
@@ -492,8 +499,13 @@ function renderHead() {
     h("img", { src: img(icon), alt: "", draggable: "false" }),
     h("b", { class: "num" }, (have | 0).toLocaleString()),
     need ? h("i", { class: "num" }, `−${need}`) : null);
+  // SPEC-156: PC のドックのときだけ、 チャットを畳む・広げるボタン (= 畳むと木が広がる)
+  const shown = chatShown();
+  const chatBtn = chatLayout() === "dock" ? h("button", { class: "tree-tool tree-chat", type: "button", "aria-pressed": String(shown), onclick: () => setChatCollapsed(shown) },
+    "💬", h("span", {}, shown ? t("tree.chatHide", "チャットをたたむ") : t("tree.chatShow", "チャットをひらく"))) : null;
   clear(_parts.head).append(
     h("div", { class: "tree-title" }, h("b", {}, t("tree.title", "スキルツリー")), h("small", {}, "SKILL TREE")),
+    chatBtn,
     h("div", { class: "tree-bals" },
       chip("gum", ICON_GUM, t("meta.gum", "GUM"), m.gum, cost.gum),
       chip("dust", ICON_DUST, t("meta.dust", "ゴールドダスト"), m.dust, cost.dust)),

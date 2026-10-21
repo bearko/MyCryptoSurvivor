@@ -1,0 +1,1 @@
+- **チャットのドックのぶん、 木と結果の画面を狭める** (`js/chat-dock.js` + `js/platform.js` + `js/skill-tree.js` + `css/skill-tree.css` + `css/components.css`): PC で右に固定のチャット（SDK のドック・320 px）が木の右の列に重なっていた。 ドックが見えているあいだだけ `--chat-dock: 320px` を置き、 スキルツリーと結果・REVIVE の画面を `right` で避ける。 木の広い画面の判定もドックを引いた幅で。 木の頭に「チャットをたたむ／ひらく」のボタン
