@@ -26,6 +26,10 @@ export const NO_PERKS = Object.freeze({
   bossDust: 0, thunderBossRatio: 0, bossChestFast: 0, telegraphSec: 0, bossDmgMul: 0, bossCardRate: 0, bossDmgTakenMul: 0,
   // SPEC-131: エクステ別 (= 武器の威力 wdmg_<extId> ・ 強化の値引き cut_<extId>)
   ...Object.fromEntries(EXT_MASTERY.map(([, extId, kind]) => [kind === "w" ? `wdmg_${extId}` : `cut_${extId}`, 0])),
+  // SPEC-139: 武器の目利き (= cut_<extId>)・仕込み (= slv_<extId>)・得意武器
+  ...Object.fromEntries(EXT_MASTERY.filter((e) => e[2] === "w").map(([, extId]) => [`cut_${extId}`, 0])),
+  ...Object.fromEntries(EXT_MASTERY.map(([, extId]) => [`slv_${extId}`, 0])),
+  mainBias: 0,
 });
 
 /** 段で積まず、 値をそのまま置くもの (= 1 つの節しか持たない) */
@@ -213,6 +217,10 @@ export const STAT_ROWS = [
   ...EXT_MASTERY.map(([route, extId, kind, ja, en]) => kind === "w"
     ? { key: `wdmg_${extId}`, route, f: "pct", ja: `${ja}の威力`, en: `${en} damage` }
     : { key: `cut_${extId}`, route, f: "cut", ja: `${ja}の値段`, en: `${en} price` }),
+  // SPEC-139: 武器の目利き・仕込み・得意武器
+  ...EXT_MASTERY.filter((e) => e[2] === "w").map(([, extId, , ja, en]) => ({ key: `cut_${extId}`, route: "bm", f: "cut", ja: `${ja}の値段`, en: `${en} price` })),
+  ...EXT_MASTERY.map(([, extId, , ja, en]) => ({ key: `slv_${extId}`, route: "sl", f: "lv", ja: `${ja}の初期レベル`, en: `${en} start level` })),
+  { key: "mainBias", route: "wm", f: "num", ja: "初期武器の出やすさ", en: "Starting weapon odds" },
 ];
 const STAT_KEYS = new Set(STAT_ROWS.map((r) => r.key));
 
@@ -223,7 +231,8 @@ export function formatStat(f, v, lang = "ja") {
   const a = Math.abs(r);
   if (f === "pct") return `${sign}${Math.round(a * 100)}%`;
   if (f === "num") return `${sign}${a}`;
-  if (f === "cut") return `−${Math.round(a * 100)}%`;   // SPEC-131: 値引き (= 正の数で持つ)
+  if (f === "cut") return `−${Math.round(a * 100)}%`;
+  if (f === "lv") return `Lv ＋${a}`;   // SPEC-139: 仕込み   // SPEC-131: 値引き (= 正の数で持つ)
   if (f === "ce20") return `${sign}${a * 20}`;   // SPEC-109: 先手は 1 段 = 20 CE
   if (f === "sec") return lang === "en" ? `+${a}s` : `＋${a} 秒`;
   if (f === "ps") return lang === "en" ? `${a}/s` : `${a}/秒`;
@@ -262,3 +271,5 @@ export function perkRows(now, next = null, lang = "ja") {
 export const weaponDmgMul = (extId) => 1 + perk(`wdmg_${extId}`);
 /** SPEC-131: その強化エクステのショップの値引き (= 強化の目利き。 0〜0.3) */
 export const buffPriceCut = (extId) => Math.min(0.9, Math.max(0, perk(`cut_${extId}`)));
+/** SPEC-139: 仕込み (= 手に入れたときに足す Lv) */
+export const startLevelBonus = (extId) => Math.max(0, perk(`slv_${extId}`) | 0);

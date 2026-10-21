@@ -18,9 +18,9 @@ function buy(m, id) {
   return r;
 }
 
-test("節は根 ＋ 36 ＋ エクステ別 21 で、 id が重ならず、 requires の先が実在する (= SPEC-133)", () => {
-  assert.equal(NODES.length, 58);
-  assert.equal(new Set(NODES.map((n) => n.id)).size, 58);
+test("節は根 ＋ 36 ＋ エクステ別 21 ＋ 仕込み 21 ＋ 武器の目利き 10 ＋ 得意武器 で、 id が重ならず、 requires の先が実在する (= SPEC-133 / 139)", () => {
+  assert.equal(NODES.length, 90);
+  assert.equal(new Set(NODES.map((n) => n.id)).size, 90);
   assert.equal(NODE_MAP[ROOT_ID].kind, "root");
   assert.deepEqual(NODE_MAP[ROOT_ID].requires, []);
   for (const n of NODES) {
@@ -102,7 +102,8 @@ test("費用: 強化は段ごとに × 段数、 常時と奥義は固定。 武
   assert.deepEqual(nodeCostAt(NODE_MAP.wm_5, 2), { gum: 80, dust: 0 });
   assert.deepEqual(nodeCostAt(NODE_MAP.bm_19, 1), { gum: 40, dust: 0 }, "強化の目利きは持ち主がいないので 40 から");
   const total = treeTotal();
-  assert.equal(total.gum, 13610 + 21 * 600 - 10 * 40, `GUM ${total.gum}`);
+  // SPEC-139: 仕込み 21 × (150 ＋ 300)・武器の目利き 10 × 600・得意武器 100 ＋ 200 ＋ 300
+  assert.equal(total.gum, 13610 + 21 * 600 - 10 * 40 + 21 * 450 + 10 * 600 + 600, `GUM ${total.gum}`);
   assert.equal(total.dust, 32, "奥義 21 ＋ ボスの道 11");
 });
 
@@ -115,8 +116,8 @@ test("見え方 (= SPEC-133): 最初は根だけ。 根を取ると 1 段目が�
   const vis = TREE_NODES.filter((n) => nodeVisible(m, n.id)).map((n) => n.id);
   assert.deepEqual(vis.sort(), [ROOT_ID, "atk_dmg", "bos_thunder", "grw_xp", "mov_speed", "trs_gum", "vit_hp"].sort());
   const teas = TREE_NODES.filter((n) => nodeTeaser(m, n.id)).map((n) => n.id);
-  assert.equal(teas.length, 12 + 2, "2 段目の 12 節と、 武器・強化の入口 (= ブレード・ギョク) が「？？？」");
-  assert.ok(teas.includes("wm_10") && teas.includes("bm_19"));
+  assert.equal(teas.length, 12 + 3, "2 段目の 12 節と、 武器・強化の入口 (= ブレード・ギョク) と得意武器が「？？？」");
+  assert.ok(teas.includes("wm_10") && teas.includes("bm_19") && teas.includes("wm_main"));
   assert.ok(!TREE_NODES.some((n) => n.kind === "capstone" && nodeShown(m, n.id)), "奥義はまだ見せない");
   assert.equal(nodeShown(m, "vit_pancake"), false, "3 段目はまだ出ない");
 });
@@ -142,6 +143,29 @@ test("武器の極意 (= SPEC-133): ヒーローを仲間にしていれば 1 �
   // 仲間にしていないヒーローの節は、 GUM があっても取れない
   assert.equal(tryBuy(m, "wm_4").reason, "hidden");
   assert.equal(nodeBlockers({ ...m, heroes: undefined }, "wm_10")[0].key, "hero", "使えるヒーローが分からなければ取れない");
+});
+
+test("SPEC-139: 仕込みは先手から左上のくし・武器の目利きは強化の目利きの先・得意武器は攻撃の 1 段目の隣", () => {
+  const sl = NODES.filter((n) => n.route === "sl");
+  assert.equal(sl.length, 21);
+  assert.deepEqual(NODE_MAP.sl_10.requires, ["grw_start"], "1 枚目は成長の「先手」から");
+  for (const n of sl) {
+    assert.deepEqual([n.kind, n.max, n.cost.gum], ["repeat", 2, 150], n.id);
+    assert.deepEqual(n.fx, { [`slv_${n.extId}`]: 1 });
+    const p = NODE_MAP[n.requires[0]];
+    assert.ok(Math.abs(p.x - n.x) <= 1 && Math.abs(p.y - n.y) <= 1, `${n.id} は親の隣`);
+    assert.ok(n.x <= -3 && n.y <= -2, `${n.id} は左上`);
+  }
+  const wc = NODES.filter((n) => n.id.startsWith("wc_"));
+  assert.equal(wc.length, 10);
+  assert.deepEqual(NODE_MAP.wc_10.requires, ["bm_15"]);
+  for (const n of wc) {
+    assert.deepEqual(n.fx, { [`cut_${n.extId}`]: 0.06 });
+    const p = NODE_MAP[n.requires[0]];
+    assert.ok(Math.abs(p.x - n.x) <= 1 && Math.abs(p.y - n.y) <= 1, `${n.id} は親の隣`);
+  }
+  assert.deepEqual([NODE_MAP.wm_main.x, NODE_MAP.wm_main.y, NODE_MAP.wm_main.max], [1, -1, 3]);
+  assert.deepEqual(NODE_MAP.wm_main.requires, ["atk_dmg"]);
 });
 
 test("取ってある節は、 条件が変わっても上げられる (= 前の版で根から取った極意)", () => {
