@@ -25,7 +25,9 @@ export const ROUTES = [
   { id: "grw", name: { ja: "成長", en: "Growth" },   color: "#5ecf8a", d1: [-1, 0], axis: [-1, 0], side: [0, -1], label: [-5.6, -0.5] },
   // SPEC-131 / SPEC-133: エクステ別 (= minor: 上の道の一覧には出さない・奥義は無い)
   { id: "wm", name: { ja: "武器の極意", en: "Weapon Mastery" }, color: "#ffb37a", minor: true, label: [2.5, -8.1] },
-  { id: "bm", name: { ja: "強化の目利き", en: "Buff Bargains" }, color: "#7fd6c2", minor: true, label: [3, 6.1] },
+  { id: "bm", name: { ja: "目利き", en: "Bargains" }, color: "#7fd6c2", minor: true, label: [5, 6.6] },
+  // SPEC-139: エクステ別の初期レベル (= 仕込み。 成長の「先手」から左上へ)
+  { id: "sl", name: { ja: "仕込み", en: "Preparation" }, color: "#a8e063", minor: true, label: [-6, -7.4] },
 ];
 export const ROUTE_MAP = Object.fromEntries(ROUTES.map((r) => [r.id, r]));
 
@@ -157,6 +159,52 @@ for (const [route, extId, kind, ja, en, icon, x, y, requires, hero] of EXT_MASTE
     x, y, requires, extId, mastery: kind, ...(hero ? { hero } : {}),
   });
 }
+
+/**
+ * SPEC-139: エクステ別の仕込み・武器の目利き・得意武器
+ *   仕込み (= sl_<extId>): 手に入れたとき、 最初から Lv ＋1（段ごと・2 段まで）。 値段は Lv.1 のまま。 perk は slv_<extId>
+ *     成長の「先手」から左上へ、 くしの形 (= 右端の柱を上へ、 各段を左へ)。 上 2 段が武器、 下 3 段が強化
+ *   武器の目利き (= wc_<extId>): ショップでその武器が −6%（段ごと）。 perk は強化と同じ cut_<extId>。 目利きの右に 2 列
+ *   得意武器 (= wm_main): ショップとレベルアップで、 そのヒーローの初期武器が出やすい (= 候補に 2 枚ずつ重ねる。 3 段まで)
+ */
+export const START_LV_GUM = 150;
+export const START_LV_MAX = 2;
+export const MAIN_BIAS_MAX = 3;
+const WEAPONS = EXT_MASTERY.filter((e) => e[2] === "w");
+const BUFFS = EXT_MASTERY.filter((e) => e[2] === "b");
+// 仕込みのマス (= 行ごとに右端から左へ。 右端が柱)
+const SL_ROWS = [
+  [-2, WEAPONS.slice(0, 5)], [-3, WEAPONS.slice(5, 10)],
+  [-4, BUFFS.slice(0, 5)], [-5, BUFFS.slice(5, 10)], [-6, BUFFS.slice(10)],
+];
+SL_ROWS.forEach(([y, row], ri) => {
+  row.forEach(([, extId, , ja, en, icon], ci) => {
+    const parent = ci > 0 ? `sl_${row[ci - 1][1]}` : (ri > 0 ? `sl_${SL_ROWS[ri - 1][1][0][1]}` : "grw_start");
+    NODES.push({
+      ...N(`sl_${extId}`, "sl", parent, 0, 0, "repeat", `${ja}の仕込み`, `${en} Prep`,
+        `${ja}を手に入れたとき、 最初から Lv ＋1（段ごと。 値段は Lv.1 のまま）`, `${en} starts 1 level higher per rank when you get it (priced as Lv.1)`,
+        { gum: START_LV_GUM }, icon, { [`slv_${extId}`]: 1 }, START_LV_MAX),
+      x: -3 - ci, y, requires: [parent], extId, mastery: "s",
+    });
+  });
+});
+// 武器の目利き (= 強化の目利きの右。 x=5 を上から下へ、 x=6 を下から上へ)
+const WC_CELLS = [[5, 1], [5, 2], [5, 3], [5, 4], [5, 5], [6, 5], [6, 4], [6, 3], [6, 2], [6, 1]];
+WEAPONS.forEach(([, extId, , ja, en, icon], i) => {
+  const parent = i > 0 ? `wc_${WEAPONS[i - 1][1]}` : "bm_15";
+  NODES.push({
+    ...N(`wc_${extId}`, "bm", parent, 0, 0, "repeat", `${ja}の目利き`, `${en} Bargain`,
+      `ショップで${ja}が −${BUFF_CUT_PER_RANK * 100}%（段ごと）`, `${en} costs ${BUFF_CUT_PER_RANK * 100}% less in shops per rank`,
+      { gum: MASTERY_GUM }, icon, { [`cut_${extId}`]: BUFF_CUT_PER_RANK }, MASTERY_MAX),
+    x: WC_CELLS[i][0], y: WC_CELLS[i][1], requires: [parent], extId, mastery: "c",
+  });
+});
+NODES.push({
+  ...N("wm_main", "wm", "atk_dmg", 0, 0, "repeat", "得意武器", "Favored Weapon",
+    "ショップとレベルアップで、 ヒーローの初期武器が出やすい（段ごと）", "Your hero's starting weapon shows up more often in shops and level-ups (per rank)",
+    { gum: 100 }, 3001, { mainBias: 1 }, MAIN_BIAS_MAX),
+  x: 1, y: -1, requires: ["atk_dmg"],
+});
 
 export const NODE_MAP = Object.fromEntries(NODES.map((n) => [n.id, n]));
 /** 画面に出す節 (= 根と道の上のもの。 いまはすべて) */

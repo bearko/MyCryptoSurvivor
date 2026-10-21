@@ -35,6 +35,17 @@ test("エクステ別の節は 21 (= 武器 10 ・ 強化 11)。 段ごとに武
   assert.equal(NODE_MAP.bm_21.name.ja, "クラウンの目利き");
 });
 
+test("SPEC-139: 仕込みのぶんは値段とギフト券の枚数に入れない (= priceLevel)", async () => {
+  const { giftCost } = await import("../js/battle/shop-logic.js");
+  assert.equal(shopPrice({ nextLevel: 3, priceLevel: 1 }, 0), 15);
+  assert.equal(giftCost({ nextLevel: 3, priceLevel: 1 }), 1);
+  assert.equal(shopPrice({ nextLevel: 3 }, 0), 500, "priceLevel が無ければ今までどおり");
+  const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), "utf8");
+  assert.match(read("js/battle/levelup.js"), /const bonus = owned \? 0 : startLevelBonus\(extId\)/);
+  assert.match(read("js/battle/levelup.js"), /const mainN = perk\("mainBias"\) \* 2;/);
+  assert.match(read("js/battle/index.js"), /level: Math\.min\(EXT_MAX_LEVEL, 1 \+ startLevelBonus\(starterId\)\)/);
+});
+
 test("値引きはショップの値段に掛かる (= 5 の倍数に丸める)", () => {
   assert.equal(shopPrice({ nextLevel: 3 }, 0, null, false, 0.3), 350);   // 500 × 0.7
   assert.equal(shopPrice({ nextLevel: 3 }, 0, null, false, 0), 500);

@@ -7,7 +7,7 @@
 
 import { getMeta, hasHeroCleared } from "../meta.js";   // SPEC-106
 import { state, pauseTime, resumeTime } from "../state.js";
-import { perk, stockLimit } from "../perks.js";   // SPEC-090c
+import { perk, stockLimit, startLevelBonus } from "../perks.js";   // SPEC-090c / SPEC-139
 import {
   EXT_ROSTER, extImg, extTierImg, getExt, getCategory,
   getTierName, getSkillName, getSkillDesc,
@@ -203,6 +203,10 @@ function _samplePicks(n, exclude = new Set(), last = new Set(), withLL = true, b
     return true;
   });
 
+  // SPEC-139: 得意武器 (= 初期武器を段ごとに 2 枚ずつ重ねる)
+  const mainN = perk("mainBias") * 2;
+  const mainE = mainN > 0 ? eligible.find((e) => String(e.extId) === String(state.battle?.starterExtId)) : null;
+  if (mainE) eligible = eligible.concat(Array(mainN).fill(mainE));
   // SPEC-109: 店主の癖 (= 強化が出やすい・まだ持っていない系列が出やすい)。 候補を重ねて出やすくする
   if (bias === "buff") eligible = eligible.concat(eligible.filter((e) => e.category === "buff"));
   if (bias === "new") eligible = eligible.concat(eligible.filter((e) => !ownedById.has(String(e.extId))));
@@ -212,14 +216,7 @@ function _samplePicks(n, exclude = new Set(), last = new Set(), withLL = true, b
 
   return result.map(e => {
     const o   = ownedById.get(String(e.extId));
-    const cur = o?.level ?? 0;
-    return {
-      extId:        e.extId,
-      ext:          e,
-      currentLevel: cur,
-      nextLevel:    Math.min(EXT_MAX_LEVEL, cur + sigNextPickSteps()),   // SPEC-100: テトラクテュスは 4 回目ごとに 2 段
-      isNew:        !o,
-    };
+    return { extId: e.extId, ext: e, ..._levels(e.extId, o) };
   });
 }
 
@@ -241,8 +238,18 @@ export function offerFor(extId, bannedIn = new Set()) {
     const n = state.ownedExtensions.filter((x) => getCategory(getExt(x.extId)) === e.category).length;
     if (n >= stockLimit(e.category === "buff" ? "buff" : "weapon")) return null;
   }
-  const cur = o?.level ?? 0;
-  return { extId: e.extId, ext: e, currentLevel: cur, nextLevel: Math.min(EXT_MAX_LEVEL, cur + sigNextPickSteps()), isNew: !o };
+  return { extId: e.extId, ext: e, ..._levels(e.extId, o) };
+}
+
+/**
+ * 札の段 (= SPEC-100: テトラクテュスは 4 回目ごとに 2 段)。 SPEC-139: 新しく手に入れるときは仕込みのぶん上から。
+ * priceLevel: 値段とギフト券の枚数に使う段 (= 仕込みのぶんは足さない)
+ */
+function _levels(extId, owned) {
+  const cur = owned?.level ?? 0;
+  const base = Math.min(EXT_MAX_LEVEL, cur + sigNextPickSteps());
+  const next = owned ? base : Math.min(EXT_MAX_LEVEL, base + startLevelBonus(extId));
+  return { currentLevel: cur, nextLevel: next, priceLevel: base, isNew: !owned };
 }
 
 function _ensureFallbackWeapon() {
@@ -298,7 +305,8 @@ export function grantPick(extId) {
   // SPEC-101: Lv.5 の初期武器を選んだら LL (= Lv.5 の武器が候補に出るのは LL の札だけ)
   const toLL  = !!llOption(state.ownedExtensions, state.battle?.starterExtId, getExt, EXT_MAX_LEVEL, llUnlocked()) && String(extId) === String(state.battle?.starterExtId);
   // 段は下げない (= LL の武器がもう一度選ばれても Lv.5 に戻さない)
-  const next  = Math.max(owned?.level ?? 0, toLL ? LL_LEVEL : Math.min(EXT_MAX_LEVEL, (owned?.level ?? 0) + steps));
+  const bonus = owned ? 0 : startLevelBonus(extId);   // SPEC-139: 仕込み
+  const next  = Math.max(owned?.level ?? 0, toLL ? LL_LEVEL : Math.min(EXT_MAX_LEVEL, (owned?.level ?? 0) + steps + bonus));
   if (owned) owned.level = next;
   else       state.ownedExtensions.push({ extId, level: next });
   sigOnPicked();

@@ -31,7 +31,7 @@ import { rebuildWeaponsFromOwned } from "./extensions-as-weapons.js";
 import { renderBattle } from "./render.js";
 import { getHeroSprite, getDefaultEnemySprite, getBackgroundSprite } from "./sprites.js";
 import { tickRegen, resetBuffs } from "./buffs.js";
-import { perksForRun, perk, rerollsPerBattle, baseMaxHp } from "../perks.js";   // SPEC-090c
+import { perksForRun, perk, rerollsPerBattle, baseMaxHp, startLevelBonus } from "../perks.js";   // SPEC-090c / SPEC-139
 import { getMeta } from "../meta.js";
 import { triggerLevelUpPick } from "./levelup.js";
 import {
@@ -48,7 +48,7 @@ import { startCoachIfFirst, tickCoach, hideCoach } from "./coach.js";
 import { resetFx, tickFx } from "./fx.js";
 import { startBgm } from "../audio.js";
 import { startRtaRun, rtaRegulationFor, placePlatformToasts, setChatVisible, reportStageStart } from "../platform.js";
-import { BGM_BATTLE, STAGE_TABLE, WATCH_SPEED } from "../constants.js";
+import { BGM_BATTLE, STAGE_TABLE, WATCH_SPEED, EXT_MAX_LEVEL } from "../constants.js";
 import { t, tpl } from "../i18n.js";
 import { heroImg } from "../heroes.js";
 import { heroMaxHp, heroSpeed, heroDmgMul, heroCdMul } from "../hero-stats.js";   // SPEC-097
@@ -191,7 +191,7 @@ export function startBattle(hero) {
   b.starterExtId   = starterId;   // SPEC-101: この武器だけ LL まで上がる
   b.llFx           = [];
   if (starterExt && getCategory(starterExt) === "weapon") {
-    state.ownedExtensions.push({ extId: starterId, level: 1 });
+    state.ownedExtensions.push({ extId: starterId, level: Math.min(EXT_MAX_LEVEL, 1 + startLevelBonus(starterId)) });   // SPEC-139: 仕込み
     rebuildWeaponsFromOwned();
   } else {
     console.warn("[battle] starter weapon not found for hero",

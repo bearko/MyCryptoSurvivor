@@ -58,7 +58,7 @@ export function roundTo5(v) {
  * @param {{nextLevel:number,isLL?:boolean,isNew?:boolean}} offer
  */
 export function shopPrice(offer, stageIdx = 0, quirk = null, sale = false, cut = 0) {
-  const lv = Math.max(1, Math.min(SHOP_PRICE.length, offer?.nextLevel | 0));
+  const lv = Math.max(1, Math.min(SHOP_PRICE.length, (offer?.priceLevel ?? offer?.nextLevel) | 0));   // SPEC-139: 仕込みのぶんは値段に入れない
   let p = offer?.isLL ? SHOP_PRICE_LL : SHOP_PRICE[lv - 1];
   p *= SHOP_STAGE_MUL[Math.min(SHOP_STAGE_MUL.length - 1, Math.max(0, stageIdx | 0))];
   if (quirk === "pirate") p *= offer?.isNew ? 1.2 : 0.8;
@@ -70,7 +70,7 @@ export function shopPrice(offer, stageIdx = 0, quirk = null, sale = false, cut =
 /** SPEC-127: その品を無料にするギフト券の枚数 (= 行き先の段で傾斜。 LL は券では買えない → null) */
 export function giftCost(offer) {
   if (!offer || offer.isLL) return null;
-  const lv = Math.max(1, Math.min(SHOP_GIFT_COST.length, offer.nextLevel | 0));
+  const lv = Math.max(1, Math.min(SHOP_GIFT_COST.length, (offer.priceLevel ?? offer.nextLevel) | 0));
   return SHOP_GIFT_COST[lv - 1];
 }
 
