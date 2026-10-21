@@ -70,7 +70,7 @@ export function naviLines(scene, ctx = {}) {
     }
     case "mode":
       // SPEC-147: 初めての人 (= EASY をまだクリアしていない・NORMAL も遊んでいない) には EASY をすすめる
-      if (ctx.first) return [{ key: "navi.mode.easy", pose: "sparkle" }];
+      if (ctx.first) return [{ key: "navi.mode.easy", pose: "sparkle", voice: "mode.easy" }];   // SPEC-159: ボイス
       return [
         { key: "navi.mode.1", pose: "cross", mood: "cross", voice: "mode.1" },
         { key: "navi.mode.2", pose: "pointer", voice: "mode.2" },
@@ -132,14 +132,16 @@ export function naviLines(scene, ctx = {}) {
       // SPEC-153: ボスの予告 (= 中央の赤いエリア)
       return [{ key: "navi.boss.warn", pose: "cross", voice: "boss.warn" }];
     case "revive":
-      // SPEC-150: 倒れたら、 まず王妃の黄金時計で復活させてあげる (= ボイスはまだない)
-      return [{ key: "navi.revive.intro", pose: "pointer" }];
+      // SPEC-150: 倒れたら、 まず王妃の黄金時計で復活させてあげる (= SPEC-159: ボイス)
+      return [{ key: "navi.revive.intro", pose: "pointer", voice: "revive.intro" }];
     case "advice":
-      // SPEC-148: 倒れた理由からのおすすめ (= 文は advice.*、 節の名前は vars。 ボイスはまだない)
-      return [{ key: String(ctx.key ?? "advice.hp"), pose: "pointer", vars: ctx.vars ?? {} }];
+      // SPEC-148: 倒れた理由からのおすすめ (= 文は advice.*、 節の名前は vars。 SPEC-159: ボイスの名前は文の key と同じ)
+      { const key = String(ctx.key ?? "advice.hp"); return [{ key, pose: "pointer", vars: ctx.vars ?? {}, voice: hasVoice(key) ? key : null }]; }
     case "afterTree":
-      // SPEC-146: スキルツリーから戻ったとき (= 強くしたら「もう一度」へ。 ボイスはまだない)
-      return [{ key: (ctx.bought | 0) > 0 ? "navi.afterTree.bought" : "navi.afterTree.none", pose: (ctx.bought | 0) > 0 ? "hooray" : "pointer" }];
+      // SPEC-146: スキルツリーから戻ったとき (= 強くしたら「もう一度」へ。 SPEC-159: ボイス)
+      return (ctx.bought | 0) > 0
+        ? [{ key: "navi.afterTree.bought", pose: "hooray", voice: "afterTree.bought" }]
+        : [{ key: "navi.afterTree.none", pose: "pointer", voice: "afterTree.none" }];
     case "tip": {
       // SPEC-068: 初めてのアイテム・仕掛け・敵のひとこと。 key は navi-tips.js の TIP_KEYS
       const key = String(ctx.key ?? "");

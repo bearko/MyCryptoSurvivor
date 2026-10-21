@@ -1,0 +1,1 @@
+- **マインちゃんの 4 回目の録音（89 本）を取り込み** (`assets/voice/mine/` + `js/voice-lines.js` + `tools/voice/build.mjs` + `js/navi.js` + `js/battle/missions.js` + `js/result-telop.js`): 既存のボイスと同じ 57 本は既存を優先して捨て、 新しい 32 本（ミッション・復活・木から戻ったとき・EASY のすすめ・レッスン 15・おすすめ 6・EASY のステージ・ボスの予告・テロップ 3）を MP3 にして登録。 録音で言い回しが変わった 8 行は字幕を合わせた。 元の WAV と TXT は消した

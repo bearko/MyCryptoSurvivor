@@ -144,7 +144,7 @@ test("文言: 見出し・復活する・マインちゃんの「王妃の黄金
   assert.equal(ui["gameover.reviveCurrent"].ja, "今のレギュレーションで復活する");
   assert.equal(ui["tree.retryNow"].ja, "復活する");
   assert.match(ui["navi.revive.intro"].ja, /^めげないで！この「王妃の黄金時計」のチカラで復活させてあげる！/);
-  assert.match(ui["navi.afterTree.bought"].ja, /「復活する」/);
+  assert.match(ui["navi.afterTree.bought"].ja, /「復活」しよう/);   // SPEC-159: 録音の言い回しに合わせた
   assert.match(ui["navi.afterTree.none"].ja, /「復活する」/);
   for (const k of ["gameover.title", "gameover.revive", "gameover.reviveCurrent", "tree.retryNow", "navi.revive.intro", "revive.flash"]) assert.ok(ui[k]?.en, k);
   const [l] = naviLines("revive");
