@@ -192,36 +192,8 @@ export function renderBattle(ctx, nowMs = 0) {
     }
   }
 
-  // SPEC-033: magic cards (= ext 5178 アイコン、 ふわっと光る)
-  if (magicCards && magicCards.length) {
-    const mcSprite = getMagicCardSprite();
-    for (const c of magicCards) {
-      const sx = c.x - camera.x;
-      const sy = c.y - camera.y;
-      const size = 32;
-      if (sx + size < 0 || sx - size > w || sy + size < 0 || sy - size > h) continue;
-      // 光彩オーラ
-      ctx.globalAlpha = 0.45;
-      ctx.fillStyle = "#fff7c2";
-      ctx.beginPath();
-      ctx.arc(sx, sy, size * 0.85, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.globalAlpha = 1;
-      const drew = drawSpriteRotated(ctx, mcSprite, sx, sy, size, 0);
-      if (!drew) {
-        ctx.fillStyle = "#f0c14b";
-        ctx.beginPath();
-        ctx.arc(sx, sy, c.r ?? 12, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = "rgba(0,0,0,0.5)";
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-      }
-    }
-  }
+  // SPEC-141: マジックカードとお助けアイテムは、 敵の大群に埋もれないように、 粒のあと (= 最前面) で描く
 
-  // SPEC-053: お助けアイテム (= ふわっと上下に揺れる)
-  _drawItems(ctx, camera, w, h, nowMs);
 
   // SPEC-015: projectiles を extension icon で描画 (= 進行方向に rotate、 系列ごと iconRotOffset)
   for (const p of projectiles) {
@@ -452,6 +424,10 @@ export function renderBattle(ctx, nowMs = 0) {
   // SPEC-045: 撃破の粒
   renderFxWorld(ctx, camera, w, h);
 
+  // SPEC-141: マジックカードとお助けアイテム (= 敵・弾・自分・粒より上。 霧の夜では霧の下)
+  _drawMagicCards(ctx, camera, w, h, magicCards);
+  _drawItems(ctx, camera, w, h, nowMs);
+
   // SPEC-112: 霧の夜 (= 自分のまわりしか見えない)
   if (mods.fogR) _drawFog(ctx, px, py, mods.fogR, w, h, mods.fogA ?? 0.9);
 
@@ -480,6 +456,7 @@ export function renderBattle(ctx, nowMs = 0) {
 
   // SPEC-053: 画面の外の宝箱の向き (= 縁に小さな矢印)
   _drawChestPointers(ctx, camera, w, h, enemies);
+  _drawItemPointers(ctx, camera, w, h, nowMs, magicCards);   // SPEC-141: 画面の外のお助けアイテム
   renderBossMarkerPointer(ctx, camera, w, h);   // SPEC-079
   // SPEC-054: 懐中時計の 2 倍速の残り
   _drawFastForward(ctx, w);
@@ -593,6 +570,47 @@ function _drawRainbowAura(ctx, px, py, r, nowMs, leftMs) {
   ctx.restore();
 }
 
+
+/** SPEC-033: magic cards (= ext 5178 アイコン、 ふわっと光る)。 SPEC-141: 最前面へ移した */
+function _drawMagicCards(ctx, camera, w, h, magicCards) {
+  if (magicCards && magicCards.length) {
+    const mcSprite = getMagicCardSprite();
+    for (const c of magicCards) {
+      const sx = c.x - camera.x;
+      const sy = c.y - camera.y;
+      const size = 32;
+      if (sx + size < 0 || sx - size > w || sy + size < 0 || sy - size > h) continue;
+      // 光彩オーラ
+      ctx.globalAlpha = 0.45;
+      ctx.fillStyle = "#fff7c2";
+      ctx.beginPath();
+      ctx.arc(sx, sy, size * 0.85, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      const drew = drawSpriteRotated(ctx, mcSprite, sx, sy, size, 0);
+      if (!drew) {
+        ctx.fillStyle = "#f0c14b";
+        ctx.beginPath();
+        ctx.arc(sx, sy, c.r ?? 12, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "rgba(0,0,0,0.5)";
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      }
+    }
+  }
+}
+
+/** SPEC-053 / SPEC-141: アイテムの下に敷く光の色 (= 矢印の丸も同じ色) */
+function _itemTint(kind, nowMs) {
+  if (kind === "heal") return "#b8f5c0";
+  if (kind === "watch") return "#ffe39a";
+  if (kind === "thunder") return "#fff3a0";
+  if (kind === "robot") return `hsl(${(nowMs / 6) % 360}, 90%, 70%)`;   // SPEC-140: 合体ロボは虹色
+  if (kind === "card") return "#fff7c2";
+  return "#cfe3ff";
+}
+
 function _drawItems(ctx, camera, w, h, nowMs) {
   for (const it of state.battle.items ?? []) {
     const sx = it.x - camera.x;
@@ -600,8 +618,7 @@ function _drawItems(ctx, camera, w, h, nowMs) {
     const size = ITEM_ICON_SIZE;
     if (sx + size < 0 || sx - size > w || sy + size < 0 || sy - size > h) continue;
     ctx.globalAlpha = 0.4;
-    ctx.fillStyle = it.kind === "heal" ? "#b8f5c0" : (it.kind === "watch" ? "#ffe39a" : (it.kind === "thunder" ? "#fff3a0"
-      : (it.kind === "robot" ? `hsl(${(nowMs / 6) % 360}, 90%, 70%)` : "#cfe3ff")));   // SPEC-140: 合体ロボは虹色
+    ctx.fillStyle = _itemTint(it.kind, nowMs);
     ctx.beginPath();
     ctx.arc(sx, sy, size * 0.7, 0, Math.PI * 2);
     ctx.fill();
@@ -659,6 +676,91 @@ function _drawChestPointers(ctx, camera, w, h, enemies) {
     ctx.stroke();
     ctx.restore();
   }
+}
+
+/** SPEC-141: 画面の縁の矢印と、 そのすぐ内側の丸いアイコンの数 (= 多すぎると縁が埋まるので近い順に) */
+export const ITEM_POINTER_MAX = 8;
+
+/**
+ * SPEC-141: 画面の外のお助けアイテム・マジックカードの向き (= 縁に矢印、 そのすぐ内側に絵の丸)。
+ * 上は HUD の下から (= 隠れないように)。 近い順に ITEM_POINTER_MAX まで
+ */
+function _drawItemPointers(ctx, camera, w, h, nowMs, magicCards) {
+  const b = state.battle;
+  const list = [];
+  const push = (x, y, kind, sprite) => {
+    const sx = x - camera.x, sy = y - camera.y;
+    if (sx >= 0 && sx <= w && sy >= _pointerTop() && sy <= h) return;
+    list.push({ sx, sy, kind, sprite, d: Math.hypot(x - b.player.x, y - b.player.y) });
+  };
+  for (const it of b.items ?? []) push(it.x, it.y, it.kind, getExtSprite(itemExtId(it.kind)));
+  for (const c of magicCards ?? []) push(c.x, c.y, "card", getMagicCardSprite());
+  if (!list.length) return;
+  list.sort((p, q) => p.d - q.d);
+  const top = _pointerTop();
+  const cx = w / 2, cy = (top + h) / 2;
+  const halfW = w / 2, halfH = (h - top) / 2;
+  const pulse = 0.85 + 0.15 * Math.sin(nowMs / 180);
+  for (const p of list.slice(0, ITEM_POINTER_MAX)) {
+    const a = Math.atan2(p.sy - cy, p.sx - cx);
+    const at = (m) => {
+      const kx = Math.abs(Math.cos(a)) > 1e-6 ? (halfW - m) / Math.abs(Math.cos(a)) : Infinity;
+      const ky = Math.abs(Math.sin(a)) > 1e-6 ? (halfH - m) / Math.abs(Math.sin(a)) : Infinity;
+      const k = Math.min(kx, ky);
+      return [cx + Math.cos(a) * k, cy + Math.sin(a) * k];
+    };
+    const tint = _itemTint(p.kind, nowMs);
+    // 矢印 (= 縁)
+    const [ax, ay] = at(10);
+    ctx.save();
+    ctx.translate(ax, ay);
+    ctx.rotate(a);
+    ctx.fillStyle = tint;
+    ctx.strokeStyle = "rgba(0,0,0,0.7)";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(8, 0);
+    ctx.lineTo(-5, -6);
+    ctx.lineTo(-5, 6);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+    // 絵の丸 (= 矢印のすぐ内側)
+    const [ix, iy] = at(34);
+    const r = 15 * pulse;
+    ctx.fillStyle = "rgba(10, 12, 20, 0.78)";
+    ctx.beginPath();
+    ctx.arc(ix, iy, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = tint;
+    ctx.stroke();
+    if (!drawSpriteRotated(ctx, p.sprite, ix, iy, 22, 0)) {
+      ctx.fillStyle = tint;
+      ctx.beginPath();
+      ctx.arc(ix, iy, 6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+}
+
+/** SPEC-141: 矢印を置く上の端 (= 画面にかぶる HUD の下。 毎コマ測らず、 0.5 秒ごとに測る) */
+let _topAt = 0, _topPx = 0;
+function _pointerTop() {
+  const now = typeof performance !== "undefined" ? performance.now() : Date.now();
+  if (now - _topAt < 500) return _topPx;
+  _topAt = now;
+  try {
+    const hud = document.getElementById("hud");
+    const cv = document.getElementById("battleCanvas") ?? document.querySelector("canvas");
+    if (hud && cv) {
+      const hb = hud.getBoundingClientRect(), cb = cv.getBoundingClientRect();
+      const scale = cb.height > 0 ? (state.battle.viewport?.h ?? cb.height) / cb.height : 1;
+      _topPx = Math.max(0, Math.round((hb.bottom - cb.top) * scale));
+    } else _topPx = 0;
+  } catch (_) { _topPx = 0; }
+  return _topPx;
 }
 
 /**
