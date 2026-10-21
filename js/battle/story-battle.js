@@ -10,7 +10,8 @@ import { state } from "../state.js";
 import { t } from "../i18n.js";
 import { naviSay, naviLines, NAVI_TYPE_MS } from "../navi.js";
 import { hasVoice, voiceMs } from "../voice.js";
-import { storyStage, storyCleared, storyGoal, REACH_RADIUS, reachPoints, reachedPoint } from "../story.js";
+import { storyStage, storyCleared, storyGoal, REACH_RADIUS, reachPoints, reachedPoint, markStoryBond } from "../story.js";
+import { spawnShadow, dismissShadow, findShadow } from "./shadow.js";
 import { spawnItem } from "./field.js";
 import { triggerStageEndOrTransition } from "./stage-transition.js";
 import { img } from "../constants.js";
@@ -25,7 +26,7 @@ export function resetStoryBattle() {
   const b = state.battle;
   const r = storyStage();
   const pts = reachPoints(r?.clear);
-  b.story = r ? { id: r.id, ce: 0, said: new Set(), healDropped: false, healWaiting: false, reached: false, done: false, cameoAt: 0, reachIdx: 0, goal: pts[0] ?? null } : null;
+  b.story = r ? { id: r.id, ce: 0, said: new Set(), healDropped: false, healWaiting: false, reached: false, done: false, cameoAt: 0, reachIdx: 0, goal: pts[0] ?? null, events: [], shadow: null, shadowMs: 0, shadowDefeated: false, shadowWon: false } : null;
 }
 
 /** CE を拾った (= gems.js から。 collect の条件) */
@@ -65,6 +66,9 @@ export function tickStoryBattle() {
   _goalBand(!!(r && st && !b.gameOver && !st.done));
   if (!st || !r || b.gameOver || st.done) return;
   if ((state.killCount | 0) >= 1) storySay("firstKill");
+  // 拾った・開けた などの出来事 (= field.js が積む。 その瞬間の一言)
+  while (st.events.length) storySay(st.events.shift());
+  _tickShadow(r, st, b);
   // 1-4: HP が減ったらハートを足もとに (= 拾うまで湧きを止める)
   if (r.heal && !st.healDropped && state.stats.hp <= state.statsMax.hp * r.heal.below) {
     st.healDropped = true; st.healWaiting = true;
@@ -81,7 +85,7 @@ export function tickStoryBattle() {
     fxBurst(pt.x, pt.y, "#ffe17a", 24, 260);
     playSe(SFX.PICK_HEAL, 0, 0.7);
   }
-  const ctx = { kills: state.killCount | 0, elapsedMs: b.stageElapsedMs ?? 0, px: b.player.x, py: b.player.y, ce: st.ce, bossDefeated: !!b.bossDefeated, reachIdx: st.reachIdx };
+  const ctx = { kills: state.killCount | 0, elapsedMs: b.stageElapsedMs ?? 0, px: b.player.x, py: b.player.y, ce: st.ce, bossDefeated: !!b.bossDefeated, reachIdx: st.reachIdx, shadowMs: st.shadowMs, shadowDefeated: st.shadowDefeated };
   if (!storyCleared(r, ctx)) return;
   if (r.clear.kind === "reach" && !st.reached) {
     st.reached = true;
@@ -89,9 +93,41 @@ export function tickStoryBattle() {
     if (r.cameo) { showCameo(r.cameo.giver); st.cameoAt = performance.now() + Math.max(1800, ms); return; }
   }
   if (st.cameoAt && performance.now() < st.cameoAt) return;
+  if (r.shadow && !st.shadowWon) {
+    // 試練を越えた: survive なら消える。 どちらも絆を結び、 一言のあいだ待つ
+    st.shadowWon = true;
+    if (r.shadow.mode !== "defeat") dismissShadow();
+    if (r.bond?.who) markStoryBond(r.bond.who);
+    const ms = _sayShadow(r, "win") || 0;
+    st.cameoAt = performance.now() + Math.max(1800, ms);
+    return;
+  }
   st.done = true;
   hideCameo();
   triggerStageEndOrTransition();
+}
+
+/** シャドーの試練 (= 時刻になったら出す。 survive は時間を数え、 defeat は倒れたかを見る) */
+function _tickShadow(r, st, b) {
+  const def = r.shadow;
+  if (!def) return;
+  if (!st.shadow && (b.stageElapsedMs ?? 0) >= (def.atMs ?? 3000)) {
+    st.shadow = spawnShadow({ ...def });
+    showCameo(def.giver);
+    const ms = _sayShadow(r, "appear") || 0;
+    setTimeout(hideCameo, Math.max(1600, ms));
+    return;
+  }
+  if (!st.shadow || st.shadowWon) return;
+  const alive = findShadow();
+  if (def.mode === "defeat") { if (!alive) st.shadowDefeated = true; return; }
+  if (alive) st.shadowMs += 1000 / 60;   // _step は 60 fps 相当で呼ばれる (= dt は呼び元が持つので目安)
+}
+function _sayShadow(r, kind) {
+  const key = `shadow.${r.shadow.id}.${kind}`;
+  const ms = Math.max(t(key, key).length * NAVI_TYPE_MS, voiceMs(hasVoice(key) ? key : "")) + LINE_HOLD_MS;
+  naviSay(naviLines("story", { key, pose: kind === "win" ? "hooray" : "cross" }), { place: "battle", autoHideMs: LINE_HOLD_MS, top: _commTop() });
+  return ms;
 }
 
 /** 到達の目印 (= 世界の座標で描く。 画面の外なら縁に矢印) */
@@ -141,7 +177,7 @@ function _goalBand(on) {
 export function storyGoalText() {
   const r = storyStage(), b = state.battle;
   if (!r || !b?.story) return null;
-  const g = storyGoal(r, { kills: state.killCount | 0, elapsedMs: b.stageElapsedMs ?? 0, ce: b.story.ce, bossDefeated: !!b.bossDefeated, reachIdx: b.story.reachIdx });
+  const g = storyGoal(r, { kills: state.killCount | 0, elapsedMs: b.stageElapsedMs ?? 0, ce: b.story.ce, bossDefeated: !!b.bossDefeated, reachIdx: b.story.reachIdx, shadowMs: b.story.shadowMs, shadowDefeated: b.story.shadowDefeated });
   if (!g) return null;
   const key = `story.goal.${g.kind}`;
   const tpl0 = t(key, key);

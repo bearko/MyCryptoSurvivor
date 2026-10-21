@@ -32,7 +32,7 @@ import { fxBurst, fxThunder } from "./fx.js";
 import { playSe } from "../audio.js";
 import { reportChestOpened } from "../platform.js";   // SPEC-096
 import { easyStage } from "../easy.js";   // SPEC-147
-import { storyAllows } from "../story.js";   // SPEC-165
+import { storyAllows, storyStage } from "../story.js";   // SPEC-165
 import { showLesson } from "../lesson.js";   // SPEC-147
 
 function _stage() {
@@ -157,7 +157,7 @@ export function dropFromProp(e) {
   const gem = Math.max(1, Math.round(xpMul));
   if (e.propKind === "chest") {
     // SPEC-081: ボス戦の宝箱は、 マジックカード (= その場でレベルアップ) も出る
-    const kind = rollTable(e.bossChest ? bossChestDrops() : chestDrops(), Math.random());
+    const kind = (!e.bossChest && storyStage()?.chestDrop) || rollTable(e.bossChest ? bossChestDrops() : chestDrops(), Math.random());   // SPEC-165: レシピで固定
     if (kind === "card") { if (storyAllows("magicCards")) spawnMagicCard(e.x, e.y); }
     else if (storyAllows(`items:${kind}`)) spawnItem(kind, e.x, e.y);   // SPEC-165
     _scatterGems(e.x, e.y, CHEST_CE_GEMS, gem);
@@ -196,6 +196,7 @@ function _pickupItems() {
     const dx = it.x - b.player.x, dy = it.y - b.player.y;
     if (dx * dx + dy * dy > r2) continue;
     b.items.splice(i, 1);
+    b.story?.events?.push(`item:${it.kind}`);   // SPEC-165: 拾った瞬間の一言
     applyItem(it.kind);
   }
 }

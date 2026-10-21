@@ -34,6 +34,10 @@ export const HEAL_DROP_BELOW = 0.5;
  *   id / world            : "1-2" とランド
  *   hero / startExt       : 固定のヒーローと開始装備 (= W1〜W2 は MCH ウォーリアー)
  *   clear                 : { kind: "kills", n } | { kind: "survive", sec } | { kind: "reach", points: [{ x, y }] } | { kind: "collect", n } | { kind: "boss" }
+ *                           | { kind: "shadowSurvive", sec } | { kind: "shadowDefeat" } (= シャドーの試練。 §6)
+ *   shadow                : { id, giver, mode: "survive" | "defeat", atMs, hp, dmg, speed, moves, aura: { spawnMul, speedMul } } (= battle/shadow.js)
+ *   bond                  : { who, gifts, unlock: [] } 試練を越えたときの絆と報酬 (= mcs.story.bonds)
+ *   chestDrop             : 宝箱から必ず出るもの (= "magnet" など。 無ければふつうの抽選)
  *   targetSec             : クリアの想定時間 (= 自動プレイで合わせる目安。 W1 は 60 以下)
  *   spawn                 : { everyMs, pool, max } (= 洪水・密度・段階・型は使わない)
  *   enemyMul              : { hp, dmg } 雑魚の倍率
@@ -90,6 +94,54 @@ export const STORY_STAGES = Object.freeze([
     showGum: true,
     cameo: { giver: 481 },   // ゴースト・呂布 (= 「試練はまだ先だ」)
     lines: { intro: "story.1-5.intro", mid: [{ on: "reach", key: "story.1-5.mid" }], clear: "story.1-5.clear" },
+  },
+  // ---- W2 ストロベリー: 選ぶ・集める・初めての試練 (= 30〜60 秒) ----
+  {
+    id: "2-1", world: 2, hero: 10001, startExt: [{ extId: 10, level: 2 }, { extId: 2, level: 1 }],
+    clear: { kind: "kills", n: 30 }, targetSec: 45,
+    spawn: { everyMs: 1000, pool: [101, 124], max: 8 }, enemyMul: { hp: 1.2, dmg: 0.5 },
+    features: { ce: true, shop: true },
+    shop: { atMs: [15000], offers: [1, 3], only: true, price: null, mustBuy: true },   // リボルバー / ほうき: どちらか
+    showGum: true,
+    lines: { intro: "story.2-1.intro", mid: [{ on: "shopOpen", key: "story.2-1.mid" }], clear: "story.2-1.clear" },
+  },
+  {
+    id: "2-2", world: 2, hero: 10001, startExt: [{ extId: 10, level: 2 }, { extId: 2, level: 1 }, { extId: 1, level: 1 }],
+    clear: { kind: "kills", n: 40 }, targetSec: 50,
+    spawn: { everyMs: 900, pool: [101, 124], max: 9 }, enemyMul: { hp: 1.3, dmg: 0.5 },
+    features: { ce: true, shop: true },
+    shop: { atMs: [20000], offers: [10, 16, 14], only: true, price: null, mustBuy: true },   // ランクアップ / 攻撃力 (りんご) / クールダウン (馬): 全部は買えない
+    showGum: true,
+    lines: { intro: "story.2-2.intro", mid: [{ on: "shopOpen", key: "story.2-2.mid" }], clear: "story.2-2.clear" },
+  },
+  {
+    id: "2-3", world: 2, hero: 10001, startExt: [{ extId: 10, level: 3 }, { extId: 2, level: 1 }, { extId: 1, level: 1 }],
+    clear: { kind: "collect", n: 40 }, targetSec: 50,
+    spawn: { everyMs: 1100, pool: [101, 124], max: 7 }, enemyMul: { hp: 1.2, dmg: 0.5 },
+    features: { ce: true, chests: true, pots: true, items: ["magnet"] },
+    chestTimesMs: [6000, 22000], chestDrop: "magnet",
+    showGum: true,
+    lines: { intro: "story.2-3.intro", mid: [{ on: "item:magnet", key: "story.2-3.mid" }], clear: "story.2-3.clear" },
+  },
+  {
+    id: "2-4", world: 2, hero: 10001, startExt: [{ extId: 10, level: 3 }, { extId: 2, level: 2 }, { extId: 1, level: 1 }],
+    clear: { kind: "shadowSurvive", sec: 15 }, targetSec: 45,
+    spawn: { everyMs: 1600, pool: [101], max: 5 }, enemyMul: { hp: 1, dmg: 0.4 }, heroMul: { hp: 3 },
+    features: { ce: true },
+    shadow: { id: "alexander", giver: 463, mode: "survive", atMs: 4000, speed: 80, dmg: 12, moves: { charge: 2600 }, first: { charge: 1200 }, aura: { speedMul: 1.3 } },
+    bond: { who: "alexander", unlock: ["item:watch"] },
+    showGum: true,
+    lines: { intro: "story.2-4.intro", mid: [{ on: "shadow", key: "story.2-4.mid" }], clear: "story.2-4.clear" },
+  },
+  {
+    id: "2-5", world: 2, hero: 10001, startExt: [{ extId: 10, level: 3 }, { extId: 2, level: 2 }, { extId: 1, level: 2 }],
+    clear: { kind: "shadowSurvive", sec: 20 }, targetSec: 60,
+    spawn: { everyMs: 1300, pool: [101, 124], max: 10 }, enemyMul: { hp: 1, dmg: 0.4 }, heroMul: { hp: 3 },
+    features: { ce: true },
+    shadow: { id: "lubu", giver: 481, mode: "survive", atMs: 4000, speed: 60, dmg: 16, moves: { slam: 3600, charge: 5200 }, first: { slam: 1500, charge: 3000 }, aura: { spawnMul: 3 } },
+    bond: { who: "lubu", gifts: 2 },
+    showGum: true,
+    lines: { intro: "story.2-5.intro", mid: [{ on: "shadow", key: "story.2-5.mid" }], clear: "story.2-5.clear" },
   },
 ]);
 
@@ -206,6 +258,18 @@ export function markStoryCleared(id, best = {}) {
   saveStory(p);
   return p;
 }
+/** 絆を保存する (= 試練を越えた) */
+export function markStoryBond(who) {
+  const p = withBond(loadStory(), who);
+  saveStory(p);
+  return p;
+}
+/** 絆の報酬をまとめる (= ギフト券の枚数と解放したもの。 純関数) */
+export function bondRewards(progress, stages = STORY_STAGES) {
+  const out = { gifts: 0, unlock: [] };
+  for (const s of stages) if (s.bond && progress.bonds.includes(s.bond.who)) { out.gifts += s.bond.gifts ?? 0; out.unlock.push(...(s.bond.unlock ?? [])); }
+  return out;
+}
 
 // ---- 戦闘の中の判定 (= 純関数。 battle/story-battle.js が毎コマ呼ぶ) ----
 /** 到達の地点の列 (= 1 つだけなら [{x,y}]。 純関数) */
@@ -230,6 +294,8 @@ export function storyCleared(recipe, ctx) {
     case "reach":   return (ctx.reachIdx | 0) >= reachPoints(c).length;
     case "collect": return (ctx.ce | 0) >= c.n;
     case "boss":    return !!ctx.bossDefeated;
+    case "shadowSurvive": return (ctx.shadowMs ?? 0) >= c.sec * 1000;
+    case "shadowDefeat":  return !!ctx.shadowDefeated;
     default:        return false;
   }
 }
@@ -243,6 +309,8 @@ export function storyGoal(recipe, ctx) {
     case "collect": return { kind: c.kind, now: ctx.ce | 0, goal: c.n };
     case "reach":   return { kind: c.kind, now: Math.min(ctx.reachIdx | 0, reachPoints(c).length), goal: reachPoints(c).length };
     case "boss":    return { kind: c.kind, now: ctx.bossDefeated ? 1 : 0, goal: 1 };
+    case "shadowSurvive": return { kind: c.kind, now: Math.min(c.sec, Math.floor((ctx.shadowMs ?? 0) / 1000)), goal: c.sec };
+    case "shadowDefeat":  return { kind: c.kind, now: ctx.shadowDefeated ? 1 : 0, goal: 1 };
     default:        return null;
   }
 }

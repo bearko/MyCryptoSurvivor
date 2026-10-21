@@ -95,6 +95,7 @@ export function tickShop() {
   if (!s || _open || !b.active || b.gameOver) return;
   const times = easyStage()?.shopTimesMs ?? shopTimesMs(state.currentStageIdx ?? 0, { atStart: shopAtStart() });   // SPEC-147: EASY は短い。 SPEC-152: 開幕の店は節で
   b.easyShopTimes = easyStage() ? times : null;
+  if (easyStage()?.story && times.length === 0) { hideShopBar(); return; }   // SPEC-165: 店の無いステージでは帯を出さない
   const done = b.bossSpawned || s.nextIdx >= times.length;
   renderShopBar(done ? null : { sec: nextShopSec(b.stageElapsedMs ?? 0, state.currentStageIdx ?? 0, s.nextIdx, times), ratio: shopProgress(b.stageElapsedMs ?? 0, state.currentStageIdx ?? 0, s.nextIdx, times), merchant: s.nextMerchant });   // SPEC-154: ゲージも同じ表で (= ステージ 2・3 で 0 のままだった)
   if (done) return;

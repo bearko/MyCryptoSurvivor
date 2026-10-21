@@ -259,7 +259,7 @@ export function renderBattle(ctx, nowMs = 0) {
     if (e.isProp) { _drawProp(ctx, e, sx, sy); continue; }   // SPEC-053: 壺・宝箱
     if (e.behavior === "trojan") {   // SPEC-064: トロイの木馬
       drawTrojan(ctx, e, sx, sy, nowMs);
-      if (e.hp < e.hpMax) _drawHpBar(ctx, sx, sy + e.r + 6, HP_BAR_WIDTH * 2, HP_BAR_HEIGHT + 1, e.hp / e.hpMax);
+      if (e.hp < e.hpMax && !e.noHpBar) _drawHpBar(ctx, sx, sy + e.r + 6, HP_BAR_WIDTH * 2, HP_BAR_HEIGHT + 1, e.hp / e.hpMax);
       continue;
     }
     const sp = (e.enemyId != null)
@@ -291,7 +291,7 @@ export function renderBattle(ctx, nowMs = 0) {
     }
     // HP バー (= 満タン以外で表示)
     if (e.hp < e.hpMax) {
-      _drawHpBar(ctx, sx, sy + e.r + 4, HP_BAR_WIDTH, HP_BAR_HEIGHT, e.hp / e.hpMax);
+      if (!e.noHpBar) _drawHpBar(ctx, sx, sy + e.r + 4, HP_BAR_WIDTH, HP_BAR_HEIGHT, e.hp / e.hpMax);
     }
   }
 

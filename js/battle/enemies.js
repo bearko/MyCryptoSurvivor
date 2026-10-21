@@ -38,6 +38,7 @@ import { missionMods } from "./missions.js";   // SPEC-112
 import { isEasy, easyStage, bossSpawnAtMs, bossWarnLeadMs } from "../easy.js";   // SPEC-147
 import { storyAllows } from "../story.js";   // SPEC-165
 import { storyHoldsSpawn } from "./story-battle.js";   // SPEC-165
+import { shadowMods } from "./shadow.js";   // SPEC-165: シャドーのオーラ
 import { showLesson } from "../lesson.js";   // SPEC-147
 import {
   floodMul, packAngles, separateEnemies, stageMaxEnemies, spawnBudget,
@@ -103,8 +104,9 @@ export function tickEnemies(dt, nowMs) {
   const mods = missionMods();   // SPEC-112: ミッションの効き目 (= 無ければ効かない値)
   const ez = easyStage();
   const cap = ez?.maxEnemies ?? stageMaxEnemies(stage);   // SPEC-065 / SPEC-078: ステージごと (= 320 / 440 / 600)。 SPEC-165: ストーリーはレシピの同時の上限   // SPEC-147: EASY は決まった間隔 (= flood・density・寄せ直し・群れは使わない)
+  const sm = shadowMods();   // SPEC-165: シャドーのオーラ (= 湧き ×n)
   const spawnInterval = ez
-    ? ez.spawnIntervalMs / mods.spawnMul
+    ? ez.spawnIntervalMs / mods.spawnMul / sm.spawnMul
     : ENEMY_SPAWN_INTERVAL_MS * (stage.spawnIntervalMul ?? 1) / Math.max(0.1, absSpawnMul) / floodMul(stage.flood, b.stageElapsedMs) / mods.spawnMul;
   // SPEC-078: 経った時間ぶん湧かせる (= 1 コマに何体でも。 湧きを大きく速めても上限で止まる)
   // SPEC-079: ボス戦のあいだは湧かない
@@ -222,10 +224,10 @@ export function tickEnemies(dt, nowMs) {
       if (crossedOut(e)) e.gone = true;
     } else if (e.behavior === "shooter") {
       tickShooter(e, dt, px, py);   // SPEC-062: 距離を保って撃つ (= まっすぐ追わない)
-    } else if (e.isBoss && bossHoldsStill(e)) {
+    } else if ((e.isBoss || e.isShadow) && bossHoldsStill(e)) {   // SPEC-165: シャドーも型の最中は boss-moves.js が動かす
       // SPEC-080: 型の最中 (= 予備動作・突進・立て直し) は boss-moves.js が動かす
     } else if ((e.hitFreezeMs ?? 0) <= 0) {
-      const sp = e.isBoss ? e.speed : e.speed * mods.speedMul;   // SPEC-112: 東方遠征・乱世の奸雄
+      const sp = (e.isBoss || e.isShadow) ? e.speed : e.speed * mods.speedMul * shadowMods().speedMul;   // SPEC-112: 東方遠征・乱世の奸雄。 SPEC-165: オーラ
       e.x += (dx / d) * sp * dt;
       e.y += (dy / d) * sp * dt;
       // SPEC-053: 建物にめりこんだら押し出し、 壁に沿ってプレイヤーへ回りこむ
