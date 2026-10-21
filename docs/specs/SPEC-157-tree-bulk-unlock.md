@@ -2,7 +2,7 @@
 id: SPEC-157
 title: Bulk Unlock of Every Claimable Skill Cheapest First With a Gold Dust Toggle, a Yellow Frame Around the Selected Node, the "Available Skills" Button Selecting the Node, and No Recommended Upgrade Until the Root Is Owned
 status: Done
-pr: TBD
+pr: 197
 phase: v1.7 Onboarding
 kind: Changed
 ---
