@@ -18,9 +18,9 @@ function buy(m, id) {
   return r;
 }
 
-test("節は根 ＋ 36 ＋ エクステ別 21 ＋ 仕込み 21 ＋ 武器の目利き 10 ＋ 得意武器 ＋ 合体ロボ で、 id が重ならず、 requires の先が実在する (= SPEC-133 / 139 / 140)", () => {
-  assert.equal(NODES.length, 91);
-  assert.equal(new Set(NODES.map((n) => n.id)).size, 91);
+test("節は根 ＋ 36 ＋ エクステ別 21 ＋ 仕込み 21 ＋ 武器の目利き 10 ＋ 得意武器 ＋ 合体ロボ ＋ 先行オープン で、 id が重ならず、 requires の先が実在する (= SPEC-133 / 139 / 140 / 152)", () => {
+  assert.equal(NODES.length, 92);
+  assert.equal(new Set(NODES.map((n) => n.id)).size, 92);
   assert.equal(NODE_MAP[ROOT_ID].kind, "root");
   assert.deepEqual(NODE_MAP[ROOT_ID].requires, []);
   for (const n of NODES) {
@@ -103,7 +103,7 @@ test("費用: 強化は段ごとに × 段数、 常時と奥義は固定。 武
   assert.deepEqual(nodeCostAt(NODE_MAP.bm_19, 1), { gum: 40, dust: 0 }, "強化の目利きは持ち主がいないので 40 から");
   const total = treeTotal();
   // SPEC-139: 仕込み 21 × (150 ＋ 300)・武器の目利き 10 × 600・得意武器 100 ＋ 200 ＋ 300
-  assert.equal(total.gum, 13610 + 21 * 600 - 10 * 40 + 21 * 450 + 10 * 600 + 600 + 120 * 15, `GUM ${total.gum}`);   // SPEC-140: 合体ロボ 120 × (1 … 5)
+  assert.equal(total.gum, 13610 + 21 * 600 - 10 * 40 + 21 * 450 + 10 * 600 + 600 + 120 * 15 + 150, `GUM ${total.gum}`);   // SPEC-140: 合体ロボ 120 × (1 … 5)。 SPEC-152: 先行オープン 150
   assert.equal(total.dust, 32, "奥義 21 ＋ ボスの道 11");
 });
 

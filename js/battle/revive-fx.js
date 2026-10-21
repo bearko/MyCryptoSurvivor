@@ -6,7 +6,7 @@
 //   dissolve: ヒーローの描かれていた画面座標から上へ舞い上がる (1.4 秒。 画面はだんだん暗く)
 //   flow:     それぞれの粒が、 画面の真ん中の紡錘 (= 上下に細く、 真ん中が太い円柱) の持ち場へ流れこむ (0.9 秒)
 //   vortex:   紡錘の中を回りながら上から下へ流れ続ける (= 結果の画面のあいだずっと)
-//   sink:     「復活する」: 渦ごと画面の下へ吸い込まれる (0.8 秒) → ここで戦闘を始める
+//   sink:     「復活する」: 渦ごと画面の下へ吸い込まれる (0.8 秒。 暗いまま) → hold (= 暗いまま) → ここで戦闘を始める
 //   rain:     ステージの真ん中に、 上から粒が降りこんで自分の画素の位置に収まり、 ヒーローの姿になる (1.0 秒) → 閃光と「REVIVE!」
 // 結果の画面 (= --z-modal-top) のすぐ下の固定 canvas に描く (= 半透明の札の後ろで渦が見える)。 純関数はテストから呼べる。
 
@@ -260,7 +260,7 @@ function _frame(now) {
     }
   } else if (_mode === "sink") {
     const k = Math.min(1, t / (REVIVE.sinkMs / 1000));
-    _ctx.fillStyle = `rgba(0,0,0,${(REVIVE.dark * (1 - k)).toFixed(2)})`; _ctx.fillRect(0, 0, w, h);
+    _ctx.fillStyle = `rgba(0,0,0,${REVIVE.dark})`; _ctx.fillRect(0, 0, w, h);   // SPEC-152: 吸い込みのあいだは暗いまま (= 前のステージを見せない)
     for (const p of _parts) {
       vortexStep(p, dt * (1 + k * 3));   // 速く回りながら細くなり
       const v = vortexPos(p, _center.x, _center.y, _spindleH * (1 - k * 0.6), _spindleR * (1 - k * 0.7));
@@ -268,9 +268,12 @@ function _frame(now) {
       p.y = Math.max(p.y + p.vy * dt, v.y);
       _dot4(p, v.x, p.y, 1 - k * 0.3, 1, k * 0.5);
     }
-    if (k >= 1) { _mode = null; _ctx.clearRect(0, 0, w, h); _finish(true); return; }
+    if (k >= 1) { _mode = "hold"; _finish(true); }   // SPEC-152: 降りこみが始まるまで暗いまま
+  } else if (_mode === "hold") {
+    _ctx.fillStyle = `rgba(0,0,0,${REVIVE.dark})`; _ctx.fillRect(0, 0, w, h);
   } else if (_mode === "rain") {
     const k = Math.min(1, t / (REVIVE.rainMs / 1000));
+    _ctx.fillStyle = `rgba(0,0,0,${(REVIVE.dark * (1 - k)).toFixed(2)})`; _ctx.fillRect(0, 0, w, h);   // SPEC-152: 降りこみながら晴れる
     for (const p of _parts) {
       const kk = Math.max(0, Math.min(1, (k - p.delay) / (1 - p.delay)));
       const q = lerpPos(p.gx, p.gy, p.tx, p.ty, easeOutCubic(kk));

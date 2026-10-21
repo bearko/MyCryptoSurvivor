@@ -17,6 +17,7 @@
 import { state, pauseTime, resumeTime } from "../state.js";
 import { img, SFX, BOSS_SPAWN_AT_MS, BOSS_WARNING_LEAD_MS } from "../constants.js";
 import { shopTimesMs } from "./shop-logic.js";
+import { shopAtStart } from "../perks.js";   // SPEC-152
 import { t, tpl, onLangChange } from "../i18n.js";
 import { playSe, setMissionSilence } from "../audio.js";
 import { applyItem, healBy } from "./field.js";
@@ -109,7 +110,7 @@ export function pickMission({ prevId = null, heroId = null, rnd = Math.random } 
 export function planOffer({ stageIdx, waveIdx, durS, count, rolls = [Math.random(), Math.random()] }) {
   if (waveIdx < 1 || count >= MISSION_PER_STAGE) return null;
   if (rolls[0] >= MISSION_CHANCE) return null;
-  const times = shopTimesMs(stageIdx);
+  const times = shopTimesMs(stageIdx, { atStart: shopAtStart() });   // SPEC-152
   const from = times[waveIdx - 1];
   const at = Math.round(from + MISSION_WINDOW_MS[0] + rolls[1] * (MISSION_WINDOW_MS[1] - MISSION_WINDOW_MS[0]));
   const next = times[waveIdx];   // 無ければ (= 最後の店のあと) ボスまで

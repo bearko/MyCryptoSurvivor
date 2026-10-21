@@ -21,7 +21,7 @@ export const EASY_HERO_MUL = 0.6;
 /**
  * ステージごとの上書き (= ms)。 NORMAL の表に無いものだけ
  *   bossAtMs / warnMs : ボスが出る時刻と、 その前の予告
- *   shopTimesMs       : 店が開く時刻 (= 0 は開始の前)
+ *   shopTimesMs       : 店が開く時刻 (= SPEC-152: 開幕の店は出さない。 CE は持ち越さないので選べるものが無い)
  *   spawnIntervalMs   : 雑魚の湧きの間隔 (= flood・density・寄せ直しは使わない)
  *   enemyHpMul / enemyDmgMul / bossHpMul / bossDmgMul (= NORMAL のボスは Lv.40 向けなので、 EASY では HP を大きく下げる)
  *   chestTimesMs      : 宝箱
@@ -32,9 +32,9 @@ export const EASY_HERO_MUL = 0.6;
 export const EASY_STAGES = Object.freeze([
   // SPEC-149: 敵の数は 1/3 (= 湧きの間隔 ×3)。 ステージ 1 は動かなくても倒れない、 ステージ 2 は動かないと倒れる
   { bossAtMs: 15000, warnMs: 4000,  shopTimesMs: [10000],            spawnIntervalMs: 960,  enemyHpMul: 0.5, enemyDmgMul: 0.25, bossHpMul: 0.003, bossDmgMul: 0.25, chestTimesMs: [5000],        rareAtMs: null, missionAtMs: null, thunderAtBoss: false },
-  { bossAtMs: 30000, warnMs: 5000,  shopTimesMs: [0, 15000],         spawnIntervalMs: 1140, enemyHpMul: 1.0, enemyDmgMul: 1.2, bossHpMul: 0.008, bossDmgMul: 0.4, chestTimesMs: [10000],       rareAtMs: 5000, missionAtMs: 8000, missionDurS: 15, thunderAtBoss: false },
+  { bossAtMs: 30000, warnMs: 5000,  shopTimesMs: [15000],            spawnIntervalMs: 1140, enemyHpMul: 1.0, enemyDmgMul: 1.2, bossHpMul: 0.008, bossDmgMul: 0.4, chestTimesMs: [10000],       rareAtMs: 5000, missionAtMs: 8000, missionDurS: 15, thunderAtBoss: false },
   // ステージ 3 は負ける設計なので 1/2 (= 1/3 だと根なしでも通ってしまった)
-  { bossAtMs: 45000, warnMs: 10000, shopTimesMs: [0, 15000, 30000],  spawnIntervalMs: 570,  enemyHpMul: 1.6, enemyDmgMul: 2.2, bossHpMul: 0.016, bossDmgMul: 0.7, chestTimesMs: [10000, 30000], rareAtMs: null, missionAtMs: null, thunderAtBoss: true },
+  { bossAtMs: 45000, warnMs: 10000, shopTimesMs: [15000, 30000],     spawnIntervalMs: 570,  enemyHpMul: 1.6, enemyDmgMul: 2.2, bossHpMul: 0.016, bossDmgMul: 0.7, chestTimesMs: [10000, 30000], rareAtMs: null, missionAtMs: null, thunderAtBoss: true },
 ]);
 
 /** レッスンの番号 (= 出す順。 文は data/i18n/ui.json の lesson.<番号>、 ボイスは lesson.<番号>) */

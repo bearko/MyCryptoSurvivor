@@ -32,6 +32,7 @@ export const NO_PERKS = Object.freeze({
   ...Object.fromEntries(EXT_MASTERY.map(([, extId]) => [`slv_${extId}`, 0])),
   mainBias: 0,
   robot: 0,   // SPEC-140: 合体ロボの段
+  shopAtStart: 0,   // SPEC-152: ステージ 2・3 の始まりにも店が開く
 });
 
 /** 段で積まず、 値をそのまま置くもの (= 1 つの節しか持たない) */
@@ -110,6 +111,8 @@ export const stockLimit = (category) => (category === "buff" ? STOCK_LIMIT_BUFF 
 export const potMaxOnField = () => POT_MAX_ON_FIELD + perk("pots");
 /** ふつうの宝箱が出る時刻 */
 export const chestTimesMs = () => (perk("earlyChest") ? [EARLY_CHEST_MS, ...CHEST_TIMES_MS] : CHEST_TIMES_MS);
+/** SPEC-152: ステージ 2・3 の始まりにも店が開くか (= 節「先行オープン」。 RTA は節が効かないが、 レギュレーションを変えないので今までどおり開く) */
+export const shopAtStart = () => !!state.rtaMode || !!perk("shopAtStart");
 /** パンケーキの回復 */
 export const healRatio = () => perk("pancakeHeal") || HEAL_RATIO;
 /** 雷鼓のボスへのダメージ (= 最大 HP の割合) */
@@ -184,6 +187,7 @@ const LINES = {
   bossDmgMul:      { ja: (v) => `対ボス ${PCT(v)}`,          en: (v) => `vs Boss ${PCT(v)}` },
   bossCardRate:    { ja: () => "切り札",                     en: () => "Trump Card" },
   bossDmgTakenMul: { ja: (v) => `ボスの被ダメ ${PCT(v)}`,    en: (v) => `Boss dmg taken ${PCT(v)}` },
+  shopAtStart:     { ja: () => "先行オープン",               en: () => "Early Opening" },   // SPEC-152
 };
 
 /** 効いているものだけを短い語で (= 何も無ければ空)。 純関数 */

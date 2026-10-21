@@ -35,6 +35,9 @@ test("店の時刻: ステージ 1 は 0:10 から、 ステージ 2・3 は開�
   assert.deepEqual(shopTimesMs(0), [10000, 50000, 90000, 130000, 170000, 210000]);
   assert.deepEqual(shopTimesMs(1), [0, 40000, 80000, 120000, 160000, 200000]);
   assert.deepEqual(shopTimesMs(2), shopTimesMs(1));
+  // SPEC-152: 開幕の店は節「先行オープン」で。 無ければステージ 1 と同じ 0:10 から
+  assert.deepEqual(shopTimesMs(1, { atStart: false }), shopTimesMs(0));
+  assert.deepEqual(shopTimesMs(0, { atStart: false }), shopTimesMs(0));
   // ボスの予告 (= 3:50) より前に終わる
   for (const i of [0, 1, 2]) assert.ok(Math.max(...shopTimesMs(i)) < 230000);
 });

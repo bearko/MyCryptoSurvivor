@@ -2073,6 +2073,7 @@ a.title-screen__next[href]:hover { border-color: var(--accent); }
    ============================================================ */
 .revive-fx { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: calc(var(--z-modal-top) - 1); display: none; }   /* SPEC-151: 結果の画面の後ろ */
 .revive-fx.revive-fx--on { display: block; }
+.revive-fx.revive-fx--hold { display: none !important; }   /* SPEC-152: スキルツリーを開いているあいだ */
 .revive-text {
   position: fixed; transform: translate(-50%, -50%); pointer-events: none; z-index: calc(var(--z-modal-top) - 1);
   font-weight: 900; font-size: 2.2rem; letter-spacing: 0.12em; color: #fff7d6;

@@ -107,6 +107,18 @@ test("流れの配線: 倒れたら粒子 → 渦に入ったらマインちゃ�
   assert.match(read("../css/chars.css"), /\.navi\[data-place="revive"\] \{ --s: 2; --peek: 0\.1; z-index: calc\(var\(--z-modal-top\) \+ 5\); \}/, "全身で結果の画面より上");
 });
 
+test("SPEC-152: 吸い込みのあいだは暗いまま → hold → 降りこみながら晴れる。 木を開いているあいだ渦は隠す。 止まっているあいだは揺らさない", () => {
+  const fx = read("../js/battle/revive-fx.js");
+  assert.match(fx, /if \(k >= 1\) \{ _mode = "hold"; _finish\(true\); \}/);
+  assert.match(fx, /\} else if \(_mode === "hold"\) \{\n\s+_ctx\.fillStyle = `rgba\(0,0,0,\$\{REVIVE\.dark\}\)`;/);
+  assert.match(fx, /_mode === "rain"[^]*?rgba\(0,0,0,\$\{\(REVIVE\.dark \* \(1 - k\)\)\.toFixed\(2\)\}\)/);
+  const tree = read("../js/skill-tree.js");
+  assert.match(tree, /classList\.add\("revive-fx--hold"\)/);
+  assert.match(tree, /classList\.remove\("revive-fx--hold"\)/);
+  assert.match(read("../css/components.css"), /\.revive-fx\.revive-fx--hold \{ display: none !important; \}/);
+  assert.match(read("../js/battle/fx.js"), /if \(state\.pauseFlags > 0 \|\| state\.battle\.gameOver\) return \{ x: 0, y: 0 \};/);
+});
+
 test("レッスンは告げ声が終わるのを待ち、 出すときは前のボイスを切る (= 「ここは node ホレリス」と「新しいステージ！」を重ねない)", () => {
   assert.match(read("../js/voice.js"), /export function isVoicePlaying\(\)/);
   const lesson = read("../js/lesson.js");

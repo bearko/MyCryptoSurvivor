@@ -16,7 +16,7 @@ import {
 } from "../constants.js";
 import { getExt, extTierImg, getSeriesName } from "../extensions.js";
 import { samplePicks, offerFor, grantPick, buildPickCard, renderOwnedStrip } from "./levelup.js";
-import { perk, buffPriceCut } from "../perks.js";
+import { perk, buffPriceCut, shopAtStart } from "../perks.js";
 import { t, tpl, getLang, onLangChange } from "../i18n.js";
 import { playSe } from "../audio.js";
 import { sigOnLevelUp, sigParams, sigLevel, SIG_MAX_LEVEL, SIG_UP_PRICE, pourCeIntoSig } from "./signature.js";
@@ -91,7 +91,7 @@ export function tickShop() {
   const s = state.shop;
   const b = state.battle;
   if (!s || _open || !b.active || b.gameOver) return;
-  const times = easyStage()?.shopTimesMs ?? shopTimesMs(state.currentStageIdx ?? 0);   // SPEC-147: EASY は短い
+  const times = easyStage()?.shopTimesMs ?? shopTimesMs(state.currentStageIdx ?? 0, { atStart: shopAtStart() });   // SPEC-147: EASY は短い。 SPEC-152: 開幕の店は節で
   b.easyShopTimes = easyStage() ? times : null;
   const done = b.bossSpawned || s.nextIdx >= times.length;
   renderShopBar(done ? null : { sec: nextShopSec(b.stageElapsedMs ?? 0, state.currentStageIdx ?? 0, s.nextIdx), ratio: shopProgress(b.stageElapsedMs ?? 0, state.currentStageIdx ?? 0, s.nextIdx), merchant: s.nextMerchant });

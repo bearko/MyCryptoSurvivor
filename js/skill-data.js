@@ -83,6 +83,9 @@ export const NODES = [
   N("trs_heal",    "trs", "trs_pot",   3, -1, "perk",     "甘い匂い",     "Sweet Scent",    "壺からパンケーキが出やすい", "Pots drop pancakes more often",                     { gum: 100 },            4129, { pancakeWeight: 1.5 }),
   N("trs_rare",    "trs", "trs_chest", 3,  1, "perk",     "誘い",         "Lure",           "レアエネミーが 45 秒ごと（60 → 45）", "Rare enemies every 45 s (was 60)",         { gum: 150 },            1150, { rareIntervalSec: 45 }),
   N("cap_trs",     "trs", "trs_gum",   4,  0, "capstone", "金運",         "Fortune",        "GUM ＋20%、 ボスのゴールドダスト ＋1", "GUM +20%, boss Gold Dust +1",              { gum: 300, dust: 4 },   5109, { gumMul: 0.20, bossDust: 1 }),
+  // SPEC-152: 開幕の店は節で開く (= CE は持ち越さないので、 先手やギフト券と組み合わせてはじめて意味がある)。 位置は手で (= 誘いの先)
+  { ...N("trs_open", "bm", "trs_rare", 0, 0, "perk", "先行オープン", "Early Opening", "ステージ 2・3 の始まりにも店が開く（先手やギフト券と）", "The shop also opens at the start of stages 2 and 3 (pairs with Head Start and gift tickets)", { gum: 150 }, 1037, { shopAtStart: 1 }),
+    x: 1, y: 4, requires: ["trs_rare"], fixed: true },
 
   // ---- ボス (紫。 ゴールドダストで買う) ----
   N("bos_thunder", "bos", ROOT_ID,     1,  0, "repeat",   "雷鳴",         "Thunderclap",    "雷鼓のボスへのダメージ ＋5%（段ごと。 20% → 30%）", "Raiko's boss damage +5% per rank (20% → 30%)", { gum: 80, dust: 1 }, 5071, { thunderBossRatio: 0.05 }, 2),
@@ -96,6 +99,7 @@ export const NODES = [
 // ---- 道の節をマス目へ (= 1 段目 d1、 2・3 段目は軸の上 (lane -1) と脇の列 (lane +1)、 奥義は軸の 3 つ先) ----
 for (const n of NODES) {
   if (n.kind === "root") { Object.assign(n, { x: 0, y: 0, requires: [] }); continue; }
+  if (n.fixed) continue;   // SPEC-152: 位置と条件を手で決めた節
   const r = ROUTES.find((x) => x.id === n.route);
   const sideCol = n.depth === 1 || n.kind === "capstone" ? 0 : (n.lane > 0 ? 1 : (n.depth === 3 ? (NODES.find((p) => p.id === n.parent)?.lane > 0 ? 1 : 0) : 0));
   const k = n.kind === "capstone" ? 3 : n.depth - 1;

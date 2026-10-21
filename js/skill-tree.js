@@ -187,6 +187,7 @@ export function openSkillTree({ focus = null, returnTo = null, midRun = false, r
   _retry = !!retry;
   _bought = 0;
   _returnTo?.classList.add("hidden");   // SPEC-132: 元の画面は消さずに隠すだけ (= 閉じたらそのまま戻る)
+  document.getElementById("reviveFx")?.classList.add("revive-fx--hold");   // SPEC-152: 渦の canvas は木より上なので、 開いているあいだは隠す
   _selected = null;
   _resetAsk = false;
   _lastTap = { id: null, at: 0 };
@@ -241,6 +242,7 @@ export function closeSkillTree() {
   _open = false;
   clearTimeout(_noticeTimer);
   _screen?.classList.add("hidden");
+  document.getElementById("reviveFx")?.classList.remove("revive-fx--hold");   // SPEC-152
   if (_screen) clear(_screen);
   _parts?.ac?.abort();   // SPEC-134: window の受け口を外す
   _parts = null;
