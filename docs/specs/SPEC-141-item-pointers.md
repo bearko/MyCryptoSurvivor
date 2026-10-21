@@ -2,7 +2,7 @@
 id: SPEC-141
 title: Helper Items On Top of the Horde and Off-Screen Item Pointers With Icons
 status: Done
-pr: TBD
+pr: 179
 phase: v1.6 Battle
 kind: Changed
 ---
