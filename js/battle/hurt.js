@@ -16,13 +16,18 @@ import { triggerGameOver } from "./gameover.js";
 import { contactCooldownMs, bossDmgTakenMul, perk, PHOENIX_HP_RATIO, PHOENIX_IFRAME_MS } from "../perks.js";
 import { sigTryPhantom } from "./signature.js";   // SPEC-100
 import { missionMods, missionOnHurt } from "./missions.js";   // SPEC-112
+import { recordTaken, recordDown, recordHeal } from "./run-stats.js";   // SPEC-148
+import { enemyNameOf } from "./enemy-name.js";   // SPEC-148
 
 /**
  * @param {number} raw   元のダメージ (= 強化の被ダメ倍率はここで掛ける)
- * @param {{boss?: boolean, shake?: boolean}} opt  boss: ボスの攻撃 (= 竜殺しが効く)。 shake: 大きく揺らす
+ * @param {{boss?: boolean, shake?: boolean, kind?: string, name?: string}} opt
+ *   boss: ボスの攻撃 (= 竜殺しが効く)。 shake: 大きく揺らす
+ *   kind: SPEC-148 の出どころ (= "contact" / "shot" / "boss" / "gimmick"。 省略ならボスなら boss、 ほかは contact)
+ *   name: とどめに出す名前 (= 省略ならボスの名前)
  * @returns {boolean} 受けたら true (= 無敵時間の中なら false)
  */
-export function hurtPlayer(raw, { boss = false, shake = boss } = {}) {
+export function hurtPlayer(raw, { boss = false, shake = boss, kind = null, name = null } = {}) {
   const b = state.battle;
   if (b.gameOver || b.contactCooldownMs > 0) return false;
   let taken = raw * (state.buffs?.dmgTakenMul ?? 1) * missionMods().dmgMul;   // SPEC-112: 四面楚歌
@@ -31,11 +36,14 @@ export function hurtPlayer(raw, { boss = false, shake = boss } = {}) {
   state.stats.hp = Math.max(0, state.stats.hp - takenInt);
   b.contactCooldownMs = contactCooldownMs();
   missionOnHurt();   // SPEC-112: 白衣の誓い (= 1 回でも当たると失敗)
+  // SPEC-148: 出どころと名前を覚える (= 倒れた画面の「被ダメの内訳」と「とどめ」)
+  const k = kind ?? (boss ? "boss" : "contact");
+  recordTaken(state.run?.stats, k, takenInt, name ?? (k === "boss" ? enemyNameOf(b.enemies.find((e) => e.isBoss)) : null));
   pushDamageNumber(b.player.x, b.player.y - b.player.r - 4, takenInt, "#ff7676");
   playSe(SFX.PLAYER_DAMAGED, 200, 0.55);
   fxPlayerHurt(shake);
   // SPEC-100: 幻の生存者 (= アナスタシア。 1 ステージに 1 度) が先、 次に不死鳥 (= 1 回の挑戦に 1 度)
-  if (state.stats.hp <= 0 && !b.gameOver && !tryPhantom() && !tryPhoenix()) triggerGameOver();
+  if (state.stats.hp <= 0 && !b.gameOver && !tryPhantom() && !tryPhoenix()) { recordDown(state.run?.stats); triggerGameOver(); }
   return true;
 }
 
@@ -56,6 +64,7 @@ function tryPhoenix() {
   b.phoenixUsed = true;
   const hp = Math.max(1, Math.round(state.statsMax.hp * PHOENIX_HP_RATIO));
   state.stats.hp = hp;
+  recordHeal(state.run?.stats, "phoenix", hp);   // SPEC-148
   b.contactCooldownMs = PHOENIX_IFRAME_MS;
   pushDamageNumber(b.player.x, b.player.y - b.player.r - 18, `+${hp}`, "#9ef0b0", "lg");
   fxBurst(b.player.x, b.player.y, "#ffd56a", 18, 220);

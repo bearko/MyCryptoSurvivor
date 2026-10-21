@@ -10,7 +10,7 @@
 // pauseFlags のチェックは呼出側 (= _loop) が行う。 ここでは tick 内で random / 状態変更は許容。
 
 import { state } from "../state.js";
-import { hitEnemy } from "./damage.js";
+import { hitEnemy, weaponSrc } from "./damage.js";   // SPEC-148: weaponSrc
 import { getObstacleRects } from "./field.js";
 import { clipRayLength } from "./field-geom.js";
 import {
@@ -52,6 +52,7 @@ function _spawnProjectile(opts) {
     age: 0,
     targetId: opts.targetId ?? null,
     kind: opts.kind ?? null,
+    weaponExtId: opts.weaponExtId ?? null,   // SPEC-148: 与ダメの出どころ
     // SPEC-015: render 用 icon 情報
     iconId:        opts.iconId        ?? null,
     iconRotOffset: opts.iconRotOffset ?? 0,
@@ -114,6 +115,7 @@ export function fireRadial(w, dmgMul, bulletBonus) {
     const t = total <= 1 ? 0.5 : (spreadDeg >= 360 ? i / total : i / (total - 1));
     const a = baseAngle - spreadRad / 2 + spreadRad * t;
     _spawnProjectile({
+      weaponExtId: w.extId,   // SPEC-148: 与ダメの出どころ
       x: px, y: py,
       vx: Math.cos(a) * speed, vy: Math.sin(a) * speed,
       dmg: w.dmg * dmgMul, color: w.color,
@@ -151,6 +153,7 @@ export function fireBigHoming(w, dmgMul, bulletBonus) {
       vy = Math.sin(a) * w.speedPx;
     }
     _spawnProjectile({
+      weaponExtId: w.extId,   // SPEC-148: 与ダメの出どころ
       x: px, y: py, vx, vy,
       dmg: w.dmg * dmgMul, color: w.color,
       r: size * lvMul, life: 4000, targetId, kind: "homing",
@@ -183,6 +186,7 @@ export function fireDropTarget(w, dmgMul, bulletBonus) {
     const t = enemies[Math.floor(Math.random() * enemies.length)];
     if (!t) continue;
     _spawnProjectile({
+      weaponExtId: w.extId,   // SPEC-148: 与ダメの出どころ
       x: t.x, y: t.y - fallH,
       vx: 0, vy: speed,
       dmg: w.dmg * dmgMul, color: w.color,
@@ -219,6 +223,7 @@ export function fireStack(w, dmgMul, bulletBonus) {
     const ux = Math.cos(a), uy = Math.sin(a);
     for (let s = 0; s < stack; s++) {
       _spawnProjectile({
+      weaponExtId: w.extId,   // SPEC-148: 与ダメの出どころ
         x: px - ux * stackGap * s,
         y: py - uy * stackGap * s,
         vx: ux * speed, vy: uy * speed,
@@ -281,6 +286,7 @@ export function fireDiagonal(w, dmgMul, bulletBonus) {
   for (let i = 0; i < total; i++) {
     const a = offset + (Math.PI * 2 * i) / total;
     _spawnProjectile({
+      weaponExtId: w.extId,   // SPEC-148: 与ダメの出どころ
       x: px, y: py,
       vx: Math.cos(a) * speed, vy: Math.sin(a) * speed,
       dmg: w.dmg * dmgMul, color: w.color,
@@ -306,6 +312,7 @@ export function fireRandomRadial(w, dmgMul, bulletBonus) {
   for (let i = 0; i < total; i++) {
     const a = Math.random() * Math.PI * 2;
     _spawnProjectile({
+      weaponExtId: w.extId,   // SPEC-148: 与ダメの出どころ
       x: px, y: py,
       vx: Math.cos(a) * speed, vy: Math.sin(a) * speed,
       dmg: w.dmg * dmgMul, color: w.color,
@@ -334,6 +341,7 @@ export function firePlaceBomb(w, dmgMul, bulletBonus) {
     const oy = (Math.random() * 2 - 1) * off;
     state.battle.bombs.push({
       id: state.battle.nextEntityId++,
+      weaponExtId: w.extId,   // SPEC-148
       x: px + ox, y: py + oy,
       fuseMs, age: 0,
       radius, dmg: Math.max(1, Math.round(w.dmg * dmgMul)),
@@ -358,6 +366,7 @@ export function fireHoming(w, dmgMul) {
   const projIcon = (w.projectileIconId !== undefined) ? w.projectileIconId : w.iconId;
   const lvMul = _levelSizeMul(w);   // SPEC-028
   _spawnProjectile({
+      weaponExtId: w.extId,   // SPEC-148: 与ダメの出どころ
     x: px, y: py,
     vx: dir.x * w.speedPx, vy: dir.y * w.speedPx,
     dmg: w.dmg * dmgMul, color: w.color,
@@ -462,7 +471,7 @@ export function tickOrbits(dt, nowMs) {
       const last = o.hitMap[e.id] ?? 0;
       if (nowMs - last < ORBIT_HIT_COOLDOWN_MS) continue;
       o.hitMap[e.id] = nowMs;
-      hitEnemy(j, o.dmg);
+      hitEnemy(j, o.dmg, weaponSrc(o.weaponExtId));   // SPEC-148
     }
   }
 }
@@ -510,7 +519,7 @@ export function tickBeams(dt, nowMs) {
       const intDmg = Math.round(accum);
       b.dmgAccum[e.id] = 0;
       b.lastHitMs[e.id] = nowMs;
-      hitEnemy(j, intDmg);   // SPEC-016: 数字 + freeze 同時発火
+      hitEnemy(j, intDmg, weaponSrc(b.weaponExtId));   // SPEC-016: 数字 + freeze 同時発火。 SPEC-148: 出どころ
     }
   }
 }
@@ -533,7 +542,7 @@ export function tickBombs(dt) {
       const e = enemies[j];
       const dx = e.x - b.x, dy = e.y - b.y;
       if (dx * dx + dy * dy > r2) continue;
-      const killed = hitEnemy(j, b.dmg);
+      const killed = hitEnemy(j, b.dmg, weaponSrc(b.weaponExtId));   // SPEC-148
       // SPEC-101: 凍って止まる (= ボスは短く)。 hitEnemy が短い止まりを置くので、 そのあとで上書き
       if (!killed && b.freezeMs > 0) e.hitFreezeMs = Math.max(e.hitFreezeMs ?? 0, e.isBoss ? b.freezeMs * 0.3 : b.freezeMs);
     }
@@ -563,7 +572,7 @@ export function tickShockwaves(dt) {
       const dx = e.x - s.x, dy = e.y - s.y;
       if (dx * dx + dy * dy > r2) continue;
       s.hitSet.add(e.id);
-      hitEnemy(j, s.dmg);   // SPEC-016
+      hitEnemy(j, s.dmg, weaponSrc(s.weaponExtId));   // SPEC-016。 SPEC-148: 出どころ
     }
   }
 }

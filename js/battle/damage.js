@@ -24,14 +24,19 @@ import {
 import { bossDmgDealtMul } from "../perks.js";   // SPEC-090c
 import { sigDamageMul } from "./signature.js";   // SPEC-100
 import { boostDmgMul } from "./missions.js";   // SPEC-125
+import { recordDealt, recordKill } from "./run-stats.js";   // SPEC-148
+
+/** SPEC-148: 武器の与ダメの出どころの名前 (= run-stats の dealt の鍵) */
+export const weaponSrc = (extId) => (extId == null ? "other" : `w:${extId}`);
 
 /**
  * 敵に damage を与える。 数字 floater + hit freeze を一括処理。
  * @param {number} idx - state.battle.enemies のインデックス
  * @param {number} dmg - 適用するダメージ (= 浮動小数を round)
+ * @param {string} [src] - SPEC-148: 出どころ (= weaponSrc(extId) か "sig" / "ll" / "thunder" / "gimmick")
  * @returns {boolean} true if killed (= splice 済)
  */
-export function hitEnemy(idx, dmg) {
+export function hitEnemy(idx, dmg, src = "other") {
   const enemies = state.battle.enemies;
   const e = enemies[idx];
   if (!e) return false;
@@ -41,6 +46,7 @@ export function hitEnemy(idx, dmg) {
   const dmgInt = Math.max(0, Math.round(dmg));
   if (dmgInt <= 0) return false;
   e.hp -= dmgInt;
+  if (!e.isProp) recordDealt(state.run?.stats, src, dmgInt, !!e.isBoss);   // SPEC-148: 壺・宝箱は数えない
   e.hitFreezeMs = HIT_FREEZE_MS;
   fxEnemyHit(e);   // SPEC-045: 一瞬白く光る
   // SPEC-057: 大きいダメージほど大きく、 金色で
@@ -67,6 +73,7 @@ export function hitEnemy(idx, dmg) {
     if (e.isRare) spawnMagicCard(e.x, e.y);
     enemies.splice(idx, 1);
     state.killCount++;
+    recordKill(state.run?.stats);   // SPEC-148
     fxEnemyKilled(e);   // SPEC-045: 粒・撃破音 (= ボスなら揺れ・閃光)
     // SPEC-022 + SPEC-033: ボス撃破フラグ → 次 tick で triggerStageEndOrTransition
     // 旧: BOSS_ENEMY_ID hardcode (= ヨシュカ id 171 のみ) → ステージ 2/3 では発火しなかった

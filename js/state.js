@@ -99,6 +99,7 @@ export const state = {
     totalKills:    0,
     totalElapsedMs: 0,
     scoreSent:     false, // SPEC-041: この挑戦の総合スコアを送ったか (= 二重に送らない)
+    stats:         null,  // SPEC-148: 被ダメ・与ダメ・回復の記録 (= battle/run-stats.js。 startBattle が置く)
   },
 
   // SPEC-037: ゲームモード (= 「NORMAL」 / 「ABSOLUTE」 の 2 種)

@@ -9,6 +9,7 @@
 // 時刻はステージのゲーム内時間 (= stageElapsedMs) で数える。 一時停止中は進まない。
 
 import { state } from "../state.js";
+import { recordHeal } from "./run-stats.js";   // SPEC-148
 import {
   OBSTACLE_HITBOX_RATIO, WORLD_W, WORLD_H,
   POT_RADIUS, POT_HP, POT_INITIAL, POT_MAX_ON_FIELD, POT_RESPAWN_MS, POT_CE_GEMS, POT_DROPS,
@@ -209,6 +210,7 @@ export function healBy(ratio) {
   const before = state.stats.hp;
   state.stats.hp = Math.min(max, before + Math.round(max * ratio));
   const healed = Math.round(state.stats.hp - before);
+  recordHeal(state.run?.stats, "pancake", healed);   // SPEC-148
   if (healed > 0) pushDamageNumber(b.player.x, b.player.y - b.player.r - 4, `+${healed}`, "#7ee08a", "lg");
   fxBurst(b.player.x, b.player.y, "#7ee08a", 12, 120);
   playSe(SFX.PICK_HEAL, 120, 0.5);
@@ -284,7 +286,7 @@ export function thunderStrike() {
     const e = b.enemies[i];
     if (e.isProp || !inView(e.x - px, e.y - py, vw, vh, e.r)) continue;
     bolts.push({ x: e.x, y: e.y, seed: Math.random() });
-    hitEnemy(i, e.isBoss ? Math.round(e.hpMax * thunderBossRatio()) : e.hp);
+    hitEnemy(i, e.isBoss ? Math.round(e.hpMax * thunderBossRatio()) : e.hp, "thunder");   // SPEC-148: 出どころ
   }
   for (const arr of [b.enemyShots, b.bossProjectiles]) {
     if (!arr) continue;

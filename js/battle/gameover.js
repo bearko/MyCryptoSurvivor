@@ -32,6 +32,8 @@ import { isEasy } from "../easy.js";   // SPEC-147
 import { showLesson } from "../lesson.js";   // SPEC-147
 import { owns } from "../skill-logic.js";   // SPEC-147
 import { ROOT_ID } from "../skill-data.js";   // SPEC-147
+import { collectAnalysis, renderAnalysis, adviceVars } from "./analysis-ui.js";   // SPEC-148
+import { suggest } from "./run-stats.js";   // SPEC-148
 
 let _wired = false;
 let _loseN = Math.floor(Math.random() * 3);   // SPEC-116: 倒れたときのひとことの順番 (= 続けて同じにしない)
@@ -58,6 +60,8 @@ export function triggerGameOver(reason = "lose") {
     reason,                  // SPEC-027: "lose" | "clear" でタイトル分岐に使う
     // SPEC-090: 倒れても GUM。 SPEC-136: 遊んだぶん (= 生存時間・撃破数・到達レベル・残ったギフト券) を式で。 ゴールドダストはこの挑戦で倒したボスのぶん
     rewards: reason !== "clear" ? { ...grantRunRewards(false, { gumMul: perk("gumMul") }), dust: runDust() } : null,
+    // SPEC-148: 負けた理由の分析 (= 被ダメの内訳・DPS・前回の敗北と自己ベストとの比較)。 記録もここで足す
+    analysis: reason !== "clear" ? collectAnalysis({ cleared: false }) : null,
   };
   pauseTime();
   hideMissionUi();   // SPEC-112: 受けていたミッションの帯を消す
@@ -74,6 +78,11 @@ export function triggerGameOver(reason = "lose") {
       countUp(document.getElementById("gameOverKills"), state.lastRunStats?.kills ?? 0, { durMs: 600, delayMs: 250 });
       renderRewards(document.getElementById("gameOverRewards"), state.lastRunStats?.rewards ?? {}, { delayMs: 500 });   // SPEC-090
       renderGumBreakdown(document.getElementById("gameOverGum"), state.lastRunStats?.rewards);   // SPEC-136
+      // SPEC-148: 分析の表 (= おすすめの節を押すと、 その節を選んだ状態で木が開く。 RTA では木が効かないのでおすすめは出さない)
+      renderAnalysis(document.getElementById("gameOverAnalysis"), state.lastRunStats?.analysis, {
+        advice: !state.rtaMode,
+        onNode: (id) => import("../skill-tree.js").then((m) => m.openSkillTree({ focus: id, returnTo: modal, retry: true })),
+      });
       sayOnLose(reason, modal);   // SPEC-116
     },
   });
@@ -104,8 +113,11 @@ function sayOnLose(reason, modal) {
   if (reason === "clear" || state.rtaMode) return;
   if (isEasy()) { showLesson("s3.lose"); return; }   // SPEC-147: 説明はレッスンで
   const guide = treeNudge(getMeta());
-  if (!guide) _loseN += 1;
   modal?.classList.add("gameover-modal--navi");
+  // SPEC-148: 木を始めていれば、 SPEC-116 のひとことの代わりに、 被ダメの内訳からのおすすめを 1 つ
+  const sug = guide ? null : suggest(state.lastRunStats?.analysis?.sum);
+  if (sug) { naviSay(naviLines("advice", { key: sug.key, vars: adviceVars(sug) }), { place: "result" }); return; }
+  if (!guide) _loseN += 1;
   naviSay(naviLines("lose", { guide, n: _loseN }), { place: "result" });
 }
 

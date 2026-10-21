@@ -384,6 +384,8 @@
       <div class="result-rewards hidden" id="gameOverRewards" data-reveal></div>
       <!-- SPEC-136: GUM の内訳 (= 遊んだぶんが GUM になった式) -->
       <div class="gum-bd hidden" id="gameOverGum" data-reveal></div>
+      <!-- SPEC-148: 負けた理由の分析 (= 被ダメの内訳・とどめ・前回と自己ベストとの比較・与ダメ・マインちゃんのおすすめ) -->
+      <div class="anl hidden" id="gameOverAnalysis" data-reveal></div>
       <button class="btn gameover-modal__retry result-tree-btn" id="gameOverSkillTree" data-reveal><img alt="" aria-hidden="true" /><span data-i18n="tree.openResult">スキルツリーへ</span></button>
       <!-- SPEC-146: もう一度挑む (= スキルツリーのすぐ下。 負けて → 強くして → すぐ挑むを回す) -->
       <button class="btn gameover-modal__retry gameover-modal__again" id="gameOverRetry" data-reveal>もう一度挑む ▶</button>
@@ -485,6 +487,8 @@
       <div class="result-rewards hidden" id="activityReportRewards" data-reveal></div>
       <!-- SPEC-136: GUM の内訳 (= 遊んだぶんが GUM になった式) -->
       <div class="gum-bd hidden" id="activityReportGum" data-reveal></div>
+      <!-- SPEC-148: この挑戦の数字 (= 前回のクリア・自己ベストと比べる) -->
+      <div class="anl hidden" id="activityReportAnalysis" data-reveal></div>
       <!-- SPEC-106: そのヒーローで初めて全クリア → LL の解放 -->
       <p class="report-ll hidden" id="activityReportLL" role="status"></p>
       <!-- SPEC-147: EASY をクリアしたら、 NORMAL へ -->
