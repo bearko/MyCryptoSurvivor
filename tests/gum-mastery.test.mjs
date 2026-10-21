@@ -14,11 +14,11 @@ test("SPEC-136: 撃破 20 体ごとに GUM ＋1", () => {
   assert.deepEqual([0, 19, 20, 1500, 15645].map(k), [0, 0, 1, 75, 782]);
 });
 
-test("ミッションの確定 GUM は 重さ × ステージの番号", () => {
-  assert.deepEqual(MISSION_GUM, { light: 30, medium: 60, heavy: 120 });
-  assert.equal(missionGum("light", 0), 30);
-  assert.equal(missionGum("medium", 1), 120);
-  assert.equal(missionGum("heavy", 2), 360);
+test("ミッションの確定 GUM は ★ × ステージの番号", () => {
+  assert.deepEqual(MISSION_GUM, { 1: 30, 2: 60, 3: 120 });   // SPEC-137: ★で
+  assert.equal(missionGum(1, 0), 30);
+  assert.equal(missionGum(2, 1), 120);
+  assert.equal(missionGum(3, 2), 360);
 });
 
 test("エクステ別の節は 21 (= 武器 10 ・ 強化 11)。 段ごとに武器の威力 ＋5% ・ 強化の値段 −6%", () => {
@@ -44,7 +44,7 @@ test("つなぎ: 武器ごとの威力・強化の値引き・ミッションの
   const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), "utf8");
   assert.match(read("js/battle/weapons.js"), /baseDmgMul \* weaponDmgMul\(w\.extId\)/);
   assert.match(read("js/battle/shop.js"), /buffPriceCut\(o\.extId\)/);
-  assert.match(read("js/battle/missions.js"), /grantMissionGum\(missionGum\(mission\.weight/);
+  assert.match(read("js/battle/missions.js"), /grantMissionGum\(missionGum\(a\.star/);
   assert.ok(read("index.html").includes('id="missionRewardGum"'));
 });
 

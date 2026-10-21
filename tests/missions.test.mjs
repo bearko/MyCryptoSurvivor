@@ -5,7 +5,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 const {
   MISSIONS, MISSION_MAP, NO_MODS, modsOf, pickMission, planOffer, rewardChoices, BOONS, REWARD_SIZE, missionResult,
-  MISSION_CHANCE, MISSION_PER_STAGE,
+  MISSION_CHANCE, MISSION_PER_STAGE, tierOf, maxDurS, clampStar, loadStar, saveStar, missionDesc, STAR_KEY,
 } = await import("../js/battle/missions.js");
 const { spreadMul } = await import("../js/battle/enemy-shots.js");
 const { BOSS_SPAWN_AT_MS, BOSS_WARNING_LEAD_MS } = await import("../js/constants.js");
@@ -16,23 +16,45 @@ test("出し手は 10 人 (= SPEC-103 7.4 の表。 シャドーの絵の番号)
   assert.deepEqual(MISSIONS.map((m) => m.giver), [481, 767, 450, 433, 468, 463, 893, 495, 445, 467]);
   for (const m of MISSIONS) {
     for (const k of ["giver", "title", "desc"]) assert.ok(ui[`mission.${m.id}.${k}`]?.ja && ui[`mission.${m.id}.${k}`]?.en, `${m.id}.${k}`);
-    assert.ok(m.durS >= 20 && m.durS <= 40, m.id);
+    assert.equal(m.tiers.length, 3, m.id);
+    for (const x of m.tiers) assert.ok(x.durS >= 10 && x.durS <= 50, m.id);
+    assert.ok(maxDurS(m) <= 50);
   }
 });
 
-test("効き目: 無いときは効かない値。 ミッションごとの中身", () => {
+test("効き目: 無いときは効かない値。 ミッションごとの中身 (= SPEC-137: ★で厳しくなる)", () => {
   assert.deepEqual(modsOf(null), NO_MODS);
-  assert.equal(modsOf(MISSION_MAP.lubu).spawnMul, 10);
-  assert.equal(modsOf(MISSION_MAP.ripper).fogR, 180);
-  assert.equal(modsOf(MISSION_MAP.nobunaga).shooterOnly, true);
-  assert.equal(modsOf(MISSION_MAP.nobunaga).shotMul, 3);
-  assert.equal(modsOf(MISSION_MAP.cleopatra).hiddenShots, true);
-  assert.equal(modsOf(MISSION_MAP.shihuangdi).noHeal, true);
-  assert.equal(modsOf(MISSION_MAP.alexander).speedMul, 1.6);
-  assert.equal(modsOf(MISSION_MAP.xiangyu).dmgMul, 10);
-  assert.deepEqual([modsOf(MISSION_MAP.caocao).sizeMul, modsOf(MISSION_MAP.caocao).speedMul], [0.6, 1.2]);
+  assert.deepEqual([1, 2, 3].map((s) => modsOf(MISSION_MAP.lubu, s).spawnMul), [4, 7, 10]);
+  assert.deepEqual([1, 2, 3].map((s) => modsOf(MISSION_MAP.ripper, s).fogR), [240, 150, 70]);
+  assert.ok(modsOf(MISSION_MAP.ripper, 3).fogA >= 0.98, "★3 はほとんど何も見えない");
+  assert.equal(modsOf(MISSION_MAP.nobunaga, 2).shooterOnly, true);
+  assert.deepEqual([1, 2, 3].map((s) => modsOf(MISSION_MAP.nobunaga, s).shotMul), [2, 3, 5]);
+  assert.equal(modsOf(MISSION_MAP.cleopatra, 1).hiddenShots, true);
+  assert.equal(modsOf(MISSION_MAP.shihuangdi, 1).noHeal, true);
+  assert.deepEqual([1, 2, 3].map((s) => tierOf(MISSION_MAP.shihuangdi, s).durS), [20, 35, 50]);
+  assert.deepEqual([1, 2, 3].map((s) => modsOf(MISSION_MAP.alexander, s).speedMul), [1.3, 1.6, 2]);
+  assert.deepEqual([1, 2, 3].map((s) => modsOf(MISSION_MAP.xiangyu, s).dmgMul), [3, 6, 10]);
+  assert.deepEqual([modsOf(MISSION_MAP.caocao, 2).sizeMul, modsOf(MISSION_MAP.caocao, 2).speedMul], [0.6, 1.2]);
   // 効き目のないもの (= 条件だけ) は、 ほかの値は効かない
-  assert.deepEqual(modsOf(MISSION_MAP.napoleon), NO_MODS);
+  assert.deepEqual(modsOf(MISSION_MAP.napoleon, 3), NO_MODS);
+  // 知らない★は ★1
+  assert.deepEqual([0, 4, "x", null].map(clampStar), [1, 1, 1, 1]);
+  // ★ごとに厳しくなる (= 秒か効き目か条件のどれかが ★1 ≦ ★2 ≦ ★3)
+  for (const m of MISSIONS) {
+    const sig = (s) => JSON.stringify(tierOf(m, s));
+    assert.notEqual(sig(1), sig(2), m.id); assert.notEqual(sig(2), sig(3), m.id);
+  }
+});
+
+test("SPEC-137: 選んだ★を覚えておく・説明の数は★で変わる", () => {
+  const m = new Map(); const st = { getItem: (k) => m.get(k) ?? null, setItem: (k, v) => m.set(k, v) };
+  assert.equal(loadStar(st), 1, "初めては ★1");
+  saveStar(3, st); assert.equal(m.get(STAR_KEY), "3"); assert.equal(loadStar(st), 3);
+  assert.equal(loadStar({ getItem: () => { throw new Error("x"); } }), 1);
+  assert.match(ui["mission.lubu.desc"].ja, /\{n\}/);
+  assert.match(ui["mission.napoleon.desc"].ja, /\{s\}.*\{n\}/);
+  for (const s of [1, 2, 3]) assert.ok(ui[`mission.ripper.x${s}`]?.ja && ui[`mission.ripper.x${s}`]?.en);
+  assert.equal(typeof missionDesc(MISSION_MAP.lubu, 2), "string");
 });
 
 test("持ちかける人: 同じ人が続けて来ない・プレイ中のヒーローと同じ人は出さない", () => {
@@ -58,29 +80,34 @@ test("持ちかける時刻: 店のあと 10〜30 秒。 1 回目の店の前・
   }
 });
 
-test("SPEC-125: ごほうびは ギフト券・力添え・HP 回復 の 3 つから選ぶ。 重さで大きさが変わる", () => {
-  assert.deepEqual(rewardChoices(MISSION_MAP.lubu), [{ kind: "gift", n: 2 }, { kind: "boon", boon: "power", sec: 30 }, { kind: "heal", ratio: 1 }]);
-  assert.deepEqual(rewardChoices(MISSION_MAP.ripper), [{ kind: "gift", n: 1 }, { kind: "boon", boon: "swift", sec: 20 }, { kind: "heal", ratio: 0.5 }]);
-  assert.deepEqual(rewardChoices(MISSION_MAP.nobunaga)[1], { kind: "boon", boon: "thunder", sec: 0 });   // お助けアイテムはその場で
-  assert.deepEqual(rewardChoices(MISSION_MAP.nightingale), [{ kind: "gift", n: 1 }, { kind: "boon", boon: "guard", sec: 5 }, { kind: "heal", ratio: 0.3 }]);   // 無敵は 1/3
+test("SPEC-125 + 137: ごほうびは 3 つから選ぶ。 ★で大きさが変わり、 ギフト券は ★2 から (= ★1 は CE)", () => {
+  assert.deepEqual(rewardChoices(MISSION_MAP.lubu, 3), [{ kind: "gift", n: 2 }, { kind: "boon", boon: "power", sec: 30 }, { kind: "heal", ratio: 1 }]);
+  assert.deepEqual(rewardChoices(MISSION_MAP.ripper, 2), [{ kind: "gift", n: 1 }, { kind: "boon", boon: "swift", sec: 20 }, { kind: "heal", ratio: 0.5 }]);
+  assert.deepEqual(rewardChoices(MISSION_MAP.ripper, 1), [{ kind: "ce", n: 300 }, { kind: "boon", boon: "swift", sec: 15 }, { kind: "heal", ratio: 0.3 }]);
+  assert.deepEqual(rewardChoices(MISSION_MAP.ripper, 1, 2)[0], { kind: "ce", n: 780 }, "ステージの値段の倍率 (×2.6)");
+  assert.deepEqual(rewardChoices(MISSION_MAP.nobunaga, 2)[1], { kind: "boon", boon: "thunder", sec: 0 });   // お助けアイテムはその場で
+  assert.deepEqual(rewardChoices(MISSION_MAP.nightingale, 1)[1], { kind: "boon", boon: "guard", sec: 5 });   // 無敵は 1/3
   for (const m of MISSIONS) {
     assert.ok(BOONS[m.boon], `${m.id} の力添え`);
-    assert.ok(REWARD_SIZE[m.weight], `${m.id} の重さ`);
-    assert.equal(rewardChoices(m).length, 3);
+    for (const s of [1, 2, 3]) assert.equal(rewardChoices(m, s).length, 3);
+    assert.ok(!rewardChoices(m, 1).some((c) => c.kind === "gift"), "★1 にギフト券は無い");
   }
+  for (const s of [1, 2, 3]) assert.ok(REWARD_SIZE[s]);
 });
 
 test("達成: 時間まで生き残る。 白衣の誓いは当たると失敗、 不可能の文字はないは 200 体で達成", () => {
   const m = MISSION_MAP.lubu;
-  assert.equal(missionResult({ mission: m, remainMs: 5000 }), null);
+  assert.equal(missionResult({ mission: m, star: 3, remainMs: 5000 }), null);
   assert.equal(missionResult({ mission: m, remainMs: 0 }), "clear");
   const n = MISSION_MAP.nightingale;
-  assert.equal(missionResult({ mission: n, remainMs: 5000, hit: true }), "fail");
-  assert.equal(missionResult({ mission: n, remainMs: 0, hit: false }), "clear");
+  assert.equal(missionResult({ mission: n, star: 2, remainMs: 5000, hit: true }), "fail");
+  assert.equal(missionResult({ mission: n, star: 2, remainMs: 0, hit: false }), "clear");
   const p = MISSION_MAP.napoleon;
-  assert.equal(missionResult({ mission: p, remainMs: 9000, kills: 200 }), "clear");   // 届いたらすぐ
-  assert.equal(missionResult({ mission: p, remainMs: 9000, kills: 120 }), null);
-  assert.equal(missionResult({ mission: p, remainMs: 0, kills: 199 }), "fail");
+  assert.equal(missionResult({ mission: p, star: 2, remainMs: 9000, kills: 200 }), "clear");   // 届いたらすぐ
+  assert.equal(missionResult({ mission: p, star: 2, remainMs: 9000, kills: 120 }), null);
+  assert.equal(missionResult({ mission: p, star: 2, remainMs: 0, kills: 199 }), "fail");
+  assert.equal(missionResult({ mission: p, star: 1, remainMs: 9000, kills: 100 }), "clear");
+  assert.equal(missionResult({ mission: p, star: 3, remainMs: 0, kills: 349 }), "fail");
 });
 
 test("三段撃ち: 1 発を 3 発に (= 真ん中と左右)", () => {
@@ -104,6 +131,9 @@ test("つなぎ: 戦闘の各所が効き目を読む・ショップで遊ぶと
   assert.ok(html.includes('href="css/missions.css"'));
   for (const k of ["mission.accept", "mission.decline", "mission.fail", "mission.failSub", "mission.reward.gift", "mission.reward.heal", "mission.reward.pick", "mission.rewardAsk", "mission.bar.boost"]) assert.ok(ui[k]?.ja && ui[k]?.en, k);
   // SPEC-125: ごほうびの画面・出し手のひとこと・力添えの名前・効き目のつなぎ
+  for (const id of ["missionOfferStars"]) assert.ok(html.includes(`id="${id}"`), id);   // SPEC-137
+  assert.match(read("js/battle/render.js"), /rgba\(226, 230, 238/, "霧は白");
+  for (const k of ["navi.mission.1", "navi.mission.2", "mission.reward.ce", "mission.reward.pickGum"]) assert.ok(ui[k]?.ja && ui[k]?.en, k);
   for (const id of ["missionReward", "missionRewardLine", "missionRewardChoices"]) assert.ok(html.includes(`id="${id}"`), id);
   for (const m of MISSIONS) assert.ok(ui[`mission.${m.id}.thanks`]?.ja && ui[`mission.${m.id}.thanks`]?.en, `${m.id}.thanks`);
   for (const b of Object.keys(BOONS)) assert.ok(ui[`mission.boon.${b}`]?.ja && ui[`mission.boon.${b}.detail`]?.en, b);

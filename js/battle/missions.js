@@ -6,6 +6,8 @@
 // (= 閉じたら SPEC-104 の 3 秒を数える)。 受けたら一定時間、 そのヒーローらしい厳しい条件がかかる。
 // 最後まで生き残れば (= 追加の条件があればそれも) 達成。 失敗しても罰は無い。
 // SPEC-125: 達成したら、 出し手がひとこと言い、 ごほうびを 3 つから 1 つ選ぶ (= ギフト券・力添え・HP 回復)。
+// SPEC-137: 受けるときに難易度 (= ★1〜3) を選ぶ。 ★で条件が厳しくなり、 ごほうびも豪華に (= ギフト券は ★2 から。 ★1 は CE)。
+//   帯の色も★で変わる (= いまの難易度が目に入るように)。 選んだ★は端末に覚えておく。
 // ショップで遊ぶときだけ (= 報酬がショップに効く)。 SPEC-111 で RTA でも出る。
 //
 // 効き目は missionMods() が返す倍率だけで、 戦闘の各所 (= 湧き・速さ・攻撃・大きさ・霧・弾・回復) が読む。
@@ -18,8 +20,12 @@ import { shopTimesMs } from "./shop-logic.js";
 import { t, tpl, onLangChange } from "../i18n.js";
 import { playSe } from "../audio.js";
 import { applyItem, healBy } from "./field.js";
+import { SHOP_STAGE_MUL } from "../constants.js";
 import { grantMissionGum, missionGum } from "../meta.js";   // SPEC-131: 達成の確定 GUM
 import { ICON_GUM } from "../meta-ui.js";   // SPEC-125: 力添え (= お助けアイテム)・HP 回復
+import { roundTo5 } from "./shop-logic.js";
+import { naviTipModal } from "../navi-tips.js";   // SPEC-137: 初めてのミッションでマインちゃんが説明
+import { naviHide } from "../navi.js";
 
 // ============================================================
 // 純関数 (= tests/missions.test.mjs)
@@ -34,28 +40,54 @@ export const MISSION_SHOP_GAP_MS = 10000;
 
 /**
  * 出し手と中身 (= SPEC-103 7.4)。 giver: 絵 (= Image/Enemies/<id>.png のシャドーの姿)。 heroId: 同じ人をプレイ中なら出さない
- * weight: 軽 / 中 / 重 (= ごほうびの大きさ)。 boon: 達成したときの「力添え」 (= そのヒーローらしい一時的な強化かお助けアイテム。 SPEC-125)
+ * boon: 達成したときの「力添え」 (= そのヒーローらしい一時的な強化かお助けアイテム。 SPEC-125)
+ * SPEC-137: tiers は ★1・★2・★3 の中身 (= durS: 秒・mods: 効き目・goal: 追加の条件・n: 説明の数)
  */
+const T = (durS, mods, extra = {}) => ({ durS, mods, ...extra });
 export const MISSIONS = [
-  { id: "lubu",        giver: 481, durS: 25, weight: "heavy",  boon: "power",   mods: { spawnMul: 10 } },
-  { id: "ripper",      giver: 767, durS: 30, weight: "medium", boon: "swift",   mods: { fogR: 180 }, heroId: 2003 },
-  { id: "nobunaga",    giver: 450, durS: 30, weight: "medium", boon: "thunder", mods: { shooterOnly: true, shotMul: 3 } },
-  { id: "cleopatra",   giver: 433, durS: 30, weight: "medium", boon: "magnet",  mods: { hiddenShots: true, shooterOnly: true } },
-  { id: "shihuangdi",  giver: 468, durS: 40, weight: "medium", boon: "guard",   mods: { noHeal: true } },
-  { id: "alexander",   giver: 463, durS: 30, weight: "medium", boon: "swift",   mods: { speedMul: 1.6 } },
-  { id: "xiangyu",     giver: 893, durS: 20, weight: "heavy",  boon: "power",   mods: { dmgMul: 10 } },
-  { id: "nightingale", giver: 495, durS: 20, weight: "light",  boon: "guard",   mods: {}, goal: { noHit: true } },
-  { id: "napoleon",    giver: 445, durS: 30, weight: "light",  boon: "thunder", mods: {}, goal: { kills: 200 } },
-  { id: "caocao",      giver: 467, durS: 30, weight: "light",  boon: "magnet",  mods: { sizeMul: 0.6, speedMul: 1.2 } },
+  { id: "lubu",        giver: 481, boon: "power",   tiers: [T(25, { spawnMul: 4 }, { n: 4 }), T(25, { spawnMul: 7 }, { n: 7 }), T(25, { spawnMul: 10 }, { n: 10 })] },
+  { id: "ripper",      giver: 767, boon: "swift",   heroId: 2003,
+    tiers: [T(30, { fogR: 240, fogA: 0.82 }), T(30, { fogR: 150, fogA: 0.92 }), T(30, { fogR: 70, fogA: 0.985 })] },
+  { id: "nobunaga",    giver: 450, boon: "thunder", tiers: [T(30, { shooterOnly: true, shotMul: 2 }, { n: 2 }), T(30, { shooterOnly: true, shotMul: 3 }, { n: 3 }), T(30, { shooterOnly: true, shotMul: 5 }, { n: 5 })] },
+  { id: "cleopatra",   giver: 433, boon: "magnet",  tiers: [T(20, { hiddenShots: true, shooterOnly: true }), T(30, { hiddenShots: true, shooterOnly: true }), T(40, { hiddenShots: true, shooterOnly: true, shotMul: 2 })] },
+  { id: "shihuangdi",  giver: 468, boon: "guard",   tiers: [T(20, { noHeal: true }), T(35, { noHeal: true }), T(50, { noHeal: true })] },
+  { id: "alexander",   giver: 463, boon: "swift",   tiers: [T(30, { speedMul: 1.3 }, { n: 1.3 }), T(30, { speedMul: 1.6 }, { n: 1.6 }), T(30, { speedMul: 2 }, { n: 2 })] },
+  { id: "xiangyu",     giver: 893, boon: "power",   tiers: [T(20, { dmgMul: 3 }, { n: 3 }), T(20, { dmgMul: 6 }, { n: 6 }), T(20, { dmgMul: 10 }, { n: 10 })] },
+  { id: "nightingale", giver: 495, boon: "guard",   tiers: [T(10, {}, { goal: { noHit: true } }), T(20, {}, { goal: { noHit: true } }), T(30, {}, { goal: { noHit: true } })] },
+  { id: "napoleon",    giver: 445, boon: "thunder", tiers: [T(30, {}, { goal: { kills: 100 }, n: 100 }), T(30, {}, { goal: { kills: 200 }, n: 200 }), T(30, {}, { goal: { kills: 350 }, n: 350 })] },
+  { id: "caocao",      giver: 467, boon: "magnet",  tiers: [T(30, { sizeMul: 0.8, speedMul: 1.1 }), T(30, { sizeMul: 0.6, speedMul: 1.2 }), T(30, { sizeMul: 0.45, speedMul: 1.4 })] },
 ];
 export const MISSION_MAP = Object.fromEntries(MISSIONS.map((m) => [m.id, m]));
 
+/** SPEC-137: 難易度 (= ★の数) */
+export const STARS = [1, 2, 3];
+export const STAR_KEY = "mcs.missionStar";
+export function clampStar(star) {
+  const n = Math.round(Number(star));
+  return n >= 1 && n <= 3 ? n : 1;
+}
+/** その★の中身 (= 秒・効き目・条件) */
+export function tierOf(mission, star = 1) {
+  return mission?.tiers?.[clampStar(star) - 1] ?? { durS: 30, mods: {} };
+}
+/** いちばん長い秒 (= 持ちかける時刻を決めるとき。 どの★を選んでもボスの予告に重ならない) */
+export function maxDurS(mission) {
+  return Math.max(...(mission?.tiers ?? [{ durS: 30 }]).map((x) => x.durS));
+}
+/** 前に選んだ★ (= 初めては ★1) */
+export function loadStar(storage = globalThis.localStorage) {
+  try { return clampStar(storage?.getItem(STAR_KEY) ?? 1); } catch { return 1; }
+}
+export function saveStar(star, storage = globalThis.localStorage) {
+  try { storage?.setItem(STAR_KEY, String(clampStar(star))); } catch { /* 覚えられなくても、 この挑戦では効く */ }
+}
+
 /** 効かない値 (= ミッションが無いとき) */
-export const NO_MODS = Object.freeze({ spawnMul: 1, speedMul: 1, dmgMul: 1, sizeMul: 1, fogR: null, shooterOnly: false, shotMul: 1, hiddenShots: false, noHeal: false });
+export const NO_MODS = Object.freeze({ spawnMul: 1, speedMul: 1, dmgMul: 1, sizeMul: 1, fogR: null, fogA: null, shooterOnly: false, shotMul: 1, hiddenShots: false, noHeal: false });
 
 /** そのミッションの効き目 (= 足りない項目は効かない値) */
-export function modsOf(mission) {
-  return { ...NO_MODS, ...(mission?.mods ?? {}) };
+export function modsOf(mission, star = 1) {
+  return { ...NO_MODS, ...(mission ? tierOf(mission, star).mods : {}) };
 }
 
 /** 持ちかける人を選ぶ (= 同じ人が続けて来ない・プレイ中のヒーローと同じ人は出さない) */
@@ -80,11 +112,14 @@ export function planOffer({ stageIdx, waveIdx, durS, count, rolls = [Math.random
   return at;
 }
 
-/** SPEC-125: ごほうびの大きさ (= 重さで変わる)。 gifts: ギフト券の枚数・healRatio: 最大 HP の割合・boostS: 一時的な強化の秒数 */
+/**
+ * SPEC-125: ごほうびの大きさ。 SPEC-137: ★で変わる (= ギフト券は ★2 から。 ★1 は CE で、 ステージの値段の倍率が掛かる)
+ *   gifts: ギフト券の枚数・ce: CE (= ステージ 1 の量)・healRatio: 最大 HP の割合・boostS: 一時的な強化の秒数
+ */
 export const REWARD_SIZE = {
-  light:  { gifts: 1, healRatio: 0.3, boostS: 15 },
-  medium: { gifts: 1, healRatio: 0.5, boostS: 20 },
-  heavy:  { gifts: 2, healRatio: 1,   boostS: 30 },
+  1: { gifts: 0, ce: 300, healRatio: 0.3, boostS: 15 },
+  2: { gifts: 1, ce: 0,   healRatio: 0.5, boostS: 20 },
+  3: { gifts: 2, ce: 0,   healRatio: 1,   boostS: 30 },
 };
 
 /** SPEC-125: 力添えの中身。 timed: 一時的な強化 (= ステージの経過時間で数える)・item: お助けアイテムをその場で使う */
@@ -96,22 +131,23 @@ export const BOONS = {
   magnet:  { item: "magnet" },                    // 棒磁石 (= 落ちている CE をすべて吸い寄せる)
 };
 
-/** SPEC-125: 選べるごほうび 3 つ (= ギフト券・力添え・HP 回復) */
-export function rewardChoices(mission) {
-  const size = REWARD_SIZE[mission?.weight] ?? REWARD_SIZE.medium;
+/** SPEC-125: 選べるごほうび 3 つ (= ギフト券・力添え・HP 回復)。 SPEC-137: ★1 はギフト券の代わりに CE */
+export function rewardChoices(mission, star = 1, stageIdx = 0) {
+  const size = REWARD_SIZE[clampStar(star)];
   const boon = BOONS[mission?.boon] ? mission.boon : "power";
   const def = BOONS[boon];
   const sec = def.timed ? Math.round(size.boostS * (def.secMul ?? 1)) : 0;
+  const mul = SHOP_STAGE_MUL[Math.min(SHOP_STAGE_MUL.length - 1, Math.max(0, stageIdx | 0))];
   return [
-    { kind: "gift", n: size.gifts },
+    size.gifts > 0 ? { kind: "gift", n: size.gifts } : { kind: "ce", n: roundTo5(size.ce * mul) },
     { kind: "boon", boon, sec },
     { kind: "heal", ratio: size.healRatio },
   ];
 }
 
 /** 達成したか (= 時間が来た・倒した数) */
-export function missionResult({ mission, remainMs, kills = 0, hit = false }) {
-  const g = mission?.goal ?? {};
+export function missionResult({ mission, star = 1, remainMs, kills = 0, hit = false }) {
+  const g = tierOf(mission, star).goal ?? {};
   if (g.noHit && hit) return "fail";
   if (g.kills && kills >= g.kills) return "clear";
   if (remainMs > 0) return null;
@@ -129,7 +165,7 @@ let _wired = false;
 /** いま効いている倍率 (= 戦闘の各所が読む) */
 export function missionMods() {
   const a = state.mission?.active;
-  return a ? modsOf(MISSION_MAP[a.id]) : NO_MODS;
+  return a ? modsOf(MISSION_MAP[a.id], a.star) : NO_MODS;
 }
 
 /** 回復してよいか (= 始皇帝の「不老不死の探求」のあいだは回復しない) */
@@ -183,7 +219,7 @@ export function tickMissions() {
   if (m.active) {
     const a = m.active;
     const mission = MISSION_MAP[a.id];
-    const res = b.bossSpawned ? "clear" : missionResult({ mission, remainMs: a.untilMs - now, kills: state.killCount - a.startKills, hit: a.hit });
+    const res = b.bossSpawned ? "clear" : missionResult({ mission, star: a.star, remainMs: a.untilMs - now, kills: state.killCount - a.startKills, hit: a.hit });
     if (res) _finish(res);
     else _renderBar();
     return;
@@ -194,7 +230,7 @@ export function tickMissions() {
     m.wave = s.nextIdx;
     const pick = pickMission({ prevId: m.prevId, heroId: state.ownedHero?.heroId });
     m.planId = pick?.id ?? null;
-    m.planAt = pick ? planOffer({ stageIdx, waveIdx: s.nextIdx, durS: pick.durS, count: m.count }) : null;
+    m.planAt = pick ? planOffer({ stageIdx, waveIdx: s.nextIdx, durS: maxDurS(pick), count: m.count }) : null;
   }
   if (m.planAt != null && now >= m.planAt && !b.bossSpawned) {
     const id = m.planId;
@@ -203,14 +239,32 @@ export function tickMissions() {
   }
 }
 
+let _star = 1;   // SPEC-137: 持ちかけで選んでいる★
+
 function _openOffer(mission) {
   if (!mission || _offer) return;
   _offer = mission;
+  _star = loadStar();
   _wireOnce();
   pauseTime();
   _renderOffer();
   document.getElementById("missionOffer")?.classList.remove("hidden");
   playSe(SFX.GIMMICK_WARN, 100, 0.5);
+  // SPEC-137: 初めてのミッションだけ、 マインちゃんが受け方と★を説明する (= 画面の下の通信の帯)
+  _naviShown = naviTipModal("mission.offer", [
+    { key: "navi.mission.1", pose: "pointer" },
+    { key: "navi.mission.2", pose: "wink" },
+  ]);
+}
+let _naviShown = false;
+
+/** SPEC-137: ★を選ぶ (= 1・2・3 のキーでも)。 覚えておく */
+export function pickStar(star) {
+  if (!_offer) return;
+  _star = clampStar(star);
+  saveStar(_star);
+  _renderOffer();
+  playSe(SFX.UI_CLICK, 100, 0.3);
 }
 
 /** 受ける (= Y) */
@@ -220,7 +274,8 @@ export function acceptMission() {
   const m = state.mission;
   m.count += 1;
   m.prevId = mission.id;
-  m.active = { id: mission.id, untilMs: (state.battle.stageElapsedMs ?? 0) + mission.durS * 1000, startKills: state.killCount, hit: false };
+  const tier = tierOf(mission, _star);
+  m.active = { id: mission.id, star: _star, untilMs: (state.battle.stageElapsedMs ?? 0) + tier.durS * 1000, durS: tier.durS, startKills: state.killCount, hit: false };
   _closeOffer();
   _renderBar();
   playSe(SFX.LEVEL_UP, 100, 0.45);
@@ -236,6 +291,7 @@ export function declineMission() {
 function _closeOffer() {
   _offer = null;
   document.getElementById("missionOffer")?.classList.add("hidden");
+  if (_naviShown) { _naviShown = false; naviHide(); }
   resumeTime();   // SPEC-104: 閉じたら 3 秒数えてから
 }
 
@@ -247,19 +303,21 @@ function _finish(res) {
   _renderBar();
   if (res === "clear") {
     playSe(SFX.GAME_OVER_CLEAR, 100, 0.45);
-    _rewardGum = grantMissionGum(missionGum(mission.weight, state.currentStageIdx ?? 0));   // SPEC-131: 3 つとは別の確定報酬
-    _openReward(mission);   // SPEC-125: 出し手のひとこと → ごほうびを選ぶ
+    _rewardGum = grantMissionGum(missionGum(a.star, state.currentStageIdx ?? 0));   // SPEC-131: 3 つとは別の確定報酬 (= SPEC-137: ★で)
+    _openReward(mission, a.star);   // SPEC-125: 出し手のひとこと → ごほうびを選ぶ
   } else {
     _showResult(mission, res);
   }
 }
 
 let _reward = null;   // ごほうびを選んでいるミッション
+let _rewardStar = 1;   // SPEC-137: そのミッションの★
 let _rewardGum = 0;   // SPEC-131: そのミッションの確定 GUM (= 画面に出す)
 
-function _openReward(mission) {
+function _openReward(mission, star = 1) {
   if (!mission || _reward) return;
   _reward = mission;
+  _rewardStar = clampStar(star);
   _wireOnce();
   pauseTime();
   _renderReward();
@@ -270,7 +328,7 @@ function _openReward(mission) {
 export function pickReward(idx) {
   const mission = _reward;
   if (!mission) return;
-  const choice = rewardChoices(mission)[idx];
+  const choice = rewardChoices(mission, _rewardStar, state.currentStageIdx ?? 0)[idx];
   if (!choice) return;
   _reward = null;
   document.getElementById("missionReward")?.classList.add("hidden");
@@ -284,6 +342,7 @@ export function applyReward(choice, mission) {
   const s = state.shop;
   if (!choice) return;
   if (choice.kind === "gift") { if (s) s.gifts += choice.n; return; }
+  if (choice.kind === "ce") { if (s) s.ce += choice.n; return; }   // SPEC-137: ★1
   if (choice.kind === "heal") { healBy(choice.ratio); return; }
   if (choice.kind === "boon") {
     const def = BOONS[choice.boon];
@@ -303,6 +362,10 @@ export function choiceText(c) {
     name: tpl(t("mission.reward.gift", "ギフト券 ×{n}"), { n: String(c.n) }),
     detail: t("mission.reward.giftDetail", "ショップの品と引き換え（Rare 2 枚・Epic 3 枚・Legendary 5 枚）"),
   };
+  if (c.kind === "ce") return {
+    name: tpl(t("mission.reward.ce", "CE ×{n}"), { n: c.n.toLocaleString() }),
+    detail: t("mission.reward.ceDetail", "ショップで使える。残れば固有スキルへ"),
+  };
   if (c.kind === "heal") return {
     name: t("mission.reward.heal", "HP 回復"),
     detail: tpl(t("mission.reward.healDetail", "最大 HP の {n}% 回復"), { n: String(Math.round(c.ratio * 100)) }),
@@ -313,10 +376,18 @@ export function choiceText(c) {
   };
 }
 
-/** 持ちかけの「報酬」の欄 (= 3 つから選ぶ) */
-export function rewardSummary(mission) {
-  const [g, b, h] = rewardChoices(mission).map((c) => choiceText(c).name);
-  return tpl(t("mission.reward.pick", "{a}・{b}・{c} から 1 つ"), { a: g, b, c: h });
+/** 持ちかけの「報酬」の欄 (= 確定の GUM と、 3 つから選ぶ) */
+export function rewardSummary(mission, star = 1, stageIdx = 0) {
+  const [g, b, h] = rewardChoices(mission, star, stageIdx).map((c) => choiceText(c).name);
+  return tpl(t("mission.reward.pickGum", "GUM ＋{g} と、 {a}・{b}・{c} から 1 つ"), { g: String(missionGum(star, stageIdx)), a: g, b, c: h });
+}
+
+/** SPEC-137: 説明の文 (= ★で数が変わる。 {n}: その★の数・{s}: 秒・{x}: ★ごとの言い回し) */
+export function missionDesc(mission, star = 1) {
+  const tier = tierOf(mission, star);
+  return tpl(t(`mission.${mission.id}.desc`, ""), {
+    n: String(tier.n ?? ""), s: String(tier.durS), x: t(`mission.${mission.id}.x${clampStar(star)}`, ""),
+  });
 }
 
 // ============================================================
@@ -327,23 +398,35 @@ function _face(mission) {
   return img(`Image/Enemies/${mission.giver}.png`);
 }
 
+function _goalText(tier) {
+  return tier.goal?.kills
+    ? tpl(t("mission.goal.kills", "{n} 体倒す"), { n: String(tier.goal.kills) })
+    : (tier.goal?.noHit ? t("mission.goal.noHit", "1 回も当たらない") : t("mission.goal.survive", "生き残る"));
+}
+
 function _renderOffer() {
   const mission = _offer;
   if (!mission) return;
+  const star = _star;
+  const tier = tierOf(mission, star);
+  const stageIdx = state.currentStageIdx ?? 0;
   const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
   const face = document.getElementById("missionOfferFace");
-  if (face) face.src = _face(mission);
+  if (face && face.dataset.id !== mission.id) { face.dataset.id = mission.id; face.src = _face(mission); }
   set("missionOfferGiver", t(`mission.${mission.id}.giver`, mission.id));
   set("missionOfferTitle", t(`mission.${mission.id}.title`, mission.id));
-  set("missionOfferDesc", t(`mission.${mission.id}.desc`, ""));
-  set("missionOfferTime", tpl(t("mission.time", "{n} 秒"), { n: String(mission.durS) }));
-  set("missionOfferGoal", mission.goal?.kills
-    ? tpl(t("mission.goal.kills", "{n} 体倒す"), { n: String(mission.goal.kills) })
-    : (mission.goal?.noHit ? t("mission.goal.noHit", "1 回も当たらない") : t("mission.goal.survive", "生き残る")));
-  set("missionOfferReward", rewardSummary(mission));
+  set("missionOfferDesc", missionDesc(mission, star));
+  set("missionOfferTime", tpl(t("mission.time", "{n} 秒"), { n: String(tier.durS) }));
+  set("missionOfferGoal", _goalText(tier));
+  set("missionOfferReward", rewardSummary(mission, star, stageIdx));
   const w = document.getElementById("missionOffer");
-  if (w) w.dataset.weight = mission.weight;
-  set("missionOfferWeight", t(`mission.weight.${mission.weight}`, mission.weight));
+  if (w) w.dataset.star = String(star);
+  set("missionOfferWeight", "★".repeat(star));
+  for (const btn of document.querySelectorAll("#missionOfferStars [data-star]")) {
+    const on = Number(btn.dataset.star) === star;
+    btn.setAttribute("aria-checked", on ? "true" : "false");
+    btn.classList.toggle("is-on", on);
+  }
 }
 
 let _barKey = "";
@@ -362,20 +445,22 @@ function _renderBar() {
   const remain = Math.max(0, a.untilMs - (state.battle.stageElapsedMs ?? 0));
   const sec = Math.ceil(remain / 1000);
   const kills = state.killCount - a.startKills;
-  const key = `${a.id}|${sec}|${mission.goal?.kills ? kills : ""}|${a.hit}|${Math.round((remain / (mission.durS * 1000)) * 100)}`;
+  const tier = tierOf(mission, a.star);
+  const key = `${a.id}|${a.star}|${sec}|${tier.goal?.kills ? kills : ""}|${a.hit}|${Math.round((remain / (tier.durS * 1000)) * 100)}`;
   if (key === _barKey) return;
   _barKey = key;
   bar.classList.remove("hidden");
+  bar.dataset.star = String(a.star);   // SPEC-137: 帯の色も★で
   const face = document.getElementById("missionBarFace");
   if (face && face.dataset.id !== a.id) { face.dataset.id = a.id; face.src = _face(mission); }
   const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
   set("missionBarTitle", t(`mission.${a.id}.title`, a.id));
-  set("missionBarGoal", mission.goal?.kills
-    ? tpl(t("mission.bar.kills", "撃破 {n} / {goal}"), { n: String(Math.min(kills, mission.goal.kills)), goal: String(mission.goal.kills) })
-    : (mission.goal?.noHit ? t("mission.goal.noHit", "1 回も当たらない") : t("mission.goal.survive", "生き残る")));
+  set("missionBarGoal", tier.goal?.kills
+    ? tpl(t("mission.bar.kills", "撃破 {n} / {goal}"), { n: String(Math.min(kills, tier.goal.kills)), goal: String(tier.goal.kills) })
+    : _goalText(tier));
   set("missionBarSec", tpl(t("mission.time", "{n} 秒"), { n: String(sec) }));
   const fill = bar.querySelector(".mission-bar__fill");
-  if (fill) fill.style.width = ((remain / (mission.durS * 1000)) * 100).toFixed(1) + "%";
+  if (fill) fill.style.width = ((remain / (tier.durS * 1000)) * 100).toFixed(1) + "%";
   bar.classList.toggle("mission-bar--soon", sec <= 5);
 }
 
@@ -421,12 +506,12 @@ function _renderReward() {
     gumEl.append(ic, tx);
   }
   const w = document.getElementById("missionReward");
-  if (w) w.dataset.weight = mission.weight;
+  if (w) w.dataset.star = String(_rewardStar);
   const box = document.getElementById("missionRewardChoices");
   if (!box) return;
   box.innerHTML = "";
-  const icons = { gift: "🎟", heal: "♥", power: "⚔", swift: "👟", guard: "🛡", thunder: "⚡", magnet: "🧲" };
-  rewardChoices(mission).forEach((c, i) => {
+  const icons = { gift: "🎟", ce: "◆", heal: "♥", power: "⚔", swift: "👟", guard: "🛡", thunder: "⚡", magnet: "🧲" };
+  rewardChoices(mission, _rewardStar, state.currentStageIdx ?? 0).forEach((c, i) => {
     const { name, detail } = choiceText(c);
     const btn = document.createElement("button");
     btn.type = "button";
@@ -459,6 +544,7 @@ function _showResult(mission, res) {
 /** タイトルに戻る・ゲームオーバー・ステージの始まり (= 画面を消す。 pauseFlags は呼ぶ側がまとめて戻す) */
 export function hideMissionUi() {
   _offer = null;
+  if (_naviShown) { _naviShown = false; naviHide(); }
   _reward = null;
   _barKey = "";
   if (typeof document === "undefined") return;
@@ -474,9 +560,11 @@ function _wireOnce() {
   _wired = true;
   document.getElementById("missionAccept")?.addEventListener("click", acceptMission);
   document.getElementById("missionDecline")?.addEventListener("click", declineMission);
+  for (const btn of document.querySelectorAll("#missionOfferStars [data-star]")) btn.addEventListener("click", () => pickStar(Number(btn.dataset.star)));
   document.addEventListener("keydown", (e) => {
     if (_reward && ["1", "2", "3"].includes(e.key)) { e.preventDefault(); pickReward(Number(e.key) - 1); return; }
     if (!_offer) return;
+    if (["1", "2", "3"].includes(e.key)) { e.preventDefault(); pickStar(Number(e.key)); return; }   // SPEC-137
     if (e.key === "y" || e.key === "Y") { e.preventDefault(); acceptMission(); }
     else if (e.key === "n" || e.key === "N") { e.preventDefault(); declineMission(); }
   });
@@ -489,8 +577,8 @@ export function debugOfferMission(id) {
 }
 
 /** SPEC-125: ごほうびの画面を確かめる (= window.__missionClear("lubu")) */
-export function debugClearMission(id) {
+export function debugClearMission(id, star = 2) {
   const m = MISSION_MAP[id] ?? MISSIONS[0];
-  _rewardGum = grantMissionGum(missionGum(m.weight, state.currentStageIdx ?? 0));
-  _openReward(m);
+  _rewardGum = grantMissionGum(missionGum(star, state.currentStageIdx ?? 0));
+  _openReward(m, star);
 }
