@@ -18,7 +18,7 @@ test("ステージの作り: ボスは 0:15 / 0:30、 ステージ 2 にレア�
   for (const s of EASY_STAGES) {
     assert.ok(s.warnMs < s.bossAtMs);
     for (const sh of s.shopTimesMs) assert.ok(sh < s.bossAtMs - s.warnMs, "店はボスの予告より前");
-    assert.ok(s.bossHpMul > 0 && s.bossHpMul <= 0.05, "NORMAL のボスは Lv.40 向け (= HP ×20) なので、 EASY では大きく下げる");
+    assert.ok(s.bossHpMul > 0 && s.bossHpMul <= 0.05, "NORMAL のボスは育った装備向けなので、 EASY では大きく下げる (= SPEC-163: 180 / 1,440)");
     assert.ok(s.bossDmgMul > 0 && s.bossDmgMul <= 1);
   }
   assert.equal(EASY_STAGES[1].rareAtMs, 5000); assert.equal(EASY_STAGES[1].missionAtMs, 8000);

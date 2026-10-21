@@ -116,14 +116,22 @@ await p.evaluate(({ K, BUY }) => {
     const N = 12, danger = new Array(N).fill(0);
     let near = 0;
     const add = (x, y, R, m) => { const dx = x - P.x, dy = y - P.y; const d = Math.hypot(dx, dy) || 1; if (d > R) return; near++; const w = ((R - d) / R) ** 2 * m; const a = Math.atan2(dy, dx); for (let i = 0; i < N; i++) { const ang = (i / N) * Math.PI * 2; const cos = Math.cos(ang - a); danger[i] += w * Math.max(0, cos) ** 2 + w * 0.15; } };
-    for (const e of b.enemies ?? []) { if (e.isProp) continue; add(e.x, e.y, 260 + (e.r ?? 10), e.isBoss ? 4 : 1 + (e.r ?? 12) / 12); }
+    // ボス戦: 人はボスから逃げ続けず、 武器が届く距離 (= 射程のある武器なら 220、 近接だけなら 70) を保って戦う。 ボスそのものの危険は弾・叩きつけより軽く見る
+    const boss = (b.enemies ?? []).find((e) => e.isBoss && !e.isProp);
+    const ranged = (s.ownedExtensions ?? []).some((o) => { const w = (b.weapons ?? []).find((x) => String(x.extId) === String(o.extId)); return (w?.range ?? 0) >= 300; }) || (b.weapons ?? []).some((w) => (w.range ?? 0) >= 300);
+    const ringD = ranged ? 220 : 70;
+    for (const e of b.enemies ?? []) { if (e.isProp) continue; add(e.x, e.y, 260 + (e.r ?? 10), e.isBoss ? 1 : 1 + (e.r ?? 12) / 12); }
     for (const q of [...(b.enemyShots ?? []), ...(b.bossProjectiles ?? [])]) add(q.x, q.y, 140, 1.5);
+    // ボスの型の予告 (= 人は赤い帯・赤い円を見て避ける): 突進の通り道と、 叩きつけの円を危険に足す
+    const act = boss?.mv?.act;
+    if (act?.kind === "charge" && (act.phase === "windup" || act.phase === "dash")) for (let d = 0; d <= 620; d += 50) add(boss.x + act.dx * d, boss.y + act.dy * d, 130, 3);
+    if (act?.kind === "slam" && act.phase === "windup") add(boss.x, boss.y, (act.radius ?? 150) + 60, 4);
     let vx = 0, vy = 0;
-    if (near > 0) {
-      // 端に寄る向きは少し嫌う。 真ん中から 500 を超えたら戻る向きを好む
+    if (near > 0 || boss) {
+      // 端に寄る向きは少し嫌う。 真ん中から 500 を超えたら戻る向きを好む。 ボスがいれば、 ボスとの距離が ringD から離れる向きを嫌う
       const dc = Math.hypot(P.x, P.y);
       let bi = 0, bv = Infinity;
-      for (let i = 0; i < N; i++) { const ang = (i / N) * Math.PI * 2; const nx = P.x + Math.cos(ang) * 120, ny = P.y + Math.sin(ang) * 120; const edge = Math.max(0, Math.abs(nx) - 400) + Math.max(0, Math.abs(ny) - 650); const v = danger[i] + edge * 0.02 + (dc > 500 ? (Math.hypot(nx, ny) - dc) * 0.004 : 0); if (v < bv) { bv = v; bi = i; } }
+      for (let i = 0; i < N; i++) { const ang = (i / N) * Math.PI * 2; const nx = P.x + Math.cos(ang) * 120, ny = P.y + Math.sin(ang) * 120; const edge = Math.max(0, Math.abs(nx) - 400) + Math.max(0, Math.abs(ny) - 650); const ring = boss ? Math.abs(Math.hypot(boss.x - nx, boss.y - ny) - ringD) * 0.012 : 0; const v = danger[i] + edge * 0.02 + ring + (dc > 500 && !boss ? (Math.hypot(nx, ny) - dc) * 0.004 : 0); if (v < bv) { bv = v; bi = i; } }
       const ang = (bi / N) * Math.PI * 2; vx = Math.cos(ang); vy = Math.sin(ang);
     } else {
       let best = null, bd = 1e9; for (const g of [...(b.gems ?? []), ...(b.items ?? []), ...(b.magicCards ?? [])]) { const d = Math.hypot(g.x - P.x, g.y - P.y); if (d < bd) { bd = d; best = g; } }

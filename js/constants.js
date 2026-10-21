@@ -254,10 +254,11 @@ export const ENEMY_SPECS = {
   124:  { hp:   55, dmg: 14, speed: 75, radius: 14, xpValue:   2 },
   134:  { hp:   95, dmg: 18, speed: 70, radius: 16, xpValue:   4 },
   164:  { hp:  160, dmg: 22, speed: 65, radius: 19, xpValue:   7 },
-  // SPEC-163: ボスの HP は、 そのステージのボスの時刻に育っている装備の DPS で 20〜30 秒 (= 3000 / 4500 / 6000 → 5000 / 11000 / 20000)
-  171:  { hp: 5000, dmg: 30, speed: 45, radius: 48, xpValue:  60 },
-  373:  { hp: 11000, dmg: 30, speed: 50, radius: 52, xpValue: 100 },   // 覚醒魔王ファオ
-  1189: { hp: 20000, dmg: 30, speed: 55, radius: 50, xpValue: 150 },   // yamap
+  // SPEC-163: ボスの HP は、 そのステージのボスの時刻に育っている装備の単体 DPS で 20〜30 秒。 SPEC-080 の ×20 / ×15 (= BOSS_MOVES.hpMul) をやめて最終値をここに書く
+  //   (= 3000×20 / 4500×20 / 6000×15 = 60,000 / 90,000 / 90,000 → 12,000 / 45,000 / 100,000)
+  171:  { hp: 12000, dmg: 30, speed: 45, radius: 48, xpValue:  60 },    // SPEC-163: ボスの HP はここが最終値 (= BOSS_MOVES.hpMul は 1)。 4:00 の装備の単体 DPS 400〜600 で 20〜30 秒
+  373:  { hp: 45000, dmg: 30, speed: 50, radius: 52, xpValue: 100 },   // 覚醒魔王ファオ (= SPEC-163: 引き継いだ装備の単体 DPS 1,500〜2,500 で 20〜30 秒)
+  1189: { hp: 100000, dmg: 30, speed: 55, radius: 50, xpValue: 150 },  // yamap (= SPEC-163: 単体 DPS 3,000〜4,500 で 25〜30 秒)
   // SPEC-033: rare enemies (= ~2× normal hp、 +20-30 xp)
   // SPEC-034: radius × 1.5 (= 視認性向上、 当たり判定もそのまま大きく)
   147:  { hp:  160, dmg: 16, speed: 78, radius: 21, xpValue:  20, isRare: true },   // クリーパー フラペチーノ ドッピオ (= 14 → 21)
@@ -413,8 +414,8 @@ export const STAGE_TABLE = [
     // SPEC-062: 撃ってくる敵 (= fromMs から everyMs ごとに 1 体。 同時に max 体まで)
     shooters: { fromMs: 90000, everyMs: 10000, max: 3, ids: [166] },
     gimmick: "beads",    // SPEC-064: そろばんの珠
-    // SPEC-078 → SPEC-163: 洪水はゆるく (= ×12 → ×5、 pow 2.5 → 1.8)。 2:00 の群れ 16 体で「どばーっ」と来て圧死していたので、
-    //   群れは 2:30 から 10 体。 密度の目標も半分 (= 画面の 45%)。 装備が育つ速さ (= CE の収入) と同じ傾きで敵を増やす
+    // SPEC-078 → SPEC-163: 洪水はゆるく (= ×12 → ×4、 pow 2.5 → 1.8)。 2:00 の群れ 16 体で「どばーっ」と来て圧死していたので、
+    //   群れは 3:00 から 6 体 (20 秒ごと)。 密度の目標は 0.85 → 0.3 (= 1:30 から)。 装備が育つ速さ (= CE の収入) と同じ傾きで敵を増やす
     flood: { fromMs: 40000, fullMs: 230000, maxMul: 4, packFromMs: 180000, packEveryMs: 20000, packSize: 6, pow: 1.8 },
     density: { fromMs: 90000, fullMs: 230000, max: 0.3 },
     maxEnemies: 260,

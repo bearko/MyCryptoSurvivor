@@ -18,23 +18,23 @@ import { windupMs } from "../perks.js";   // SPEC-090c: 見切り (= 予告が�
 import { playSe } from "../audio.js";
 import { fxBurst } from "./fx.js";
 
-/** ボスごとの型 (= moves: 型 → 間隔 ms)。 hpMul: ENEMY_SPECS の HP に掛ける (= 自動プレイで、 ボス戦がおよそ 40 秒になるように。 SPEC-078 で敵が増え、 ボスの前にレベルが 40 前後まで上がるため) */
+/** ボスごとの型 (= moves: 型 → 間隔 ms)。 hpMul: ENEMY_SPECS の HP に掛ける。 SPEC-080 では ×20 / ×15 (= ボスの前にレベルが 40 前後まで上がっていた) だったが、 SPEC-163 で湧きをゆるめて HP の最終値を ENEMY_SPECS に書いたので 1 */
 export const BOSS_MOVES = {
   171: {   // ディープ・ヨシュカ (= ステージ 1。 いままでは体当たりだけ)
-    hpMul: 20,
+    hpMul: 1,
     moves: { charge: 6000, slam: 9000, burst: 4500 },
     first: { charge: 2500, slam: 6000, burst: 4000 },
     burst: { n: 8, speed: 180, dmg: 14, iconId: 5055 },
     slam: { radius: 150, dmg: 28 },
   },
   373: {   // 覚醒魔王ファオ (= ステージ 2。 放射はいままでどおり重なる)
-    hpMul: 20,
+    hpMul: 1,
     moves: { charge: 5200, spiral: 8000 },
     first: { charge: 2500, spiral: 5000 },
     spiral: { durMs: 2400, everyMs: 110, arms: 3, turn: 0.32, speed: 210, dmg: 14, iconId: 5055 },
   },
   1189: {  // yamap (= ステージ 3。 周回はいままでどおり重なる)
-    hpMul: 15,
+    hpMul: 1,
     moves: { charge: 4600, slam: 8000, burst: 5000 },
     first: { charge: 2200, slam: 5000, burst: 3500 },
     burst: { n: 12, speed: 210, dmg: 16, iconId: 5002 },

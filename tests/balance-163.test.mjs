@@ -10,7 +10,7 @@ const { NODE_MAP } = await import("../js/skill-data.js");
 const { weaponDps, spawnPerSec, enemyAvg, simStage, tierOf } = await import("../tools/sim/balance.mjs");
 const EXT = JSON.parse(read("../data/extensions.json")).extensions;
 
-test("ステージの湧き: 始まりはゆっくり (= 0.8 秒 × 1.4 / 1.1 / 0.9)、 洪水は ×5 / ×7 / ×9、 密度は 0.45 / 0.7 / 0.95。 HP は ×1 / ×2.2 / ×3.5", () => {
+test("ステージの湧き: 始まりはゆっくり (= 0.8 秒 × 1.4 / 1.1 / 0.9)、 洪水は ×4 / ×7 / ×9、 密度は 0.3 / 0.7 / 0.95。 HP は ×1 / ×2.2 / ×3.5", () => {
   assert.deepEqual(STAGE_TABLE.map((s) => s.spawnIntervalMul), [1.4, 1.1, 0.9]);
   assert.deepEqual(STAGE_TABLE.map((s) => s.flood.maxMul), [4, 7, 9]);
   assert.deepEqual(STAGE_TABLE.map((s) => s.flood.pow), [1.8, 1.8, 1.8]);
@@ -26,8 +26,12 @@ test("ステージの湧き: 始まりはゆっくり (= 0.8 秒 × 1.4 / 1.1 / 
   }
 });
 
-test("ボスの HP は 5000 / 11000 / 20000 (= 育った装備の DPS で 20〜30 秒)", () => {
-  assert.deepEqual([171, 373, 1189].map((id) => ENEMY_SPECS[id].hp), [5000, 11000, 20000]);
+test("ボスの HP は 12,000 / 45,000 / 100,000 が最終値 (= BOSS_MOVES.hpMul は 1。 その時刻の装備の単体 DPS で 20〜30 秒)。 EASY は 180 / 1,440", async () => {
+  assert.deepEqual([171, 373, 1189].map((id) => ENEMY_SPECS[id].hp), [12000, 45000, 100000]);
+  const { BOSS_MOVES } = await import("../js/battle/boss-moves.js");
+  for (const id of [171, 373, 1189]) assert.equal(BOSS_MOVES[id].hpMul, 1);
+  const { EASY_STAGES } = await import("../js/easy.js");
+  assert.deepEqual(EASY_STAGES.map((s, i) => Math.round(ENEMY_SPECS[[171, 373][i]].hp * s.bossHpMul)), [180, 1440]);
 });
 
 test("木の効き目: 頑丈なからだ 6%・厚い皮 4%・鋭い一撃 5%・手早さ 3% (段ごと)", () => {
