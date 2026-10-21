@@ -47,6 +47,7 @@ import { CHAR_SPRITE_RATIO, img } from "../constants.js";   // SPEC-150
 let _wired = false;
 let _showTimer = 0;   // SPEC-150: 粒子が舞い上がってから結果の画面を出す
 let _loseN = Math.floor(Math.random() * 3);   // SPEC-116: 倒れたときのひとことの順番 (= 続けて同じにしない)
+let _introSaid = false;   // SPEC-160: 全身のマインちゃんが「復活させてあげる」をこの回に言った (= 帯で励ましを重ねない)
 
 /**
  * SPEC-009: HP 0 で Game Over。
@@ -118,11 +119,13 @@ export function triggerGameOver(reason = "lose") {
       setChatVisible(true);   // SPEC-091
       reveal();
     };
+    _introSaid = false;
     const dissolved = _startDissolve(() => {
       if (!state.battle.gameOver) return;
-      // SPEC-155: 復活のしかたの説明は初回だけ。 2 回目からは渦に入ったらそのまま REVIVE の画面
+      // SPEC-155: 復活のしかたの説明は初回だけ。 2 回目からは渦に入ったらそのまま REVIVE の画面 (= SPEC-160: 励ましは画面の下の帯で)
       if (hasSeenRevive()) { show(); return; }
       markReviveSeen();
+      _introSaid = true;
       const lines = naviLines("revive");
       const ms = lines.reduce((a, l) => a + Math.max(t(l.key, l.key).length * NAVI_TYPE_MS, voiceMs(l.voice)), 0) + REVIVE_LINE_HOLD_MS;
       _showWatch();
@@ -228,17 +231,20 @@ async function _reviveRain() {
 function sayOnLose(reason, modal) {
   modal?.classList.remove("gameover-modal--navi");
   if (reason === "clear") return;
-  if (isEasy()) { showLesson("s2.lose"); return; }   // SPEC-147: 説明はレッスンで
+  if (isEasy() && showLesson("s2.lose")) return;   // SPEC-147: 初めてはレッスンで。 SPEC-160: 2 回目からは下の励まし
   // SPEC-151: 粒子の演出のときは、 全身のマインちゃんが「復活させてあげる」をもう言っているので、 帯では 2 行目だけ
   // SPEC-155: 説明は初回だけ (= 粒子が出せない端末でも、 2 回目からは帯で言い直さない)
   const lines = state.battle.heroDissolved || hasSeenRevive() ? [] : naviLines("revive");   // SPEC-150
   if (!state.battle.heroDissolved && lines.length) markReviveSeen();
+  // SPEC-160: 全身の「復活させてあげる」が無い回 (= 2 回目から) は、 帯のマインちゃん (= アイコンと吹き出し) がまず励ます
+  if (!_introSaid && !lines.length) { _loseN += 1; lines.push(...naviLines("lose", { n: _loseN })); }
   if (!state.rtaMode) {
     const guide = treeNudge(getMeta());
     // SPEC-148: 木を始めていれば、 SPEC-116 のひとことの代わりに、 被ダメの内訳からのおすすめを 1 つ
     const sug = guide ? null : suggest(state.lastRunStats?.analysis?.sum);
     if (sug) lines.push(...naviLines("advice", { key: sug.key, vars: adviceVars(sug) }));
-    else { if (!guide) _loseN += 1; lines.push(...naviLines("lose", { guide, n: _loseN })); }
+    else if (guide) lines.push(...naviLines("lose", { guide }));
+    else if (_introSaid) { _loseN += 1; lines.push(...naviLines("lose", { guide, n: _loseN })); }   // SPEC-116: 初回で木を始めていれば、 ひとことを 1 つ
   }
   if (!lines.length) return;
   modal?.classList.add("gameover-modal--navi");
