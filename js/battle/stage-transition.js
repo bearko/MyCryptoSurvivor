@@ -9,7 +9,8 @@
 // pauseFlags 不変条件: open で pauseTime + 1、 続行 click で resumeTime + 1。
 
 import { state, pauseTime, resumeTime } from "../state.js";
-import { STAGE_TABLE } from "../constants.js";
+import { STAGE_TABLE, SFX } from "../constants.js";
+import { playSe } from "../audio.js";   // SPEC-158: 勝利の SE
 import { triggerGameOver } from "./gameover.js";
 import { triggerActivityReport } from "./activity-report.js";
 import { t, tpl, onLangChange, getLang } from "../i18n.js";
@@ -113,6 +114,7 @@ export function triggerStageEndOrTransition() {
   _renderTransitionModal();
   const modal = document.getElementById("stageTransitionModal");
   modal?.classList.remove("hidden");
+  playSe(SFX.STAGE_CLEAR, 0, 0.7);   // SPEC-158: NODE CLEAR の帯が出る瞬間に勝利の SE (= ボスを倒した音のあと)
   // SPEC-058: テロップ (= 斜めの帯とヒーロー・マインちゃん) のあと、 SPEC-046: 上から順に出し、 撃破数を数え上げる
   const snap = state.run.stages.find(s => s.idx === (state.currentStageIdx ?? 0));
   presentResult(modal, "clear", {
@@ -133,21 +135,6 @@ export function triggerStageEndOrTransition() {
   });
 }
 
-/** SPEC-046: ⏱ 時間・💀 撃破・Lv のタイル (= ステージクリアとゲームオーバーで同じ形) */
-export function resultTilesHtml({ timeText, kills, level, killsId }) {
-  const esc = (v) => String(v).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  return (
-    `<div class="result-tile"><span class="result-tile__icon" aria-hidden="true">⏱</span>` +
-    `<span class="result-tile__value num">${esc(timeText)}</span>` +
-    `<span class="result-tile__label">${esc(t("result.time", "時間"))}</span></div>` +
-    `<div class="result-tile"><span class="result-tile__icon" aria-hidden="true">💀</span>` +
-    `<span class="result-tile__value num"${killsId ? ` id="${esc(killsId)}"` : ""}>${esc(kills)}</span>` +
-    `<span class="result-tile__label">${esc(t("result.kills", "撃破"))}</span></div>` +
-    `<div class="result-tile"><span class="result-tile__icon" aria-hidden="true">⬆</span>` +
-    `<span class="result-tile__value num">Lv.${esc(level)}</span>` +
-    `<span class="result-tile__label">${esc(t("result.level", "レベル"))}</span></div>`
-  );
-}
 
 /**
  * 「次のステージへ」 click → state.currentStageIdx++ → startBattle 再呼出
@@ -169,6 +156,14 @@ function _wireOnce() {
   _wired = true;
   document.getElementById("stageTransitionProceed")
     ?.addEventListener("click", _onProceedClick);
+  // SPEC-158: 「くわしく」で内訳を開く (= SPEC-153 の REVIVE と同じ。 PC では CSS が左の列に常に出す)
+  document.getElementById("stageTransitionMore")?.addEventListener("click", () => {
+    const body = document.getElementById("stageTransitionMoreBody");
+    const btn = document.getElementById("stageTransitionMore");
+    const open = body?.classList.toggle("hidden") === false;
+    btn?.setAttribute("aria-expanded", open ? "true" : "false");
+    btn?.classList.toggle("result-more--open", open);
+  });
   onLangChange(() => {
     if (!document.getElementById("stageTransitionModal")?.classList.contains("hidden")) {
       _renderTransitionModal();
@@ -213,15 +208,15 @@ function _renderTransitionModal() {
   }
   const snap = state.run.stages.find(s => s.idx === idx);
   _renderSigPour(snap?.sigPour ?? null);
-  const tilesEl = document.getElementById("stageTransitionTiles");
-  if (tilesEl && snap) {
-    tilesEl.innerHTML = resultTilesHtml({
-      timeText: formatElapsed(Math.round((snap.elapsedMs ?? 0) / 1000)),
-      kills: snap.kills ?? 0,
-      level: snap.level ?? 1,
-      killsId: "stageTransitionKills",
-    });
-  }
+  // SPEC-158: 1 行の小さな字 (= 撃破数は then で数え上げる)
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  set("stageTransitionElapsed", formatElapsed(Math.round((snap?.elapsedMs ?? 0) / 1000)));
+  set("stageTransitionKills", String(snap?.kills ?? 0));
+  set("stageTransitionLevel", `Lv.${snap?.level ?? 1}`);
+  // 「くわしく」は毎回畳む
+  document.getElementById("stageTransitionMoreBody")?.classList.add("hidden");
+  document.getElementById("stageTransitionMore")?.classList.remove("result-more--open");
+  document.getElementById("stageTransitionMore")?.setAttribute("aria-expanded", "false");
 }
 
 /** SPEC-128: 「残った CE ◆9273 → テスラコイル Lv 5 → 7」 (= ショップで遊んでいないとき・CE が 0 のときは出さない) */

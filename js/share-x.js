@@ -2,7 +2,7 @@
 // share-x.js — ステージ 1 をクリアしたら、 マインちゃんが X での投稿をすすめる (= SPEC-143)
 // ============================================================
 //
-// 「投稿」を押すと X の投稿画面を開き (= 文・#MyCryptoGames・ゲームの URL を入れた状態)、 100 GUM を渡す。
+// 「投稿」を押すと X の投稿画面を開き (= 文・#ポチゲー・#MyCryptoGames・ゲームの URL を入れた状態)、 100 GUM を渡す。
 // 投稿したかは確かめられないので、 押した時点で渡す (= 作者の決定)。 GUM は 1 回だけ (= 端末に覚える)。
 // 「あとで」なら次のステージ 1 のクリアでまた出す (= 3 回まで)。 RTA では出さない (= 走りを止めない)。
 // ステージクリアの画面の上に重ねるだけで、 時間には触らない (= ステージクリアの画面がもう止めている)。
@@ -18,10 +18,13 @@ export const SHARE_GUM = 100;
 export const SHARE_MAX_SKIPS = 3;
 export const GAME_URL = "https://survivor.bearko.games/";
 export const SHARE_TAG = "MyCryptoGames";
+/** SPEC-158: 本文に入れる札 (= bearko.games のポータルが拾う条件。 作者の指定 2026-10-21) */
+export const SHARE_BODY_TAG = "#ポチゲー";
 
-/** X の投稿画面の URL (= 純関数) */
+/** X の投稿画面の URL (= 純関数)。 本文の末尾に #ポチゲー を足す (= 無ければ) */
 export function shareUrl(text, url = GAME_URL, tag = SHARE_TAG) {
-  const q = new URLSearchParams({ text, url, hashtags: tag });
+  const body = String(text ?? "").includes(SHARE_BODY_TAG) ? String(text ?? "") : `${String(text ?? "").trim()} ${SHARE_BODY_TAG}`.trim();
+  const q = new URLSearchParams({ text: body, url, hashtags: tag });
   return `https://x.com/intent/tweet?${q.toString()}`;
 }
 

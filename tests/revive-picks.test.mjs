@@ -68,9 +68,9 @@ test("復活の画面: おすすめの欄は木のボタンの上。 買えた�
   const picksJs = read("../js/battle/revive-picks.js");
   assert.match(picksJs, /const r = tryBuy\(m, id\);[\s\S]*if \(!spend\(r\.cost\)\)[\s\S]*setNodeRank\(id, r\.rank\);/, "木と同じ手順で買う");
   const css = read("../css/result-ui.css");
-  assert.match(css, /@media \(min-width: 980px\) \{[\s\S]*#gameOverModal \.gameover-modal__card \{ max-width: 960px; display: grid; grid-template-columns: minmax\(0, 1fr\) 420px;/);
-  assert.match(css, /#gameOverModal #gameOverMoreBody \{ grid-column: 1;[^}]*display: block !important; \}/, "PC では「くわしく」を開かずに左に");
-  assert.match(css, /#gameOverModal #gameOverMore \{ display: none; \}/);
+  assert.match(css, /@container \(min-width: 940px\) \{[\s\S]*\.result-split \.gameover-modal__card \{ max-width: 960px; display: grid; grid-template-columns: minmax\(0, 1fr\) 420px;/, "SPEC-158: 窓ではなく置き場の幅で");
+  assert.match(css, /\.result-split \.result-more-body \{ grid-column: 1;[^}]*display: block !important; \}/, "PC では「くわしく」を開かずに左に");
+  assert.match(css, /\.result-split \.result-more \{ display: none; \}/);
 });
 
 test("復活のしかたの説明 (= マインちゃんの全身と時計) は初回だけ。 2 回目からは渦に入ったらそのまま REVIVE の画面", () => {
