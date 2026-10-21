@@ -2,7 +2,7 @@
 id: SPEC-140
 title: Combined Robot Helper Item — Unlocked in the Skill Tree, Drops From Pots and Chests, Invincibility With Rainbow Glow and Its Own BGM; Rank Raises Rarity and Duration
 status: Done
-pr: TBD
+pr: 178
 phase: v1.6 Skill Tree
 kind: Added
 ---
