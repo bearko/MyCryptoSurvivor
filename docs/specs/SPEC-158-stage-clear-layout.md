@@ -2,7 +2,7 @@
 id: SPEC-158
 title: Stage-Clear Screen Rebuilt Like REVIVE (Small Stats Line, Big GUM and Gold Dust, Breakdown Under "Details" or in the Left Column on PC), a Victory Jingle When the NODE CLEAR Band Appears, Two Columns Decided by the Card's Available Width So the Open Chat Dock Makes Three Clean Columns, and #ポチゲー in the X Post Body
 status: Done
-pr: TBD
+pr: 198
 phase: v1.7 Onboarding
 kind: Changed
 ---
