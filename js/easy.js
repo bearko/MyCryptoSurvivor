@@ -31,7 +31,7 @@ export const EASY_HERO_MUL = 0.6;
  */
 export const EASY_STAGES = Object.freeze([
   // SPEC-149: 敵の数は 1/3 (= 湧きの間隔 ×3)。 ステージ 1 は動かなくても倒れない、 ステージ 2 は動かないと倒れる
-  { bossAtMs: 15000, warnMs: 4000,  shopTimesMs: [10000],            spawnIntervalMs: 960,  enemyHpMul: 0.7, enemyDmgMul: 0.5, bossHpMul: 0.005, bossDmgMul: 0.4, chestTimesMs: [5000],        rareAtMs: null, missionAtMs: null, thunderAtBoss: false },
+  { bossAtMs: 15000, warnMs: 4000,  shopTimesMs: [10000],            spawnIntervalMs: 960,  enemyHpMul: 0.5, enemyDmgMul: 0.25, bossHpMul: 0.003, bossDmgMul: 0.25, chestTimesMs: [5000],        rareAtMs: null, missionAtMs: null, thunderAtBoss: false },
   { bossAtMs: 30000, warnMs: 5000,  shopTimesMs: [0, 15000],         spawnIntervalMs: 1140, enemyHpMul: 1.0, enemyDmgMul: 1.2, bossHpMul: 0.008, bossDmgMul: 0.4, chestTimesMs: [10000],       rareAtMs: 5000, missionAtMs: 8000, missionDurS: 15, thunderAtBoss: false },
   { bossAtMs: 45000, warnMs: 10000, shopTimesMs: [0, 15000, 30000],  spawnIntervalMs: 1140, enemyHpMul: 1.6, enemyDmgMul: 1.8, bossHpMul: 0.012, bossDmgMul: 0.5, chestTimesMs: [10000, 30000], rareAtMs: null, missionAtMs: null, thunderAtBoss: true },
 ]);
