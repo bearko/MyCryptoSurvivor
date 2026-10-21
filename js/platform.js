@@ -311,6 +311,31 @@ export function setChatVisible(on) {
   } catch (e) {
     console.warn("[platform] chat", e);
   }
+  // SPEC-156: ドックの幅を置き直す (= chat-dock.js が聞いている。 SDK の onToggle は出す・隠すでは鳴らない)
+  try { if (typeof window !== "undefined" && typeof window.dispatchEvent === "function" && typeof Event === "function") window.dispatchEvent(new Event("mcs:chat")); } catch { /* 古い環境 */ }
+}
+
+/** SPEC-156: いまのチャットの形 'dock' | 'float' | 'sheet' (= SDK 1.7.0 の chat.layout()。 無ければ 'float') */
+export function chatLayout() {
+  const bg = _sdk();
+  try { const l = bg?.chat?.layout?.(); return l === "dock" || l === "sheet" ? l : "float"; } catch { return "float"; }
+}
+/** SPEC-156: タイムラインが見えているか (= ドックなら畳んでいない) */
+export function chatShown() {
+  const bg = _sdk();
+  try { return !!bg?.chat?.isOpen?.(); } catch { return false; }
+}
+/** SPEC-156: ドックを畳む (true) / 広げる (false) (= SDK 1.7.0 の chat.collapse) */
+export function setChatCollapsed(on) {
+  const bg = _sdk();
+  if (!bg || !bg.chat || typeof bg.chat.collapse !== "function") return;
+  try { bg.chat.collapse(!!on); } catch (e) { console.warn("[platform] chat", e); }
+}
+/** SPEC-156: 見える・見えないが変わったら (= SDK 1.6.1 の chat.onToggle)。 解除する関数を返す */
+export function onChatToggle(fn) {
+  const bg = _sdk();
+  if (!bg || !bg.chat || typeof bg.chat.onToggle !== "function") return () => {};
+  try { const off = bg.chat.onToggle(fn); return typeof off === "function" ? off : () => {}; } catch { return () => {}; }
 }
 
 /** ログイン中の bearko.games の名前 (= ログインしていない・SDK がないなら null) */

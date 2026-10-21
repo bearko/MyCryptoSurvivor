@@ -45,6 +45,7 @@ import { playSe, unlockAudio, suspendBgm, resumeBgm } from "./audio.js";
 import { SFX } from "./constants.js";
 import { APP_VERSION } from "./constants.js";
 import { initPlatform, setChatVisible, reportMetaAchievements } from "./platform.js";
+import { installChatDock } from "./chat-dock.js";   // SPEC-156
 import { getMeta, onMetaChange, hasHeroCleared } from "./meta.js";
 import { installModalA11y } from "./modal-a11y.js";
 import { img } from "./constants.js";
@@ -779,6 +780,7 @@ function renderHeader() {
 window.addEventListener("DOMContentLoaded", () => {
   // SPEC-039: bearko.games 共通基盤（アチーブメント）。SDK がなければ何もしない
   initPlatform(APP_VERSION);
+  installChatDock();   // SPEC-156: チャットのドックのぶん、 木と結果の画面を狭める
   // SPEC-096: セーブ (= mcs.meta.v1) から判定できるアチーブメントは、 起動時と、 セーブが変わるたび
   // (= スキルツリーの解放・ボスのゴールドダスト・挑戦の終わり) に、 いま満たしているものを送る
   reportMetaAchievements(getMeta());
