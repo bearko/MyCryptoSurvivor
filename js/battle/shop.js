@@ -10,6 +10,7 @@
 // 閉じたあとの 3 秒は SPEC-104 (= resume-countdown.js) が数える。
 
 import { state, pauseTime, resumeTime } from "../state.js";
+import { recordHeal } from "./run-stats.js";   // SPEC-148
 import {
   img, SFX, SHOP_PER_STAGE, SHOP_OFFERS, SHOP_BANS, SHOP_FREE_REROLLS, SHOP_HEADSTART_CE,
 } from "../constants.js";
@@ -179,6 +180,7 @@ export function openShop({ opening = false } = {}) {
   // ウェーブの節目のひと息: 来店で HP が少し戻る (= 作者の依頼 2026-10-20)
   _healed = canHeal() ? shopHealAmount(state.stats.hp, state.statsMax.hp) : 0;   // SPEC-112: 不老不死の探求のあいだは戻らない
   if (_healed > 0) {
+    recordHeal(state.run?.stats, "shop", Math.min(state.statsMax.hp, state.stats.hp + _healed) - state.stats.hp);   // SPEC-148
     state.stats.hp = Math.min(state.statsMax.hp, state.stats.hp + _healed);
     const p = state.battle.player;
     pushDamageNumber(p.x, p.y - (p.r ?? 12) - 4, _healed, "#7dff9a");
@@ -457,11 +459,12 @@ export function closeShop() {
   if (_boughtHere === 0) {
     const heal = canHeal() ? Math.round(Math.min(state.statsMax.hp - state.stats.hp, state.statsMax.hp * perk("skipHeal"))) : 0;
     if (heal > 0) {
+      recordHeal(state.run?.stats, "skip", Math.min(state.statsMax.hp, state.stats.hp + heal) - state.stats.hp);   // SPEC-148
       state.stats.hp = Math.min(state.statsMax.hp, state.stats.hp + heal);
       playSe(SFX.PICK_HEAL, 100, 0.55);
     }
   }
-  sigOnLevelUp(1, hitEnemy);   // SPEC-100 のクリプトスラッシュ: 店を出るたびに周りをなぎ払う
+  sigOnLevelUp(1, (j, d) => hitEnemy(j, d, "sig"));   // SPEC-148: 出どころ   // SPEC-100 のクリプトスラッシュ: 店を出るたびに周りをなぎ払う
   _offers = [];
   resumeTime();
 }

@@ -57,6 +57,7 @@ import { tickLLExtras } from "./ll.js";   // SPEC-101
 import { naviSay, naviLines } from "../navi.js";
 import { clearNaviTipQueue } from "../navi-tips.js";
 import { isEasy, easyStage, easyHeroMul } from "../easy.js";   // SPEC-147
+import { newRunStats, tickRunStats } from "./run-stats.js";   // SPEC-148
 import { tickLessons, clearLessons } from "../lesson.js";   // SPEC-147
 
 let _canvas = null;
@@ -104,7 +105,9 @@ export function startBattle(hero) {
     state.run.missionClears = 0;   // SPEC-136: 内訳の「ミッション達成 n 回」
     // SPEC-146: 初めての人の最初の挑戦 (= まだ 1 回も挑戦を終えていない。 RTA は初回には選べないが、 念のため外す)
     state.run.firstRun = (getMeta().runs | 0) === 0 && !state.rtaMode;
+    state.run.stats = newRunStats();   // SPEC-148: 負けた理由の分析 (= 1 回の挑戦を通して積む)
   }
+  if (!state.run.stats) state.run.stats = newRunStats();
 
   const b = state.battle;
   // SPEC-090c: スキルツリーの効果 (= RTA では切る)。 不死鳥は 1 回の挑戦に 1 度
@@ -312,6 +315,7 @@ function resizeCanvas() {
 /** 1 回ぶんの戦闘の更新 (= SPEC-054 で 2 倍速のときは 1 コマで 2 回呼ぶ) */
 function _step(dt, now) {
   const v = getInputVector();
+  tickRunStats(state.run.stats, dt);   // SPEC-148: 生存時間 (= 止まっているあいだは呼ばれない)
   tickPlayer(dt, v);
   centerCameraOnPlayer();
   tickEnemies(dt, now);          // SPEC-007: スポーン + 追跡 + 接触ダメージ
@@ -325,8 +329,8 @@ function _step(dt, now) {
   tickOrbits(dt, now);           // SPEC-012: Book / Blade の周回 + 衝突
   tickBeams(dt, now);            // SPEC-012/031: LaserGun の持続レーザー (= 250ms 累積 dispatch)
   tickBombs(dt);                 // SPEC-012: Pierrot の遅延爆発
-  tickSignature(dt, hitEnemy);   // SPEC-100: 固有スキル (= 毒霧・テスラコイル)
-  tickLLExtras(dt, hitEnemy);    // SPEC-101: 真・MCHブレードの一撃・真・ミョルニルの雷
+  tickSignature(dt, (j, d) => hitEnemy(j, d, "sig"));   // SPEC-100: 固有スキル (= 毒霧・テスラコイル)。 SPEC-148: 出どころ
+  tickLLExtras(dt, (j, d) => hitEnemy(j, d, "ll"));     // SPEC-101: 真・MCHブレードの一撃・真・ミョルニルの雷
   tickShockwaves(dt);            // SPEC-015: Moai 着弾の AoE 衝撃波
   tickBossAttack(dt, now);       // SPEC-030: ボス攻撃 (= ファオ放射 / yamap 周回) + 衝突
   tickEnemyShots(dt);            // SPEC-062: 撃ってくる敵の弾

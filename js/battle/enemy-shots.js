@@ -8,6 +8,7 @@
 // - 画面に映っていないときは撃たない (= 見えない敵に撃たれない)
 // 弾は state.battle.enemyShots。 ボスの弾 (= bossProjectiles) とは別にする (= ボスの弾は、 ボスが倒れると消すため)
 
+import { enemyNameOf } from "./enemy-name.js";   // SPEC-148
 import { state } from "../state.js";
 import { WORLD_W, WORLD_H } from "../constants.js";
 import { hurtPlayer } from "./hurt.js";   // SPEC-090c
@@ -134,6 +135,7 @@ export function tickShooter(e, dt, px, py) {
       r: ENEMY_SHOT_RADIUS,
       dmg: e.shotDmg,
       age: 0,
+      from: enemyNameOf(e),   // SPEC-148: とどめに出す名前
     });
   }
 }
@@ -155,6 +157,6 @@ export function tickEnemyShots(dt) {
     const ddx = s.x - px, ddy = s.y - py, sumR = s.r + pr;
     if (ddx * ddx + ddy * ddy > sumR * sumR) continue;
     shots.splice(i, 1);
-    hurtPlayer(s.dmg, { boss: false, shake: false });   // SPEC-090c: 被弾は 1 か所 (= hurt.js)
+    hurtPlayer(s.dmg, { boss: false, shake: false, kind: "shot", name: s.from ?? null });   // SPEC-090c: 被弾は 1 か所 (= hurt.js)。 SPEC-148: 弾
   }
 }

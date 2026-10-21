@@ -6,6 +6,7 @@
 // HP max up は statsMax.hp + delta、 同 delta だけ stats.hp も増やす (= 上限超えはクランプ)。
 
 import { state } from "../state.js";
+import { recordHeal } from "./run-stats.js";   // SPEC-148
 import { getExt, getCategory } from "../extensions.js";
 import { STATS_INITIAL } from "../constants.js";
 import { perks, perkBuffBase } from "../perks.js";   // SPEC-090c: スキルツリーの土台
@@ -57,6 +58,7 @@ export function tickRegen(dt) {
   if (!canHeal()) return;              // SPEC-112: 不老不死の探求
   const max = state.statsMax.hp;
   const next = state.stats.hp + r * dt;
+  recordHeal(state.run?.stats, "regen", Math.min(max, next) - state.stats.hp);   // SPEC-148
   state.stats.hp = next > max ? max : next;
 }
 

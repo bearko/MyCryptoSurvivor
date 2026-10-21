@@ -10,6 +10,7 @@
 // 予告 (= 線・印・残り秒) を必ず先に見せる (= 見てから避けられる)。
 
 import { state } from "../state.js";
+import { t } from "../i18n.js";   // SPEC-148: 仕掛けの名前
 import { STAGE_TABLE, WORLD_W, WORLD_H, CHEST_DROPS, SFX } from "../constants.js";
 import { stageMaxEnemies } from "./horde.js";
 import { hitEnemy, pushDamageNumber } from "./damage.js";   // SPEC-129: pushDamageNumber が抜けていて、 木馬が出るとステージ 3 が止まっていた
@@ -159,8 +160,8 @@ function _dmgMul() {
 }
 
 /** 仕掛けが自分に当たった (= 被弾の間隔は体当たりと共通) */
-function _hurtPlayer(raw) {
-  hurtPlayer(raw * _dmgMul(), { boss: false, shake: false });   // SPEC-090c: 被弾は 1 か所 (= hurt.js)
+function _hurtPlayer(raw, name = null) {
+  hurtPlayer(raw * _dmgMul(), { boss: false, shake: false, kind: "gimmick", name });   // SPEC-090c: 被弾は 1 か所 (= hurt.js)。 SPEC-148: 仕掛け
 }
 
 // SPEC-079: ボス戦の枠があれば、 その中に収める
@@ -231,7 +232,7 @@ function _tickBeads(g, dms, el) {
         const q = beadPos(row, lead, i);
         if (q.s < 0 || q.s > row.len) continue;
         const dx = q.x - p.x, dy = q.y - p.y, rr = BEADS.r + p.r;
-        if (dx * dx + dy * dy <= rr * rr) { row.hitPlayer = true; _hurtPlayer(BEADS.playerDmg); break; }
+        if (dx * dx + dy * dy <= rr * rr) { row.hitPlayer = true; _hurtPlayer(BEADS.playerDmg, t("analysis.src.beads", "そろばんの珠")); break; }
       }
     }
     // 敵 (= 1 列で 1 体 1 回。 列から離れる向きにはじく)
@@ -245,7 +246,7 @@ function _tickBeads(g, dms, el) {
         const dx = q.x - e.x, dy = q.y - e.y, rr = BEADS.r + e.r;
         if (dx * dx + dy * dy > rr * rr) continue;
         row.hitIds.add(e.id);
-        const killed = hitEnemy(j, BEADS.enemyDmg);
+        const killed = hitEnemy(j, BEADS.enemyDmg, "gimmick");   // SPEC-148
         if (!killed && !e.isBoss && e.behavior !== "trojan") {
           const side = ((e.x - row.x0) * nx + (e.y - row.y0) * ny) >= 0 ? 1 : -1;
           e.x = _clampX(e.x + nx * side * BEADS.knockPx, e.r);
@@ -277,11 +278,11 @@ function _tickPunch(g, dms, el) {
     if (!pu.done && pu.t >= PUNCH.warnMs) {
       pu.done = true;
       const p = b.player;
-      if (pu.holes.some((h) => inHole(h.x, h.y, p.x, p.y, p.r))) _hurtPlayer(PUNCH.playerDmg);
+      if (pu.holes.some((h) => inHole(h.x, h.y, p.x, p.y, p.r))) _hurtPlayer(PUNCH.playerDmg, t("analysis.src.punch", "パンチカード"));
       for (let j = b.enemies.length - 1; j >= 0; j--) {
         const e = b.enemies[j];
         if (e.isProp) continue;
-        if (pu.holes.some((h) => inHole(h.x, h.y, e.x, e.y, e.r))) hitEnemy(j, PUNCH.enemyDmg);
+        if (pu.holes.some((h) => inHole(h.x, h.y, e.x, e.y, e.r))) hitEnemy(j, PUNCH.enemyDmg, "gimmick");   // SPEC-148
       }
       for (const h of pu.holes) fxBurst(h.x, h.y, "#f4efe2", 8, 160);   // 紙くず
       playSe(SFX.PUNCH, 60, 0.35);

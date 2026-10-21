@@ -127,6 +127,9 @@ export function naviLines(scene, ctx = {}) {
       ];
       return [list[Math.abs(ctx.n | 0) % list.length]];
     }
+    case "advice":
+      // SPEC-148: 倒れた理由からのおすすめ (= 文は advice.*、 節の名前は vars。 ボイスはまだない)
+      return [{ key: String(ctx.key ?? "advice.hp"), pose: "pointer", vars: ctx.vars ?? {} }];
     case "afterTree":
       // SPEC-146: スキルツリーから戻ったとき (= 強くしたら「もう一度」へ。 ボイスはまだない)
       return [{ key: (ctx.bought | 0) > 0 ? "navi.afterTree.bought" : "navi.afterTree.none", pose: (ctx.bought | 0) > 0 ? "hooray" : "pointer" }];

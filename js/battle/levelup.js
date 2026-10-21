@@ -7,6 +7,7 @@
 
 import { getMeta, hasHeroCleared } from "../meta.js";   // SPEC-106
 import { state, pauseTime, resumeTime } from "../state.js";
+import { recordHeal } from "./run-stats.js";   // SPEC-148
 import { perk, stockLimit, startLevelBonus, mainWeaponChance } from "../perks.js";   // SPEC-090c / SPEC-139
 import {
   EXT_ROSTER, extImg, extTierImg, getExt, getCategory,
@@ -282,6 +283,7 @@ export function skipPick() {
   // SPEC-090c: 見送りの礼 (= スキップすると HP が少し戻る)
   const heal = Math.round(state.statsMax.hp * perk("skipHeal"));
   if (heal > 0) {
+    recordHeal(state.run?.stats, "skip", Math.min(state.statsMax.hp, state.stats.hp + heal) - state.stats.hp);   // SPEC-148
     state.stats.hp = Math.min(state.statsMax.hp, state.stats.hp + heal);
     playSe(SFX.PICK_HEAL, 100, 0.55);
   }

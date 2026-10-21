@@ -32,6 +32,7 @@ import { getObstacleRects } from "./field.js";
 import { resolveCircle, slideAlongWall } from "./field-geom.js";
 import { tickShooter, nextFireMs } from "./enemy-shots.js";
 import { runThreatTier, rollVariant, applyVariant, crossLine, crossedOut, CROSS, VARIANTS } from "./threat.js";   // SPEC-107
+import { enemyNameOf } from "./enemy-name.js";   // SPEC-148
 import { showThreatNotice } from "./milestones.js";   // SPEC-107
 import { missionMods } from "./missions.js";   // SPEC-112
 import { isEasy, easyStage, bossSpawnAtMs, bossWarnLeadMs } from "../easy.js";   // SPEC-147
@@ -237,7 +238,7 @@ export function tickEnemies(dt, nowMs) {
 
     // SPEC-112: 乱世の奸雄 (= 敵が小さい) は当たりも小さく
     if (b.contactCooldownMs <= 0 && d < (e.isBoss ? e.r : e.r * mods.sizeMul) + b.player.r) {
-      hurtPlayer(e.dmg, { boss: !!e.isBoss });   // SPEC-090c: 被弾は 1 か所 (= hurt.js)。 ボスなら大きく揺らす
+      hurtPlayer(e.dmg, { boss: !!e.isBoss, name: enemyNameOf(e) });   // SPEC-090c: 被弾は 1 か所 (= hurt.js)。 ボスなら大きく揺らす。 SPEC-148: 名前
     }
   }
   // SPEC-107: 走りきった横断の敵を片づける

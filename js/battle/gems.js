@@ -92,7 +92,7 @@ export function tickGems(dt) {
     levelUps += 1;
   }
   if (levelUps > 0) {
-    sigOnLevelUp(levelUps, hitEnemy);   // SPEC-100: クリプトスラッシュ (= 呼ばれていなかった)
+    sigOnLevelUp(levelUps, (j, d) => hitEnemy(j, d, "sig"));   // SPEC-100: クリプトスラッシュ (= 呼ばれていなかった)。 SPEC-148: 出どころ
     triggerLevelUpPick(levelUps);       // SPEC-008: モーダル trigger
   }
 }

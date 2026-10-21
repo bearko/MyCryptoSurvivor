@@ -35,6 +35,7 @@ import {
 import { markPlayed } from "../played.js";
 import { isEasy, markEasyCleared } from "../easy.js";   // SPEC-147
 import { showLesson } from "../lesson.js";   // SPEC-147
+import { collectAnalysis, renderAnalysis } from "./analysis-ui.js";   // SPEC-148
 
 let _wired = false;
 
@@ -62,6 +63,7 @@ export function triggerActivityReport() {
   // SPEC-106: そのヒーローで全ステージをクリアした (= 初めてなら LL の解放を知らせる)
   const llFirst = !easy && addHeroClear(state.ownedHero?.heroId) && !!getExt(HERO_STARTING_WEAPON[state.ownedHero?.heroId])?.ll;
   _rewards = { ...grantRunRewards(true, { gumMul: perk("gumMul") }), dust: runDust() };   // SPEC-090: 全クリアの GUM (+ SPEC-090c 金勘定)
+  const analysis = collectAnalysis({ cleared: true });   // SPEC-148: この挑戦の数字 (= 前回のクリアと自己ベストと比べる)
   // SPEC-041: 共通基盤の総合スコア (= 全クリア)
   state.run.scoreSent = true;
   if (!easy) reportRunScore(scoreMetrics({
@@ -87,6 +89,7 @@ export function triggerActivityReport() {
       if (scoreEl) countUp(scoreEl, Number(scoreEl.dataset.score) || 0, { durMs: 800, delayMs: 450 });
       renderRewards(document.getElementById("activityReportRewards"), _rewards ?? {}, { delayMs: 900 });   // SPEC-090
       renderGumBreakdown(document.getElementById("activityReportGum"), _rewards);   // SPEC-136
+      renderAnalysis(document.getElementById("activityReportAnalysis"), analysis);   // SPEC-148
       if (llFirst) showLLUnlocked(HERO_STARTING_WEAPON[state.ownedHero?.heroId]);   // SPEC-106
       if (easy) showLesson("s3.clear");   // SPEC-147
     },

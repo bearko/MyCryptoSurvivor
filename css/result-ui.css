@@ -722,3 +722,50 @@
   .gum-bd { font-size: 0.66rem; padding: 0.4rem 0.55rem; }
   .gum-bd__row { gap: 0.35rem; }
 }
+
+/* ============================================================
+   SPEC-148: 負けた理由の分析 (= 被ダメの内訳・とどめ・比較・与ダメ・おすすめ)
+   ============================================================ */
+.anl {
+  margin: 0 auto 0.3rem; width: 100%; max-width: 30rem;
+  padding: 0.45rem 0.7rem 0.5rem;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.28); border: 1px solid rgba(127, 214, 255, 0.3);
+  font-size: 0.72rem; color: #e9e2cf; text-align: left;
+}
+.anl.hidden { display: none; }
+.anl__title { margin: 0 0 0.25rem; font-size: 0.66rem; letter-spacing: 0.1em; color: var(--muted); display: flex; align-items: center; gap: 0.5rem; }
+.anl__new { font-size: 0.62rem; letter-spacing: 0; color: #ffe17a; font-weight: 800; text-shadow: 0 0 8px rgba(255, 225, 122, 0.6); }
+.anl__sec { padding: 0.15rem 0; }
+.anl__k { color: #bfe6ff; font-weight: 700; }
+.anl__k b, .anl__killer b { color: #f6e2a0; font-weight: 800; margin-left: 0.25rem; }
+.anl__killer b { color: #fff; }
+.anl__kind, .anl__sub { color: var(--muted); font-weight: 400; margin-left: 0.25rem; }
+.anl__bar { display: flex; height: 7px; margin: 0.22rem 0 0.18rem; border-radius: 4px; overflow: hidden; background: rgba(255, 255, 255, 0.08); }
+.anl__seg { display: block; height: 100%; min-width: 2px; }
+.anl__legend { display: flex; flex-wrap: wrap; gap: 0.15rem 0.6rem; color: #d9d4c4; }
+.anl__chip { white-space: nowrap; }
+.anl__chip b { color: #f6e2a0; margin-left: 0.15rem; }
+.anl__dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 0.25rem; vertical-align: 0; }
+.anl__cmp { width: 100%; border-collapse: collapse; margin: 0.3rem 0 0.2rem; font-size: 0.7rem; }
+.anl__cmp th { font-weight: 600; color: var(--muted); text-align: right; padding: 0.1rem 0.15rem; white-space: nowrap; }
+.anl__cmp tbody th { text-align: left; color: #bfe6ff; }
+.anl__cmp td { text-align: right; padding: 0.1rem 0.15rem; white-space: nowrap; color: #e9e2cf; }
+.anl__cmp td.anl__now { color: #f6e2a0; font-weight: 800; }
+.anl__cmp td.anl__best { color: #d9d4c4; }
+.anl__d { font-size: 0.62rem; margin-left: 0.2rem; color: var(--muted); }
+.anl__d--up { color: #9ef0b0; }
+.anl__d--down { color: #ff8e8e; }
+.anl__advice { margin-top: 0.35rem; padding-top: 0.3rem; border-top: 1px dashed rgba(127, 214, 255, 0.3); }
+.anl__advice-text { margin: 0.15rem 0 0.25rem; color: #fff; line-height: 1.45; }
+.anl__nodes { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+.anl__node {
+  font: inherit; font-size: 0.7rem; font-weight: 800; color: #1a1a2a; cursor: pointer;
+  padding: 0.2rem 0.6rem; border-radius: 999px; border: 0;
+  background: linear-gradient(180deg, #ffe9a8, #f0c14b); box-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
+}
+.anl__node:hover { filter: brightness(1.08); }
+@media (max-width: 400px) {
+  .anl { font-size: 0.66rem; padding: 0.4rem 0.55rem; }
+  .anl__cmp { font-size: 0.64rem; }
+}

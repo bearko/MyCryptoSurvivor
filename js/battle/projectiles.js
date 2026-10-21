@@ -3,7 +3,7 @@
 // ============================================================
 
 import { state } from "../state.js";
-import { hitEnemy } from "./damage.js";
+import { hitEnemy, weaponSrc } from "./damage.js";   // SPEC-148: weaponSrc
 import { getObstacleRects } from "./field.js";
 import { circleHitsAnyRect } from "./field-geom.js";
 
@@ -61,7 +61,7 @@ export function tickProjectiles(dt) {
       const dx = e.x - p.x, dy = e.y - p.y;
       const sumR = e.r + p.r;
       if (dx * dx + dy * dy > sumR * sumR) continue;
-      hitEnemy(j, p.dmg);
+      hitEnemy(j, p.dmg, weaponSrc(p.weaponExtId));   // SPEC-148: 出どころ
       if (!p.hitIds) p.hitIds = new Set();
       p.hitIds.add(e.id);
       if ((p.pierceLeft ?? 0) <= 0) {
@@ -83,6 +83,7 @@ function _spawnMoaiShockwave(p) {
   state.battle.shockwaves.push({
     id: state.battle.nextEntityId++,
     x: p.x, y: p.y,
+    weaponExtId: p.weaponExtId ?? null,   // SPEC-148
     r0: 0, r1: p.moaiAoeR,
     age: 0, life: 350,
     dmg: Math.max(1, Math.round(p.moaiAoeDmg ?? p.dmg)),
