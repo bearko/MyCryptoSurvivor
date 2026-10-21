@@ -2,7 +2,7 @@
 id: SPEC-153
 title: EASY Stage Line in Seconds, Compact Revive Screen That Emphasizes GUM and Gold Dust, Shake Edge Fix, Mine's Boss Warning, Boss Chest Opening for Gold Dust, No Achievements in EASY, MCH Warrior Only in EASY With Billy the Kid as the Clear Reward, and the One-Column Line Script
 status: Done
-pr: TBD
+pr: 192
 phase: v1.7 Onboarding
 kind: Changed
 ---
