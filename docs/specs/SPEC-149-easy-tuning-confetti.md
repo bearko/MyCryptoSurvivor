@@ -2,7 +2,7 @@
 id: SPEC-149
 title: EASY Tuning (Enemies ×1/3, Stage 1 Survivable Without Moving, Stage 2 Not), Lesson Voice Cut on Boss Kill, and Confetti on Clear
 status: Done
-pr: TBD
+pr: 188
 phase: v1.7 Onboarding
 kind: Changed
 ---
