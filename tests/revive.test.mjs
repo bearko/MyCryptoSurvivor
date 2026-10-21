@@ -121,11 +121,18 @@ test("SPEC-152: 吸い込みのあいだは暗いまま → hold → 降りこ�
   assert.match(read("../js/battle/fx.js"), /if \(state\.pauseFlags > 0 \|\| state\.battle\.gameOver\) return \{ x: 0, y: 0 \};/);
 });
 
+test("ボスの予告の警告は 1 度だけ (= 毎コマ呼ぶと吹き出しが空のまま止まる)", () => {
+  assert.match(read("../js/battle/enemies.js"), /if \(fxBossIncoming\(\)\) _bossIncomingHook\?\.\(\);/);
+  assert.match(read("../js/battle/fx.js"), /if \(fx\.bossWarned\) return false;[\s\S]*?_showBossBanner\(\);\n\s+return true;/);
+});
+
 test("レッスンは告げ声が終わるのを待ち、 出すときは前のボイスを切る (= 「ここは node ホレリス」と「新しいステージ！」を重ねない)", () => {
   assert.match(read("../js/voice.js"), /export function isVoicePlaying\(\)/);
   const lesson = read("../js/lesson.js");
   assert.match(lesson, /if \(isVoicePlaying\(\)\) return;\s*\/\/ SPEC-151/);
-  assert.match(lesson, /stopVoice\(\);\s*\/\/ SPEC-151[^\n]*\n\s+const spoke = hasVoice\(vid\) && playVoice\(vid\);/);
+  // SPEC-154: 通信窓で話す (= naviSay がそのセリフのボイスを鳴らし、 前のボイスは止まる)。 止めない
+  assert.match(lesson, /naviSay\(\[\{ key: vid, pose: POSE\[key\] \?\? "pointer", voice: hasVoice\(vid\) \? vid : null \}\], opt\);/);
+  assert.doesNotMatch(lesson, /pauseTime\(/, "レッスンはゲームを止めない");
 });
 
 test("文言: 見出し・復活する・マインちゃんの「王妃の黄金時計」。 RTA/ABSOLUTE も「復活する」", () => {

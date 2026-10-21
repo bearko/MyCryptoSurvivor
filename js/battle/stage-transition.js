@@ -17,13 +17,15 @@ import { reportStageEnd, reportRtaStageEnd } from "../platform.js";
 import { formatElapsed } from "../survival.js";
 import { countUp, revealIn } from "../reveal.js";
 import { presentResult } from "../result-telop.js";
-import { grantBossDust, grantStageGum } from "../meta.js";
+import { grantBossDust, grantStageGum, getMeta } from "../meta.js";
+import { owns } from "../skill-logic.js";   // SPEC-154
+import { ROOT_ID } from "../skill-data.js";   // SPEC-154
 import { renderRewards, renderGumBreakdown } from "../meta-ui.js";
 import { perk } from "../perks.js";   // SPEC-090c
 import { pourShopCeIntoSig } from "./shop.js";   // SPEC-128
 import { heroImg } from "../heroes.js";
 import { loadShare, shouldOfferShare, openSharePrompt, closeSharePrompt } from "../share-x.js";   // SPEC-143
-import { isEasy } from "../easy.js";   // SPEC-147
+import { isEasy, stageCount } from "../easy.js";   // SPEC-147 / SPEC-154
 import { showLesson } from "../lesson.js";   // SPEC-147
 import { stopVoice } from "../voice.js";   // SPEC-149: 説明の途中でボスを倒したら、 ボイスを切ってクリアの SE
 import { startConfetti, removeConfetti } from "../confetti.js";   // SPEC-149
@@ -94,7 +96,7 @@ export function triggerStageEndOrTransition() {
   // SPEC-040: RTA の区切り (= RTA で始めた run だけ。 IGT は各ステージのゲーム内時間の合計)
   if (state.rtaMode && !isEasy()) reportRtaStageEnd(state.currentStageIdx ?? 0, STAGE_TABLE.length, state.run.totalElapsedMs);
 
-  const isLast = (state.currentStageIdx ?? 0) >= STAGE_TABLE.length - 1;
+  const isLast = (state.currentStageIdx ?? 0) >= stageCount() - 1;   // SPEC-154: EASY は 2 ステージ
   if (isLast) {
     // SPEC-033: 全ステージクリア → activity report (= 既存 gameover modal を置換)
     state.battle.gameOver = true;
@@ -179,12 +181,13 @@ function _renderTransitionModal() {
   const subEl     = document.getElementById("stageTransitionSub");
   const proceedEl = document.getElementById("stageTransitionProceed");
   const idx       = state.currentStageIdx ?? 0;
-  // SPEC-147: EASY のステージ 1・2 ではスキルツリーを開かない (= ステージ 3 で初めて)
+  // SPEC-147: EASY のステージ 1 ではスキルツリーを開かない (= 倒れて根を取るまで)。 SPEC-154: 根を取ってあれば (= 復活のあと) 開ける
   const treeBtn = document.getElementById("stageTransitionSkillTree");
   const treeLock = document.getElementById("stageTransitionTreeLock");
-  treeBtn?.classList.toggle("hidden", isEasy());
-  if (treeLock) { treeLock.classList.toggle("hidden", !isEasy()); treeLock.textContent = t("tree.lockedEasy", "🔒 スキルツリーはステージ 3 で開く"); }
-  const next      = STAGE_TABLE[idx + 1];
+  const lockTree = isEasy() && !owns(getMeta(), ROOT_ID);
+  treeBtn?.classList.toggle("hidden", lockTree);
+  if (treeLock) { treeLock.classList.toggle("hidden", !lockTree); treeLock.textContent = t("tree.lockedEasy", "🔒 スキルツリーはステージ 2 で開く"); }
+  const next      = idx + 1 < stageCount() ? STAGE_TABLE[idx + 1] : null;   // SPEC-154
   const cur       = STAGE_TABLE[idx];
 
   if (titleEl) titleEl.textContent = t("stage.clearTitle", "Stage Clear!");

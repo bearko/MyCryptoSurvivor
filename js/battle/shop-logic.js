@@ -110,8 +110,7 @@ export function canBan(offer, starterExtId, bansLeft) {
 }
 
 /** 次の店までの割合 (= HUD の帯。 0..1)。 もう店が無ければ 1 */
-export function shopProgress(elapsedMs, stageIdx, nextIdx) {
-  const times = shopTimesMs(stageIdx);
+export function shopProgress(elapsedMs, stageIdx, nextIdx, times = shopTimesMs(stageIdx)) {   // SPEC-154: 開く時刻の表を渡す (= EASY・先行オープンの有無で違う)
   if (nextIdx >= times.length) return 1;
   const to = times[nextIdx];
   const from = nextIdx > 0 ? times[nextIdx - 1] : 0;
@@ -120,8 +119,7 @@ export function shopProgress(elapsedMs, stageIdx, nextIdx) {
 }
 
 /** 次の店までの秒 (= 切り上げ。 HUD の下の札) */
-export function nextShopSec(elapsedMs, stageIdx, nextIdx) {
-  const times = shopTimesMs(stageIdx);
+export function nextShopSec(elapsedMs, stageIdx, nextIdx, times = shopTimesMs(stageIdx)) {   // SPEC-154
   if (nextIdx >= times.length) return null;
   return Math.max(0, Math.ceil((times[nextIdx] - elapsedMs) / 1000));
 }

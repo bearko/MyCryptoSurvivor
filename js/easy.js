@@ -8,7 +8,7 @@
 // 「いま EASY か」は state.easyMode。 ここでは state を読むだけ (= 書くのは mode-select)。
 
 import { state } from "./state.js";
-import { BOSS_SPAWN_AT_MS, BOSS_WARNING_LEAD_MS, LS_PREFIX } from "./constants.js";
+import { BOSS_SPAWN_AT_MS, BOSS_WARNING_LEAD_MS, LS_PREFIX, STAGE_TABLE } from "./constants.js";
 import { owns } from "./skill-logic.js";
 import { ROOT_ID } from "./skill-data.js";
 
@@ -30,19 +30,23 @@ export const EASY_HERO_MUL = 0.6;
  *   thunderAtBoss     : ボスが出た瞬間に雷鼓を足もとに落とす (= 雑魚に使ってしまわないよう、 予告ではなくボスが出てから)
  */
 export const EASY_STAGES = Object.freeze([
-  // SPEC-149: 敵の数は 1/3 (= 湧きの間隔 ×3)。 ステージ 1 は動かなくても倒れない、 ステージ 2 は動かないと倒れる
-  { bossAtMs: 15000, warnMs: 4000,  shopTimesMs: [10000],            spawnIntervalMs: 960,  enemyHpMul: 0.5, enemyDmgMul: 0.25, bossHpMul: 0.003, bossDmgMul: 0.25, chestTimesMs: [5000],        rareAtMs: null, missionAtMs: null, thunderAtBoss: false },
-  { bossAtMs: 30000, warnMs: 5000,  shopTimesMs: [15000],            spawnIntervalMs: 1140, enemyHpMul: 1.0, enemyDmgMul: 1.2, bossHpMul: 0.008, bossDmgMul: 0.4, chestTimesMs: [10000],       rareAtMs: 5000, missionAtMs: 8000, missionDurS: 15, thunderAtBoss: false },
-  // ステージ 3 は負ける設計なので 1/2 (= 1/3 だと根なしでも通ってしまった)
-  { bossAtMs: 45000, warnMs: 10000, shopTimesMs: [15000, 30000],     spawnIntervalMs: 570,  enemyHpMul: 1.6, enemyDmgMul: 2.2, bossHpMul: 0.016, bossDmgMul: 0.7, chestTimesMs: [10000, 30000], rareAtMs: null, missionAtMs: null, thunderAtBoss: true },
+  // SPEC-149: 敵の数は 1/3 (= 湧きの間隔 ×3)。 ステージ 1 は動かなくても倒れない
+  { bossAtMs: 15000, warnMs: 4000,  shopTimesMs: [10000],  spawnIntervalMs: 960, enemyHpMul: 0.5, enemyDmgMul: 0.25, bossHpMul: 0.003, bossDmgMul: 0.25, chestTimesMs: [5000],  rareAtMs: null, missionAtMs: null, thunderAtBoss: false },
+  // SPEC-154: EASY は 2 ステージ。 ステージ 2 は負ける設計 (= 根を取ってから復活して勝つ)。 レアとミッションもここで必ず体験する
+  { bossAtMs: 30000, warnMs: 5000,  shopTimesMs: [15000],  spawnIntervalMs: 570, enemyHpMul: 1.6, enemyDmgMul: 2.2,  bossHpMul: 0.016, bossDmgMul: 0.7,  chestTimesMs: [10000], rareAtMs: 5000, missionAtMs: 8000, missionDurS: 15, thunderAtBoss: true },
 ]);
 
 /** レッスンの番号 (= 出す順。 文は data/i18n/ui.json の lesson.<番号>、 ボイスは lesson.<番号>) */
 export const LESSON_KEYS = Object.freeze([
   "s1.move", "s1.ce", "s1.shop", "s1.boss", "s1.clear",
   "s2.start", "s2.rare", "s2.gift", "s2.mission", "s2.reward", "s2.boss",
-  "s3.start", "s3.lose", "s3.root", "s3.thunder", "s3.clear",
+  "s2.lose", "s2.root", "s2.thunder", "s2.clear",
 ]);
+
+/** SPEC-154: ステージの数 (= EASY は 2、 ほかは STAGE_TABLE) */
+export function stageCount() {
+  return isEasy() ? EASY_STAGES.length : STAGE_TABLE.length;
+}
 
 export function isEasy() {
   return !!state.easyMode;

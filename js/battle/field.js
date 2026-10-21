@@ -232,7 +232,7 @@ export function applyItem(kind) {
     robotOn(robotSec());   // SPEC-140
   } else if (kind === "thunder") {
     thunderStrike();   // SPEC-063
-    if (easyStage() && (state.currentStageIdx ?? 0) === 2) showLesson("s3.thunder");   // SPEC-147
+    if (easyStage() && (state.currentStageIdx ?? 0) === 2) showLesson("s2.thunder");   // SPEC-147
   } else if (kind === "magnet") {
     // 落ちている CE を全部吸い寄せる (= gems.js が毎フレーム近づける)
     for (const g of b.gems) g.magnet = true;

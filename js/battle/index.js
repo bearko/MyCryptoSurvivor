@@ -56,7 +56,7 @@ import { resetSignature, tickSignature } from "./signature.js";   // SPEC-100
 import { tickLLExtras } from "./ll.js";   // SPEC-101
 import { naviSay, naviLines } from "../navi.js";
 import { clearNaviTipQueue } from "../navi-tips.js";
-import { isEasy, easyStage, easyHeroMul } from "../easy.js";   // SPEC-147
+import { isEasy, easyStage, easyHeroMul, stageCount } from "../easy.js";   // SPEC-147 / SPEC-154
 import { newRunStats, tickRunStats } from "./run-stats.js";   // SPEC-148
 import { tickLessons, clearLessons, showLesson } from "../lesson.js";   // SPEC-147
 import { clearBossChest } from "./boss-chest.js";   // SPEC-153
@@ -283,7 +283,7 @@ function _showStageIntro() {
   _introTimer = setTimeout(() => el.classList.add("hidden"), 2300);
   // SPEC-056: マインちゃんがステージを告げる (= 戦闘では押せない。 言い終えると引っこむ)
   naviSay(naviLines("stage", {
-    stageIdx: idx, stageCount: STAGE_TABLE.length, rta: !!state.rtaMode,
+    stageIdx: idx, stageCount: stageCount(), rta: !!state.rtaMode,   // SPEC-154
     stageName: stage ? t(stage.nameKey, stage.nameKey) : "",
     bossSec: easyStage() ? Math.round(easyStage().bossAtMs / 1000) : null,   // SPEC-153
   }), { place: "battle", autoHideMs: 1600, top: _commTop() });

@@ -770,7 +770,7 @@ function unlock(n) {
   if (!spend(r.cost)) return;
   setNodeRank(n.id, r.rank);
   _bought += 1;   // SPEC-146
-  if (n.kind === "root" && isEasy()) showLesson("s3.root");   // SPEC-147: 覚醒
+  if (n.kind === "root" && isEasy()) showLesson("s2.root");   // SPEC-147: 覚醒
   const burst = n.kind === "root";
   playSe(SFX.LEVEL_UP, 0, 0.6);
   notice(r.rank > 1 ? tpl(t("tree.upgraded", "「{name}」Lv {lv}！"), { name: nameOf(n), lv: r.rank }) : tpl(t("tree.bought", "「{name}」を解放！"), { name: nameOf(n) }), "good");

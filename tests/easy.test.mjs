@@ -12,9 +12,9 @@ const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), "utf8");
 const ui = JSON.parse(read("data/i18n/ui.json"));
 const store = () => { const m = new Map(); return { getItem: (k) => m.get(k) ?? null, setItem: (k, v) => m.set(k, v), removeItem: (k) => m.delete(k), map: m }; };
 
-test("ステージの作り: ボスは 0:15 / 0:30 / 0:45、 ステージ 2 にレアとミッション、 ステージ 3 の予告で雷鼓。 ショップはステージ 1 から", () => {
-  assert.deepEqual(EASY_STAGES.map((s) => s.bossAtMs), [15000, 30000, 45000]);
-  assert.deepEqual(EASY_STAGES.map((s) => s.shopTimesMs), [[10000], [15000], [15000, 30000]]);   // SPEC-152: 開幕の店は出さない
+test("ステージの作り: ボスは 0:15 / 0:30、 ステージ 2 にレアとミッション、 ボスが出たら雷鼓。 ショップはステージ 1 から (= SPEC-154: 2 ステージ)", () => {
+  assert.deepEqual(EASY_STAGES.map((s) => s.bossAtMs), [15000, 30000]);
+  assert.deepEqual(EASY_STAGES.map((s) => s.shopTimesMs), [[10000], [15000]]);   // SPEC-152: 開幕の店は出さない
   for (const s of EASY_STAGES) {
     assert.ok(s.warnMs < s.bossAtMs);
     for (const sh of s.shopTimesMs) assert.ok(sh < s.bossAtMs - s.warnMs, "店はボスの予告より前");
@@ -23,9 +23,10 @@ test("ステージの作り: ボスは 0:15 / 0:30 / 0:45、 ステージ 2 に�
   }
   assert.equal(EASY_STAGES[1].rareAtMs, 5000); assert.equal(EASY_STAGES[1].missionAtMs, 8000);
   assert.equal(EASY_STAGES[0].rareAtMs, null); assert.equal(EASY_STAGES[0].missionAtMs, null);
-  assert.equal(EASY_STAGES[2].thunderAtBoss, true);
+  assert.equal(EASY_STAGES.length, 2, "SPEC-154: EASY は 2 ステージ");
+  assert.equal(EASY_STAGES[1].thunderAtBoss, true);
   assert.match(read("js/battle/field.js"), /ez\?\.thunderAtBoss && !b\.easyThunderDropped && b\.bossSpawned/, "雷鼓はボスが出てから");
-  assert.ok(EASY_STAGES[2].enemyHpMul >= 1.5 && EASY_STAGES[2].enemyDmgMul >= 1.5, "ステージ 3 は負ける設計");
+  assert.ok(EASY_STAGES[1].enemyHpMul >= 1.5 && EASY_STAGES[1].enemyDmgMul >= 1.5, "ステージ 2 は負ける設計");
   assert.ok(EASY_STAGES[1].missionAtMs + EASY_STAGES[1].missionDurS * 1000 <= EASY_STAGES[1].bossAtMs - EASY_STAGES[1].warnMs, "ミッションはボスの予告の前に終わる");
 });
 
@@ -38,7 +39,7 @@ test("ヒーローは根を取るまで弱い (= EASY だけ)。 EASY は T0 の
 });
 
 test("レッスンは 16 本で文がある (ja / en)。 見たものは覚える・番号ごとの出す順", () => {
-  assert.equal(LESSON_KEYS.length, 16);
+  assert.equal(LESSON_KEYS.length, 15);   // SPEC-154: 2 ステージ
   for (const k of LESSON_KEYS) assert.ok(ui[`lesson.${k}`]?.ja && ui[`lesson.${k}`]?.en, k);
   const st = store();
   assert.deepEqual([...loadLessons(st)], []);
@@ -56,8 +57,8 @@ test("レッスンは 16 本で文がある (ja / en)。 見たものは覚え�
   assert.equal(at({ elapsedMs: 10000, kills: 5 }), "s1.boss"); seen.add("s1.boss");
   assert.equal(at({ elapsedMs: 14000, kills: 50 }), null);
   assert.equal(timedLesson({ stageIdx: 1, elapsedMs: 0, shopAtMs: 0, bossWarnAtMs: 25000, kills: 0, seen }), "s2.start");
-  assert.equal(timedLesson({ stageIdx: 2, elapsedMs: 0, shopAtMs: 0, bossWarnAtMs: 35000, kills: 0, seen }), "s3.start");
-  assert.equal(read("docs/voice/script-lessons.csv").replace(/^\uFEFF/, "").trim().split("\n").length, 16, "作者が録る台本 (= 1 列)");
+  assert.equal(timedLesson({ stageIdx: 1, elapsedMs: 0, shopAtMs: 0, bossWarnAtMs: 25000, kills: 0, seen }), "s2.start");
+  assert.equal(read("docs/voice/script-lessons.csv").replace(/^\uFEFF/, "").trim().split("\n").length, 15, "作者が録る台本 (= 1 列)");
 });
 
 test("クリアの記録と、 つなぎ (= 共通基盤に送らない・ロック・NORMAL へ・レッスンの出どころ)", () => {
@@ -73,9 +74,9 @@ test("クリアの記録と、 つなぎ (= 共通基盤に送らない・ロッ
   assert.match(read("js/battle/index.js"), /heroDmgMul\(hero\) \* ezMul/);
   assert.match(read("js/battle/hurt.js"), /easyStage\(\)\?\.bossDmgMul \?\? 1/);
   const html = read("index.html");
-  for (const id of ["modeCardEasy", "btnModeEasy", "modeCardNormalLock", "lessonModal", "lessonNext", "activityReportToNormal", "stageTransitionTreeLock"]) assert.ok(html.includes(`id="${id}"`), id);
+  for (const id of ["modeCardEasy", "btnModeEasy", "modeCardNormalLock", "activityReportToNormal", "stageTransitionTreeLock"]) assert.ok(html.includes(`id="${id}"`), id);
   for (const k of ["mode.easyDesc", "mode.startEasy", "mode.lockedNormal", "navi.mode.easy", "tree.lockedEasy", "report.toNormal", "lesson.next"]) assert.ok(ui[k]?.ja && ui[k]?.en, k);
   // レッスンの出どころ (= 時刻で出すもの以外)
   const src = ["js/battle/enemies.js", "js/battle/magic-cards.js", "js/battle/missions.js", "js/battle/field.js", "js/battle/stage-transition.js", "js/battle/gameover.js", "js/skill-tree.js", "js/battle/activity-report.js"].map(read).join("\n");
-  for (const k of ["s2.rare", "s2.gift", "s2.mission", "s2.reward", "s3.thunder", "s1.clear", "s3.lose", "s3.root", "s3.clear"]) assert.ok(src.includes(`showLesson("${k}")`), k);
+  for (const k of ["s2.rare", "s2.gift", "s2.mission", "s2.reward", "s2.thunder", "s1.clear", "s2.lose", "s2.root", "s2.clear"]) assert.ok(src.includes(`showLesson("${k}")`), k);
 });

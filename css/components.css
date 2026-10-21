@@ -2118,7 +2118,8 @@ a.title-screen__next[href]:hover { border-color: var(--accent); }
 .boss-chest--open .boss-chest__img { animation: boss-chest-burst 0.6s ease-out both; }
 .boss-chest__got { display: flex; align-items: center; gap: 0.4rem; font-size: 1.1rem; color: #fff; animation: boss-chest-got 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.2) both; }
 .boss-chest__got.hidden { display: none; }
-.boss-chest__dust { width: 32px; height: 32px; image-rendering: pixelated; }
+.boss-chest__dust { display: none; }   /* SPEC-154: 大きい絵のほうがダストになる */
+.boss-chest__img--dust { image-rendering: auto; animation: boss-chest-got 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.2) both !important; }
 .boss-chest__n { font-size: 2rem; font-weight: 900; color: #ffe17a; text-shadow: 0 0 10px rgba(255, 215, 120, 0.9); }
 .boss-chest__label { color: #f6e2a0; font-weight: 700; }
 .boss-chest__next { min-width: 160px; }
@@ -2128,3 +2129,18 @@ a.title-screen__next[href]:hover { border-color: var(--accent); }
 @keyframes boss-chest-burst { 0% { transform: scale(1); filter: brightness(1); } 30% { transform: scale(1.25); filter: brightness(2.2) drop-shadow(0 0 30px #fff); } 100% { transform: scale(1.05); filter: brightness(1.1) drop-shadow(0 0 18px rgba(255, 215, 120, 0.9)); } }
 @keyframes boss-chest-got { from { transform: translateY(10px) scale(0.6); opacity: 0; } to { transform: none; opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .boss-chest__img, .boss-chest--in .boss-chest__img, .boss-chest--open .boss-chest__img, .boss-chest__got { animation: none; } }
+
+/* ============================================================
+   SPEC-154: レッスンのカーソル (= 説明している相手に輪と指を当てる。 押せない)
+   ============================================================ */
+.lesson-cursor { position: fixed; left: 0; top: 0; width: 0; height: 0; pointer-events: none; z-index: calc(var(--z-help) + 1); }
+.lesson-cursor.hidden { display: none !important; }
+.lesson-cursor__ring {
+  position: absolute; left: 0; top: 0; width: var(--w, 56px); height: var(--h, 56px); transform: translate(-50%, -50%);
+  border: 3px solid #ffe17a; border-radius: 14px; box-shadow: 0 0 14px rgba(255, 215, 120, 0.9), inset 0 0 10px rgba(255, 215, 120, 0.5);
+  animation: lesson-ring 1s ease-in-out infinite;
+}
+.lesson-cursor__hand { position: absolute; left: 0; top: 0; transform: translate(-50%, calc(var(--h, 56px) / 2 + 2px)); font-size: 28px; line-height: 1; filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.6)); animation: lesson-hand 0.8s ease-in-out infinite; }
+@keyframes lesson-ring { 0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; } 50% { transform: translate(-50%, -50%) scale(1.12); opacity: 0.7; } }
+@keyframes lesson-hand { 0%, 100% { margin-top: 0; } 50% { margin-top: 6px; } }
+.lesson-cursor--still .lesson-cursor__ring, .lesson-cursor--still .lesson-cursor__hand { animation: none; }

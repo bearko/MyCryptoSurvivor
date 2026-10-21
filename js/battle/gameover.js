@@ -28,7 +28,7 @@ import { grantRunRewards, runDust, getMeta } from "../meta.js";
 import { renderRewards, renderGumBreakdown } from "../meta-ui.js";
 import { perk } from "../perks.js";   // SPEC-090c
 import { markPlayed } from "../played.js";
-import { isEasy } from "../easy.js";   // SPEC-147
+import { isEasy, stageCount } from "../easy.js";   // SPEC-147 / SPEC-154
 import { showLesson } from "../lesson.js";   // SPEC-147
 import { owns } from "../skill-logic.js";   // SPEC-147
 import { ROOT_ID } from "../skill-data.js";   // SPEC-147
@@ -216,7 +216,7 @@ async function _reviveRain() {
 function sayOnLose(reason, modal) {
   modal?.classList.remove("gameover-modal--navi");
   if (reason === "clear") return;
-  if (isEasy()) { showLesson("s3.lose"); return; }   // SPEC-147: 説明はレッスンで
+  if (isEasy()) { showLesson("s2.lose"); return; }   // SPEC-147: 説明はレッスンで
   // SPEC-151: 粒子の演出のときは、 全身のマインちゃんが「復活させてあげる」をもう言っているので、 帯では 2 行目だけ
   const lines = state.battle.heroDissolved ? [] : naviLines("revive");   // SPEC-150
   if (!state.rtaMode) {
@@ -430,7 +430,7 @@ function _renderGameOverModal() {
     const n = (state.currentStageIdx ?? 0) + 1;
     const cur = STAGE_TABLE[n - 1];
     const line = tpl(t(stats.reason === "clear" ? "result.stageOf" : "result.fellAt", "Stage {n} / {total}"),
-                     { n: String(n), total: String(STAGE_TABLE.length) });
+                     { n: String(n), total: String(stageCount()) });   // SPEC-154
     stageEl.textContent = cur ? `${line} — ${t(cur.nameKey, cur.nameKey)}` : line;
   }
 

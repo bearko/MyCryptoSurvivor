@@ -53,7 +53,7 @@ export const ADDED_3 = ["shop.intro", "tree.first"];
 export const LESSONS = [
   "lesson.s1.move", "lesson.s1.ce", "lesson.s1.shop", "lesson.s1.boss", "lesson.s1.clear",
   "lesson.s2.start", "lesson.s2.rare", "lesson.s2.gift", "lesson.s2.mission", "lesson.s2.reward", "lesson.s2.boss",
-  "lesson.s3.start", "lesson.s3.lose", "lesson.s3.root", "lesson.s3.thunder", "lesson.s3.clear",
+  "lesson.s2.lose", "lesson.s2.root", "lesson.s2.thunder", "lesson.s2.clear",
 ];
 
 const OUT_DIR = "assets/voice/mine";

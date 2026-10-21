@@ -61,6 +61,7 @@ export function dropBossChest() {
   el.querySelector(".boss-chest__next").classList.add("hidden");
   el.querySelector(".boss-chest__next").textContent = t("chest.boss.next", "つぎへ ▶");
   el.classList.remove("hidden", "boss-chest--open", "boss-chest--in");
+  const im = el.querySelector(".boss-chest__img"); im.src = img(`Image/Extensions/${CHEST_EXT_ID}.png`); im.classList.remove("boss-chest__img--dust");
   void el.offsetWidth;
   el.classList.add("boss-chest--in");
   playSe(SFX.LEVEL_UP, 0, 0.5);   // open_treasure.mp3 (= 落ちてくる音)
@@ -78,6 +79,8 @@ function _open() {
   b.bossChestDust = dust;
   const el = _el;
   el.classList.add("boss-chest--open");
+  // SPEC-154: 開いたら、 モアイの絵の場所にゴールドダストの絵 (= モアイが目立って下の小さなダストが見えにくかった)
+  setTimeout(() => { if (_phase === "open") { const im = el.querySelector(".boss-chest__img"); im.src = img(ICON_DUST); im.classList.add("boss-chest__img--dust"); } }, 320);
   const got = el.querySelector(".boss-chest__got");
   got.classList.remove("hidden");
   el.querySelector(".boss-chest__label").textContent = t("meta.dust", "ゴールドダスト");
