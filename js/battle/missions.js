@@ -307,7 +307,7 @@ function _closeOffer() {
   _offer = null;
   document.getElementById("missionOffer")?.classList.add("hidden");
   if (_naviShown) { _naviShown = false; naviHide(); }
-  resumeTime();   // SPEC-104: 閉じたら 3 秒数えてから
+  resumeTime();   // SPEC-104: 閉じたら Ready → Go! で
 }
 
 function _finish(res) {
@@ -348,7 +348,7 @@ export function pickReward(idx) {
   if (!choice) return;
   _reward = null;
   document.getElementById("missionReward")?.classList.add("hidden");
-  resumeTime();   // SPEC-104: 閉じたら 3 秒数えてから
+  resumeTime();   // SPEC-104: 閉じたら Ready → Go! で
   applyReward(choice, mission);
   playSe(SFX.LEVEL_UP, 100, 0.45);
 }

@@ -340,12 +340,26 @@
   -webkit-text-stroke: 3px #1f6f9a;
   text-shadow: 0 0 22px rgba(86, 204, 242, 0.8), 0 6px 0 rgba(0, 0, 0, 0.5);
 }
-.resume-countdown--tick .resume-countdown__num { animation: resume-count-tick 1000ms var(--ease-out) both; }
-@keyframes resume-count-tick {
-  0%   { opacity: 0; scale: 1.7; }
-  16%  { opacity: 1; scale: 1; }
-  80%  { opacity: 1; scale: 1; }
-  100% { opacity: 0.2; scale: 0.9; }
+/* SPEC-142: Ready は小さめに入ってきて、 Go! は大きく弾けて消える */
+.resume-countdown__num { font-size: clamp(3rem, 15vw, 5rem); letter-spacing: 0.04em; }
+.resume-countdown--tick .resume-countdown__num { animation: resume-ready-in 260ms var(--ease-out) both; }
+.resume-countdown--go { background: none; }
+.resume-countdown--go .resume-countdown__num {
+  font-size: clamp(4rem, 20vw, 6.8rem);
+  color: #ffe08a;
+  -webkit-text-stroke: 3px #9a5b10;
+  text-shadow: 0 0 24px rgba(255, 196, 64, 0.85), 0 6px 0 rgba(0, 0, 0, 0.5);
+}
+.resume-countdown--go.resume-countdown--tick .resume-countdown__num { animation: resume-go-out 500ms var(--ease-out) both; }
+@keyframes resume-ready-in {
+  from { opacity: 0; scale: 0.7; }
+  to   { opacity: 1; scale: 1; }
+}
+@keyframes resume-go-out {
+  0%   { opacity: 0; scale: 1.6; }
+  25%  { opacity: 1; scale: 1; }
+  70%  { opacity: 1; scale: 1.05; }
+  100% { opacity: 0; scale: 1.25; }
 }
 :root[data-reduce-fx] .resume-countdown--tick .resume-countdown__num { animation: none; }
 @media (prefers-reduced-motion: reduce) { .resume-countdown--tick .resume-countdown__num { animation: none; } }
