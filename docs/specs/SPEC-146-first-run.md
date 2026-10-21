@@ -2,7 +2,7 @@
 id: SPEC-146
 title: First Run for New Players — Threat Stays at T0, Level-Ups Instead of the Shop, and "Try Again" Straight From the Skill Tree After a Defeat
 status: Done
-pr: TBD
+pr: 184
 phase: v1.6 Onboarding
 kind: Fixed
 ---
