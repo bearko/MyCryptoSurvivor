@@ -81,6 +81,7 @@ export function tickEnemies(dt, nowMs) {
   if (!b.bossSpawned && b.stageElapsedMs >= bossAt - warnLead) {
     // SPEC-153: マインちゃんの警告 (= index.js が置く)。 SPEC-154: この if は毎コマ通るので、 新しく予告したときだけ (= 毎コマ呼ぶと吹き出しが空のまま止まっていた)
     if (fxBossIncoming()) _bossIncomingHook?.();
+    if (b.fx?.bossWarned && !b._storyWarnSaid) { b._storyWarnSaid = true; b.story?.events?.push("bossWarn"); }   // SPEC-165: 予告の一言 (= 1 度だけ)
     // SPEC-061: 出るまでの残りを数える (= ゲームの中の時間)
     fxBossCountdown(bossAt - b.stageElapsedMs, warnLead);
   }
@@ -194,12 +195,12 @@ export function tickEnemies(dt, nowMs) {
   if (!b.bossSpawned) _tickCrossers(tier, cap);
 
   // SPEC-062: 撃ってくる敵 (= ステージごとに、 決まった時刻から一定の間隔で。 同時に出ている数に上限)
-  const sh = stage.shooters;
+  const sh = ez?.shooters ?? stage.shooters;   // SPEC-165: ストーリーはレシピの表
   if (sh && storyAllows("shooters") && !b.bossSpawned && b.stageElapsedMs >= sh.fromMs && b.enemies.length < cap &&
       nowMs - (b.lastShooterSpawnMs ?? 0) >= sh.everyMs / Math.max(0.1, absSpawnMul)) {
     let alive = 0;
     for (const e of b.enemies) if (e.behavior === "shooter") alive++;
-    if (alive < sh.max) spawnEnemyAtRing(sh.ids[Math.floor(Math.random() * sh.ids.length)]);
+    if (alive < sh.max) { spawnEnemyAtRing(sh.ids[Math.floor(Math.random() * sh.ids.length)]); b.story?.events?.push("shooter"); }   // SPEC-165: 初めての一言
     b.lastShooterSpawnMs = nowMs;
   }
 

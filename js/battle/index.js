@@ -188,7 +188,7 @@ export function startBattle(hero) {
   b.lastRareSpawnMs    = performance.now();
   // SPEC-162: 装備はステージをまたいで残る (= ステージ 1 だけ空から。 同じステージのやり直しは入ったときの装備に戻す)
   carryOwnedExtensions(state.currentStageIdx ?? 0);
-  if (isStory()) state.ownedExtensions = (storyStage()?.startExt ?? []).map((o) => ({ ...o }));   // SPEC-165: 開始装備はレシピが決める
+  if (isStory() && storyStage()?.startExt?.length) state.ownedExtensions = storyStage().startExt.map((o) => ({ ...o }));   // SPEC-165: 開始装備はレシピが決める (= 空ならヒーローの初期武器)
   state.killCount       = 0;                    // SPEC-009: 撃破カウンタ
   state.lastRunStats    = null;                 // SPEC-009: snapshot
   resetBuffs();                                 // SPEC-011: 強化系列の効果リセット (= 引き継いだ強化は下で掛け直す)
@@ -259,6 +259,7 @@ export function startBattle(hero) {
   _showStageIntro();     // SPEC-046: 「STAGE n / ステージ名」の帯
   // SPEC-153: ボスの予告が出たら、 マインちゃんが「中央の赤いエリアにボスが来るよ！」 (= EASY のステージ 1 ではレッスンが同じことを言う)
   setBossIncomingHook(() => {
+    if (isStory()) return;   // SPEC-165: ストーリーはレシピの一言 (= bossWarn) が言う
     if (showLesson("s1.boss")) return;
     naviSay(naviLines("bossWarn"), { place: "battle", autoHideMs: 1800, top: _commTop() });
   });

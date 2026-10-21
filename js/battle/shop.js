@@ -32,7 +32,7 @@ import {
 import { pushDamageNumber } from "./damage.js";
 import { canHeal } from "./missions.js";   // SPEC-112
 import { easyStage } from "../easy.js";   // SPEC-147
-import { storyStage, storyAllows } from "../story.js";   // SPEC-165
+import { storyStage, storyAllows, isStory, bondRewards, loadStory } from "../story.js";   // SPEC-165
 import { storySay } from "./story-battle.js";   // SPEC-165
 export { isShopMode, shopTimesMs, shopProgress } from "./shop-logic.js";
 
@@ -68,6 +68,7 @@ export function resetShopForStage(stageIdx) {
   }
   s.locked = [];       // 装備がステージごとなので、 取り置きもステージで外れる
   s.nextIdx = 0;
+  if (isStory()) s.gifts = bondRewards(loadStory()).gifts;   // SPEC-165: 絆のギフト券 (= ストーリーの各ステージを、 その枚数を持って始める)
   // ステージ 2・3 は開始の前の店がマルコ・ポーロ。 ステージ 1 は乱数 (= 帯を歩いてくる人を先に決めておく)
   s.nextMerchant = idx > 0 ? OPENING_MERCHANT : pickMerchant(s.prevMerchant).id;
   s.freeRerolls = SHOP_FREE_REROLLS + perk("reroll");
@@ -86,6 +87,7 @@ export function addShopCe(n) {
 export function addShopGift(n = 1) {
   if (!state.shop || n <= 0) return;
   state.shop.gifts += n;
+  state.battle?.story?.events?.push("item:gift");   // SPEC-165: ギフト券を手に入れた一言
 }
 
 /** 毎フレーム (= battle/index.js の _step)。 時刻になったら店を開く */
@@ -505,6 +507,7 @@ export function renderShop() {
   const m = _merchant;
   const sr = _storyShop();   // SPEC-165
   modal.classList.toggle("shop-modal--story", !!sr?.only);
+  modal.classList.toggle("shop-modal--story-basic", isStory() && !storyAllows("reroll"));   // SPEC-165: リロール・お断り・固有スキルは W5 で開く
   const face = document.getElementById("shopMerchantImg");
   if (face) { face.src = img(`Image/Enemies/${m.enemyId}.png`); face.alt = t(`shop.m.${m.id}.name`, m.id); }
   _text("shopMerchantName", t(`shop.m.${m.id}.name`, m.id));

@@ -38,6 +38,8 @@
 /* 店の only (= 品を固定。 リロール・ギフト・お断り・取り置き・固有スキルを出さない) */
 .shop-modal--story #shopReroll, .shop-modal--story #shopGiftFirstWrap, .shop-modal--story #shopBans, .shop-modal--story #shopBansLeft,
 .shop-modal--story #shopWalletBans, .shop-modal--story #shopSig, .shop-modal--story .shop-corner, .shop-modal--story #shopSub, .shop-modal--story #shopIntro { display: none !important; }
+.shop-modal--story-basic #shopReroll, .shop-modal--story-basic #shopBans, .shop-modal--story-basic #shopBansLeft, .shop-modal--story-basic #shopWalletBans, .shop-modal--story-basic #shopSig,
+.shop-modal--story-basic .shop-corner, .shop-modal--story-basic #shopSub { display: none !important; }   /* 取り置き・お断り・「あと n 回でボス」も W5 まで */
 .shop-modal--story .shop-card { box-shadow: 0 0 18px rgba(255, 225, 122, 0.75); }
 .shop-modal--story #shopLeave[disabled] { opacity: 0.4; cursor: not-allowed; }
 

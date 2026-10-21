@@ -78,7 +78,7 @@ export function tickField(_dt) {
     spawnItem("thunder", b.player.x + 70, b.player.y - 40);
   }
   // SPEC-081: ボス戦の宝箱 (= 枠の中に、 ボスが出て少ししてから一定の間隔で)
-  if (b.bossSpawned && !b.bossDefeated && b.arena) {
+  if (b.bossSpawned && !b.bossDefeated && b.arena && storyAllows("bossChest")) {   // SPEC-165
     if (b.bossChestAtMs == null) b.bossChestAtMs = t + bossChestCfg().firstMs;
     if (t >= b.bossChestAtMs) {
       b.bossChestAtMs = t + bossChestCfg().everyMs;
