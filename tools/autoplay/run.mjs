@@ -110,14 +110,27 @@ await p.evaluate(({ K, BUY }) => {
       const st = s.run.stats ?? {};
       A.samples.push({ stage: idx + 1, t: Math.round(el / 1000), kills: s.killCount | 0, ce: Math.round(s.shop?.ce ?? 0), enemies: b.enemies.filter((e) => !e.isProp).length, hp: Math.round(100 * s.stats.hp / Math.max(1, s.statsMax.hp)), dealt: sum(st.dealt), taken: Math.round(sum(st.taken)), owned: (s.ownedExtensions ?? []).map((o) => `${o.extId}:${o.level}`).join(" "), lv: s.level, sig: s.shop?.sigLevel ?? 1 });
     }
-    // 動き: 近い敵から逃げる。 弾からも。 CE を拾いに行く。 真ん中へ戻る
-    const P = b.player; let vx = 0, vy = 0;
-    for (const e of b.enemies ?? []) { if (e.isProp) continue; const dx = P.x - e.x, dy = P.y - e.y; const d = Math.hypot(dx, dy) || 1; const R = 200 + (e.r ?? 10); if (d < R) { const w = (R - d) / R; const m = e.isBoss ? 3 : 1; vx += dx / d * w * w * m; vy += dy / d * w * w * m; } }
-    for (const q of [...(b.enemyShots ?? []), ...(b.bossProjectiles ?? [])]) { const dx = P.x - q.x, dy = P.y - q.y; const d = Math.hypot(dx, dy) || 1; if (d < 120) { const w = (120 - d) / 120; vx += dx / d * w * 1.5; vy += dy / d * w * 1.5; } }
-    let best = null, bd = 1e9; for (const g of [...(b.gems ?? []), ...(b.items ?? []), ...(b.magicCards ?? [])]) { const d = Math.hypot(g.x - P.x, g.y - P.y); if (d < bd) { bd = d; best = g; } }
-    if (best && bd < 400 && Math.hypot(vx, vy) < 0.5) { vx += (best.x - P.x) / bd * 0.7; vy += (best.y - P.y) / bd * 0.7; }
-    const dc = Math.hypot(P.x, P.y); if (dc > 500) { vx += -P.x / dc * 0.5; vy += -P.y / dc * 0.5; }
-    setKey("KeyD", vx > 0.1); setKey("KeyA", vx < -0.1); setKey("KeyS", vy > 0.1); setKey("KeyW", vy < -0.1);
+    // 動き: 12 方向それぞれの「危険」 (= その向きにいる敵と弾の近さ) を足し、 いちばん安全な向きへ。 近くに敵がいなければ CE を拾い、 端に寄らない
+    //   (= 以前はベクトルの和だったので、 囲まれると打ち消して止まってしまい、 人より早く倒れていた)
+    const P = b.player;
+    const N = 12, danger = new Array(N).fill(0);
+    let near = 0;
+    const add = (x, y, R, m) => { const dx = x - P.x, dy = y - P.y; const d = Math.hypot(dx, dy) || 1; if (d > R) return; near++; const w = ((R - d) / R) ** 2 * m; const a = Math.atan2(dy, dx); for (let i = 0; i < N; i++) { const ang = (i / N) * Math.PI * 2; const cos = Math.cos(ang - a); danger[i] += w * Math.max(0, cos) ** 2 + w * 0.15; } };
+    for (const e of b.enemies ?? []) { if (e.isProp) continue; add(e.x, e.y, 260 + (e.r ?? 10), e.isBoss ? 4 : 1 + (e.r ?? 12) / 12); }
+    for (const q of [...(b.enemyShots ?? []), ...(b.bossProjectiles ?? [])]) add(q.x, q.y, 140, 1.5);
+    let vx = 0, vy = 0;
+    if (near > 0) {
+      // 端に寄る向きは少し嫌う。 真ん中から 500 を超えたら戻る向きを好む
+      const dc = Math.hypot(P.x, P.y);
+      let bi = 0, bv = Infinity;
+      for (let i = 0; i < N; i++) { const ang = (i / N) * Math.PI * 2; const nx = P.x + Math.cos(ang) * 120, ny = P.y + Math.sin(ang) * 120; const edge = Math.max(0, Math.abs(nx) - 400) + Math.max(0, Math.abs(ny) - 650); const v = danger[i] + edge * 0.02 + (dc > 500 ? (Math.hypot(nx, ny) - dc) * 0.004 : 0); if (v < bv) { bv = v; bi = i; } }
+      const ang = (bi / N) * Math.PI * 2; vx = Math.cos(ang); vy = Math.sin(ang);
+    } else {
+      let best = null, bd = 1e9; for (const g of [...(b.gems ?? []), ...(b.items ?? []), ...(b.magicCards ?? [])]) { const d = Math.hypot(g.x - P.x, g.y - P.y); if (d < bd) { bd = d; best = g; } }
+      if (best && bd < 500) { vx = (best.x - P.x) / bd; vy = (best.y - P.y) / bd; }
+      const dc = Math.hypot(P.x, P.y); if (dc > 500) { vx += -P.x / dc; vy += -P.y / dc; }
+    }
+    setKey("KeyD", vx > 0.3); setKey("KeyA", vx < -0.3); setKey("KeyS", vy > 0.3); setKey("KeyW", vy < -0.3);
     return { st: "play", idx, el };
   };
 }, { K, BUY });
@@ -132,7 +145,7 @@ while (true) {
   await tick(STEP_MS);
   const r = await p.evaluate(() => window.__auto.step());
   if (r.st === "play" || r.st === "paused") {
-    if (r.el > MAXSEC * 1000) { run.stages.push({ idx: r.idx, timeout: true }); break; }
+    if (r.el > MAXSEC * 1000) { const sn = await snapshot(); Object.assign(stageOf(r.idx), { timeout: true, sec: Math.round(r.el / 1000), ...sn }); run.result = "timeout"; run.samples = await p.evaluate(() => window.__auto.samples.splice(0)); run.gumAfter = sn.gum; runs.push(run); console.error(`[${LABEL}] run ${run.n}: timeout at stage ${r.idx + 1} ${Math.round(r.el / 1000)}s`); break; }
     guard = 0; continue;
   }
   if (r.st === "clear") {

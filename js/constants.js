@@ -415,8 +415,8 @@ export const STAGE_TABLE = [
     gimmick: "beads",    // SPEC-064: そろばんの珠
     // SPEC-078 → SPEC-163: 洪水はゆるく (= ×12 → ×5、 pow 2.5 → 1.8)。 2:00 の群れ 16 体で「どばーっ」と来て圧死していたので、
     //   群れは 2:30 から 10 体。 密度の目標も半分 (= 画面の 45%)。 装備が育つ速さ (= CE の収入) と同じ傾きで敵を増やす
-    flood: { fromMs: 40000, fullMs: 230000, maxMul: 4, packFromMs: 170000, packEveryMs: 15000, packSize: 8, pow: 1.8 },
-    density: { fromMs: 90000, fullMs: 230000, max: 0.35 },
+    flood: { fromMs: 40000, fullMs: 230000, maxMul: 4, packFromMs: 180000, packEveryMs: 20000, packSize: 6, pow: 1.8 },
+    density: { fromMs: 90000, fullMs: 230000, max: 0.3 },
     maxEnemies: 260,
   },
   {
