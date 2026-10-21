@@ -32,7 +32,8 @@ await p.addInitScript(({ gum, story }) => { try {
   localStorage.setItem("mcs.lessons", JSON.stringify(["s1.move", "s1.ce", "s1.shop", "s1.boss", "s1.clear", "s2.start", "s2.rare", "s2.gift", "s2.mission", "s2.reward", "s2.boss", "s2.lose", "s2.root", "s2.thunder", "s2.clear"]));
   localStorage.setItem("mcs.shareX", JSON.stringify({ claimed: true, skips: 0 }));
   localStorage.setItem("mcs.meta.v1", JSON.stringify({ gum, dust: 0, runs: 1, nodes: {} }));
-  if (story) localStorage.setItem("mcs.story", JSON.stringify({ cleared: story.cleared, best: {}, bonds: [] }));   // SPEC-165: その行まで開けておく
+  if (story) localStorage.setItem("mcs.story", JSON.stringify({ cleared: story.cleared, best: {}, bonds: story.cleared.includes("2-5") ? ["alexander", "lubu"] : story.cleared.includes("2-4") ? ["alexander"] : [] }));   // SPEC-165: その行まで開けておく
+  if (story?.cleared.includes("3-1")) localStorage.setItem("mcs.heroes.unlocked", JSON.stringify([4006]));   // 3-1 でビリーが仲間に
 } catch {} }, { gum: GUM, story: MODE === "story" ? { cleared: STORY_IDS.slice(0, STORY_IDS.indexOf(STAGE)) } : null });
 if (!REAL) await p.clock.install({ time: new Date("2026-10-21T00:00:00Z") });
 const tick = async (ms) => { if (REAL) await p.waitForTimeout(ms); else await p.clock.runFor(ms); };
@@ -111,6 +112,8 @@ await p.evaluate(({ K, BUY }) => {
     if (vis("missionReward")) { document.querySelector("#missionRewardChoices button")?.click(); return { st: "reward" }; }
     if (vis("levelUpModal")) { document.querySelector("#levelUpModal .levelup-card")?.click(); return { st: "levelup" }; }
     if (vis("bossChestModal")) { document.querySelector("#bossChestModal button, #bossChestModal .boss-chest__next")?.click(); document.getElementById("bossChestModal")?.click(); return { st: "chest" }; }
+    if (vis("heroSelectModal")) { const tiles = [...document.querySelectorAll("#heroSelectGrid .hero-tile")].filter((t) => !t.classList.contains("hero-tile--locked")); (tiles[tiles.length - 1] ?? tiles[0])?.click(); document.getElementById("heroSelectCta")?.click(); return { st: "hero" }; }   // SPEC-165: 3-2 (= 新しく仲間になった人を選ぶ)
+    if (vis("skillTreeScreen")) { const root = document.querySelector('.tnode[data-id="root"]'); if (root && !root.classList.contains("has")) { root.click(); root.click(); } document.querySelector("#skillTreeScreen .tree-go:not([disabled])")?.click(); return { st: "tree" }; }   // SPEC-165: 3-1 (= 根を取って「ステージへ」)
     if (vis("stageTransitionModal")) return { st: "clear", idx, el };
     if (vis("activityReportModal")) return { st: "allclear", idx, el };
     if (vis("gameOverModal")) return { st: "lose", idx, el };

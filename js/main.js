@@ -298,7 +298,7 @@ function setupHeroSelectModal() {
   });
 }
 
-function openHeroSelectModal() {
+export function openHeroSelectModal() {   // SPEC-165: ストーリーの 3-2 からも
   const modal = $("#heroSelectModal");
   if (!modal) return;
   pauseTime();

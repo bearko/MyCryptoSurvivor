@@ -13,10 +13,14 @@ import { startMenuBgm } from "./ui-sound.js";
 import { getHero } from "./heroes.js";
 import { img, REGULATION_NORMAL } from "./constants.js";
 import { LANDS, STORY_PLAN, STORY_MAP, loadStory, storyUnlocked, currentStoryId } from "./story.js";
+import { owns } from "./skill-logic.js";
+import { ROOT_ID } from "./skill-data.js";
+import { getMeta } from "./meta.js";
 import { newRunStats } from "./battle/run-stats.js";
 
 let _wired = false;
 let _onBack = null;
+let _treeDone = false;   // SPEC-165: 3-1 の木を通った (= 「ステージへ ▶」のあと)
 
 function _$(id) { return document.getElementById(id); }
 
@@ -86,13 +90,29 @@ export function renderStoryMap() {
 export async function startStoryStage(id) {
   const r = STORY_MAP[id];
   if (!r) return;
-  const hero = getHero(r.hero);
-  if (!hero) return;
+  // SPEC-165 3-1: 木を先に (= 根を取るまでほかを押せない。 「ステージへ ▶」で始める)
+  if (r.treeFirst && !owns(getMeta(), ROOT_ID) && !_treeDone) {
+    const T = await import("./skill-tree.js");
+    hideStoryMap();
+    T.openSkillTree({ go: () => { _treeDone = true; startStoryStage(id); } });
+    return;
+  }
+  _treeDone = false;
+  // ヒーロー: "select" = ヒーロー選択を開く (= 3-2 から) / "keep" = 前に選んだ人 / 数字 = 固定
+  const hero = r.hero === "select" ? null : getHero(r.hero === "keep" ? (state.ownedHero?.heroId ?? 10001) : r.hero);
+  if (r.hero !== "select" && !hero) return;
   state.regulation = REGULATION_NORMAL;
   state.rtaMode = false;
   state.easyMode = false;
   state.storyId = id;
   state.absolute = { spawnMul: 1, hpMul: 1, dmgMul: 1, speedMul: 1 };
+  if (!hero) {
+    // ヒーロー選択 (= 選んだら main.js の applyHeroPick が startBattle を呼ぶ。 storyId は残る)
+    const M = await import("./main.js");
+    startMenuBgm();
+    playWipe(() => { hideStoryMap(); document.getElementById("app")?.classList.remove("hidden"); M.openHeroSelectModal(); }, { label: `STORY // ${id}` });
+    return;
+  }
   state.ownedHero = { ...hero };
   state.currentStageIdx = 0;
   state.run.stages.length = 0;

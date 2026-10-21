@@ -32,7 +32,9 @@ export const HEAL_DROP_BELOW = 0.5;
 /**
  * レシピ (= 1 ステージ 1 行)
  *   id / world            : "1-2" とランド
- *   hero / startExt       : 固定のヒーローと開始装備 (= W1〜W2 は MCH ウォーリアー)
+ *   hero / startExt       : 固定のヒーローと開始装備 (= W1〜W2 は MCH ウォーリアー。 "select" = ヒーロー選択を開く / "keep" = 前に選んだ人)
+ *   treeFirst             : ステージの前にスキルツリーを開く (= 3-1。 根を取るまでほかを押せない)
+ *   shooters              : { fromMs, everyMs, max, ids } 撃つ敵 (= features.shooters のとき)
  *   clear                 : { kind: "kills", n } | { kind: "survive", sec } | { kind: "reach", points: [{ x, y }] } | { kind: "collect", n } | { kind: "boss" }
  *                           | { kind: "shadowSurvive", sec } | { kind: "shadowDefeat" } (= シャドーの試練。 §6)
  *   shadow                : { id, giver, mode: "survive" | "defeat", atMs, hp, dmg, speed, moves, aura: { spawnMul, speedMul } } (= battle/shadow.js)
@@ -143,6 +145,56 @@ export const STORY_STAGES = Object.freeze([
     showGum: true,
     lines: { intro: "story.2-5.intro", mid: [{ on: "shadow", key: "story.2-5.mid" }], clear: "story.2-5.clear" },
   },
+  // ---- W3 タンジェリン: 木・仲間・敵の種類・初の大型ボス (= 45〜90 秒) ----
+  {
+    id: "3-1", world: 3, hero: 10001, startExt: [{ extId: 10, level: 3 }, { extId: 2, level: 2 }, { extId: 1, level: 2 }],
+    treeFirst: true,
+    clear: { kind: "kills", n: 30 }, targetSec: 45,
+    spawn: { everyMs: 1000, pool: [101, 124], max: 8 }, enemyMul: { hp: 1.3, dmg: 0.5 },
+    features: { ce: true, tree: true },
+    showGum: true,
+    unlock: "hero:4006",   // クリアでビリー・ザ・キッドが仲間に (= 3-2 で選べる)
+    lines: { intro: "story.3-1.intro", mid: [{ on: "firstKill", key: "story.3-1.mid" }], clear: "story.3-1.clear" },
+  },
+  {
+    id: "3-2", world: 3, hero: "select", startExt: [],
+    clear: { kind: "kills", n: 40 }, targetSec: 60,
+    spawn: { everyMs: 950, pool: [101, 124, 134], max: 9 }, enemyMul: { hp: 1.3, dmg: 0.5 },
+    features: { ce: true, tree: true, shop: true },
+    shop: { atMs: [20000], offers: [], only: false, price: null, mustBuy: false },   // 選んだヒーローの店 (= ふつうの品ぞろえ)
+    showGum: true,
+    lines: { intro: "story.3-2.intro", mid: [{ on: "firstKill", key: "story.3-2.mid" }], clear: "story.3-2.clear" },
+  },
+  {
+    id: "3-3", world: 3, hero: "keep", startExt: [],
+    clear: { kind: "kills", n: 40 }, targetSec: 60,
+    spawn: { everyMs: 1000, pool: [101, 124, 134], max: 9 }, enemyMul: { hp: 1.3, dmg: 0.5 },
+    features: { ce: true, tree: true, shop: true, rare: true, magicCards: true },
+    rareAtMs: 6000,
+    shop: { atMs: [28000], offers: [], only: false, price: null, mustBuy: true },   // ギフト券で 1 品買うまで出られない (= 持っていれば ただ)
+    showGum: true,
+    lines: { intro: "story.3-3.intro", mid: [{ on: "item:gift", key: "story.3-3.mid" }, { on: "shopOpen", key: "story.3-3.shop" }], clear: "story.3-3.clear" },
+  },
+  {
+    id: "3-4", world: 3, hero: "keep", startExt: [],
+    clear: { kind: "survive", sec: 60 }, targetSec: 60,
+    spawn: { everyMs: 1200, pool: [101, 124], max: 8 }, enemyMul: { hp: 1.2, dmg: 0.5 },
+    features: { ce: true, tree: true, shooters: true },
+    shooters: { fromMs: 3000, everyMs: 7000, max: 3, ids: [166] },
+    showGum: true,
+    lines: { intro: "story.3-4.intro", mid: [{ on: "shooter", key: "story.3-4.mid" }], clear: "story.3-4.clear" },
+  },
+  {
+    id: "3-5", world: 3, hero: "keep", startExt: [],
+    clear: { kind: "boss" }, targetSec: 90,
+    spawn: { everyMs: 1200, pool: [101, 124, 134], max: 8 }, enemyMul: { hp: 1.3, dmg: 0.5 }, heroMul: { hp: 1.5 },
+    features: { ce: true, tree: true, shop: true, items: ["thunder", "heal"], bossChest: true },
+    shop: { atMs: [20000], offers: [], only: false, price: null, mustBuy: false },
+    heal: { below: 0.5 },
+    boss: { id: 171, atMs: 45000, warnMs: 8000, hpMul: 0.1, dmgMul: 0.4, thunder: true, thunderRatio: 0.5 },   // 1,200 HP (= W3 の装備の DPS 30〜60 で 20〜40 秒。 雷鼓で半分)
+    showGum: true,
+    lines: { intro: "story.3-5.intro", mid: [{ on: "bossWarn", key: "story.3-5.mid" }, { on: "item:thunder", key: "story.3-5.thunder" }], clear: "story.3-5.clear" },
+  },
 ]);
 
 export const STORY_MAP = Object.freeze(Object.fromEntries(STORY_STAGES.map((s) => [s.id, s])));
@@ -197,6 +249,8 @@ export function storyOverride(recipe) {
     thunderBossRatio: boss?.thunderRatio ?? undefined,
     pool: recipe.spawn?.pool ?? null,
     maxEnemies: recipe.spawn?.max ?? null,
+    bossId: boss?.id ?? null,
+    shooters: f.shooters ? (recipe.shooters ?? null) : null,
   };
 }
 

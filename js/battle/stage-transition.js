@@ -160,6 +160,7 @@ function _storyClear() {
   const r = storyStage();
   const snap = state.run.stages.find((s) => s.idx === (state.currentStageIdx ?? 0));
   markStoryCleared(r.id, { sec: Math.round((snap?.elapsedMs ?? state.battle.stageElapsedMs ?? 0) / 1000), kills: snap?.kills ?? state.killCount });
+  if (r.unlock === "hero:4006") import("../hero-unlock.js").then((H) => H.unlockEasyReward()).catch(() => {});   // SPEC-165: 3-1 でビリー・ザ・キッドが仲間に
   state.battle.gameOver = true;
   pauseTime();
   _wireOnce();
