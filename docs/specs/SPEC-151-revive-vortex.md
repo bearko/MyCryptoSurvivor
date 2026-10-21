@@ -2,7 +2,7 @@
 id: SPEC-151
 title: Revive v2 — Slow Damage SE Instead of the Lose Jingle, Pixels Gather Into a Spinning Spindle Vortex, Mine Appears Full-Body With the Golden Watch, Translucent Result Over the Vortex, Sink on Revive, Pixels Rain Down Into the Hero on the Stage; Lesson Voice No Longer Overlaps the Stage Call
 status: Done
-pr: TBD
+pr: 189
 phase: v1.7 Onboarding
 kind: Changed
 ---
