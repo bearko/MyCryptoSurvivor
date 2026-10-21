@@ -118,8 +118,10 @@ await p.evaluate(({ K, BUY }) => {
     const add = (x, y, R, m) => { const dx = x - P.x, dy = y - P.y; const d = Math.hypot(dx, dy) || 1; if (d > R) return; near++; const w = ((R - d) / R) ** 2 * m; const a = Math.atan2(dy, dx); for (let i = 0; i < N; i++) { const ang = (i / N) * Math.PI * 2; const cos = Math.cos(ang - a); danger[i] += w * Math.max(0, cos) ** 2 + w * 0.15; } };
     // ボス戦: 人はボスから逃げ続けず、 武器が届く距離 (= 射程のある武器なら 220、 近接だけなら 70) を保って戦う。 ボスそのものの危険は弾・叩きつけより軽く見る
     const boss = (b.enemies ?? []).find((e) => e.isBoss && !e.isProp);
-    const ranged = (s.ownedExtensions ?? []).some((o) => { const w = (b.weapons ?? []).find((x) => String(x.extId) === String(o.extId)); return (w?.range ?? 0) >= 300; }) || (b.weapons ?? []).some((w) => (w.range ?? 0) >= 300);
-    const ringD = ranged ? 220 : 70;
+    //   近接 (= 回る武器) が DPS の半分以上なら触れる距離 (70)、 そうでなければ射程のある武器が届く 220
+    let meleeDps = 0, rangedDps = 0;
+    for (const w of b.weapons ?? []) { const orbit = w.archetype === "orbit" || w.archetype === "orbitClose"; const d = orbit ? (w.bullets ?? 1) * w.dmg * 4 * 0.5 : (w.bullets ?? 1) * w.dmg / Math.max(0.1, (w.cdMs ?? 1000) / 1000); if (orbit) meleeDps += d; else rangedDps += d; }
+    const ringD = meleeDps >= rangedDps ? 70 : 220;
     for (const e of b.enemies ?? []) { if (e.isProp) continue; add(e.x, e.y, 260 + (e.r ?? 10), e.isBoss ? 1 : 1 + (e.r ?? 12) / 12); }
     for (const q of [...(b.enemyShots ?? []), ...(b.bossProjectiles ?? [])]) add(q.x, q.y, 140, 1.5);
     // ボスの型の予告 (= 人は赤い帯・赤い円を見て避ける): 突進の通り道と、 叩きつけの円を危険に足す

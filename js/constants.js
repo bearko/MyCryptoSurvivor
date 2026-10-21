@@ -440,9 +440,9 @@ export const STAGE_TABLE = [
     spawnIntervalMul:  1.1,
     shooters: { fromMs: 45000, everyMs: 7000, max: 6, ids: [166, 136] },   // SPEC-062
     gimmick: "punch",    // SPEC-064: パンチカード
-    // SPEC-078 → SPEC-163: 洪水 ×16 → ×7、 群れは 2:00 から 14 体、 密度は 1.45 → 0.7
-    flood: { fromMs: 30000, fullMs: 230000, maxMul: 7, packFromMs: 120000, packEveryMs: 12000, packSize: 14, pow: 1.8 },
-    density: { fromMs: 40000, fullMs: 230000, max: 0.7 },
+    // SPEC-078 → SPEC-163: 洪水 ×16 → ×7、 群れは 2:00 から 10 体 (15 秒ごと)、 密度は 1.45 → 0.6 (= 引き継いだ装備でも 3:00〜3:50 に 100〜150 体で圧死していたので、 v7 でここだけゆるめた)
+    flood: { fromMs: 30000, fullMs: 230000, maxMul: 7, packFromMs: 120000, packEveryMs: 15000, packSize: 10, pow: 1.8 },
+    density: { fromMs: 40000, fullMs: 230000, max: 0.6 },
     maxEnemies: 380,
   },
   {

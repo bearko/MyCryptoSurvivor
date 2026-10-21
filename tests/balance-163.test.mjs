@@ -10,12 +10,12 @@ const { NODE_MAP } = await import("../js/skill-data.js");
 const { weaponDps, spawnPerSec, enemyAvg, simStage, tierOf } = await import("../tools/sim/balance.mjs");
 const EXT = JSON.parse(read("../data/extensions.json")).extensions;
 
-test("ステージの湧き: 始まりはゆっくり (= 0.8 秒 × 1.4 / 1.1 / 0.9)、 洪水は ×4 / ×7 / ×9、 密度は 0.3 / 0.7 / 0.95。 HP は ×1 / ×2.2 / ×3.5", () => {
+test("ステージの湧き: 始まりはゆっくり (= 0.8 秒 × 1.4 / 1.1 / 0.9)、 洪水は ×4 / ×7 / ×9、 密度は 0.3 / 0.6 / 0.95。 HP は ×1 / ×2.2 / ×3.5", () => {
   assert.deepEqual(STAGE_TABLE.map((s) => s.spawnIntervalMul), [1.4, 1.1, 0.9]);
   assert.deepEqual(STAGE_TABLE.map((s) => s.flood.maxMul), [4, 7, 9]);
   assert.deepEqual(STAGE_TABLE.map((s) => s.flood.pow), [1.8, 1.8, 1.8]);
-  assert.deepEqual(STAGE_TABLE.map((s) => s.flood.packSize), [6, 14, 18]);
-  assert.deepEqual(STAGE_TABLE.map((s) => s.density.max), [0.3, 0.7, 0.95]);
+  assert.deepEqual(STAGE_TABLE.map((s) => s.flood.packSize), [6, 10, 18]);
+  assert.deepEqual(STAGE_TABLE.map((s) => s.density.max), [0.3, 0.6, 0.95]);
   assert.deepEqual(STAGE_TABLE.map((s) => s.enemyHpMul), [1, 2.2, 3.5]);
   assert.deepEqual(STAGE_TABLE.map((s) => s.maxEnemies), [260, 380, 480]);
   // 始まりの流入 HP/秒 は、 初期武器 Lv.1 の DPS (= 15〜25) を超えない
