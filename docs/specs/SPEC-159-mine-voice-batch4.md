@@ -2,7 +2,7 @@
 id: SPEC-159
 title: Fourth Batch of Mine's Recordings — 89 WAVs Matched to the Line Script, 32 New Voices Converted to MP3 (Existing Voices Kept for the 57 Duplicates), Wired to the Mission, Revive, Advice, Lessons, Telops, Boss Warning and EASY Stage Line, and the Originals Removed
 status: Done
-pr: TBD
+pr: 199
 phase: v1.7 Onboarding
 kind: Changed
 ---
