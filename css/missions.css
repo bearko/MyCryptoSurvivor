@@ -234,3 +234,22 @@
 }
 .mission-reward__gum.hidden { display: none; }
 .mission-reward__gum img { width: 20px; height: 20px; image-rendering: pixelated; }
+
+/* ============================================================
+   SPEC-143: ステージ 1 のクリアで X の投稿をすすめる (= ステージクリアの画面の上に重ねる)
+   ============================================================ */
+.share-x { z-index: calc(var(--z-modal-top) + 4); align-items: center; }
+.share-x .mission-offer__band { --tone: #56ccf2; }
+.share-x .mission-offer__kicker { color: var(--node-cyan, #56ccf2); text-shadow: 0 0 10px rgba(86, 204, 242, 0.6); }
+.share-x__ain { width: 96px; height: 128px; object-fit: cover; }
+.share-x__gum { margin: 2px 0 0; font-size: 0.85rem; font-weight: 800; color: #ffe08a; }
+.share-x__gum--got { color: #7ee08a; }
+.share-x__post {
+  color: #fff; background: #0f1419; border: 1.5px solid rgba(255, 255, 255, 0.55);
+  font-weight: 800;
+}
+.share-x__post:hover, .share-x__post:focus-visible { background: #1d2731; }
+.share-x__logo { font-size: 1.05rem; }
+@media (max-width: 480px) {
+  .share-x__ain { width: 72px; height: 96px; }
+}

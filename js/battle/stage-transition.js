@@ -22,6 +22,7 @@ import { renderRewards, renderGumBreakdown } from "../meta-ui.js";
 import { perk } from "../perks.js";   // SPEC-090c
 import { pourShopCeIntoSig } from "./shop.js";   // SPEC-128
 import { heroImg } from "../heroes.js";
+import { loadShare, shouldOfferShare, openSharePrompt, closeSharePrompt } from "../share-x.js";   // SPEC-143
 
 let _wired = false;
 
@@ -51,6 +52,10 @@ function _captureStageSnapshot() {
  * 次ステージがあれば transition modal、 無ければ全ステージクリアで activity report。
  * 死亡 (= state.stats.hp <= 0) はこの関数を経由しない (= triggerGameOver(undefined))。
  */
+/** SPEC-143: 結果が出そろうまで待つ */
+const SHARE_DELAY_MS = 1600;
+let _shareTimer = 0;
+
 export function triggerStageEndOrTransition() {
   if (state.battle.gameOver) return;
 
@@ -110,6 +115,11 @@ export function triggerStageEndOrTransition() {
       countUp(document.getElementById("stageTransitionKills"), snap?.kills ?? 0, { durMs: 600, delayMs: 250 });
       renderRewards(document.getElementById("stageTransitionRewards"), { gum: snap?.gum ?? 0, dust: snap?.dust ?? 0 }, { delayMs: 500 });   // SPEC-090 + SPEC-132
       renderGumBreakdown(document.getElementById("stageTransitionGum"), { rows: snap?.gumRows ?? [], bonus: snap?.gumBonus ?? 0, mul: snap?.gumMul ?? 0 });   // SPEC-136
+      // SPEC-143: ステージ 1 のクリアで、 マインちゃんが X での投稿をすすめる (= 結果が出そろってから重ねる)
+      if (shouldOfferShare(loadShare(), { stageIdx: endIdx, rta: !!state.rtaMode })) {
+        clearTimeout(_shareTimer);
+        _shareTimer = setTimeout(() => { if (!modal?.classList.contains("hidden")) openSharePrompt(); }, SHARE_DELAY_MS);
+      }
     },
   });
 }
@@ -134,6 +144,8 @@ export function resultTilesHtml({ timeText, kills, level, killsId }) {
  * 「次のステージへ」 click → state.currentStageIdx++ → startBattle 再呼出
  */
 async function _onProceedClick() {
+  clearTimeout(_shareTimer);   // SPEC-143
+  closeSharePrompt();
   document.getElementById("stageTransitionModal")?.classList.add("hidden");
   state.currentStageIdx = (state.currentStageIdx ?? 0) + 1;
   resumeTime();

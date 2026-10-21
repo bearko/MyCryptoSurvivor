@@ -591,6 +591,22 @@
     </div>
   </div>
 
+  <!-- SPEC-143: ステージ 1 のクリアで、 マインちゃんが X での投稿をすすめる (= 投稿で 100 GUM。 1 回だけ) -->
+  <div id="shareModal" class="mission-offer mission-reward share-x hidden" role="dialog" aria-modal="true" aria-labelledby="shareHead">
+    <div class="mission-offer__band">
+      <img class="mission-offer__face share-x__ain" id="shareAin" alt="" width="96" height="128" />
+      <div class="mission-offer__body">
+        <span class="mission-offer__kicker" id="shareHead">NAVI // MINE</span>
+        <p class="mission-reward__line" id="shareLine"></p>
+        <p class="share-x__gum" id="shareGum"></p>
+        <div class="mission-offer__actions">
+          <button class="btn btn--ghost mission-offer__no" id="shareLater" type="button">あとで</button>
+          <button class="btn share-x__post" id="sharePost" type="button"><span class="share-x__logo" aria-hidden="true">𝕏</span> <span data-i18n="share.post">で投稿する</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- SPEC-125: ミッション達成のごほうび (= 出し手のひとこと → 3 つから 1 つ選ぶ。 時間は止まっている) -->
   <div id="missionReward" class="mission-offer mission-reward hidden" role="dialog" aria-modal="true" aria-labelledby="missionRewardHead">
     <div class="mission-offer__band">
