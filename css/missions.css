@@ -25,8 +25,38 @@
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
   animation: mission-jack-in 420ms var(--ease-out, cubic-bezier(.2, .8, .3, 1)) both;
 }
-.mission-offer[data-weight="heavy"] .mission-offer__band { --tone: #ff6b6b; }
-.mission-offer[data-weight="light"] .mission-offer__band { --tone: #5ecf8a; }
+/* SPEC-137: ★で色が変わる (= いまの難易度が目に入るように。 ★1 緑・★2 橙・★3 赤)。 帯の後ろの幕も同じ色に */
+.mission-offer[data-star="1"] { --tone: #5ecf8a; }
+.mission-offer[data-star="2"] { --tone: #f0a04b; }
+.mission-offer[data-star="3"] { --tone: #ff4f6b; }
+.mission-offer[data-star] .mission-offer__band { --tone: inherit; }
+.mission-offer[data-star]:not(.mission-reward) {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--tone) 34%, rgba(10, 6, 18, 0.86)), rgba(10, 6, 18, 0.5) 60%, rgba(10, 6, 18, 0.25));
+  transition: background 0.2s ease;
+}
+.mission-offer[data-star] .mission-offer__band {
+  background:
+    linear-gradient(100deg, color-mix(in srgb, var(--tone) 34%, transparent), transparent 60%),
+    linear-gradient(180deg, color-mix(in srgb, var(--tone) 14%, #2b2142), #17121f);
+}
+/* ★の選び (= 押すとその★の条件と報酬に変わる) */
+.mission-stars { display: flex; gap: 6px; margin: 4px 0 2px; }
+.mission-stars__btn {
+  flex: 1 1 0; position: relative;
+  display: flex; align-items: center; justify-content: center;
+  min-height: 40px; padding: 4px 6px;
+  font: inherit; font-weight: 800; letter-spacing: 0.06em;
+  color: var(--muted); background: rgba(0, 0, 0, 0.35);
+  border: 1.5px solid rgba(255, 255, 255, 0.18); border-radius: 8px; cursor: pointer;
+}
+.mission-stars__btn[data-star="1"] { --c: #5ecf8a; }
+.mission-stars__btn[data-star="2"] { --c: #f0a04b; }
+.mission-stars__btn[data-star="3"] { --c: #ff4f6b; }
+.mission-stars__s { color: color-mix(in srgb, var(--c) 55%, #777); font-size: 0.95rem; }
+.mission-stars__btn.is-on { color: #1a1420; background: var(--c); border-color: var(--c); box-shadow: 0 0 14px color-mix(in srgb, var(--c) 60%, transparent); }
+.mission-stars__btn.is-on .mission-stars__s { color: #1a1420; }
+.mission-stars__k { position: absolute; right: 5px; bottom: 2px; font-size: 0.55rem; opacity: 0.6; }
+@media (hover: none) { .mission-stars__k { display: none; } }
 @keyframes mission-jack-in {
   from { transform: translateX(-40px) skewX(-8deg); opacity: 0; }
   to   { transform: none; opacity: 1; }
@@ -90,6 +120,12 @@
 }
 .mission-bar__fill { position: absolute; inset: 0 auto 0 0; width: 100%; background: linear-gradient(90deg, #8c7fb0, #bb86fc); transition: width 0.25s linear; }
 .mission-bar__sec { flex: 0 0 auto; min-width: 3em; text-align: right; font-weight: 800; color: #e9d8ff; }
+/* SPEC-137: 受けているミッションの★ (= 帯の縁と残りの棒の色) */
+.mission-bar[data-star="1"] { --tone: #5ecf8a; }
+.mission-bar[data-star="2"] { --tone: #f0a04b; }
+.mission-bar[data-star="3"] { --tone: #ff4f6b; }
+.mission-bar[data-star]:not(.mission-bar--boost) { border-color: color-mix(in srgb, var(--tone) 80%, transparent); }
+.mission-bar[data-star]:not(.mission-bar--boost) .mission-bar__fill { background: linear-gradient(90deg, color-mix(in srgb, var(--tone) 55%, #333), var(--tone)); }
 .mission-bar--soon { border-color: rgba(255, 224, 138, 0.9); animation: shop-bar-glow 0.8s ease-in-out infinite; }
 .mission-bar--soon .mission-bar__sec { color: var(--xp); }
 @media (max-width: 480px) {

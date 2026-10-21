@@ -21,6 +21,8 @@ export const TIP_KEYS = [
   "gimmick.beads", "gimmick.punch", "gimmick.trojan",
   "enemy.shooter",
 ];
+/** SPEC-137: 止まっている画面 (= ミッションの持ちかけ) で、 画面の下の通信の帯に出すひとこと。 ボイスはない */
+export const MODAL_TIP_KEYS = ["mission.offer"];
 /** 言い終えてから引っこむまで */
 export const TIP_HOLD_MS = 2400;
 /** 次のひとことまでの間 */
@@ -33,7 +35,7 @@ export function loadSeen(storage) {
   try {
     const raw = storage?.getItem(LS_NAVI_TIPS);
     const arr = raw ? JSON.parse(raw) : [];
-    return new Set(Array.isArray(arr) ? arr.filter((k) => TIP_KEYS.includes(k)) : []);
+    return new Set(Array.isArray(arr) ? arr.filter((k) => TIP_KEYS.includes(k) || MODAL_TIP_KEYS.includes(k)) : []);
   } catch (_) {
     return new Set();
   }
@@ -104,6 +106,20 @@ export function naviTipOnce(key) {
   saveSeen(_storage(), seen);
   _queue.push(key);
   _next();
+  return true;
+}
+
+/**
+ * SPEC-137: 止まっている画面で、 初めてならすぐ話す (= 画面の下の通信の帯。 順番は待たない)。
+ * 話したら true (= 呼ぶ側が画面を閉じるときに naviHide する)
+ */
+export function naviTipModal(key, lines) {
+  if (!globalThis.document || !MODAL_TIP_KEYS.includes(key)) return false;
+  const seen = _getSeen();
+  if (seen.has(key)) return false;
+  seen.add(key);
+  saveSeen(_storage(), seen);
+  naviSay(lines, { place: "result" });
   return true;
 }
 

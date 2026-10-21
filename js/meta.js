@@ -62,10 +62,10 @@ export function gumTotal(rows, gumMul = 0) {
   return { base, mul, bonus, total: base + bonus };
 }
 
-/** SPEC-131: ミッション達成の確定 GUM (= 重さ × ステージの番号) */
-export const MISSION_GUM = { light: 30, medium: 60, heavy: 120 };
-export function missionGum(weight, stageIdx = 0) {
-  return (MISSION_GUM[weight] ?? MISSION_GUM.medium) * (Math.max(0, stageIdx | 0) + 1);
+/** SPEC-131: ミッション達成の確定 GUM (= ★ × ステージの番号。 SPEC-137 で重さから★へ) */
+export const MISSION_GUM = { 1: 30, 2: 60, 3: 120 };
+export function missionGum(star, stageIdx = 0) {
+  return (MISSION_GUM[star] ?? MISSION_GUM[1]) * (Math.max(0, stageIdx | 0) + 1);
 }
 
 /** ボスを倒したときのゴールドダスト (= ステージの番号。 0 始まりの idx に 1 を足す)。 純関数 */

@@ -449,7 +449,7 @@ export function renderBattle(ctx, nowMs = 0) {
   renderFxWorld(ctx, camera, w, h);
 
   // SPEC-112: 霧の夜 (= 自分のまわりしか見えない)
-  if (mods.fogR) _drawFog(ctx, px, py, mods.fogR, w, h);
+  if (mods.fogR) _drawFog(ctx, px, py, mods.fogR, w, h, mods.fogA ?? 0.9);
 
   // SPEC-016: ダメージ数字 floater (= 一番上の layer)
   // SPEC-057: 大きいものほど大きく (= size)、 出た瞬間に跳ねる (= 1.6 倍 → 1 倍)
@@ -725,13 +725,15 @@ function _drawCrossWarns(ctx, camera, nowMs) {
 }
 
 /** SPEC-112: 霧の夜。 自分のまわり (= 半径 r) だけ見え、 その外は濃い霧 */
-function _drawFog(ctx, px, py, r, w, h) {
-  const g = ctx.createRadialGradient(px, py, r * 0.55, px, py, r);
-  g.addColorStop(0, "rgba(14, 12, 22, 0)");
-  g.addColorStop(1, "rgba(14, 12, 22, 0.94)");
+// SPEC-137: 霧は白 (= ロンドンの霧)。 a: 濃さ (= ★3 はほとんど何も見えない)
+function _drawFog(ctx, px, py, r, w, h, a = 0.9) {
+  const fog = `rgba(226, 230, 238, ${a})`;
+  const g = ctx.createRadialGradient(px, py, r * 0.45, px, py, r);
+  g.addColorStop(0, "rgba(226, 230, 238, 0)");
+  g.addColorStop(1, fog);
   ctx.fillStyle = g;
   ctx.fillRect(px - r, py - r, r * 2, r * 2);
-  ctx.fillStyle = "rgba(14, 12, 22, 0.94)";
+  ctx.fillStyle = fog;
   // 円の外接四角の外を塗る (= 四角の中はグラデーションが受け持つ)
   ctx.fillRect(-w, -h, w * 3, py - r + h);
   ctx.fillRect(-w, py + r, w * 3, h * 2);

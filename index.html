@@ -572,6 +572,12 @@
         <span class="mission-offer__kicker">MISSION <span class="mission-offer__weight" id="missionOfferWeight"></span></span>
         <span class="mission-offer__giver" id="missionOfferGiver"></span>
         <h2 class="mission-offer__title" id="missionOfferTitle"></h2>
+        <!-- SPEC-137: 難易度 (= ★を増やすと条件が厳しく、 ごほうびが豪華に。 1・2・3 のキーでも) -->
+        <div class="mission-stars" id="missionOfferStars" role="radiogroup" aria-label="難易度" data-i18n-attr-aria-label="mission.stars">
+          <button type="button" class="mission-stars__btn" role="radio" data-star="1" aria-checked="true"><span class="mission-stars__s">★</span><span class="mission-stars__k">1</span></button>
+          <button type="button" class="mission-stars__btn" role="radio" data-star="2" aria-checked="false"><span class="mission-stars__s">★★</span><span class="mission-stars__k">2</span></button>
+          <button type="button" class="mission-stars__btn" role="radio" data-star="3" aria-checked="false"><span class="mission-stars__s">★★★</span><span class="mission-stars__k">3</span></button>
+        </div>
         <p class="mission-offer__desc" id="missionOfferDesc"></p>
         <dl class="mission-offer__terms">
           <dt data-i18n="mission.term.time">時間</dt><dd id="missionOfferTime"></dd>
