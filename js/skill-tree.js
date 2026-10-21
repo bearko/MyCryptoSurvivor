@@ -11,6 +11,7 @@ import { richNode } from "./rich-text.js";   // SPEC-144
 import { isEasy } from "./easy.js";   // SPEC-147
 import { showLesson } from "./lesson.js";   // SPEC-147
 import { chatDockWidth, onChatDockChange } from "./chat-dock.js";   // SPEC-156
+import { bulkPlan } from "./skill-bulk.js";   // SPEC-157: 一括解放
 import { chatLayout, chatShown, setChatCollapsed } from "./platform.js";   // SPEC-156
 import { getMeta, onMetaChange, spend, setNodeRank, resetNodes } from "./meta.js";
 import { ROUTES, ROUTE_MAP, NODE_MAP, TREE_NODES, ROOT_ID, CAPSTONE_NEED, nodePos, routeLabelPos } from "./skill-data.js";
@@ -84,6 +85,7 @@ let _resetAsk = false;    // 「作り直す」の確認中
 let _noticeTimer = 0;
 let _lastTap = { id: null, at: 0 };
 let _statsOpen = false;   // 狭い画面の「いまの効果」の札 (= 既定は閉じる)
+let _bulkDust = false;    // SPEC-157: 一括解放でゴールドダストも使うか (= 既定は使わない。 開いているあいだだけ覚える)
 let _hintSaid = false;    // タイトルの案内 (= 起動中に 1 回)
 const NAVI_TREE_HIDE_MS = 2600;
 const WIDE = typeof matchMedia === "function" ? matchMedia("(min-width: 861px)") : { matches: false, addEventListener() {} };   // SPEC-135: Workshop と同じ 860px で分ける
@@ -505,7 +507,7 @@ function renderHead() {
     "💬", h("span", {}, shown ? t("tree.chatHide", "チャットをたたむ") : t("tree.chatShow", "チャットをひらく"))) : null;
   clear(_parts.head).append(
     h("div", { class: "tree-title" }, h("b", {}, t("tree.title", "スキルツリー")), h("small", {}, "SKILL TREE")),
-    chatBtn,
+    ...(chatBtn ? [chatBtn] : []),   // DOM の append は null を "null" の文字にするので、 h() と違って自分で外す
     h("div", { class: "tree-bals" },
       chip("gum", ICON_GUM, t("meta.gum", "GUM"), m.gum, cost.gum),
       chip("dust", ICON_DUST, t("meta.dust", "ゴールドダスト"), m.dust, cost.dust)),
@@ -739,10 +741,22 @@ function detailChanges(m, id) {
 function renderIdle(add, m) {
   const claimable = claimableNodes(m);
   const first = claimable[0];
+  // SPEC-157: 「解放可能なスキル ▶」は押すとその節を選ぶ (= 黄色い枠で囲んで、 詳しい欄を出す)
   add(first
     ? h("button", { class: "sheet-go ok", type: "button", onclick: () => select(first.id, true) },
-      tpl(t("tree.claimable", "▶ 解放できます：{name}{more}（タップで移動）"), { name: nameOf(first), more: claimable.length > 1 ? tpl(t("tree.claimableMore", " ほか {n}"), { n: claimable.length - 1 }) : "" }))
+      tpl(t("tree.claimable", "▶ 解放可能なスキル：{name}{more}（タップで選ぶ）"), { name: nameOf(first), more: claimable.length > 1 ? tpl(t("tree.claimableMore", " ほか {n}"), { n: claimable.length - 1 }) : "" }))
     : h("p", { class: "sheet-note" }, t("tree.idleHint", "挑戦を終えると GUM が、ボスを倒すとゴールドダストが貯まる。スキルを 2 回押すと解放。")));
+  // SPEC-157: 一括解放 (= 安い順に、 買えなくなるまで。 ゴールドダストは切り替えで)
+  if (first) {
+    const plan = bulkPlan(m, { useDust: _bulkDust });
+    const costText = plan.dust > 0 ? tpl(t("tree.bulkCostDust", "GUM {gum}・ゴールドダスト {dust}"), plan) : tpl(t("tree.bulkCost", "GUM {gum}"), plan);
+    add(h("div", { class: "sheet-bulk" },
+      h("button", { class: "tree-btn sub gold", type: "button", disabled: plan.steps.length === 0, onclick: bulkUnlock },
+        plan.steps.length ? tpl(t("tree.bulk", "{n} 個を一括解放（{cost}）"), { n: plan.steps.length, cost: costText }) : t("tree.bulkNone", "一括で解放できるものはない")),
+      h("label", { class: "sheet-check" },
+        h("input", { type: "checkbox", checked: _bulkDust, onchange: (e) => { _bulkDust = !!e.target.checked; renderSheet(); } }),
+        h("span", {}, t("tree.bulkDust", "ゴールドダストも使う")))));
+  }
 }
 
 // ============================================================
@@ -803,6 +817,42 @@ function unlock(n) {
   const stepAfter = treeGuide(after);
   if (stepBefore === "first" && stepAfter === null) { _statsOpen = true; renderStats(); sayTree("done"); }   // 「右の欄」を狭い画面でも開いて見せる
   else if (stepBefore !== stepAfter) { const g = guideLine(after); if (g) setTimeout(() => sayTree(g, { stay: true }), burst ? 900 : 0); }
+}
+
+/** SPEC-157: いま解放できる節を安い順に一括で (= 計画は skill-bulk.js。 ここで払って書く)。 新しく見えた節は中心から近い順に飛び出す */
+function bulkUnlock() {
+  const m = treeMeta();
+  const plan = bulkPlan(m, { useDust: _bulkDust });
+  if (!plan.steps.length) return;
+  const before = new Set(TREE_NODES.filter((x) => nodeShown(m, x.id)).map((x) => x.id));
+  const stepBefore = treeGuide(m);
+  let n = 0, root = false;
+  for (const s of plan.steps) {
+    const r = tryBuy(treeMeta(), s.id);   // 1 つ買うたびに meta が変わるので、 毎回確かめる
+    if (!r.ok || !spend(r.cost)) break;
+    setNodeRank(s.id, r.rank);
+    n += 1;
+    if (NODE_MAP[s.id].kind === "root") root = true;
+  }
+  if (!n) return;
+  _bought += plan.steps.length;   // SPEC-146 (= 実際に買えた数で数え直す)
+  _bought -= plan.steps.length - n;
+  if (root && isEasy()) showLesson("s2.root");   // SPEC-147: 覚醒
+  playSe(SFX.LEVEL_UP, 0, 0.6);
+  notice(tpl(t("tree.bulkDone", "{n} 個を解放！"), { n }), "good");
+  const after = treeMeta();
+  const fresh = new Map();
+  let i = 0;
+  const order = TREE_NODES.filter((x) => nodeShown(after, x.id) && !before.has(x.id))
+    .sort((a, b) => Math.hypot(a.x, a.y) - Math.hypot(b.x, b.y));
+  for (const x of order) fresh.set(x.id, i++);
+  for (const s of plan.steps.slice(0, n)) fresh.set(s.id, 0);
+  _selected = null;
+  if (root) { if (!prefersReducedMotion()) shockwave(); zoomToFit(); }
+  renderAll(fresh, root);
+  const stepAfter = treeGuide(after);
+  if (stepBefore === "first" && stepAfter === null) { _statsOpen = true; renderStats(); sayTree("done"); }
+  else if (stepBefore !== stepAfter) { const g = guideLine(after); if (g) setTimeout(() => sayTree(g, { stay: true }), root ? 900 : 0); }
 }
 
 function doReset(back) {

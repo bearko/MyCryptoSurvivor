@@ -25,7 +25,7 @@ kind: Changed
 
 ## 2. おすすめの選び方（`pickRecommendations(meta, adviceNodes)`・純関数）
 
-1. 根をまだ取っていない → `[root]`
+1. 根をまだ取っていない → `[]`（**SPEC-157 で変更**: 初回は欄を出さず、 「スキルツリーへ」から木が広がるのを見てもらう。 当初は `[root]` だった）
 2. 取ってある → `adviceNodes`（SPEC-148 の `suggest(sum).nodes`）のうち `claimableNodes` にあるものを順に
 3. 足りなければ、 残りの `claimableNodes` を GUM の安い順（同じならダストの安い順）で、 `wm_main` を除いて
 4. 3 つで切る。 買えるものが無ければ欄ごと隠す
