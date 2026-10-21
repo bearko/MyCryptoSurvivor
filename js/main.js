@@ -10,6 +10,7 @@ import { installMenu, openMenu } from "./menu.js";
 import { installSettingsUI } from "./settings-ui.js";
 import { installRankingUI } from "./ranking-ui.js";
 import { installModeSelect, showModeSelect } from "./mode-select.js";
+import { installStoryMap } from "./story-map.js";   // SPEC-165
 import {
   TICK_INTERVAL_MS,
   SECONDS_PER_WEEK,
@@ -91,6 +92,7 @@ async function init() {
   installUiSound();   // SPEC-060: ボタンの音。 SPEC-069: 止められた BGM を次の操作で鳴らし直す
   installReduceFxAttr(); // SPEC-055: 「演出を減らす」で CSS の常に動く演出も止める
   // SPEC-037: タイトル → モード選択 → ヒーロー選択 の順
+  installStoryMap({ onBack: () => showModeSelect() });   // SPEC-165
   installModeSelect(() => {
     $("#app")?.classList.remove("hidden");
     openHeroSelectModal();

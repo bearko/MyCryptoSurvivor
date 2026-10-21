@@ -26,6 +26,7 @@ import { renderLLWorld } from "./ll.js";   // SPEC-101
 import { renderArenaWorld, renderBossMarkerPointer } from "./arena-render.js";
 import { renderBossMovesWorld } from "./boss-moves-render.js";
 import { renderGimmicksUnder, renderGimmicksOver, drawTrojan } from "./gimmicks-render.js";
+import { drawStoryWorld } from "./story-battle.js";   // SPEC-165: 到達の目印
 
 /** SPEC-057: ダメージ数字の文字の大きさ (= size ごと) */
 export const DAMAGE_FONT_PX = { "": 14, lg: 18, xl: 24 };
@@ -437,6 +438,7 @@ function _afterPlayer(ctx, camera, w, h, nowMs) {
   // SPEC-141: マジックカードとお助けアイテム (= 敵・弾・自分・粒より上。 霧の夜では霧の下)
   _drawMagicCards(ctx, camera, w, h, magicCards);
   _drawItems(ctx, camera, w, h, nowMs);
+  drawStoryWorld(ctx, camera, w, h, nowMs);   // SPEC-165
 
   // SPEC-112: 霧の夜 (= 自分のまわりしか見えない)
   if (mods.fogR) _drawFog(ctx, px, py, mods.fogR, w, h, mods.fogA ?? 0.9);

@@ -36,6 +36,8 @@ import { enemyNameOf } from "./enemy-name.js";   // SPEC-148
 import { showThreatNotice } from "./milestones.js";   // SPEC-107
 import { missionMods } from "./missions.js";   // SPEC-112
 import { isEasy, easyStage, bossSpawnAtMs, bossWarnLeadMs } from "../easy.js";   // SPEC-147
+import { storyAllows } from "../story.js";   // SPEC-165
+import { storyHoldsSpawn } from "./story-battle.js";   // SPEC-165
 import { showLesson } from "../lesson.js";   // SPEC-147
 import {
   floodMul, packAngles, separateEnemies, stageMaxEnemies, spawnBudget,
@@ -83,7 +85,7 @@ export function tickEnemies(dt, nowMs) {
   }
   if (!b.bossSpawned && b.stageElapsedMs >= bossAt) {
     clearForBoss();   // SPEC-079: ほかの敵は消え (= CE は落とさない)、 枠が閉じはじめる
-    spawnEnemyAtRing(stage.bossEnemyId);
+    spawnEnemyAtRing(easyStage()?.bossId ?? stage.bossEnemyId);   // SPEC-165: ストーリーはレシピのボス
     b.bossSpawned = true;
     fxBossSpawned();
   }
@@ -97,19 +99,19 @@ export function tickEnemies(dt, nowMs) {
   // 通常 spawn (= wave pool からランダム、 ステージごと spawn 間隔 mul)
   // SPEC-037: ABSOLUTE の spawnMul で出現密度をスケール (= mul=2 → 2 倍出る → interval を 1/2 に)
   const absSpawnMul = state.absolute?.spawnMul ?? 1;
-  const cap = stageMaxEnemies(stage);   // SPEC-065 / SPEC-078: ステージごと (= 320 / 440 / 600)
   // SPEC-065: 大群のステージは、 中盤から湧きが速まる
   const mods = missionMods();   // SPEC-112: ミッションの効き目 (= 無ければ効かない値)
-  const ez = easyStage();   // SPEC-147: EASY は決まった間隔 (= flood・density・寄せ直し・群れは使わない)
+  const ez = easyStage();
+  const cap = ez?.maxEnemies ?? stageMaxEnemies(stage);   // SPEC-065 / SPEC-078: ステージごと (= 320 / 440 / 600)。 SPEC-165: ストーリーはレシピの同時の上限   // SPEC-147: EASY は決まった間隔 (= flood・density・寄せ直し・群れは使わない)
   const spawnInterval = ez
     ? ez.spawnIntervalMs / mods.spawnMul
     : ENEMY_SPAWN_INTERVAL_MS * (stage.spawnIntervalMul ?? 1) / Math.max(0.1, absSpawnMul) / floodMul(stage.flood, b.stageElapsedMs) / mods.spawnMul;
   // SPEC-078: 経った時間ぶん湧かせる (= 1 コマに何体でも。 湧きを大きく速めても上限で止まる)
   // SPEC-079: ボス戦のあいだは湧かない
-  const bud = spawnBudget(b.spawnAcc, dms, spawnInterval, b.bossSpawned ? 0 : cap - b.enemies.length);
+  const bud = spawnBudget(b.spawnAcc, dms, spawnInterval, (b.bossSpawned || storyHoldsSpawn()) ? 0 : cap - b.enemies.length);   // SPEC-165: ハートを拾うまで湧きを止める
   b.spawnAcc = bud.acc;
   if (bud.n > 0) {
-    const pool = mods.shooterOnly ? shooterPool(stage) : currentPool(b.stageElapsedMs);   // SPEC-112: 三段撃ち・女王の威光
+    const pool = mods.shooterOnly ? shooterPool(stage) : (ez?.pool ?? currentPool(b.stageElapsedMs));   // SPEC-112: 三段撃ち・女王の威光。 SPEC-165: レシピの敵
     for (let k = 0; k < bud.n; k++) spawnEnemyAtRing(pool[Math.floor(Math.random() * pool.length)]);
     b.lastEnemySpawnMs = nowMs;
   }
@@ -191,7 +193,7 @@ export function tickEnemies(dt, nowMs) {
 
   // SPEC-062: 撃ってくる敵 (= ステージごとに、 決まった時刻から一定の間隔で。 同時に出ている数に上限)
   const sh = stage.shooters;
-  if (sh && !b.bossSpawned && b.stageElapsedMs >= sh.fromMs && b.enemies.length < cap &&
+  if (sh && storyAllows("shooters") && !b.bossSpawned && b.stageElapsedMs >= sh.fromMs && b.enemies.length < cap &&
       nowMs - (b.lastShooterSpawnMs ?? 0) >= sh.everyMs / Math.max(0.1, absSpawnMul)) {
     let alive = 0;
     for (const e of b.enemies) if (e.behavior === "shooter") alive++;

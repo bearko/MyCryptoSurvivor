@@ -20,6 +20,8 @@ import { naviTitle } from "./navi.js";
 import { startTitleBgm } from "./ui-sound.js";
 import { hasPlayed, isModeLocked } from "./played.js";
 import { hasClearedEasy } from "./easy.js";   // SPEC-147
+import { showStoryMap } from "./story-map.js";   // SPEC-165
+import { loadStory, allStoryIds } from "./story.js";   // SPEC-165
 
 let _wired   = false;
 let _onPick  = null;   // (regulation) => void、 hero select に進む callback
@@ -82,6 +84,7 @@ function _wireOnce() {
   _wired = true;
 
   _$("btnModeEasy")?.addEventListener("click", () => _pick(REGULATION_NORMAL, { easy: true }));   // SPEC-147
+  _$("btnModeStory")?.addEventListener("click", () => { state.storyId = null; state.easyMode = false; state.rtaMode = false; playWipe(() => { hideModeSelect(); showStoryMap(); }, { label: "STORY // MAP" }); });   // SPEC-165
   _$("btnModeNormal")?.addEventListener("click", () => _pick(REGULATION_NORMAL));
   _$("btnModeAbsolute")?.addEventListener("click", () => _pick(REGULATION_ABSOLUTE));
   // SPEC-040: RTA は NORMAL のルール + rtaMode
@@ -112,6 +115,7 @@ function _pick(regulation, { rta = false, absolute = null, easy = false } = {}) 
   state.regulation = regulation;
   state.rtaMode = rta;
   state.easyMode = !!easy;   // SPEC-147
+  state.storyId = null;      // SPEC-165
   if (regulation === REGULATION_NORMAL) {
     state.absolute = { spawnMul: 1, hpMul: 1, dmgMul: 1, speedMul: 1 };
   } else if (absolute) {
@@ -174,6 +178,12 @@ function _renderLabels() {
   const em = _$("modeCardEasyMul");  if (em) em.textContent = t("mode.easyMul", "案内つき");
   const eo = _$("modeCardEasyDone"); if (eo) eo.textContent = t("mode.easyDone", "✓ クリア済み");
   const bE = _$("btnModeEasy");      if (bE) bE.textContent = t("mode.startEasy", "EASY で始める");
+  // SPEC-165: ストーリー (= クリア数も)
+  const sn = _$("modeCardStoryName"); if (sn) sn.textContent = t("mode.storyName", "ストーリー（β）");
+  const sd = _$("modeCardStoryDesc"); if (sd) sd.textContent = t("mode.storyDesc", "");
+  const sm = _$("modeCardStoryMul");  if (sm) sm.textContent = t("mode.storyMul", "案内つき");
+  const bS = _$("btnModeStory");      if (bS) bS.textContent = t("mode.startStory", "ストーリーを始める");
+  const so = _$("modeCardStoryDone"); if (so) { const p = loadStory(); so.classList.toggle("hidden", p.cleared.length === 0); so.textContent = `✓ ${p.cleared.length} / ${allStoryIds().length}`; }
   const nl = _$("modeCardNormalLock"); if (nl) nl.textContent = t("mode.lockedNormal", "🔒 EASY をクリアすると選べるようになる");
   const ad = _$("modeCardAbsoluteDesc"); if (ad) ad.textContent = t("mode.absoluteDesc", "難易度を 4 軸で自分でチューニング。 きつくするほどスコア倍率 UP、 楽にすると DOWN。");
   const bN = _$("btnModeNormal");    if (bN) bN.textContent = t("mode.startNormal", "これで始める");

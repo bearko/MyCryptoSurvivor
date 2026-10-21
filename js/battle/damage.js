@@ -13,6 +13,7 @@
 // 呼出側は逆順走査して splice 不整合を回避すること。
 
 import { state } from "../state.js";
+import { storyAllows } from "../story.js";   // SPEC-165
 import { spawnGem } from "./gems.js";
 import { spawnMagicCard } from "./magic-cards.js";
 import { fxEnemyHit, fxEnemyKilled } from "./fx.js";
@@ -69,7 +70,7 @@ export function hitEnemy(idx, dmg, src = "other") {
   }
   if (e.hp <= 0) {
     // SPEC-026: 強敵ほど高 XP を落とす (= ENEMY_SPECS.xpValue 由来、 enemy.xpValue が未設定なら 1)
-    spawnGem(e.x, e.y, e.xpValue ?? 1);
+    if (storyAllows("ce")) spawnGem(e.x, e.y, e.xpValue ?? 1);   // SPEC-165: ストーリーの 1-1・1-2 は CE を落とさない
     // SPEC-033: レアエネミー撃破時はマジックカード (= 即時レベルアップアイテム) も同位置にドロップ
     if (e.isRare) spawnMagicCard(e.x, e.y);
     enemies.splice(idx, 1);

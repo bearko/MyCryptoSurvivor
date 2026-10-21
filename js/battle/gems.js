@@ -16,6 +16,7 @@ import { startAbsorb, absorbStep, chainPitch } from "./absorb.js";   // SPEC-102
 import { sigPickupMul, sigOnGemsPicked, sigOnLevelUp } from "./signature.js";   // SPEC-100
 import { hitEnemy } from "./damage.js";
 import { addShopCe } from "./shop.js";   // SPEC-109
+import { storyOnCe } from "./story-battle.js";   // SPEC-165
 
 export function spawnGem(x, y, value = GEM_VALUE) {
   const b = state.battle;
@@ -72,6 +73,7 @@ export function tickGems(dt) {
       b.xpAcc -= whole;
       if (state.shop) addShopCe(whole);   // SPEC-109: ショップでは財布へ (= レベルは上がらない)
       else state.xp += whole;
+      storyOnCe(whole);   // SPEC-165: 集める条件
       b.gems.splice(i, 1);
       picked += 1;
     }

@@ -32,6 +32,8 @@ import {
 import { pushDamageNumber } from "./damage.js";
 import { canHeal } from "./missions.js";   // SPEC-112
 import { easyStage } from "../easy.js";   // SPEC-147
+import { storyStage, storyAllows } from "../story.js";   // SPEC-165
+import { storySay } from "./story-battle.js";   // SPEC-165
 export { isShopMode, shopTimesMs, shopProgress } from "./shop-logic.js";
 
 // ============================================================
@@ -175,6 +177,9 @@ export function openShop({ opening = false } = {}) {
     ?? pickMerchant(s.prevMerchant, Math.random, opening ? OPENING_MERCHANT : null);
   s.prevMerchant = _merchant.id;
   s.nextMerchant = pickMerchant(_merchant.id).id;   // 次に来る人 (= 同じ人は続けて来ない)
+  // SPEC-165: ストーリーの店は品を固定 (= only)。 商人はマルコ、 サービスの案内は出さない
+  const sr = storyAllows("shop") ? (storyStage()?.shop ?? null) : null;
+  if (sr) { _merchant = MERCHANTS.find((m) => m.id === "marco") ?? _merchant; s.nextMerchant = _merchant.id; }
   _paidRerolls = 0;
   _boughtHere = 0;
   // ウェーブの節目のひと息: 来店で HP が少し戻る (= 作者の依頼 2026-10-20)
@@ -187,7 +192,7 @@ export function openShop({ opening = false } = {}) {
     playSe(SFX.PICK_HEAL, 100, 0.5);
   }
   // 最初の店 (= ステージ 1 の 0:10) はまだ CE が少ないので、 サービスで 1 品無料 (= 作者の決定 2026-10-20)
-  if (!s.welcomeGiven && (state.currentStageIdx ?? 0) === 0) {
+  if (!sr && !s.welcomeGiven && (state.currentStageIdx ?? 0) === 0) {
     s.welcomeGiven = true;
     s.welcome = true;
     playVoice("shop.intro");   // マインちゃんの説明のボイス (= 説明が出る最初の 1 回だけ)
@@ -198,8 +203,10 @@ export function openShop({ opening = false } = {}) {
   const kept = s.locked.filter((id) => offerFor(id, banned));
   s.locked = kept;
   _offers = kept.map((id) => ({ extId: id, sale: false, sold: false }));
-  _fillOffers();
+  if (sr?.only) { _offers = sr.offers.map((id) => ({ extId: id, sale: false, sold: !offerFor(id, banned) })); s.welcome = false; }
+  else _fillOffers();
   pauseTime();
+  if (sr) storySay("shopOpen");
   document.getElementById("shopModal")?.classList.remove("hidden");
   renderShop();
   playSe(SFX.LEVEL_UP, 100, 0.4);
@@ -224,11 +231,17 @@ function _fillOffers(last = new Set(_offers.map((o) => String(o.extId)))) {
 
 let _giftFirst = true;   // SPEC-130: 「ギフト券支払いを優先」 (= 店を開くたびに保存から読む)
 
+function _storyShop() { return storyAllows("shop") ? (storyStage()?.shop ?? null) : null; }   // SPEC-165
 function _priceOf(o, offer) {
+  if (_storyShop()?.price === 0) return 0;   // SPEC-165: 1-2 はただ
   if (state.shop.welcome && !offer.isLL) return 0;   // 最初の店のサービス (= どれでも 1 品)
   // SPEC-130: 優先がオンなら、 持っている券で買える品はどれも券で (= 買うたびに残りの枚数で見直す)。 オフなら CE で払う
   if (_giftFirst && giftable(offer, state.shop.gifts)) return 0;
-  return shopPrice(offer, state.currentStageIdx ?? 0, _merchant.quirk, o.sale, buffPriceCut(o.extId));   // SPEC-131: 強化の目利き
+  const price = shopPrice(offer, state.currentStageIdx ?? 0, _merchant.quirk, o.sale, buffPriceCut(o.extId));   // SPEC-131: 強化の目利き
+  // SPEC-165: 「買うまで閉じられない」店では、 手持ちが足りなければ手持ちの額に (= 拾った CE で買う体験は残し、 詰ませない)
+  const sr = _storyShop();
+  if (sr?.mustBuy && price > state.shop.ce) return Math.max(1, state.shop.ce);
+  return price;
 }
 
 /** SPEC-130: 「ギフト券支払いを優先」を切り替える (= 覚えておく) */
@@ -246,14 +259,16 @@ export function buyOffer(extId) {
   const price = _priceOf(o, offer);
   if (price > s.ce) return false;
   _offers.forEach((x) => { x.banArm = false; });
-  if (price === 0 && s.welcome) s.welcome = false;
+  const storyFree = _storyShop()?.price === 0;   // SPEC-165: 1-2 はただ (= ギフト券も減らない)
+  if (price === 0 && storyFree) { /* ただ */ }
+  else if (price === 0 && s.welcome) s.welcome = false;
   else if (price === 0) s.gifts -= giftCost(offer) ?? 1;   // SPEC-127: 段で枚数が変わる
   else s.ce -= price;
   grantPick(extId);
   // SPEC-163: 同じ札を続けて買える (= 買っても札は残り、 次の段の値段になる)。 15 段を 1 回の店で何段も登れる。
   //   もう上がらない (= 最大・LL のあと) なら売り切れ。 セールは 1 回だけ
   o.sale = false;
-  o.sold = !offerFor(extId, new Set(s.bans));
+  o.sold = !offerFor(extId, new Set(s.bans)) || !!_storyShop()?.only;   // SPEC-165: 固定の品は 1 回だけ
   o.bought = (o.bought | 0) + 1;
   s.locked = s.locked.filter((id) => String(id) !== String(extId));
   s.purchases += 1;
@@ -487,6 +502,8 @@ export function renderShop() {
   if (!s || !modal) return;
   const lang = getLang();
   const m = _merchant;
+  const sr = _storyShop();   // SPEC-165
+  modal.classList.toggle("shop-modal--story", !!sr?.only);
   const face = document.getElementById("shopMerchantImg");
   if (face) { face.src = img(`Image/Enemies/${m.enemyId}.png`); face.alt = t(`shop.m.${m.id}.name`, m.id); }
   _text("shopMerchantName", t(`shop.m.${m.id}.name`, m.id));
@@ -552,7 +569,7 @@ export function renderShop() {
       const short = price > s.ce;
       const chip = document.createElement("span");
       chip.className = "shop-price" + (short ? " shop-price--short" : "") + (price === 0 ? " shop-price--gift" : "") + (o.sale ? " shop-price--sale" : "");
-      chip.textContent = price === 0 ? (s.welcome ? t("shop.welcomeFree", "🎁 サービス") : tpl(t("shop.free", "🎟 ギフト券 ×{n}"), { n: String(giftCost(offer) ?? 1) })) : `◆ ${price}`;
+      chip.textContent = price === 0 ? (sr?.price === 0 ? t("story.shop.free", "🎁 ただ") : s.welcome ? t("shop.welcomeFree", "🎁 サービス") : tpl(t("shop.free", "🎟 ギフト券 ×{n}"), { n: String(giftCost(offer) ?? 1) })) : `◆ ${price}`;
       if (o.sale && price > 0) chip.dataset.tag = t("shop.saleTag", "半額");
       card.appendChild(chip);
       card.classList.add("shop-card");
@@ -631,9 +648,13 @@ export function renderShop() {
   }
   const leave = document.getElementById("shopLeave");
   if (leave) {
-    leave.textContent = _boughtHere === 0 && perk("skipHeal") > 0
-      ? t("shop.leaveHeal", "何も買わずに出る（HP 回復）")
-      : t("shop.leave", "次のウェーブへ ▶");
+    // SPEC-165: ストーリーで「買うまで閉じられない」 (= mustBuy)
+    const gate = !!sr?.mustBuy && _boughtHere === 0;
+    leave.disabled = gate;
+    leave.textContent = gate ? t("story.shop.buy", "買おう！")
+      : (_boughtHere === 0 && perk("skipHeal") > 0
+        ? t("shop.leaveHeal", "何も買わずに出る（HP 回復）")
+        : t("shop.leave", "次のウェーブへ ▶"));
   }
 }
 

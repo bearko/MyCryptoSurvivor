@@ -29,6 +29,8 @@ import { isEasy, stageCount } from "../easy.js";   // SPEC-147 / SPEC-154
 import { showLesson } from "../lesson.js";   // SPEC-147
 import { stopVoice } from "../voice.js";   // SPEC-149: 説明の途中でボスを倒したら、 ボイスを切ってクリアの SE
 import { startConfetti, removeConfetti } from "../confetti.js";   // SPEC-149
+import { isStory, storyStage, landOf, markStoryCleared, nextStoryId, storyRecipe, storyAllows } from "../story.js";   // SPEC-165
+import { naviSay, naviLines } from "../navi.js";   // SPEC-165
 
 let _wired = false;
 
@@ -82,6 +84,9 @@ export function triggerStageEndOrTransition() {
       Object.assign(snap, { gum: r.gum, gumRows: r.rows, gumBonus: r.bonus, gumMul: r.mul });
     }
   }
+
+  // SPEC-165: ストーリーは 1 ステージ完結 (= 進みを覚えて、 クリアの画面から次のステージかマップへ)
+  if (isStory()) { _storyClear(); return; }
 
   // SPEC-039 / SPEC-096: 共通基盤のアチーブメント (= ステージ 1・2・全クリア・ファオ・ボス 3 体・RTA・ABSOLUTE ×2.0)
   const endIdx = state.currentStageIdx ?? 0;
@@ -148,13 +153,67 @@ export async function proceedToNextStage() {
   const m = await import("./index.js");
   m.startBattle(state.ownedHero);
 }
-const _onProceedClick = () => proceedToNextStage();
+const _onProceedClick = () => (isStory() ? proceedStory() : proceedToNextStage());
+
+/** SPEC-165: ストーリーのクリア (= 進みを覚え、 クリアの画面。 GUM はいままでどおり足す) */
+function _storyClear() {
+  const r = storyStage();
+  const snap = state.run.stages.find((s) => s.idx === (state.currentStageIdx ?? 0));
+  markStoryCleared(r.id, { sec: Math.round((snap?.elapsedMs ?? state.battle.stageElapsedMs ?? 0) / 1000), kills: snap?.kills ?? state.killCount });
+  state.battle.gameOver = true;
+  pauseTime();
+  _wireOnce();
+  _renderTransitionModal();
+  const modal = document.getElementById("stageTransitionModal");
+  modal?.classList.remove("hidden");
+  playSe(SFX.STAGE_CLEAR, 0, 0.7);
+  presentResult(modal, "clear", {
+    heroId: state.ownedHero?.heroId ?? null,
+    then: () => {
+      revealIn(modal);
+      countUp(document.getElementById("stageTransitionKills"), snap?.kills ?? 0, { durMs: 600, delayMs: 250 });
+      // GUM は 1-3 から見せる (= 「貯まるけど何に使うかまだ分からない」)
+      const show = !!r.showGum;
+      document.getElementById("stageTransitionRewards")?.classList.toggle("hidden", !show);
+      document.getElementById("stageTransitionMore")?.classList.toggle("hidden", !show);
+      if (show) {
+        renderRewards(document.getElementById("stageTransitionRewards"), { gum: snap?.gum ?? 0, dust: 0 }, { delayMs: 500 });
+        renderGumBreakdown(document.getElementById("stageTransitionGum"), { rows: snap?.gumRows ?? [], bonus: snap?.gumBonus ?? 0, mul: snap?.gumMul ?? 0 });
+      }
+      startConfetti();
+      if (r.lines?.clear) { modal?.classList.add("gameover-modal--navi"); naviSay(naviLines("story", { key: r.lines.clear, pose: "hooray" }), { place: "result" }); }
+    },
+  });
+}
+
+/** SPEC-165: 次のステージへ (= 行が無ければマップへ) */
+export async function proceedStory() {
+  const next = nextStoryId(state.storyId);
+  const m = await import("../story-map.js");
+  removeConfetti();
+  document.getElementById("stageTransitionModal")?.classList.add("hidden");
+  resumeTime();
+  if (next && storyRecipe(next)) { m.startStoryStage(next); return; }
+  leaveStoryToMap();
+}
+/** SPEC-165: 戦闘をやめてランドマップへ */
+export async function leaveStoryToMap() {
+  removeConfetti();
+  document.getElementById("stageTransitionModal")?.classList.add("hidden");
+  while (state.pauseFlags > 0) resumeTime();
+  const b = await import("./index.js");
+  b.stopBattle?.();
+  document.getElementById("app")?.classList.add("hidden");
+  const m = await import("../story-map.js");
+  m.backToStoryMap();
+}
 
 function _wireOnce() {
   if (_wired) return;
   _wired = true;
   document.getElementById("stageTransitionProceed")
     ?.addEventListener("click", _onProceedClick);
+  document.getElementById("stageTransitionMap")?.addEventListener("click", () => leaveStoryToMap());   // SPEC-165
   // SPEC-158: 「くわしく」で内訳を開く (= SPEC-153 の REVIVE と同じ。 PC では CSS が左の列に常に出す)
   document.getElementById("stageTransitionMore")?.addEventListener("click", () => {
     const body = document.getElementById("stageTransitionMoreBody");
@@ -178,11 +237,34 @@ function _renderTransitionModal() {
   // SPEC-147: EASY のステージ 1 ではスキルツリーを開かない (= 倒れて根を取るまで)。 SPEC-154: 根を取ってあれば (= 復活のあと) 開ける
   const treeBtn = document.getElementById("stageTransitionSkillTree");
   const treeLock = document.getElementById("stageTransitionTreeLock");
-  const lockTree = isEasy() && !owns(getMeta(), ROOT_ID);
+  const story = storyStage();   // SPEC-165
+  const lockTree = story ? !storyAllows("tree") : (isEasy() && !owns(getMeta(), ROOT_ID));
   treeBtn?.classList.toggle("hidden", lockTree);
-  if (treeLock) { treeLock.classList.toggle("hidden", !lockTree); treeLock.textContent = t("tree.lockedEasy", "🔒 スキルツリーはステージ 2 で開く"); }
+  if (treeLock) { treeLock.classList.toggle("hidden", !lockTree || !!story); treeLock.textContent = t("tree.lockedEasy", "🔒 スキルツリーはステージ 2 で開く"); }
+  document.getElementById("stageTransitionMap")?.classList.toggle("hidden", !story);
+  if (story) {
+    // SPEC-165: 「1-2 オーシャン」・次は 1-3 (= 行が無ければ「つづきは準備中」)
+    const nextId = nextStoryId(story.id);
+    const land = landOf(story.id);
+    if (titleEl) titleEl.textContent = t("story.clear.title", "ステージクリア!");
+    const curEl = document.getElementById("stageTransitionCurrent");
+    if (curEl) curEl.textContent = `${story.id}  ${t(`story.land.${land.id}`, land.id)} — ${t(`story.${story.id}.name`, "")}`;
+    if (subEl) subEl.textContent = nextId && storyRecipe(nextId) ? tpl(t("stage.proceedNext", "次は {next}"), { next: nextId }) : t("story.clear.done", "ここまで！ つづきは準備中");
+    if (proceedEl) { proceedEl.textContent = t("story.map.next", "次のステージへ ▶"); proceedEl.classList.toggle("hidden", !(nextId && storyRecipe(nextId))); }
+    const mapBtn = document.getElementById("stageTransitionMap"); if (mapBtn) mapBtn.textContent = t("story.map.toMap", "マップへ");
+    const snapS = state.run.stages.find((s) => s.idx === idx);
+    const setS = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+    setS("stageTransitionElapsed", formatElapsed(Math.round((snapS?.elapsedMs ?? 0) / 1000)));
+    setS("stageTransitionKills", String(snapS?.kills ?? 0));
+    setS("stageTransitionLevel", `Lv.${snapS?.level ?? 1}`);
+    document.getElementById("stageTransitionPips")?.replaceChildren();   // ステージの点は 1 つだけなので出さない
+    document.getElementById("stageTransitionMoreBody")?.classList.add("hidden");
+    document.getElementById("stageTransitionSig")?.classList.add("hidden");
+    return;
+  }
   const next      = idx + 1 < stageCount() ? STAGE_TABLE[idx + 1] : null;   // SPEC-154
   const cur       = STAGE_TABLE[idx];
+  proceedEl?.classList.remove("hidden");
 
   if (titleEl) titleEl.textContent = t("stage.clearTitle", "Stage Clear!");
   if (subEl) {
