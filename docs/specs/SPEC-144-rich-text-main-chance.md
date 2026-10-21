@@ -2,7 +2,7 @@
 id: SPEC-144
 title: Favored Weapon as an Explicit Chance (20/40/60%) and Colored Numbers and Terms in Skill Details and Mission Text
 status: Done
-pr: TBD
+pr: 182
 phase: v1.6 Skill Tree
 kind: Changed
 ---
