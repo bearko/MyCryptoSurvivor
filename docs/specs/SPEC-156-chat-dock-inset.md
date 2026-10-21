@@ -2,7 +2,7 @@
 id: SPEC-156
 title: The Skill Tree and the Result Screen Shrink by the Width of the Chat Dock, With a Button in the Tree Header to Collapse or Expand the Chat
 status: Done
-pr: TBD
+pr: 196
 phase: v1.7 Onboarding
 kind: Changed
 ---
