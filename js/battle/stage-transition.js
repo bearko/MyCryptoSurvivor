@@ -69,7 +69,7 @@ export function triggerStageEndOrTransition() {
   // SPEC-090: ボスを倒したらゴールドダスト (= 5:00 まで耐えたときは出ない)。 snapshot に控えて結果の画面に出す
   if (state.battle.bossDefeated) {
     const snap = state.run.stages.find(s => s.idx === (state.currentStageIdx ?? 0));
-    if (snap && snap.dust == null) snap.dust = grantBossDust(state.currentStageIdx ?? 0, { bonus: perk("bossDust") });   // SPEC-090c: 金運
+    if (snap && snap.dust == null) snap.dust = state.battle.bossChestDust ?? grantBossDust(state.currentStageIdx ?? 0, { bonus: perk("bossDust") });   // SPEC-090c: 金運。 SPEC-153: 宝箱で足していればその値
   }
   // SPEC-132: ステージクリアの GUM (= 50 × ステージの番号 ＋ 撃破数のぶん)。 結果の画面とスキルツリーへの導線のため、 ここで足す
   {

@@ -25,6 +25,7 @@ import { bossDmgDealtMul } from "../perks.js";   // SPEC-090c
 import { sigDamageMul } from "./signature.js";   // SPEC-100
 import { boostDmgMul } from "./missions.js";   // SPEC-125
 import { recordDealt, recordKill } from "./run-stats.js";   // SPEC-148
+import { dropBossChest, BOSS_CHEST } from "./boss-chest.js";   // SPEC-153
 
 /** SPEC-148: 武器の与ダメの出どころの名前 (= run-stats の dealt の鍵) */
 export const weaponSrc = (extId) => (extId == null ? "other" : `w:${extId}`);
@@ -80,6 +81,8 @@ export function hitEnemy(idx, dmg, src = "other") {
     // 新: e.isBoss を見るので Fao / yamap / 任意ボスで発火
     if (e.isBoss) {
       state.battle.bossDefeated = true;
+      state.battle.bossChestOpen = true;   // SPEC-153: 宝箱を開けるまでステージの終わりを待たせる (= 落ちてくるのは 0.5 秒後)
+      setTimeout(dropBossChest, BOSS_CHEST.dropMs);   // SPEC-153: 倒した瞬間に宝箱 (= 撃破の粒と音のあとに)
     }
     return true;
   }

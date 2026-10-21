@@ -77,6 +77,7 @@ export function tickEnemies(dt, nowMs) {
   const bossAt = bossSpawnAtMs(), warnLead = bossWarnLeadMs();
   if (!b.bossSpawned && b.stageElapsedMs >= bossAt - warnLead) {
     fxBossIncoming();
+    _bossIncomingHook?.();   // SPEC-153: マインちゃんの警告 (= index.js が置く)
     // SPEC-061: 出るまでの残りを数える (= ゲームの中の時間)
     fxBossCountdown(bossAt - b.stageElapsedMs, warnLead);
   }
@@ -88,7 +89,7 @@ export function tickEnemies(dt, nowMs) {
   }
 
   // SPEC-022 / SPEC-030: 5 分経過 or ボス撃破で **ステージ終了** (= 次ステージ or 全クリア)
-  if (!b.gameOver && (b.bossDefeated || b.stageElapsedMs >= STAGE_DURATION_MS)) {
+  if (!b.gameOver && !b.bossChestOpen && (b.bossDefeated || b.stageElapsedMs >= STAGE_DURATION_MS)) {   // SPEC-153: 宝箱を開けるまで待つ
     triggerStageEndOrTransition();
     return;
   }
@@ -244,6 +245,10 @@ export function tickEnemies(dt, nowMs) {
   // SPEC-107: 走りきった横断の敵を片づける
   if (b.enemies.some((e) => e.gone)) b.enemies = b.enemies.filter((e) => !e.gone);
 }
+
+/** SPEC-153: ボスの予告が出たときに呼ぶもの (= index.js がマインちゃんの警告を置く。 循環 import を避ける) */
+let _bossIncomingHook = null;
+export function setBossIncomingHook(fn) { _bossIncomingHook = typeof fn === "function" ? fn : null; }
 
 /** SPEC-112: 撃つ敵だけを湧かせるとき (= ステージの撃つ敵。 決まっていなければ 166) */
 export function shooterPool(stage) {

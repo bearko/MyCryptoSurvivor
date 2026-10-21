@@ -369,23 +369,22 @@
     <div class="gameover-modal__card">
       <h2 class="gameover-modal__title result-title" id="gameOverTitle" data-reveal data-i18n="gameover.title" data-kicker="">REVIVE</h2>
       <div class="result-stage-name" id="gameOverStage" data-reveal></div>
-      <div class="result-tiles" data-reveal>
-        <div class="result-tile"><span class="result-tile__icon" aria-hidden="true">⏱</span>
-          <span class="result-tile__value num" id="gameOverElapsed"></span>
-          <span class="result-tile__label" data-i18n="result.time">時間</span></div>
-        <div class="result-tile"><span class="result-tile__icon" aria-hidden="true">💀</span>
-          <span class="result-tile__value num" id="gameOverKills"></span>
-          <span class="result-tile__label" data-i18n="result.kills">撃破</span></div>
-        <div class="result-tile"><span class="result-tile__icon" aria-hidden="true">⬆</span>
-          <span class="result-tile__value num" id="gameOverLevel"></span>
-          <span class="result-tile__label" data-i18n="result.level">レベル</span></div>
+      <!-- SPEC-153: 何をしたかは 1 行に小さく (= 何を得たかを大きく) -->
+      <div class="result-mini" data-reveal>
+        <span class="result-mini__item">⏱ <span class="num" id="gameOverElapsed"></span></span>
+        <span class="result-mini__item">💀 <span class="num" id="gameOverKills"></span></span>
+        <span class="result-mini__item">⬆ <span class="num" id="gameOverLevel"></span></span>
       </div>
-      <!-- SPEC-090: この挑戦で得た GUM とゴールドダスト -->
-      <div class="result-rewards hidden" id="gameOverRewards" data-reveal></div>
-      <!-- SPEC-136: GUM の内訳 (= 遊んだぶんが GUM になった式) -->
-      <div class="gum-bd hidden" id="gameOverGum" data-reveal></div>
-      <!-- SPEC-148: 負けた理由の分析 (= 被ダメの内訳・とどめ・前回と自己ベストとの比較・与ダメ・マインちゃんのおすすめ) -->
-      <div class="anl hidden" id="gameOverAnalysis" data-reveal></div>
+      <!-- SPEC-090: この挑戦で得た GUM とゴールドダスト (= SPEC-153: 大きく) -->
+      <div class="result-rewards result-rewards--hero hidden" id="gameOverRewards" data-reveal></div>
+      <!-- SPEC-153: 内訳と分析は畳んでおく (= スクロールせずに「復活する」まで見える) -->
+      <button type="button" class="result-more" id="gameOverMore" data-reveal aria-expanded="false" aria-controls="gameOverMoreBody"><span data-i18n="result.more">くわしく</span> <span class="result-more__arrow" aria-hidden="true">▼</span></button>
+      <div class="result-more-body hidden" id="gameOverMoreBody">
+        <!-- SPEC-136: GUM の内訳 (= 遊んだぶんが GUM になった式) -->
+        <div class="gum-bd hidden" id="gameOverGum"></div>
+        <!-- SPEC-148: 負けた理由の分析 (= 被ダメの内訳・とどめ・前回と自己ベストとの比較・与ダメ・マインちゃんのおすすめ) -->
+        <div class="anl hidden" id="gameOverAnalysis"></div>
+      </div>
       <button class="btn gameover-modal__retry result-tree-btn" id="gameOverSkillTree" data-reveal><img alt="" aria-hidden="true" /><span data-i18n="tree.openResult">スキルツリーへ</span></button>
       <!-- SPEC-146: もう一度挑む (= スキルツリーのすぐ下。 負けて → 強くして → すぐ挑むを回す)。 SPEC-150: 「復活する」 (= 王妃の黄金時計の絵つき。 src は gameover.js) -->
       <button class="btn gameover-modal__retry gameover-modal__again" id="gameOverRetry" data-reveal><img class="gameover-modal__clock" alt="" aria-hidden="true" /><span data-i18n="gameover.revive">復活する ▶</span></button>

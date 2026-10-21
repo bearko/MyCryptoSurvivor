@@ -68,7 +68,7 @@ test("クリアの記録と、 つなぎ (= 共通基盤に送らない・ロッ
   assert.match(read("js/battle/gameover.js"), /if \(!isEasy\(\)\) markPlayed\(\)/);
   assert.match(read("js/battle/gameover.js"), /reason !== "clear" && !isEasy\(\)\) reportRunScore/);
   const ar = read("js/battle/activity-report.js");
-  assert.match(ar, /if \(!easy\) markPlayed\(\)/); assert.match(ar, /if \(easy\) markEasyCleared\(\)/); assert.match(ar, /if \(!easy\) reportRunScore/);
+  assert.match(ar, /if \(!easy\) markPlayed\(\)/); assert.match(ar, /if \(easy\) \{ markEasyCleared\(\); unlockEasyReward\(\); \}/);   // SPEC-153: ビリーが仲間に assert.match(ar, /if \(!easy\) reportRunScore/);
   assert.match(read("js/battle/index.js"), /baseMaxHp\(heroMaxHp\(hero\)\) \* ezMul/);
   assert.match(read("js/battle/index.js"), /heroDmgMul\(hero\) \* ezMul/);
   assert.match(read("js/battle/hurt.js"), /easyStage\(\)\?\.bossDmgMul \?\? 1/);

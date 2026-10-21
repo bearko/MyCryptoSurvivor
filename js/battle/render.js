@@ -423,6 +423,11 @@ export function renderBattle(ctx, nowMs = 0) {
 
 /** SPEC-150: ヒーローより上に描くもの (= 粒子になっているあいだも描く) */
 function _afterPlayer(ctx, camera, w, h, nowMs) {
+  // SPEC-153: renderBattle の局所変数はここに無い (= 切り出したときに参照が残り、 毎コマ ReferenceError で自分より上の層が描けていなかった)
+  const { player, magicCards, damageNumbers, enemies } = state.battle;
+  const mods = missionMods();
+  const px = player.x - camera.x;
+  const py = player.y - camera.y;
   // SPEC-064: そろばんの珠 (= 敵より上)
   renderGimmicksOver(ctx, camera, w, h);
 
@@ -794,11 +799,12 @@ function _drawHpBar(ctx, cx, cy, w, h, ratio) {
 function _drawBackground(ctx, camera, w, h) {
   const x = -WORLD_W / 2 - camera.x;
   const y = -WORLD_H / 2 - camera.y;
-  // viewport と stage 矩形の交差で clip 描画
-  const sx = Math.max(0, x);
-  const sy = Math.max(0, y);
-  const ex = Math.min(w, x + WORLD_W);
-  const ey = Math.min(h, y + WORLD_H);
+  // viewport と stage 矩形の交差で clip 描画。 SPEC-153: 揺れ (= 最大 10 px) のぶん広く塗る (= 被弾のとき画面の縁に暗い層のずれが見えていた)
+  const PAD = 16;
+  const sx = Math.max(-PAD, x);
+  const sy = Math.max(-PAD, y);
+  const ex = Math.min(w + PAD, x + WORLD_W);
+  const ey = Math.min(h + PAD, y + WORLD_H);
   if (ex <= sx || ey <= sy) return;
   const bg = getBackgroundSprite();
   if (bg && bg.ready && !bg.failed) {

@@ -21,7 +21,7 @@ import {
 import { getExt, getCategory } from "../extensions.js";
 import { installInput, getInputVector } from "./input.js";
 import { tickPlayer, centerCameraOnPlayer } from "./player.js";
-import { tickEnemies, tickSeparation } from "./enemies.js";
+import { tickEnemies, tickSeparation, setBossIncomingHook } from "./enemies.js";
 import { tickWeapons } from "./weapons.js";
 import { tickProjectiles } from "./projectiles.js";
 import { tickGems } from "./gems.js";
@@ -58,7 +58,8 @@ import { naviSay, naviLines } from "../navi.js";
 import { clearNaviTipQueue } from "../navi-tips.js";
 import { isEasy, easyStage, easyHeroMul } from "../easy.js";   // SPEC-147
 import { newRunStats, tickRunStats } from "./run-stats.js";   // SPEC-148
-import { tickLessons, clearLessons } from "../lesson.js";   // SPEC-147
+import { tickLessons, clearLessons, showLesson } from "../lesson.js";   // SPEC-147
+import { clearBossChest } from "./boss-chest.js";   // SPEC-153
 
 let _canvas = null;
 let _ctx = null;
@@ -152,6 +153,8 @@ export function startBattle(hero) {
   b.nextCrossMs        = 0;
   b.bossSpawned        = false;                 // SPEC-022: ボス multi-spawn 防止
   b.bossDefeated       = false;                 // SPEC-022: ボス撃破フラグ
+  b.bossChestOpen      = false;                 // SPEC-153: 宝箱を開けているあいだ
+  b.bossChestDust      = null;
   b.fastForwardMs      = 0;                     // SPEC-054: 2 倍速はステージをまたがない
   _ffOffsetMs          = 0;
   b.rerollsLeft        = rerollsPerBattle();    // SPEC-023: picker リロール残数 (+ SPEC-090c 引き直し)
@@ -232,6 +235,11 @@ export function startBattle(hero) {
   resetMissionsForStage(!!state.shop);   // SPEC-112: ミッションはショップで遊ぶときだけ
 
   _showStageIntro();     // SPEC-046: 「STAGE n / ステージ名」の帯
+  // SPEC-153: ボスの予告が出たら、 マインちゃんが「中央の赤いエリアにボスが来るよ！」 (= EASY のステージ 1 ではレッスンが同じことを言う)
+  setBossIncomingHook(() => {
+    if (showLesson("s1.boss")) return;
+    naviSay(naviLines("bossWarn"), { place: "battle", autoHideMs: 1800, top: _commTop() });
+  });
   resizeCanvas();
   _placeToasts();        // SPEC-052: 通知は HUD (と RTA の時計) の下に出す
   _lastMs = performance.now();
@@ -277,6 +285,7 @@ function _showStageIntro() {
   naviSay(naviLines("stage", {
     stageIdx: idx, stageCount: STAGE_TABLE.length, rta: !!state.rtaMode,
     stageName: stage ? t(stage.nameKey, stage.nameKey) : "",
+    bossSec: easyStage() ? Math.round(easyStage().bossAtMs / 1000) : null,   // SPEC-153
   }), { place: "battle", autoHideMs: 1600, top: _commTop() });
 }
 let _introTimer = 0;
@@ -286,6 +295,7 @@ export function stopBattle() {
   hideCoach();   // SPEC-042
   clearNaviTipQueue();   // SPEC-068: 戦闘をやめたら、 話す予定のひとことは捨てる
   clearLessons();        // SPEC-147
+  clearBossChest();      // SPEC-153
   if (_raf) {
     cancelAnimationFrame(_raf);
     _raf = 0;

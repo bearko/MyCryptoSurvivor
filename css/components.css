@@ -2104,3 +2104,27 @@ a.title-screen__next[href]:hover { border-color: var(--accent); }
 @keyframes revive-watch-float { 0%, 100% { transform: translateY(-62%); } 50% { transform: translateY(-68%); } }
 @keyframes revive-watch-out { to { opacity: 0; transform: translateY(-62%) scale(0.8); } }
 @media (prefers-reduced-motion: reduce) { .revive-watch { animation: none; } }
+
+/* ============================================================
+   SPEC-153: ボスの宝箱 (= 倒した瞬間に落ちてきて、 開けるとゴールドダスト)
+   ============================================================ */
+.boss-chest { position: fixed; inset: 0; z-index: calc(var(--z-help) + 3); display: flex; align-items: center; justify-content: center; background: rgba(6, 8, 16, 0.55); }
+.boss-chest.hidden { display: none !important; }
+.boss-chest__card { display: flex; flex-direction: column; align-items: center; gap: 0.6rem; text-align: center; }
+.boss-chest__kicker { margin: 0; font-size: 0.7rem; letter-spacing: 0.3em; color: #ffe17a; font-weight: 800; text-shadow: 0 0 8px rgba(255, 215, 120, 0.6); }
+.boss-chest__box { background: none; border: 0; padding: 0; cursor: pointer; }
+.boss-chest__img { width: 192px; height: 192px; image-rendering: pixelated; filter: drop-shadow(0 0 14px rgba(255, 215, 120, 0.7)); }
+.boss-chest--in .boss-chest__img { animation: boss-chest-drop 0.5s cubic-bezier(0.3, 1.4, 0.5, 1) both, boss-chest-shake 0.7s ease-in-out 0.5s infinite; }
+.boss-chest--open .boss-chest__img { animation: boss-chest-burst 0.6s ease-out both; }
+.boss-chest__got { display: flex; align-items: center; gap: 0.4rem; font-size: 1.1rem; color: #fff; animation: boss-chest-got 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.2) both; }
+.boss-chest__got.hidden { display: none; }
+.boss-chest__dust { width: 32px; height: 32px; image-rendering: pixelated; }
+.boss-chest__n { font-size: 2rem; font-weight: 900; color: #ffe17a; text-shadow: 0 0 10px rgba(255, 215, 120, 0.9); }
+.boss-chest__label { color: #f6e2a0; font-weight: 700; }
+.boss-chest__next { min-width: 160px; }
+.boss-chest__next.hidden { display: none; }
+@keyframes boss-chest-drop { from { transform: translateY(-120px) scale(0.6); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes boss-chest-shake { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-4deg); } 75% { transform: rotate(4deg); } }
+@keyframes boss-chest-burst { 0% { transform: scale(1); filter: brightness(1); } 30% { transform: scale(1.25); filter: brightness(2.2) drop-shadow(0 0 30px #fff); } 100% { transform: scale(1.05); filter: brightness(1.1) drop-shadow(0 0 18px rgba(255, 215, 120, 0.9)); } }
+@keyframes boss-chest-got { from { transform: translateY(10px) scale(0.6); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .boss-chest__img, .boss-chest--in .boss-chest__img, .boss-chest--open .boss-chest__img, .boss-chest__got { animation: none; } }

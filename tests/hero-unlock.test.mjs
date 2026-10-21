@@ -12,7 +12,7 @@ globalThis.localStorage = {
 };
 
 const {
-  STARTER_HEROES, HERO_UNLOCKS, GAME_TITLES, unlockedHeroes, nextUnlock, unlockOf, heroForTrophy,
+  STARTER_HEROES, EASY_REWARD_HERO, HERO_UNLOCKS, GAME_TITLES, unlockedHeroes, nextUnlock, unlockOf, heroForTrophy,
   getUnlockedHeroes, noteTrophies, onHeroesUnlocked, refreshHeroUnlocks, LS_HERO_UNLOCKED, _resetHeroUnlocksForTest,
 } = await import("../js/hero-unlock.js");
 const { HERO_STARTING_WEAPON, SFX } = await import("../js/constants.js");
@@ -25,11 +25,12 @@ beforeEach(() => {
   delete globalThis.window;
 });
 
-test("10 人 = 最初の 2 人 ＋ 本作で 4 人 ＋ ほかのタイトルで 4 人 (= 4 つの別のタイトル)", () => {
-  assert.deepEqual(STARTER_HEROES, [10001, 4006], "ブレードとリボルバー");
+test("10 人 = 最初の 1 人 ＋ EASY クリアで 1 人 ＋ 本作で 4 人 ＋ ほかのタイトルで 4 人 (= 4 つの別のタイトル)", () => {
+  assert.deepEqual(STARTER_HEROES, [10001], "ブレード。 SPEC-153: リボルバーは EASY クリアの報酬");
+  assert.equal(EASY_REWARD_HERO, 4006);
   assert.equal(HERO_STARTING_WEAPON[10001], 10);
   assert.equal(HERO_STARTING_WEAPON[4006], 1);
-  const all = [...STARTER_HEROES, ...HERO_UNLOCKS.map((u) => u.heroId)].sort();
+  const all = [...STARTER_HEROES, EASY_REWARD_HERO, ...HERO_UNLOCKS.map((u) => u.heroId)].sort();
   assert.deepEqual(all, HEROES.map((h) => h.heroId).sort());
   assert.equal(HERO_UNLOCKS.filter((u) => u.game === "survivor").length, 4);
   const others = HERO_UNLOCKS.filter((u) => u.game !== "survivor").map((u) => u.game);
@@ -49,10 +50,11 @@ test("仲間になったときは専用の音 (= ヒーローを選ぶときの�
 });
 
 test("アチーブメントの一覧 → 使えるヒーロー", () => {
-  assert.deepEqual([...unlockedHeroes([])].sort(), [10001, 4006].sort());
+  assert.deepEqual([...unlockedHeroes([])], [10001]);
+  assert.deepEqual([...unlockedHeroes([], [], { easyCleared: true })].sort(), [10001, 4006].sort(), "SPEC-153: EASY クリアでビリー");
   const s = unlockedHeroes(["survivor.stage2", "fortress.boss10", "survivor.stage1", "cross.login"]);
   assert.ok(s.has(2016) && s.has(2013));
-  assert.equal(s.size, 4, "解放しないアチーブメント (= ステージ 1 など) は数えない");
+  assert.equal(s.size, 3, "解放しないアチーブメント (= ステージ 1 など) は数えない");
   assert.ok(unlockedHeroes([], [2003]).has(2003), "この端末が覚えている人");
   assert.ok(!unlockedHeroes([], [9999]).has(9999), "知らない ID は入れない");
   assert.equal(unlockOf(10001), null);
@@ -79,11 +81,11 @@ test("新しく解放されたら知らせ、 この端末に覚える (= 2 度�
   assert.ok(getUnlockedHeroes().has(2016), "読み込み直しても覚えている");
 });
 
-test("共通基盤から読む: 持っているアチーブメントで解放。 SDK が無い・失敗しても 2 人のまま", async () => {
+test("共通基盤から読む: 持っているアチーブメントで解放。 SDK が無い・失敗しても 1 人のまま", async () => {
   assert.deepEqual(await refreshHeroUnlocks(), []);
   globalThis.window = { BearkoGames: { getTrophies: async () => { throw new Error("offline"); } } };
   assert.deepEqual(await refreshHeroUnlocks(), []);
-  assert.equal(getUnlockedHeroes().size, 2);
+  assert.equal(getUnlockedHeroes().size, 1);
   globalThis.window = { BearkoGames: { getTrophies: async () => ({ ok: true, trophies: [{ id: "education.hero1" }, { id: "workshop.day1" }] }) } };
   assert.deepEqual((await refreshHeroUnlocks()).sort(), [1006, 1007]);
 });

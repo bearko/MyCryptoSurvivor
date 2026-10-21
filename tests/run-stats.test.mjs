@@ -169,7 +169,7 @@ test("倒れた画面と全クリアの画面に表を出す。 倒れたとき�
   assert.match(ar, /collectAnalysis\(\{ cleared: true \}\)/);
   assert.match(ar, /renderAnalysis\(document\.getElementById\("activityReportAnalysis"\), analysis\)/);
   const html = read("../index.html");
-  assert.match(html, /id="gameOverAnalysis" data-reveal/);
+  assert.match(html, /id="gameOverAnalysis"/);   // SPEC-153: 「くわしく」の中
   assert.match(html, /id="activityReportAnalysis" data-reveal/);
   assert.match(read("../css/result-ui.css"), /\.anl__cmp \{/);
   for (const k of ["analysis.title", "analysis.titleClear", "analysis.taken", "analysis.killer", "analysis.dealt", "analysis.prevDefeat", "analysis.prevClear", "analysis.best",

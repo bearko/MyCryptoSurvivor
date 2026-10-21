@@ -79,6 +79,10 @@ export function triggerGameOver(reason = "lose") {
   const modal = document.getElementById("gameOverModal");
   // SPEC-046: 上から順に出し、 撃破数を数え上げる
   const reveal = () => {
+    // SPEC-153: 内訳と分析は畳んだ状態から
+    document.getElementById("gameOverMoreBody")?.classList.add("hidden");
+    document.getElementById("gameOverMore")?.classList.remove("result-more--open");
+    document.getElementById("gameOverMore")?.setAttribute("aria-expanded", "false");
     revealIn(modal);
     countUp(document.getElementById("gameOverKills"), state.lastRunStats?.kills ?? 0, { durMs: 600, delayMs: 250 });
     renderRewards(document.getElementById("gameOverRewards"), state.lastRunStats?.rewards ?? {}, { delayMs: 500 });   // SPEC-090
@@ -276,6 +280,14 @@ function _wireOnce() {
   // SPEC-037: 「タイトルに戻る」 — 戦闘停止 / state リセットして title 画面へ
   document.getElementById("gameOverToTitle")
     ?.addEventListener("click", returnToTitle);
+  // SPEC-153: 「くわしく」で内訳と分析を開く (= ふだんは畳んで、 スクロールせずに「復活する」まで見せる)
+  document.getElementById("gameOverMore")?.addEventListener("click", () => {
+    const body = document.getElementById("gameOverMoreBody");
+    const btn = document.getElementById("gameOverMore");
+    const open = body?.classList.toggle("hidden") === false;
+    btn?.setAttribute("aria-expanded", open ? "true" : "false");
+    btn?.classList.toggle("result-more--open", open);
+  });
 
   document.getElementById("gameOverSubmit")
     ?.addEventListener("click", _onSubmitClick);
