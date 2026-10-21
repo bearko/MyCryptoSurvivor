@@ -71,7 +71,7 @@ test("SPEC-132: ステージクリアの画面からスキルツリーへ (= 閉
   const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), "utf8");
   assert.ok(read("index.html").includes('id="stageTransitionSkillTree"'));
   const tree = read("js/skill-tree.js");
-  assert.match(tree, /\["stageTransitionSkillTree", "stageTransitionModal", true\]/);
+  assert.match(tree, /\["stageTransitionSkillTree", "stageTransitionModal", true, false, true\]/);   // SPEC-161: 木から「次のノードに挑む」
   assert.match(tree, /if \(_returnTo\) \{\n\s+const back = _returnTo;\n\s+_returnTo\.classList\.remove\("hidden"\)/);
   assert.match(tree, /tree-back2/);
   assert.doesNotMatch(tree, /returnToTitle\(/, "結果の画面から開いてもタイトルに戻さない");
