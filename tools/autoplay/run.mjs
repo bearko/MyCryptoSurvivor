@@ -131,7 +131,7 @@ await p.evaluate(({ K, BUY }) => {
     let near = 0;
     const add = (x, y, R, m) => { const dx = x - P.x, dy = y - P.y; const d = Math.hypot(dx, dy) || 1; if (d > R) return; near++; const w = ((R - d) / R) ** 2 * m; const a = Math.atan2(dy, dx); for (let i = 0; i < N; i++) { const ang = (i / N) * Math.PI * 2; const cos = Math.cos(ang - a); danger[i] += w * Math.max(0, cos) ** 2 + w * 0.15; } };
     // ボス戦: 人はボスから逃げ続けず、 武器が届く距離 (= 射程のある武器なら 220、 近接だけなら 70) を保って戦う。 ボスそのものの危険は弾・叩きつけより軽く見る
-    const boss = (b.enemies ?? []).find((e) => e.isBoss && !e.isProp);
+    const boss = (b.enemies ?? []).find((e) => e.isBoss && !e.isProp) ?? (b.enemies ?? []).find((e) => e.isShadow && !e.invuln);   // SPEC-165: 倒すシャドーはボスと同じに (= 距離を保って殴る)
     //   近接 (= 回る武器) が DPS の半分以上なら触れる距離 (70)、 そうでなければ射程のある武器が届く 220
     let meleeDps = 0, rangedDps = 0;
     for (const w of b.weapons ?? []) { const orbit = w.archetype === "orbit" || w.archetype === "orbitClose"; const d = orbit ? (w.bullets ?? 1) * w.dmg * 4 * 0.5 : (w.bullets ?? 1) * w.dmg / Math.max(0.1, (w.cdMs ?? 1000) / 1000); if (orbit) meleeDps += d; else rangedDps += d; }
@@ -162,6 +162,8 @@ await p.evaluate(({ K, BUY }) => {
         else { const d = Math.hypot(goal.x - P.x, goal.y - P.y) || 1; vx = (goal.x - P.x) / d; vy = (goal.y - P.y) / d; }
       } else { const dc = Math.hypot(P.x, P.y); if (dc > 500) { vx += -P.x / dc; vy += -P.y / dc; } }
     }
+    // SPEC-165: ストーリーで HP が半分を切り、 ハートが落ちていれば、 何より先に拾いに行く (= 人はそうする)
+    if (b.story && s.stats.hp < s.statsMax.hp * 0.5) { const h = (b.items ?? []).find((g) => g.kind === "heal"); if (h) { const d = Math.hypot(h.x - P.x, h.y - P.y) || 1; vx = (h.x - P.x) / d; vy = (h.y - P.y) / d; } }
     setKey("KeyD", vx > 0.3); setKey("KeyA", vx < -0.3); setKey("KeyS", vy > 0.3); setKey("KeyW", vy < -0.3);
     return { st: "play", idx, el };
   };

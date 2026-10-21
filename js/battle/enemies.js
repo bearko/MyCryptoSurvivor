@@ -335,6 +335,14 @@ function _ringPoint(r, halfW, halfH) {
  * SPEC-022 / SPEC-030: enemyId 指定でスポーン。 雑魚はステージ mul を hp/dmg/xp に適用、
  * ボス (= 任意 isBoss) は ENEMY_SPECS の絶対値 + ステージ別の bossAttack を持たせる。
  */
+/** SPEC-165: レシピの割合で型を引く (= { giant: 0.2, runner: 0.2 }。 撃つ敵には付けない) */
+function _rollStoryVariant(table, shooter) {
+  if (shooter) return null;
+  let r = Math.random();
+  for (const [k, p] of Object.entries(table)) { if (r < p) return k; r -= p; }
+  return null;
+}
+
 export function spawnEnemyAtRing(enemyId = 101, at = null, { variant = undefined } = {}) {
   const b = state.battle;
   const stage = _currentStage();
@@ -410,7 +418,8 @@ export function spawnEnemyAtRing(enemyId = 101, at = null, { variant = undefined
   });
   // SPEC-107: 脅威の段階で強い型が混じる (= ボス・レアには付けない。 CE も型の倍率で増える)
   if (!isBoss && !spec.isRare) {
-    const v = variant !== undefined ? variant : rollVariant(runThreatTier(state.killCount, { firstRun: !!state.run?.firstRun, easy: isEasy() }), { shooter: spec.behavior === "shooter" });
-    if (v && VARIANTS[v]) applyVariant(b.enemies[b.enemies.length - 1], v, enemyId);
+    const sv = easyStage()?.variants;   // SPEC-165: ストーリーはレシピの割合 (= 4-1)
+    const v = variant !== undefined ? variant : (sv ? _rollStoryVariant(sv, spec.behavior === "shooter") : rollVariant(runThreatTier(state.killCount, { firstRun: !!state.run?.firstRun, easy: isEasy() }), { shooter: spec.behavior === "shooter" }));
+    if (v && VARIANTS[v]) { applyVariant(b.enemies[b.enemies.length - 1], v, enemyId); b.story?.events?.push(`variant:${v}`); }
   }
 }
