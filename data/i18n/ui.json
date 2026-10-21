@@ -283,7 +283,7 @@
   "levelup.owned.max":   { "ja": "MAX",                             "en": "MAX" },
   "ext.new":             { "ja": "NEW",                             "en": "NEW" },
 
-  "gameover.title":      { "ja": "力尽きた……",                    "en": "Down…" },
+  "gameover.title":      { "ja": "REVIVE",                        "en": "REVIVE" },
   "gameover.titleClear": { "ja": "クリア!",                          "en": "Clear!" },
 
   "stage.clearTitle":    { "ja": "ステージクリア!",                  "en": "Stage Clear!" },
@@ -545,7 +545,7 @@
   "result.kills":        { "ja": "撃破",                           "en": "Kills" },
   "result.level":        { "ja": "レベル",                         "en": "Level" },
   "result.stageOf":      { "ja": "ステージ {n} / {total}",         "en": "Stage {n} / {total}" },
-  "result.fellAt":       { "ja": "ステージ {n} / {total} で力尽きた", "en": "Fell on stage {n} of {total}" },
+  "result.fellAt":       { "ja": "ステージ {n} / {total}",         "en": "Stage {n} / {total}" },
   "analysis.title":      { "ja": "倒れた理由", "en": "Why you fell" },
   "analysis.titleClear": { "ja": "この挑戦の数字", "en": "This run in numbers" },
   "analysis.taken":      { "ja": "被ダメ", "en": "Damage taken" },

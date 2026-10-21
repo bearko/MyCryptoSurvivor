@@ -98,7 +98,7 @@ test("流れの配線: 倒れたら粒子 → 渦に入ったらマインちゃ�
   assert.match(go, /_watch\.className = "revive-watch";/);
   const html = read("../index.html");
   assert.match(html, /id="gameOverRetry" data-reveal><img class="gameover-modal__clock"[^>]*\/><span data-i18n="gameover\.revive">復活する ▶<\/span>/);
-  assert.match(html, /data-kicker="REVIVE">力尽きた……</);
+  assert.match(html, /data-kicker="">REVIVE</, "「力尽きた」は出さない (= 作者の決定)");
   const css = read("../css/components.css");
   assert.match(css, /\.gameover-modal--revive \.gameover-modal__card \{ background: rgba\(20, 16, 30, 0\.42\); \}/, "札は半透明");
   assert.match(css, /\.revive-fx \{[^}]*z-index: calc\(var\(--z-modal-top\) - 1\)/, "渦は結果の画面の後ろ");
@@ -115,7 +115,8 @@ test("レッスンは告げ声が終わるのを待ち、 出すときは前の�
 });
 
 test("文言: 見出し・復活する・マインちゃんの「王妃の黄金時計」。 RTA/ABSOLUTE も「復活する」", () => {
-  assert.equal(ui["gameover.title"].ja, "力尽きた……");
+  assert.equal(ui["gameover.title"].ja, "REVIVE");
+  assert.doesNotMatch(ui["result.fellAt"].ja, /力尽きた/);
   assert.equal(ui["gameover.revive"].ja, "復活する ▶");
   assert.equal(ui["gameover.reviveCurrent"].ja, "今のレギュレーションで復活する");
   assert.equal(ui["tree.retryNow"].ja, "復活する");

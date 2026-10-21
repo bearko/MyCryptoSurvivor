@@ -402,9 +402,9 @@ function _renderGameOverModal() {
   if (titleEl) {
     titleEl.textContent = (stats.reason === "clear")
       ? t("gameover.titleClear", "Clear!")
-      : t("gameover.title", "力尽きた……");   // SPEC-150
+      : t("gameover.title", "REVIVE");   // SPEC-150 → 作者の決定 2026-10-21: 「力尽きた」は出さない (= 気落ちさせない)
     // SPEC-058: 英字の小見出しも結果に合わせる
-    titleEl.dataset.kicker = (stats.reason === "clear") ? "ALL CLEAR" : "REVIVE";   // SPEC-150
+    titleEl.dataset.kicker = (stats.reason === "clear") ? "ALL CLEAR" : "";   // 見出しそのものが REVIVE
   }
   const elapsedEl = document.getElementById("gameOverElapsed");
   const levelEl   = document.getElementById("gameOverLevel");
