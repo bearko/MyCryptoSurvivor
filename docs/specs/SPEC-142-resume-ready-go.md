@@ -2,7 +2,7 @@
 id: SPEC-142
 title: Resume With "Ready → Go!" Instead of a 3-2-1 Countdown (0.8 s Pause, Go! Shown While Playing)
 status: Done
-pr: TBD
+pr: 180
 phase: v1.6 Battle
 kind: Changed
 ---
