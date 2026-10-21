@@ -75,6 +75,11 @@ export function playVoice(id, { hold = false } = {}) {
   return true;
 }
 
+/** いま鳴っているか (= SPEC-151: レッスンは、 ステージの告げ声が終わるのを待つ) */
+export function isVoicePlaying() {
+  try { return !!_el && !_el.paused && !_el.ended && _el.currentTime > 0; } catch (_) { return false; }
+}
+
 /** 止める (= タブを離れたとき) */
 export function stopVoice() {
   clearTimeout(_timer);
