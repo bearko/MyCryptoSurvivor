@@ -125,6 +125,9 @@ export function naviLines(scene, ctx = {}) {
       ];
       return [list[Math.abs(ctx.n | 0) % list.length]];
     }
+    case "afterTree":
+      // SPEC-146: スキルツリーから戻ったとき (= 強くしたら「もう一度」へ。 ボイスはまだない)
+      return [{ key: (ctx.bought | 0) > 0 ? "navi.afterTree.bought" : "navi.afterTree.none", pose: (ctx.bought | 0) > 0 ? "hooray" : "pointer" }];
     case "tip": {
       // SPEC-068: 初めてのアイテム・仕掛け・敵のひとこと。 key は navi-tips.js の TIP_KEYS
       const key = String(ctx.key ?? "");

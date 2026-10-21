@@ -100,6 +100,8 @@ export function startBattle(hero) {
     state.run.scoreSent = false;
     state.run.missionGum = 0;   // SPEC-131
     state.run.missionClears = 0;   // SPEC-136: 内訳の「ミッション達成 n 回」
+    // SPEC-146: 初めての人の最初の挑戦 (= まだ 1 回も挑戦を終えていない。 RTA は初回には選べないが、 念のため外す)
+    state.run.firstRun = (getMeta().runs | 0) === 0 && !state.rtaMode;
   }
 
   const b = state.battle;
@@ -204,7 +206,8 @@ export function startBattle(hero) {
   // SPEC-090c: 先手 (= 始まってすぐ選ぶ。 各ステージの始まりに。 経験値の梯子は進めない)
   // SPEC-109: ショップで遊ぶときは CE に読み替える (= resetShopForStage)
   // SPEC-111: RTA でもショップ (= 作者の決定 2026-10-20。 RTA の記録は作者のものだけなので、 レギュレーションの版は分けない)
-  if (isShopMode()) {
+  // SPEC-146: 初めての人の最初の挑戦はショップを出さず、 レベルアップで強くなる (= 前の作り。 ショップは 2 回目から)
+  if (isShopMode() && !state.run?.firstRun) {
     resetShopForStage(state.currentStageIdx ?? 0);
   } else {
     state.shop = null;

@@ -2018,3 +2018,9 @@ a.title-screen__next[href]:hover { border-color: var(--accent); }
 .rt-num { color: #ffd36b; font-weight: 800; font-variant-numeric: tabular-nums; }
 .rt-term { color: #7fdcff; font-weight: 700; }
 .rt-quote { color: #fff; font-weight: 800; }
+
+/* SPEC-146: 結果の画面の「もう一度挑む」 (= スキルツリーのすぐ下。 木から戻ったら脈打つ) */
+.gameover-modal__again { width: 100%; margin-top: 8px; font-size: 1.02rem; }
+.gameover-modal__again--pulse { animation: again-pulse 0.9s ease-in-out 4; }
+@keyframes again-pulse { 0%, 100% { transform: none; filter: none; } 50% { transform: scale(1.04); filter: brightness(1.25); } }
+:root[data-reduce-fx] .gameover-modal__again--pulse { animation: none; }
