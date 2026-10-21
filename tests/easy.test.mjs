@@ -18,7 +18,7 @@ test("ステージの作り: ボスは 0:15 / 0:30、 ステージ 2 にレア�
   for (const s of EASY_STAGES) {
     assert.ok(s.warnMs < s.bossAtMs);
     for (const sh of s.shopTimesMs) assert.ok(sh < s.bossAtMs - s.warnMs, "店はボスの予告より前");
-    assert.ok(s.bossHpMul > 0 && s.bossHpMul <= 0.05, "NORMAL のボスは育った装備向けなので、 EASY では大きく下げる (= SPEC-163: 180 / 1,440)");
+    assert.ok(s.bossHpMul > 0 && s.bossHpMul <= 0.1, "NORMAL のボスは育った装備向けなので、 EASY では大きく下げる (= SPEC-164: 180 / 4,050)");
     assert.ok(s.bossDmgMul > 0 && s.bossDmgMul <= 1);
   }
   assert.equal(EASY_STAGES[1].rareAtMs, 5000); assert.equal(EASY_STAGES[1].missionAtMs, 8000);
@@ -26,13 +26,14 @@ test("ステージの作り: ボスは 0:15 / 0:30、 ステージ 2 にレア�
   assert.equal(EASY_STAGES.length, 2, "SPEC-154: EASY は 2 ステージ");
   assert.equal(EASY_STAGES[1].thunderAtBoss, true);
   assert.match(read("js/battle/field.js"), /ez\?\.thunderAtBoss && !b\.easyThunderDropped && b\.bossSpawned/, "雷鼓はボスが出てから");
-  assert.ok(EASY_STAGES[1].enemyHpMul >= 1.5 && EASY_STAGES[1].enemyDmgMul >= 1.5, "ステージ 2 は負ける設計");
+  assert.ok(EASY_STAGES[1].enemyHpMul >= 1.5 && EASY_STAGES[1].enemyDmgMul <= 0.8, "SPEC-164: 根を取れば雑魚はほぼ痛くない。 根なし (HP ×0.5) は押し切られる");
+  assert.equal(EASY_STAGES[1].thunderBossRatio, 0.5, "SPEC-164: 雷鼓はボスの半分");
   assert.ok(EASY_STAGES[1].missionAtMs + EASY_STAGES[1].missionDurS * 1000 <= EASY_STAGES[1].bossAtMs - EASY_STAGES[1].warnMs, "ミッションはボスの予告の前に終わる");
 });
 
 test("ヒーローは根を取るまで弱い (= EASY だけ)。 EASY は T0 のまま", () => {
-  assert.equal(EASY_HERO_MUL, 0.6);
-  assert.equal(easyHeroMul({ nodes: {} }, true), 0.6);
+  assert.equal(EASY_HERO_MUL, 0.5);   // SPEC-164
+  assert.equal(easyHeroMul({ nodes: {} }, true), 0.5);
   assert.equal(easyHeroMul({ nodes: { [ROOT_ID]: 1 } }, true), 1);
   assert.equal(easyHeroMul({ nodes: {} }, false), 1, "NORMAL・RTA には効かない");
   for (const k of [150, 400, 1500]) assert.equal(runThreatTier(k, { easy: true }), 0);

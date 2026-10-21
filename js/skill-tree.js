@@ -457,6 +457,7 @@ function renderAll(fresh = new Map(), burst = false) {
   renderSheet();
   renderStats();
   drawMinimap();
+  applyRootGate();
 }
 
 /** 選んだ節を買ったあとの表 (= 買えない・上限なら null)。 SPEC-093 */
@@ -792,6 +793,20 @@ function notice(text, kind = "") {
   el.className = `tree-notice ${kind}`;
   clearTimeout(_noticeTimer);
   _noticeTimer = setTimeout(() => el.classList.add("hidden"), NOTICE_MS);
+}
+
+/**
+ * SPEC-164: 根 (= サバイバーの覚醒) を取るまでは、 真ん中の根以外のボタンを押せなくする
+ *   (= 「復活する」が目立つので、 強化せずにそのまま復活してしまいそうだった)。 縮める・広げる・中心へ・全体・チャットは残す
+ */
+export function rootGated(meta) {
+  return !owns(meta, ROOT_ID);
+}
+function applyRootGate() {
+  if (!_screen) return;
+  const gate = rootGated(treeMeta());
+  _screen.classList.toggle("gate", gate);
+  for (const el of _screen.querySelectorAll(".tree-retry, .tree-back2, .route-pip, .sheet-bulk button, .sheet-bulk input")) el.disabled = gate;
 }
 
 /** 買う (= tryBuy で確かめてから meta.js に書く)。 新しく見えた節は中心から近い順に飛び出す */

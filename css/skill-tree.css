@@ -495,3 +495,6 @@
 .tree-screen.wide .tree-retry { left: auto; right: 350px; }
 @keyframes tree-retry-pulse { 0%, 100% { box-shadow: 0 0 10px rgba(255, 196, 64, 0.4), 0 4px 0 rgba(0, 0, 0, 0.35); } 50% { box-shadow: 0 0 24px rgba(255, 196, 64, 0.85), 0 4px 0 rgba(0, 0, 0, 0.35); } }
 :root[data-reduce-fx] .tree-retry { animation: none; }
+
+/* SPEC-164: 根 (= サバイバーの覚醒) を取るまでは、 復活する・戻る・道・一括解放を押せない (= 根だけが光る) */
+.tree-screen.gate .tree-retry, .tree-screen.gate .tree-back2, .tree-screen.gate .route-pip, .tree-screen.gate .sheet-bulk { opacity: 0.35; filter: grayscale(1); pointer-events: none; animation: none; }

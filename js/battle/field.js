@@ -232,7 +232,7 @@ export function applyItem(kind) {
     robotOn(robotSec());   // SPEC-140
   } else if (kind === "thunder") {
     thunderStrike();   // SPEC-063
-    if (easyStage() && (state.currentStageIdx ?? 0) === 2) showLesson("s2.thunder");   // SPEC-147
+    if (easyStage() && (state.currentStageIdx ?? 0) === 1) showLesson("s2.thunder");   // SPEC-147。 SPEC-164: EASY は 2 ステージなので 1 (= SPEC-154 の直し漏れで出ていなかった)
   } else if (kind === "magnet") {
     // 落ちている CE を全部吸い寄せる (= gems.js が毎フレーム近づける)
     for (const g of b.gems) g.magnet = true;
@@ -286,7 +286,7 @@ export function thunderStrike() {
     const e = b.enemies[i];
     if (e.isProp || !inView(e.x - px, e.y - py, vw, vh, e.r)) continue;
     bolts.push({ x: e.x, y: e.y, seed: Math.random() });
-    hitEnemy(i, e.isBoss ? Math.round(e.hpMax * thunderBossRatio()) : e.hp, "thunder");   // SPEC-148: 出どころ
+    hitEnemy(i, e.isBoss ? Math.round(e.hpMax * (easyStage()?.thunderBossRatio ?? thunderBossRatio())) : e.hp, "thunder");   // SPEC-148: 出どころ。 SPEC-164: EASY は上書き
   }
   for (const arr of [b.enemyShots, b.bossProjectiles]) {
     if (!arr) continue;
