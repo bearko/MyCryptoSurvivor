@@ -76,8 +76,8 @@ export function tickEnemies(dt, nowMs) {
   // SPEC-147: EASY は短い (= bossSpawnAtMs / bossWarnLeadMs が定数の代わり)
   const bossAt = bossSpawnAtMs(), warnLead = bossWarnLeadMs();
   if (!b.bossSpawned && b.stageElapsedMs >= bossAt - warnLead) {
-    fxBossIncoming();
-    _bossIncomingHook?.();   // SPEC-153: マインちゃんの警告 (= index.js が置く)
+    // SPEC-153: マインちゃんの警告 (= index.js が置く)。 SPEC-154: この if は毎コマ通るので、 新しく予告したときだけ (= 毎コマ呼ぶと吹き出しが空のまま止まっていた)
+    if (fxBossIncoming()) _bossIncomingHook?.();
     // SPEC-061: 出るまでの残りを数える (= ゲームの中の時間)
     fxBossCountdown(bossAt - b.stageElapsedMs, warnLead);
   }

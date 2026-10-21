@@ -1,34 +1,39 @@
 // ============================================================
-// lesson.js — EASY のレッスン (= SPEC-147)。 止めて、 マインちゃんが読み上げ、 「つぎへ」で再開
+// lesson.js — EASY のレッスン (= SPEC-147 → SPEC-154)。 止めずに、 画面の上の通信窓でマインちゃんが話す
 // ============================================================
 //
-// 画面の真ん中に小さな窓 (= 顔・文・つぎへ)。 出た瞬間に pauseTime、 閉じたら resumeTime (= 対)。
-// 閉じたあとの Ready → Go! は出さない (= resetResumeCountdown で止まっていた時間を忘れる)。
-// 1 つのレッスンは 1 回だけ (= mcs.lessons。 設定の「もう一度聞く」で忘れる)。
-// ボイスは lesson.<番号> (= 録音が入るまでは文だけ)。 ほかの画面 (= 店・ミッション・結果) の上に重なる。
+// SPEC-154: 以前は真ん中の窓で時間を止めて読み上げていたが、 逐一のカットインはテンポを切るのでやめた。
+// 戦闘中は「初めて拾ったアイテム」のひとこと (= navi-tips) と同じ、 画面の上の通信窓 (= 顔のアイコンと吹き出し) で話す。
+// 止まっている画面 (= 店・ミッション) のあいだは画面の下の帯、 スキルツリーの中では木の上の窓。 ゲームは止めない。
+// 説明している相手 (= CE・店のゲージ・ボスの赤いエリア・レアエネミー) にはカーソルを当てる (= lesson-cursor.js)。
+// 1 つのレッスンは 1 回だけ (= mcs.lessons。 設定の「もう一度聞く」で忘れる)。 ボイスは lesson.<番号> (= 録音が入るまでは文だけ)。
+// マインちゃんがほかのことを話しているあいだは順番を待つ。 時刻で出すものは、 告げ声が終わってから。
 
-import { state, pauseTime, resumeTime } from "./state.js";
+import { state } from "./state.js";
 import { t } from "./i18n.js";
-import { naviFrameUrl, NAVI_POSES } from "./navi.js";
-import { playVoice, hasVoice, voiceMs, isVoicePlaying, stopVoice } from "./voice.js";
-import { playSe } from "./audio.js";
-import { SFX } from "./constants.js";
+import { naviSay, naviLines, naviIsShown, NAVI_TYPE_MS } from "./navi.js";
+import { hasVoice, voiceMs, isVoicePlaying } from "./voice.js";
 import { isEasy, loadLessons, saveLessons, LESSON_KEYS, LS_LESSONS } from "./easy.js";
-import { resetResumeCountdown } from "./battle/resume-countdown.js";
+import { showCursor, hideCursor } from "./lesson-cursor.js";
+import { BOSS_SPAWN_POS } from "./battle/arena.js";
 
 /** 番号ごとのポーズ (= 無ければ pointer) */
 const POSE = {
   "s1.ce": "sparkle", "s1.clear": "hooray", "s2.rare": "sparkle", "s2.gift": "wink", "s2.reward": "hooray",
-  "s3.start": "cross", "s3.lose": "teary", "s3.root": "hooray", "s3.thunder": "sparkle", "s3.clear": "hooray",
+  "s2.lose": "teary", "s2.root": "hooray", "s2.thunder": "sparkle", "s2.clear": "hooray",
 };
 /** 文だけのときに、 読む時間の目安 (= 1 文字) と最短 */
 export const LESSON_READ_MS_PER_CHAR = 90;
 export const LESSON_MIN_MS = 2500;
+/** 言い終えてから引っこむまで */
+export const LESSON_HOLD_MS = 1800;
+/** 話せないときに、 もう一度見るまで */
+export const LESSON_RETRY_MS = 250;
 
 let _seen = null;
-let _open = null;     // いま出している番号
-let _queue = [];      // 同時に 2 つ来たとき (= 順に出す)
-let _wired = false;
+let _queue = [];
+let _timer = 0;
+let _retry = 0;
 
 function _storage() { try { return globalThis.localStorage ?? null; } catch { return null; } }
 function _getSeen() { if (!_seen) _seen = loadLessons(_storage()); return _seen; }
@@ -44,8 +49,38 @@ export function lessonHoldMs(text, voiceLen = 0) {
 }
 
 /**
- * レッスンを出す (= EASY のときだけ。 見たことがあれば何もしない)。 出したら true
- * 止めるのはここ (= pauseTime)。 閉じるのは「つぎへ」か、 読み上げが終わってしばらく
+ * どこで話すか (= 純関数)。 treeOpen: 木を開いている。 paused: 止まっている画面がある
+ *   木の中 → "tree" (= 木の上の窓)、 止まっている → "result" (= 画面の下の帯)、 戦闘中 → "battle" (= 画面の上の通信窓)
+ */
+export function lessonPlace({ treeOpen = false, paused = false } = {}) {
+  if (treeOpen) return "tree";
+  if (paused) return "result";
+  return "battle";
+}
+
+/** 説明している相手 (= カーソルを当てる先。 純関数ではない: 画面の要素と戦闘の座標を見る) */
+function _cursorTarget(key) {
+  const b = state.battle;
+  const nearest = (arr, pick = () => true) => {
+    const p = b?.player; if (!p || !arr) return null;
+    let best = null, bd = Infinity;
+    for (const o of arr) { if (!pick(o)) continue; const d = Math.hypot(o.x - p.x, o.y - p.y); if (d < bd) { bd = d; best = o; } }
+    return best;
+  };
+  switch (key) {
+    case "s1.ce":    return { world: () => { const g = nearest(b?.gems); return g ? { x: g.x, y: g.y } : null; } };
+    case "s1.shop":  return { el: "#shopBar" };
+    case "s1.boss":
+    case "s2.boss":  return { world: () => ({ x: BOSS_SPAWN_POS.x, y: BOSS_SPAWN_POS.y }) };
+    case "s2.rare":  return { world: () => { const e = nearest(b?.enemies, (e) => e.isRare); return e ? { x: e.x, y: e.y } : null; } };
+    case "s2.gift":  return { el: "#shopGifts" };
+    case "s2.mission": return { el: "#missionAccept" };
+    default: return null;
+  }
+}
+
+/**
+ * レッスンを出す (= EASY のときだけ。 見たことがあれば何もしない)。 順番に入れたら true
  */
 export function showLesson(key) {
   if (!isEasy() || !globalThis.document) return false;
@@ -53,53 +88,49 @@ export function showLesson(key) {
   if (!lessonPending(seen, key)) return false;
   seen.add(key);
   saveLessons(seen, _storage());
-  if (_open) { _queue.push(key); return true; }
-  _show(key);
+  _queue.push(key);
+  _pump();
   return true;
 }
 
-function _show(key) {
-  _wire();
-  const el = document.getElementById("lessonModal");
-  if (!el) return;
-  _open = key;
-  pauseTime();
-  const text = t(`lesson.${key}`, key);
-  el.querySelector(".lesson__text").textContent = text;
-  el.querySelector(".lesson__face").src = naviFrameUrl(NAVI_POSES[POSE[key] ?? "pointer"]);
-  el.querySelector(".lesson__next").textContent = t("lesson.next", "つぎへ ▶");
-  el.classList.remove("hidden", "lesson--in");
-  void el.offsetWidth;
-  el.classList.add("lesson--in");
+function _commTop() {
+  const hud = globalThis.document?.getElementById("hud");
+  const bottom = hud ? Math.round(hud.getBoundingClientRect().bottom) : 0;
+  return bottom + (state.rtaMode ? 40 : 8);
+}
+function _treeTop() {
+  const r = globalThis.document?.querySelector("#skillTreeScreen .tree-viewport")?.getBoundingClientRect();
+  return r ? r.top + 8 : 96;
+}
+function _treeOpen() {
+  const el = globalThis.document?.getElementById("skillTreeScreen");
+  return !!el && !el.classList.contains("hidden");
+}
+
+function _pump() {
+  if (_timer || _queue.length === 0) return;
+  clearTimeout(_retry); _retry = 0;
+  if (naviIsShown()) { _retry = setTimeout(() => { _retry = 0; _pump(); }, LESSON_RETRY_MS); return; }   // 告げ声・ひとことを消さない
+  const key = _queue.shift();
   const vid = `lesson.${key}`;
-  stopVoice();   // SPEC-151: ステージの告げ声などが残っていたら切る (= 重ねない)
-  const spoke = hasVoice(vid) && playVoice(vid);
-  playSe(SFX.UI_CLICK, 0, 0.25);
-  // 読み上げが終わってしばらくしたら、 自分で閉じる (= 押さなくても進む)
-  clearTimeout(_autoTimer);
-  _autoTimer = setTimeout(() => { if (_open === key) closeLesson(); }, lessonHoldMs(text, spoke ? voiceMs(vid) : 0) + 1500);
-}
-let _autoTimer = 0;
-
-/** 閉じる (= つぎへ)。 次が待っていればそれを出す */
-export function closeLesson() {
-  if (!_open) return;
-  clearTimeout(_autoTimer);
-  _open = null;
-  document.getElementById("lessonModal")?.classList.add("hidden");
-  resumeTime();
-  resetResumeCountdown();   // SPEC-104 の Ready → Go! は出さない (= 止まっていたことを忘れる)
-  const next = _queue.shift();
-  if (next) _show(next);
+  const text = t(vid, key);
+  const place = lessonPlace({ treeOpen: _treeOpen(), paused: state.pauseFlags > 0 });
+  const opt = { place, autoHideMs: LESSON_HOLD_MS };
+  if (place === "battle") opt.top = _commTop();
+  if (place === "tree") opt.top = _treeTop();
+  naviSay([{ key: vid, pose: POSE[key] ?? "pointer", voice: hasVoice(vid) ? vid : null }], opt);
+  const ms = Math.max(text.length * NAVI_TYPE_MS, voiceMs(hasVoice(vid) ? vid : "")) + LESSON_HOLD_MS;
+  const target = place === "battle" ? _cursorTarget(key) : null;   // カーソルは戦闘の画面でだけ (= 止まっている画面の中は指さない)
+  if (target) showCursor(target, ms);
+  _timer = setTimeout(() => { _timer = 0; hideCursor(); _pump(); }, ms + 300);
 }
 
-/** いま出しているか */
-export function isLessonOpen() { return !!_open; }
-
-/** 戦闘をやめたとき (= 待っているものを捨てる。 出ているものは閉じる) */
+/** 戦闘をやめたとき (= 待っているものを捨てる) */
 export function clearLessons() {
   _queue = [];
-  if (_open) closeLesson();
+  clearTimeout(_timer); _timer = 0;
+  clearTimeout(_retry); _retry = 0;
+  hideCursor();
 }
 
 /** 設定の「もう一度聞く」 (= 見たものを忘れる)。 忘れた数を返す */
@@ -110,13 +141,6 @@ export function resetLessons() {
   return n;
 }
 export function seenLessonCount() { return _getSeen().size; }
-
-function _wire() {
-  if (_wired) return;
-  _wired = true;
-  document.getElementById("lessonNext")?.addEventListener("click", closeLesson);
-  document.addEventListener("keydown", (e) => { if (_open && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); closeLesson(); } });
-}
 
 // ---- 戦闘の中で時刻を見て出すもの (= battle/index.js の _step から。 ステージごとに 1 回) ----
 /**
@@ -132,18 +156,16 @@ export function timedLesson({ stageIdx, elapsedMs, shopAtMs, bossWarnAtMs, kills
     cand.push([kills >= 1, "s1.ce"]);
     cand.push([shopAtMs != null && elapsedMs >= shopAtMs - 1500, "s1.shop"]);
     cand.push([elapsedMs >= bossWarnAtMs, "s1.boss"]);
-  } else if (s === 1) {
+  } else {
     cand.push([elapsedMs >= 0, "s2.start"]);
     cand.push([elapsedMs >= bossWarnAtMs, "s2.boss"]);
-  } else {
-    cand.push([elapsedMs >= 0, "s3.start"]);
   }
   for (const [ok, key] of cand) if (ok && lessonPending(seen, key)) return key;
   return null;
 }
 
 export function tickLessons() {
-  if (!isEasy() || _open) return;
+  if (!isEasy()) return;
   const b = state.battle;
   if (!b?.active || b.gameOver || state.pauseFlags > 0) return;
   if (isVoicePlaying()) return;   // SPEC-151: 「ここは node ホレリス」の声が終わってから (= 「新しいステージ！」と重ねない)

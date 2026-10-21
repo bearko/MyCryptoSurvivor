@@ -151,12 +151,14 @@ export function fxPlayerHurt(isBoss = false) {
   _vibrate(isBoss ? 40 : 18);
 }
 
+/** ボスの予告 (= 1 ステージ 1 回)。 新しく予告したら true (= SPEC-154: 呼ぶ側はこれを見てマインちゃんの警告を 1 度だけ出す) */
 export function fxBossIncoming() {
   const fx = _fx();
-  if (fx.bossWarned) return;
+  if (fx.bossWarned) return false;
   fx.bossWarned = true;
   playSe(SE_BOSS_WARN, 0, 0.6);
   _showBossBanner();
+  return true;
 }
 
 // ---- SPEC-061: ボスが出るまでのカウントダウン ----

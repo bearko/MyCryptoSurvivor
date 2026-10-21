@@ -96,7 +96,7 @@ export function triggerActivityReport() {
       renderAnalysis(document.getElementById("activityReportAnalysis"), analysis);   // SPEC-148
       startConfetti();   // SPEC-149
       if (llFirst) showLLUnlocked(HERO_STARTING_WEAPON[state.ownedHero?.heroId]);   // SPEC-106
-      if (easy) showLesson("s3.clear");   // SPEC-147
+      if (easy) showLesson("s2.clear");   // SPEC-147
     },
   });
 }
