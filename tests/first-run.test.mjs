@@ -34,7 +34,7 @@ test("倒れたあと: スキルツリーから「もう一度挑む」・結果
   const tree = read("js/skill-tree.js");
   assert.match(tree, /\["gameOverSkillTree", "gameOverModal", false, true\]/);
   assert.match(tree, /function retryFromTree\(\) \{\n\s+_returnTo = null;/);
-  assert.match(tree, /g\.onBackFromTree\(\{ bought: _bought \}\)/);
+  assert.match(tree, /g\.onBackFromTree\(\{ bought: _bought, fromTree: true \}\)/);   // SPEC-155
   const go = read("js/battle/gameover.js");
   assert.match(go, /state\.rtaMode \|\| state\.regulation === REGULATION_ABSOLUTE \? t\("gameover\.reviveCurrent"/, "RTA と ABSOLUTE は「今のレギュレーションで復活する」");   // SPEC-150
   for (const k of ["gameover.revive", "tree.retryNow", "navi.afterTree.bought", "navi.afterTree.none"]) assert.ok(ui[k]?.ja && ui[k]?.en, k);   // SPEC-150: 「復活する」

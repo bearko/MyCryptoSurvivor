@@ -95,10 +95,12 @@ test("流れの配線: 倒れたら粒子 → 渦に入ったらマインちゃ�
   assert.match(read("../js/battle/index.js"), /b\.heroDissolved\s*= false;/);
   // 王妃の黄金時計 (= MCH 5111) のボタンと絵
   assert.equal(REVIVE_EXT_ID, 5111);
-  assert.match(go, /img\(`Image\/Extensions\/\$\{REVIVE_EXT_ID\}\.png`\)/);
+  assert.match(go, /img\(`Image\/Extensions\/\$\{REVIVE_EXT_ID\}\.png`\)/);   // マインちゃんの横の時計の絵
   assert.match(go, /_watch\.className = "revive-watch";/);
   const html = read("../index.html");
   assert.match(html, /id="gameOverRetry" data-reveal><img class="gameover-modal__clock"[^>]*\/><span data-i18n="gameover\.revive">復活する ▶<\/span>/);
+  assert.match(read("../css/components.css"), /\.gameover-modal__again \{ display: inline-flex; align-items: center; justify-content: center; gap: 0\.4rem; white-space: nowrap;/, "SPEC-155: 時計の絵と文字を 1 行に (= 折り返さない)");
+  assert.match(html, /id="gameOverPicks" data-reveal/);
   assert.match(html, /data-kicker="">REVIVE</, "「力尽きた」は出さない (= 作者の決定)");
   const css = read("../css/components.css");
   assert.match(css, /\.gameover-modal--revive \.gameover-modal__card \{ background: rgba\(20, 16, 30, 0\.42\); \}/, "札は半透明");

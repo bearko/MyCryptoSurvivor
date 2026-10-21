@@ -15,17 +15,16 @@ lesson.s2.gift	ギフト券はショップでお得にランクアップでき�
 lesson.s2.mission	シャドーヒーローのミッション！ 受けるか断るか選べる。失敗しても罰はないよ
 lesson.s2.reward	達成したらごほうび！ ★が高いほど豪華で、ギフト券も入ってる
 lesson.s2.boss	ボスもステージごとに変わるよ！
-lesson.s3.start	ここからは本気の敵！ 生き残れるかな……
-lesson.s3.lose	惜しい！ でも大丈夫。スキルツリーでヒーローを強くできるよ。「スキルツリーへ」を押して！
-lesson.s3.root	覚醒！ ヒーローの力が大きく上がったよ！ ほかのスキルも取って、もう一度挑もう！
-lesson.s3.thunder	雷鼓だ！ ボスにも大ダメージ！
-lesson.s3.clear	EASY クリア！ 次は NORMAL に挑戦しよう。スキルツリーの強化も忘れずにね！
-advice.shot	弾で削られてるね。「{a}」（受けるダメージ −3%）か「{b}」（無敵時間）がおすすめ！
-advice.crowdDps	囲まれてるね。「{a}」や「{b}」で火力を上げよう！
-advice.crowdMove	数に押されてるね。「{a}」か「{b}」で距離を取ろう！
-advice.boss	ボスの一撃が重いね。「{a}」や「{b}」（ボスの道）を！
+lesson.s2.lose	惜しい！ でも大丈夫。スキルツリーでヒーローを強くできるよ。「スキルツリーへ」を押して！
+lesson.s2.root	覚醒！ ヒーローの力が大きく上がったよ！ ほかのスキルも取って、もう一度挑もう！
+lesson.s2.thunder	雷鼓だ！ ボスにも大ダメージ！
+lesson.s2.clear	EASY クリア！ 次は NORMAL に挑戦しよう。スキルツリーの強化も忘れずにね！
+advice.shot	弾で削られてるね。「厚い皮」（受けるダメージ −3%）か「受け身」（無敵時間）がおすすめ！
+advice.crowdDps	囲まれてるね。「鋭い一撃」や「二連」で火力を上げよう！
+advice.crowdMove	数に押されてるね。「俊足」か「長い腕」で距離を取ろう！
+advice.boss	ボスの一撃が重いね。「竜の爪」や「見切り」（ボスの道）を！
 advice.gimmick	仕掛けに当たってるね。予告が出たら離れよう！
-advice.hp	HP が足りないね。「{a}」で底上げしよう！
+advice.hp	HP が足りないね。「頑丈なからだ」で底上げしよう！
 navi.title.1	ようこそ、ノードの最前線へ！ ナビのマインちゃんだよ。
 navi.title.2	敵の群れを生きのびて、3 つのノードを突破しよう！
 navi.tap.1	呼んだ？ 準備ができたら Press to Start！
@@ -48,7 +47,16 @@ navi.tree.idle	挑戦で GUM を貯めて、また来てね。
 navi.mode.1	難易度を選んで。迷ったら NORMAL で！
 navi.mode.2	ABSOLUTE は 4 つの軸を自分で決める。きついほどスコアが伸びるよ。
 navi.hero.open	いっしょに走るヒーローを選んで！
-navi.hero.pick	{name}！ 最初の武器は「{weapon}」だよ。
+navi.hero.pick#hero10001	MCHウォーリアー！ 最初の武器は「ブレード」だよ。
+navi.hero.pick#hero4006	ビリー・ザ・キッド！ 最初の武器は「リボルバー」だよ。
+navi.hero.pick#hero2043	霧隠才蔵！ 最初の武器は「手裏剣」だよ。
+navi.hero.pick#hero2016	アナスタシア！ 最初の武器は「雪だるま」だよ。
+navi.hero.pick#hero2003	ジャックザリッパー！ 最初の武器は「ナイフ」だよ。
+navi.hero.pick#hero4041	ニコラ・テスラ！ 最初の武器は「レーザーガン」だよ。
+navi.hero.pick#hero1006	ピタゴラス！ 最初の武器は「ブック」だよ。
+navi.hero.pick#hero1007	大長今！ 最初の武器は「ホーキ」だよ。
+navi.hero.pick#hero2013	許褚！ 最初の武器は「マレット」だよ。
+navi.hero.pick#hero4052	フランシス・ドレーク！ 最初の武器は「パロット」だよ。
 navi.hero.pick.10001	MCHウォーリアー！「ブレード」が周りを回って斬り払うよ！
 navi.hero.pick.4006	ビリー・ザ・キッド！「リボルバー」で四方八方に早撃ち！
 navi.hero.pick.2043	霧隠才蔵！「手裏剣」を次々に打ち込むよ！
@@ -59,11 +67,11 @@ navi.hero.pick.1006	ピタゴラス！ 「ノービスブック」が周囲を�
 navi.hero.pick.1007	大長今！ 大きな「ホーキ」で敵をまとめて掃き飛ばそう！
 navi.hero.pick.2013	許褚！「マレット」を四方に投げつけるよ！
 navi.hero.pick.4052	フランシス・ドレーク！「パロット」が敵の頭上に舞い降りる！
-navi.stage.first.easy	{stage} に接続！ {sec} 秒でボスが来るよ。
+navi.stage.first.easy#stage1	node : アバカス に接続！ 15 秒でボスが来るよ。
 navi.boss.warn	中央の赤いエリアにボスが来るよ！ 気をつけて！
-navi.stage.first	{stage} に接続！ 4 分でボスが来るよ。
-navi.stage.next	次は {stage}！ 敵が硬くなるから気をつけて。
-navi.stage.last	最後のノード、{stage}！ ここを抜ければクリアだよ！
+navi.stage.first#stage1	node : アバカス に接続！ 4 分でボスが来るよ。
+navi.stage.next#stage2	次は node : ホレリス！ 敵が硬くなるから気をつけて。
+navi.stage.last#stage3	最後のノード、node : トロイ！ ここを抜ければクリアだよ！
 navi.stage.rta	RTA 計測中！ 宝箱の懐中時計を狙って！
 navi.boss	ボスが来た！ 敵は消えたよ。枠の中で決着をつけよう！
 navi.tip.item.heal	パンケーキで HP が回復！ 壺や宝箱から出るよ。

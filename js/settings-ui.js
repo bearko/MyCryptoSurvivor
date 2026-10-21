@@ -13,6 +13,7 @@ import { SFX } from "./constants.js";
 import { t, getLang, setLang, onLangChange } from "./i18n.js";
 import { resetNaviTips, seenNaviTipCount } from "./navi-tips.js";
 import { resetLessons, seenLessonCount } from "./lesson.js";   // SPEC-147
+import { resetReviveSeen } from "./revive-seen.js";   // SPEC-155
 import { playVoice } from "./voice.js";
 import { canPickAvatar, openAvatarPicker } from "./platform.js";   // SPEC-092
 
@@ -103,6 +104,7 @@ export function installSettingsUI() {
   $("settingsTipsReset")?.addEventListener("click", () => {
     resetNaviTips();
     resetLessons();   // SPEC-147
+    resetReviveSeen();   // SPEC-155: 復活のしかたの説明ももう一度
     _tipsJustReset = true;
     _render();
   });

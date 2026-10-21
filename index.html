@@ -385,8 +385,10 @@
         <!-- SPEC-148: 負けた理由の分析 (= 被ダメの内訳・とどめ・前回と自己ベストとの比較・与ダメ・マインちゃんのおすすめ) -->
         <div class="anl hidden" id="gameOverAnalysis"></div>
       </div>
+      <!-- SPEC-155: おすすめの強化 (= 木へ行かずにここで押して強化。 倒れた理由のおすすめ → 安い順) -->
+      <div class="picks hidden" id="gameOverPicks" data-reveal></div>
       <button class="btn gameover-modal__retry result-tree-btn" id="gameOverSkillTree" data-reveal><img alt="" aria-hidden="true" /><span data-i18n="tree.openResult">スキルツリーへ</span></button>
-      <!-- SPEC-146: もう一度挑む (= スキルツリーのすぐ下。 負けて → 強くして → すぐ挑むを回す)。 SPEC-150: 「復活する」 (= 王妃の黄金時計の絵つき。 src は gameover.js) -->
+      <!-- SPEC-146: もう一度挑む (= スキルツリーのすぐ下。 負けて → 強くして → すぐ挑むを回す)。 SPEC-150: 「復活する」 (= 王妃の黄金時計の絵つき。 src は gameover.js。 SPEC-155: 木のボタンと同じ並べ方で折り返さない) -->
       <button class="btn gameover-modal__retry gameover-modal__again" id="gameOverRetry" data-reveal><img class="gameover-modal__clock" alt="" aria-hidden="true" /><span data-i18n="gameover.revive">復活する ▶</span></button>
       <div class="gameover-modal__form">
         <label class="gameover-form__label" for="gameOverName" data-i18n="gameover.namelabel">プレイヤー名</label>

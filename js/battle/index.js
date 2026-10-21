@@ -234,6 +234,8 @@ export function startBattle(hero) {
   }
   resetMissionsForStage(!!state.shop);   // SPEC-112: ミッションはショップで遊ぶときだけ
 
+  resizeCanvas();
+  centerCameraOnPlayer();   // SPEC-155: 最初のコマから自分を真ん中に (= 止めたまま降りこむ復活で、 ステージの外が映っていた)
   _showStageIntro();     // SPEC-046: 「STAGE n / ステージ名」の帯
   // SPEC-153: ボスの予告が出たら、 マインちゃんが「中央の赤いエリアにボスが来るよ！」 (= EASY のステージ 1 ではレッスンが同じことを言う)
   setBossIncomingHook(() => {
