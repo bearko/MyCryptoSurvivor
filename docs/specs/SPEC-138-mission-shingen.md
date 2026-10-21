@@ -2,7 +2,7 @@
 id: SPEC-138
 title: Shadow Takeda Shingen Mission — Wind (Faster Enemies), Forest (Silence), Fire (More Enemies), Mountain (No Movement), Widening by Star
 status: Done
-pr: TBD
+pr: 176
 phase: v1.6 Missions
 kind: Added
 ---
