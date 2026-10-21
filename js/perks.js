@@ -230,8 +230,8 @@ export const STAT_ROWS = [
     ? { key: `wdmg_${extId}`, route, f: "pct", ja: `${ja}の威力`, en: `${en} damage` }
     : { key: `cut_${extId}`, route, f: "cut", ja: `${ja}の値段`, en: `${en} price` }),
   // SPEC-139: 武器の目利き・仕込み・得意武器
-  ...EXT_MASTERY.filter((e) => e[2] === "w").map(([, extId, , ja, en]) => ({ key: `cut_${extId}`, route: "bm", f: "cut", ja: `${ja}の値段`, en: `${en} price` })),
-  ...EXT_MASTERY.map(([, extId, , ja, en]) => ({ key: `slv_${extId}`, route: "sl", f: "lv", ja: `${ja}の初期レベル`, en: `${en} start level` })),
+  ...EXT_MASTERY.filter((e) => e[2] === "w").map(([route, extId, , ja, en]) => ({ key: `cut_${extId}`, route, f: "cut", ja: `${ja}の値段`, en: `${en} price` })),
+  ...EXT_MASTERY.map(([route, extId, , ja, en]) => ({ key: `slv_${extId}`, route, f: "lv", ja: `${ja}の初期レベル`, en: `${en} start level` })),
   { key: "mainBias", route: "wm", f: "main", ja: "初期武器が必ず並ぶ確率", en: "Starting weapon guaranteed" },
   { key: "robot", route: "itm", f: "robot", ja: "合体ロボの無敵", en: "Robot invincibility" },   // SPEC-140
 ];

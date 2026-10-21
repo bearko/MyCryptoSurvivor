@@ -3,7 +3,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-const { ROUTES, ROUTE_MAP, NODES, NODE_MAP, TREE_NODES, ROOT_ID, CAPSTONE_NEED, nodePos, routeLabelPos } = await import("../js/skill-data.js");
+const { ROUTES, ROUTE_MAP, NODES, NODE_MAP, TREE_NODES, ROOT_ID, CAPSTONE_NEED, nodePos, routeLabelPos, EXT_MASTERY, EXT_TOOTH } = await import("../js/skill-data.js");
 const {
   nodeRank, owns, nodeMax, nodeCostAt, nodeCost, canAfford, routeCounts, nodeBlockers, nodeState,
   nodeVisible, nodeTeaser, nodeShown, claimableNodes, tryBuy, spentTotal, treeTotal, ownedCount,
@@ -116,8 +116,8 @@ test("見え方 (= SPEC-133): 最初は根だけ。 根を取ると 1 段目が�
   const vis = TREE_NODES.filter((n) => nodeVisible(m, n.id)).map((n) => n.id);
   assert.deepEqual(vis.sort(), [ROOT_ID, "atk_dmg", "bos_thunder", "grw_xp", "mov_speed", "trs_gum", "vit_hp"].sort());
   const teas = TREE_NODES.filter((n) => nodeTeaser(m, n.id)).map((n) => n.id);
-  assert.equal(teas.length, 12 + 3, "2 段目の 12 節と、 武器・強化の入口 (= ブレード・ギョク) と得意武器が「？？？」");
-  assert.ok(teas.includes("wm_10") && teas.includes("bm_19") && teas.includes("wm_main"));
+  assert.equal(teas.length, 12 + 1, "2 段目の 12 節と得意武器が「？？？」 (= SPEC-145: 武器・強化の入口は 2 段目の先)");
+  assert.ok(teas.includes("wm_main") && !teas.includes("wm_10") && !teas.includes("bm_19"));
   assert.ok(!TREE_NODES.some((n) => n.kind === "capstone" && nodeShown(m, n.id)), "奥義はまだ見せない");
   assert.equal(nodeShown(m, "vit_pancake"), false, "3 段目はまだ出ない");
 });
@@ -125,7 +125,9 @@ test("見え方 (= SPEC-133): 最初は根だけ。 根を取ると 1 段目が�
 test("武器の極意 (= SPEC-133): ヒーローを仲間にしていれば 1 段目が無料。 本作のヒーローは数珠つなぎ、 ほかのタイトルは分岐", () => {
   const m = { ...meta(1000, 0), heroes: new Set([10001, 4006]) };
   buy(m, ROOT_ID); buy(m, "atk_dmg");
-  assert.equal(nodeVisible(m, "wm_10"), true, "ブレード (= 最初から仲間) は攻撃の 1 段目で開く");
+  assert.equal(nodeVisible(m, "wm_10"), false, "SPEC-145: ブレードは攻撃の 2 段目「長い腕」の先");
+  buy(m, "atk_range");
+  assert.equal(nodeVisible(m, "wm_10"), true, "ブレード (= 最初から仲間) は「長い腕」で開く");
   const r = buy(m, "wm_10");
   assert.deepEqual([r.ok, r.cost.gum], [true, 0]);
   assert.equal(buy(m, "wm_1").ok, true, "リボルバーも最初から仲間");
@@ -145,25 +147,33 @@ test("武器の極意 (= SPEC-133): ヒーローを仲間にしていれば 1 �
   assert.equal(nodeBlockers({ ...m, heroes: undefined }, "wm_10")[0].key, "hero", "使えるヒーローが分からなければ取れない");
 });
 
-test("SPEC-139: 仕込みは先手から左上のくし・武器の目利きは強化の目利きの先・得意武器は攻撃の 1 段目の隣", () => {
-  const sl = NODES.filter((n) => n.route === "sl");
-  assert.equal(sl.length, 21);
-  assert.deepEqual(NODE_MAP.sl_10.requires, ["grw_start"], "1 枚目は成長の「先手」から");
+test("SPEC-145: 目利き・仕込みは、 その極意・目利きの先にまっすぐ (= 武器: 極意 → 目利き → 仕込み、 強化: 目利き → 仕込み)", () => {
+  const sl = NODES.filter((n) => n.id.startsWith("sl_"));
+  const wc = NODES.filter((n) => n.id.startsWith("wc_"));
+  assert.deepEqual([sl.length, wc.length], [21, 10]);
+  for (const n of wc) {
+    assert.deepEqual(n.requires, [`wm_${n.extId}`], n.id);
+    assert.deepEqual(n.fx, { [`cut_${n.extId}`]: 0.06 });
+    assert.equal(n.route, "wm");
+  }
   for (const n of sl) {
+    const weapon = !!NODE_MAP[`wm_${n.extId}`];
+    assert.deepEqual(n.requires, [weapon ? `wc_${n.extId}` : `bm_${n.extId}`], n.id);
     assert.deepEqual([n.kind, n.max, n.cost.gum], ["repeat", 2, 150], n.id);
     assert.deepEqual(n.fx, { [`slv_${n.extId}`]: 1 });
-    const p = NODE_MAP[n.requires[0]];
-    assert.ok(Math.abs(p.x - n.x) <= 1 && Math.abs(p.y - n.y) <= 1, `${n.id} は親の隣`);
-    assert.ok(n.x <= -3 && n.y <= -2, `${n.id} は左上`);
+    assert.equal(n.route, weapon ? "wm" : "bm");
   }
-  const wc = NODES.filter((n) => n.id.startsWith("wc_"));
-  assert.equal(wc.length, 10);
-  assert.deepEqual(NODE_MAP.wc_10.requires, ["bm_15"]);
-  for (const n of wc) {
-    assert.deepEqual(n.fx, { [`cut_${n.extId}`]: 0.06 });
-    const p = NODE_MAP[n.requires[0]];
-    assert.ok(Math.abs(p.x - n.x) <= 1 && Math.abs(p.y - n.y) <= 1, `${n.id} は親の隣`);
+  // まっすぐ: 極意 (or 目利き) → 次 → その次 が同じ向きに 1 マスずつ
+  for (const [route, extId] of EXT_MASTERY) {
+    const head = NODE_MAP[`${route}_${extId}`];
+    const chain = route === "wm" ? [head, NODE_MAP[`wc_${extId}`], NODE_MAP[`sl_${extId}`]] : [head, NODE_MAP[`sl_${extId}`]];
+    const [dx, dy] = EXT_TOOTH[extId];
+    chain.slice(1).forEach((n, i) => assert.deepEqual([n.x - chain[i].x, n.y - chain[i].y], [dx, dy], n.id));
   }
+  // 入口と並び
+  assert.deepEqual(NODE_MAP.wm_10.requires, ["atk_range"]);
+  assert.deepEqual(NODE_MAP.bm_19.requires, ["trs_chest"]);
+  assert.ok(EXT_MASTERY.filter((e) => ["wm_10", "wm_1", "wm_5", "wm_9", "wm_7", "wm_6"].includes(`wm_${e[1]}`)).every((e) => e[7] === -3), "本作のヒーローは横一列");
   assert.deepEqual([NODE_MAP.wm_main.x, NODE_MAP.wm_main.y, NODE_MAP.wm_main.max], [1, -1, 3]);
   assert.deepEqual(NODE_MAP.wm_main.requires, ["atk_dmg"]);
 });

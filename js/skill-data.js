@@ -24,10 +24,8 @@ export const ROUTES = [
   { id: "vit", name: { ja: "生存", en: "Survival" }, color: "#e76060", d1: [-1, 1], axis: [0, 1],  side: [-1, 0], label: [-1.5, 5.2] },
   { id: "grw", name: { ja: "成長", en: "Growth" },   color: "#5ecf8a", d1: [-1, 0], axis: [-1, 0], side: [0, -1], label: [-5.6, -0.5] },
   // SPEC-131 / SPEC-133: エクステ別 (= minor: 上の道の一覧には出さない・奥義は無い)
-  { id: "wm", name: { ja: "武器の極意", en: "Weapon Mastery" }, color: "#ffb37a", minor: true, label: [2.5, -8.1] },
-  { id: "bm", name: { ja: "目利き", en: "Bargains" }, color: "#7fd6c2", minor: true, label: [5, 6.6] },
-  // SPEC-139: エクステ別の初期レベル (= 仕込み。 成長の「先手」から左上へ)
-  { id: "sl", name: { ja: "仕込み", en: "Preparation" }, color: "#a8e063", minor: true, label: [-6, -7.4] },
+  { id: "wm", name: { ja: "武器の極意", en: "Weapon Mastery" }, color: "#ffb37a", minor: true, label: [4, -7.2] },
+  { id: "bm", name: { ja: "強化の目利き", en: "Buff Bargains" }, color: "#7fd6c2", minor: true, label: [5.5, 6.8] },
   // SPEC-140: お助けアイテム (= 合体ロボ。 生存の「自然治癒」の左)
   { id: "itm", name: { ja: "お助け", en: "Helpers" }, color: "#ff9bf5", minor: true, label: [-4.4, 2.9] },
 ];
@@ -116,7 +114,9 @@ for (const n of NODES) {
  * SPEC-133: 武器はその武器を使うヒーローを仲間にしていることが条件で、 そのとき 1 段目は無料。
  *   本作で仲間になるヒーローは、 仲間になる順に数珠つなぎ (= ブレード → リボルバー → 手裏剣 → 雪だるま → ナイフ → レーザーガン)。
  *   ほかのタイトルで仲間になるヒーローは、 最初から使える 2 人の武器 (= ブレード・リボルバー) から分岐 (= 先に仲間にしても開ける)。
- *   強化は持ち主がいないので、 財宝の 1 段目から数珠つなぎ。
+ *   強化は持ち主がいないので、 財宝から数珠つなぎ。
+ * SPEC-145: どの極意・目利きからも、 その先に目利き・仕込みがまっすぐ伸びる (= 下の EXT_TOOTH の向き)。
+ *   入口は攻撃の「長い腕」・財宝の「早い宝箱」 (= 1 段目のまわりには、 まっすぐ伸ばす隙間がないため)
  */
 export const MASTERY_GUM = 40;
 export const MASTERY_MAX = 5;
@@ -124,27 +124,29 @@ export const WEAPON_DMG_PER_RANK = 0.05;
 export const BUFF_CUT_PER_RANK = 0.06;
 // route, extId, kind, 名前 (ja / en), アイコン, x, y, requires, hero
 export const EXT_MASTERY = [
-  ["wm", 10, "w", "ブレード", "Blade", 1001, 2, -2, ["atk_dmg"], 10001],
-  ["wm", 1, "w", "リボルバー", "Revolver", 1029, 2, -3, ["wm_10"], 4006],
-  ["wm", 5, "w", "手裏剣", "Shuriken", 1124, 2, -4, ["wm_1"], 2043],
-  ["wm", 9, "w", "雪だるま", "Snowman", 1126, 2, -5, ["wm_5"], 2016],
-  ["wm", 7, "w", "ナイフ", "Knife", 1048, 2, -6, ["wm_9"], 2003],
-  ["wm", 6, "w", "レーザーガン", "Raygun", 1130, 2, -7, ["wm_7"], 4041],
-  ["wm", 2, "w", "ブック", "Book", 1008, 3, -2, ["wm_10"], 1006],
-  ["wm", 3, "w", "ホーキ", "Broomstick", 1080, 3, -1, ["wm_10"], 1007],
-  ["wm", 8, "w", "マレット", "Mallet", 1073, 3, -3, ["wm_1"], 2013],
-  ["wm", 4, "w", "パロット", "Parrot", 1113, 3, -4, ["wm_1"], 4052],
-  ["bm", 19, "b", "ギョク", "Orb", 1098, 1, 1, ["trs_gum"]],
-  ["bm", 18, "b", "カエルの標本", "Frog Specimen", 1169, 2, 2, ["bm_19"]],
-  ["bm", 21, "b", "クラウン", "Crown", 1036, 2, 3, ["bm_18"]],
-  ["bm", 20, "b", "グンバイ", "Gunbai", 1037, 2, 4, ["bm_21"]],
-  ["bm", 16, "b", "りんご", "Apple", 1159, 2, 5, ["bm_20"]],
-  ["bm", 17, "b", "オリフラム", "Oriflamme", 1140, 3, 5, ["bm_16"]],
-  ["bm", 14, "b", "ホース", "Horse", 1005, 3, 4, ["bm_17"]],
-  ["bm", 13, "b", "ブーツ", "Boots", 1031, 3, 3, ["bm_14"]],
-  ["bm", 11, "b", "アーマー", "Armor", 1004, 3, 2, ["bm_13"]],
-  ["bm", 15, "b", "シールド", "Shield", 1010, 4, 2, ["bm_11"]],
-  ["bm", 12, "b", "ラーメン", "Ramen", 1154, 4, 3, ["bm_15"]],
+  // SPEC-145: 武器の極意は攻撃の 2 段目「長い腕」から。 本作のヒーローは横一列 (= y −3)、 ほかのタイトルはその上の列 (= y −4)
+  ["wm", 10, "w", "ブレード", "Blade", 1001, 2, -3, ["atk_range"], 10001],
+  ["wm", 1, "w", "リボルバー", "Revolver", 1029, 3, -3, ["wm_10"], 4006],
+  ["wm", 5, "w", "手裏剣", "Shuriken", 1124, 4, -3, ["wm_1"], 2043],
+  ["wm", 9, "w", "雪だるま", "Snowman", 1126, 5, -3, ["wm_5"], 2016],
+  ["wm", 7, "w", "ナイフ", "Knife", 1048, 6, -3, ["wm_9"], 2003],
+  ["wm", 6, "w", "レーザーガン", "Raygun", 1130, 7, -3, ["wm_7"], 4041],
+  ["wm", 2, "w", "ブック", "Book", 1008, 1, -4, ["wm_10"], 1006],
+  ["wm", 3, "w", "ホーキ", "Broomstick", 1080, 2, -4, ["wm_10"], 1007],
+  ["wm", 8, "w", "マレット", "Mallet", 1073, 3, -4, ["wm_1"], 2013],
+  ["wm", 4, "w", "パロット", "Parrot", 1113, 4, -4, ["wm_1"], 4052],
+  // SPEC-145: 強化の目利きは財宝の 2 段目「早い宝箱」から。 U の字 (= y 3 を右へ、 y 4 を左へ)
+  ["bm", 19, "b", "ギョク", "Orb", 1098, 2, 3, ["trs_chest"]],
+  ["bm", 18, "b", "カエルの標本", "Frog Specimen", 1169, 3, 3, ["bm_19"]],
+  ["bm", 21, "b", "クラウン", "Crown", 1036, 4, 3, ["bm_18"]],
+  ["bm", 20, "b", "グンバイ", "Gunbai", 1037, 5, 3, ["bm_21"]],
+  ["bm", 16, "b", "りんご", "Apple", 1159, 6, 3, ["bm_20"]],
+  ["bm", 17, "b", "オリフラム", "Oriflamme", 1140, 7, 3, ["bm_16"]],
+  ["bm", 14, "b", "ホース", "Horse", 1005, 7, 4, ["bm_17"]],
+  ["bm", 13, "b", "ブーツ", "Boots", 1031, 6, 4, ["bm_14"]],
+  ["bm", 11, "b", "アーマー", "Armor", 1004, 5, 4, ["bm_13"]],
+  ["bm", 15, "b", "シールド", "Shield", 1010, 4, 4, ["bm_11"]],
+  ["bm", 12, "b", "ラーメン", "Ramen", 1154, 3, 4, ["bm_15"]],
 ];
 for (const [route, extId, kind, ja, en, icon, x, y, requires, hero] of EXT_MASTERY) {
   const w = kind === "w";
@@ -165,44 +167,38 @@ for (const [route, extId, kind, ja, en, icon, x, y, requires, hero] of EXT_MASTE
 /**
  * SPEC-139: エクステ別の仕込み・武器の目利き・得意武器
  *   仕込み (= sl_<extId>): 手に入れたとき、 最初から Lv ＋1（段ごと・2 段まで）。 値段は Lv.1 のまま。 perk は slv_<extId>
- *     成長の「先手」から左上へ、 くしの形 (= 右端の柱を上へ、 各段を左へ)。 上 2 段が武器、 下 3 段が強化
- *   武器の目利き (= wc_<extId>): ショップでその武器が −6%（段ごと）。 perk は強化と同じ cut_<extId>。 目利きの右に 2 列
+ *   武器の目利き (= wc_<extId>): ショップでその武器が −6%（段ごと）。 perk は強化と同じ cut_<extId>
  *   得意武器 (= wm_main): ショップとレベルアップで札を引くたびに、 その確率で初期武器の札が必ず並ぶ (= SPEC-144: 20% / 40% / 60%)
+ * SPEC-145: 極意・目利きの先にまっすぐ伸ばす (= 武器: 極意 → 目利き → 仕込み、 強化: 目利き → 仕込み)
  */
 export const START_LV_GUM = 150;
 export const START_LV_MAX = 2;
 export const MAIN_BIAS_MAX = 3;
 /** SPEC-144: 得意武器 1 段で、 札を引くときに初期武器が必ず並ぶ確率 (= 20% / 40% / 60%) */
 export const MAIN_CHANCE_PER_RANK = 0.2;
-const WEAPONS = EXT_MASTERY.filter((e) => e[2] === "w");
-const BUFFS = EXT_MASTERY.filter((e) => e[2] === "b");
-// 仕込みのマス (= 行ごとに右端から左へ。 右端が柱)
-const SL_ROWS = [
-  [-2, WEAPONS.slice(0, 5)], [-3, WEAPONS.slice(5, 10)],
-  [-4, BUFFS.slice(0, 5)], [-5, BUFFS.slice(5, 10)], [-6, BUFFS.slice(10)],
-];
-SL_ROWS.forEach(([y, row], ri) => {
-  row.forEach(([, extId, , ja, en, icon], ci) => {
-    const parent = ci > 0 ? `sl_${row[ci - 1][1]}` : (ri > 0 ? `sl_${SL_ROWS[ri - 1][1][0][1]}` : "grw_start");
+/** SPEC-145: 伸ばす向き (= 本作の武器は下・ほかのタイトルの武器は上・強化は U の外側) */
+export const EXT_TOOTH = Object.fromEntries(EXT_MASTERY.map(([route, extId, , , , , , y]) => [extId,
+  route === "wm" ? (y === -3 ? [0, 1] : [0, -1]) : (y === 3 ? [0, -1] : [0, 1])]));
+const slNode = (route, parent, extId, ja, en, icon, x, y) => ({
+  ...N(`sl_${extId}`, route, parent, 0, 0, "repeat", `${ja}の仕込み`, `${en} Prep`,
+    `${ja}を手に入れたとき、 最初から Lv ＋1（段ごと。 値段は Lv.1 のまま）`, `${en} starts 1 level higher per rank when you get it (priced as Lv.1)`,
+    { gum: START_LV_GUM }, icon, { [`slv_${extId}`]: 1 }, START_LV_MAX),
+  x, y, requires: [parent], extId, mastery: "s",
+});
+for (const [route, extId, kind, ja, en, icon, x, y] of EXT_MASTERY) {
+  const [dx, dy] = EXT_TOOTH[extId];
+  if (kind === "w") {
     NODES.push({
-      ...N(`sl_${extId}`, "sl", parent, 0, 0, "repeat", `${ja}の仕込み`, `${en} Prep`,
-        `${ja}を手に入れたとき、 最初から Lv ＋1（段ごと。 値段は Lv.1 のまま）`, `${en} starts 1 level higher per rank when you get it (priced as Lv.1)`,
-        { gum: START_LV_GUM }, icon, { [`slv_${extId}`]: 1 }, START_LV_MAX),
-      x: -3 - ci, y, requires: [parent], extId, mastery: "s",
+      ...N(`wc_${extId}`, "wm", `wm_${extId}`, 0, 0, "repeat", `${ja}の目利き`, `${en} Bargain`,
+        `ショップで${ja}が −${BUFF_CUT_PER_RANK * 100}%（段ごと）`, `${en} costs ${BUFF_CUT_PER_RANK * 100}% less in shops per rank`,
+        { gum: MASTERY_GUM }, icon, { [`cut_${extId}`]: BUFF_CUT_PER_RANK }, MASTERY_MAX),
+      x: x + dx, y: y + dy, requires: [`wm_${extId}`], extId, mastery: "c",
     });
-  });
-});
-// 武器の目利き (= 強化の目利きの右。 x=5 を上から下へ、 x=6 を下から上へ)
-const WC_CELLS = [[5, 1], [5, 2], [5, 3], [5, 4], [5, 5], [6, 5], [6, 4], [6, 3], [6, 2], [6, 1]];
-WEAPONS.forEach(([, extId, , ja, en, icon], i) => {
-  const parent = i > 0 ? `wc_${WEAPONS[i - 1][1]}` : "bm_15";
-  NODES.push({
-    ...N(`wc_${extId}`, "bm", parent, 0, 0, "repeat", `${ja}の目利き`, `${en} Bargain`,
-      `ショップで${ja}が −${BUFF_CUT_PER_RANK * 100}%（段ごと）`, `${en} costs ${BUFF_CUT_PER_RANK * 100}% less in shops per rank`,
-      { gum: MASTERY_GUM }, icon, { [`cut_${extId}`]: BUFF_CUT_PER_RANK }, MASTERY_MAX),
-    x: WC_CELLS[i][0], y: WC_CELLS[i][1], requires: [parent], extId, mastery: "c",
-  });
-});
+    NODES.push(slNode(route, `wc_${extId}`, extId, ja, en, icon, x + dx * 2, y + dy * 2));
+  } else {
+    NODES.push(slNode(route, `bm_${extId}`, extId, ja, en, icon, x + dx, y + dy));
+  }
+}
 NODES.push({
   ...N("wm_main", "wm", "atk_dmg", 0, 0, "repeat", "得意武器", "Favored Weapon",
     "ショップとレベルアップで札が並ぶたびに、 初期武器の札が必ず並ぶ確率 20%（段ごとに ＋20%。 最大 60%）", "Each time shop or level-up cards are dealt, 20% chance per rank (max 60%) that your starting weapon is guaranteed among them",
