@@ -2,7 +2,7 @@
 id: SPEC-155
 title: Recommended Upgrades Bought in One Tap on the Revive Screen, a Two-Column Revive Screen on PC, the Revive Explanation Only Once, the Clock Icon Kept on One Line, Camera Centered Before the First Frame After Reviving, and the Line Script With Variables Expanded Into Real Words
 status: Done
-pr: TBD
+pr: 194
 phase: v1.7 Onboarding
 kind: Changed
 ---
