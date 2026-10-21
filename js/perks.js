@@ -10,7 +10,7 @@
 import { state } from "./state.js";
 import { TREE_NODES, EXT_MASTERY, MAIN_CHANCE_PER_RANK } from "./skill-data.js";
 import { nodeRank } from "./skill-logic.js";
-import {
+import { EXT_START_LEVEL_STEP,
   CONTACT_COOLDOWN_MS, REROLL_PER_BATTLE, STOCK_LIMIT_WEAPON, STOCK_LIMIT_BUFF,
   POT_MAX_ON_FIELD, CHEST_TIMES_MS, HEAL_RATIO, THUNDER_BOSS_RATIO,
   BOSS_CHEST, BOSS_CHEST_DROPS, POT_DROPS, RARE_SPAWN_INTERVAL_MS,
@@ -293,4 +293,4 @@ export const buffPriceCut = (extId) => Math.min(0.9, Math.max(0, perk(`cut_${ext
 /** SPEC-144: 得意武器 (= 札を引くときに初期武器が必ず並ぶ確率。 0〜0.6) */
 export const mainWeaponChance = () => Math.min(1, Math.max(0, perk("mainBias") * MAIN_CHANCE_PER_RANK));
 /** SPEC-139: 仕込み (= 手に入れたときに足す Lv) */
-export const startLevelBonus = (extId) => Math.max(0, perk(`slv_${extId}`) | 0);
+export const startLevelBonus = (extId) => Math.max(0, perk(`slv_${extId}`) | 0) * EXT_START_LEVEL_STEP;   // SPEC-162: 15 段なので 1 段 = 2 段ぶん

@@ -30,7 +30,7 @@ import { resetField, tickField, tickRobot } from "./field.js";   // SPEC-140: �
 import { rebuildWeaponsFromOwned } from "./extensions-as-weapons.js";
 import { renderBattle } from "./render.js";
 import { getHeroSprite, getDefaultEnemySprite, getBackgroundSprite } from "./sprites.js";
-import { tickRegen, resetBuffs } from "./buffs.js";
+import { tickRegen, resetBuffs, applyBuff } from "./buffs.js";
 import { perksForRun, perk, rerollsPerBattle, baseMaxHp, startLevelBonus } from "../perks.js";   // SPEC-090c / SPEC-139
 import { getMeta } from "../meta.js";
 import { triggerLevelUpPick } from "./levelup.js";
@@ -73,6 +73,17 @@ let _installed = false;
  * battle 開始。 hero faction で player 色を上書きしてスポーン。
  * 多重呼出は安全 (= idempotent: 既に active なら player 位置だけ reset)。
  */
+/**
+ * SPEC-162: 装備の引き継ぎ (= 純関数ではない: state.ownedExtensions と state.run.ownedAtStage を書く)
+ *   ステージ 1: 空から。 新しいステージ: いまの装備のまま。 同じステージのやり直し (= メニュー): 入ったときの装備に戻す
+ */
+export function carryOwnedExtensions(idx) {
+  const at = state.run.ownedAtStage;
+  if (idx === 0) state.ownedExtensions = [];
+  else if (at && at.idx === idx) state.ownedExtensions = at.owned.map((o) => ({ ...o }));
+  state.run.ownedAtStage = { idx, owned: state.ownedExtensions.map((o) => ({ extId: o.extId, level: o.level })) };
+}
+
 export function startBattle(hero) {
   _ensureCanvas();
   if (!_canvas) {
@@ -173,10 +184,11 @@ export function startBattle(hero) {
   b.magicCards         = b.magicCards ?? [];
   b.magicCards.length  = 0;
   b.lastRareSpawnMs    = performance.now();
-  state.ownedExtensions = [];                   // SPEC-008: 装備リセット
+  // SPEC-162: 装備はステージをまたいで残る (= ステージ 1 だけ空から。 同じステージのやり直しは入ったときの装備に戻す)
+  carryOwnedExtensions(state.currentStageIdx ?? 0);
   state.killCount       = 0;                    // SPEC-009: 撃破カウンタ
   state.lastRunStats    = null;                 // SPEC-009: snapshot
-  resetBuffs();                                 // SPEC-011: 強化系列の効果リセット
+  resetBuffs();                                 // SPEC-011: 強化系列の効果リセット (= 引き継いだ強化は下で掛け直す)
   resetField();                                 // SPEC-053: 建物・壺・アイテム (= プレイヤーを (0, 0) に置いたあと)
   resetGimmicks();                              // SPEC-064: ステージの仕掛け
   resetArena();                                 // SPEC-079: ボス戦の枠を外す
@@ -204,7 +216,11 @@ export function startBattle(hero) {
   b.starterExtId   = starterId;   // SPEC-101: この武器だけ LL まで上がる
   b.llFx           = [];
   if (starterExt && getCategory(starterExt) === "weapon") {
-    state.ownedExtensions.push({ extId: starterId, level: Math.min(EXT_MAX_LEVEL, 1 + startLevelBonus(starterId)) });   // SPEC-139: 仕込み
+    if (!state.ownedExtensions.some((o) => String(o.extId) === String(starterId))) {
+      state.ownedExtensions.push({ extId: starterId, level: Math.min(EXT_MAX_LEVEL, 1 + startLevelBonus(starterId)) });   // SPEC-139: 仕込み
+    }
+    // SPEC-162: 引き継いだ強化の効き目を掛け直す (= 武器は組み直し)
+    for (const o of state.ownedExtensions) if (getCategory(getExt(o.extId)) === "buff") applyBuff(o.extId, o.level);
     rebuildWeaponsFromOwned();
   } else {
     console.warn("[battle] starter weapon not found for hero",
