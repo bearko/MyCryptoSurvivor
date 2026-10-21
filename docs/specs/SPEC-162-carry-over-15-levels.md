@@ -2,7 +2,7 @@
 id: SPEC-162
 title: Extensions and CE Carry Over Between Stages, Extension Levels Go to 15 (Rank Up Every 3 Levels, the Old Max Is Level 10, Levels 11–15 Go Beyond, LL at 16), and the Shop Price Table Spans 15 Levels
 status: Done
-pr: TBD
+pr: 202
 phase: v1.8 Balance
 kind: Changed
 ---
