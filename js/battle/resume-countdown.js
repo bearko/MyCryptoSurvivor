@@ -1,16 +1,19 @@
 // ============================================================
-// resume-countdown.js — 遊びを中断する画面を閉じたら、 3 秒数えてから再開する (= SPEC-104)
+// resume-countdown.js — 遊びを中断する画面を閉じたら、 Ready → Go! で再開する (= SPEC-104。 SPEC-142 で 3・2・1 から)
 // ============================================================
 //
-// レベルアップ・メニュー・設定・ランキング (= あとでショップ・ミッションも) を閉じた瞬間に動き出すと、
-// 戦況が分からないまま倒されることがある。 閉じたら真ん中に 3・2・1 を出し、 数え終えてから時間を進める。
+// レベルアップ・メニュー・設定・ランキング・ショップ・ミッションを閉じた瞬間に動き出すと、
+// 戦況が分からないまま倒されることがある。 閉じたら真ん中に「Ready」を出して少しだけ止め、
+// 「Go!」が出た瞬間に時間を進める (= Go! は動きながら消える)。 3・2・1 はテンポが遅いという声があった (= SPEC-142)。
 // 画面ごとに書かず、 ループで「止まっていた → 動き出す」 を見て、 ここで 1 つだけ止めを足す (= pauseTime を対で使う)。
 // 数えているあいだに別の画面が開いたら (= 止めが 2 つ以上)、 閉じてから数え直す。 タブを離れて戻ったときも数え直す。
 
 import { state, pauseTime, resumeTime } from "../state.js";
 
-/** 数える長さ */
-export const RESUME_COUNTDOWN_MS = 3000;
+/** 止めておく長さ (= 「Ready」のあいだ。 SPEC-142: 3 秒 → 0.8 秒) */
+export const RESUME_COUNTDOWN_MS = 800;
+/** 「Go!」を出しておく長さ (= もう動いている) */
+export const RESUME_GO_MS = 500;
 /** ステージが始まってすぐ (= 敵がいない) は数えない */
 export const RESUME_MIN_ELAPSED_MS = 1000;
 /** これより短い止まり方は数えない (= 1 コマだけの止めなど) */
@@ -23,48 +26,54 @@ export function shouldCountdown({ active, elapsedMs, pausedMs }) {
   return !!active && (elapsedMs | 0) >= RESUME_MIN_ELAPSED_MS && pausedMs >= RESUME_MIN_PAUSE_MS;
 }
 
-/** 出す数字 (= 3 → 2 → 1。 純関数) */
-export function countdownNumber(remainMs) {
-  return Math.min(3, Math.max(1, Math.ceil(remainMs / 1000)));
+/** 出す言葉 (= 止まっているあいだは Ready、 動き出したら Go!。 純関数) */
+export function countdownWord(remainMs) {
+  return remainMs > 0 ? "Ready" : "Go!";
 }
 
 let _pausedSince = null;   // 止まり始めた時刻 (= 数えていないとき)
 let _endAt = 0;            // 数え終える時刻 (= 0 なら数えていない)
 let _lastNow = 0;
-let _shown = 0;
+let _shown = "";
+let _goTimer = 0;
 
 export function isResumeCounting() { return _endAt > 0; }
 
 function _el() { return globalThis.document?.getElementById("resumeCountdown"); }
 
-function _show(n) {
-  if (_shown === n) return;
-  _shown = n;
+function _show(word) {
+  if (_shown === word) return;
+  _shown = word;
+  clearTimeout(_goTimer);
   const el = _el();
   if (!el) return;
-  el.querySelector(".resume-countdown__num").textContent = String(n);
+  el.querySelector(".resume-countdown__num").textContent = word;
+  el.classList.toggle("resume-countdown--go", word === "Go!");
   el.classList.remove("hidden", "resume-countdown--tick");
   void el.offsetWidth;   // アニメーションをかけ直す
   el.classList.add("resume-countdown--tick");
 }
 
 function _hide() {
-  _shown = 0;
+  _shown = "";
+  clearTimeout(_goTimer);
   const el = _el();
   el?.classList.add("hidden");
-  el?.classList.remove("resume-countdown--tick");
+  el?.classList.remove("resume-countdown--tick", "resume-countdown--go");
 }
 
 function _start(now) {
   pauseTime();   // ← 数え終えたら resumeTime (= 対)
   _endAt = now + RESUME_COUNTDOWN_MS;
-  _show(3);
+  _show("Ready");
 }
 
 function _finish() {
   _endAt = 0;
-  _hide();
   resumeTime();
+  // SPEC-142: Go! は動きながら見せて消す
+  _show("Go!");
+  _goTimer = setTimeout(_hide, RESUME_GO_MS);
 }
 
 /**
@@ -90,13 +99,13 @@ export function tickResumeCountdown(now) {
   }
   if (_endAt) {
     // 数えているあいだに別の画面が開いた・タブを離れていた → 閉じて戻ってから数え直す
-    if (state.pauseFlags > 1 || gap > RESUME_GAP_MS) { _endAt = now + RESUME_COUNTDOWN_MS; _show(3); return; }
+    if (state.pauseFlags > 1 || gap > RESUME_GAP_MS) { _endAt = now + RESUME_COUNTDOWN_MS; _show("Ready"); return; }
     if (now >= _endAt) { _finish(); return; }
-    _show(countdownNumber(_endAt - now));
     return;
   }
   if (state.pauseFlags > 0) {
     if (_pausedSince == null) _pausedSince = now;
+    if (_shown === "Go!") _hide();   // Go! のあいだにまた止まった
     return;
   }
   if (_pausedSince != null) {

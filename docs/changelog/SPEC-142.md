@@ -1,0 +1,1 @@
+- **再開は Ready → Go!** (`js/battle/resume-countdown.js`): 3・2・1（3 秒）をやめ、 Ready で 0.8 秒止めて、 Go! が出た瞬間に動き出す（テンポが遅いという声に応えて）

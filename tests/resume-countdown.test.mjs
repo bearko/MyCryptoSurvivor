@@ -1,9 +1,9 @@
-// SPEC-104: 中断する画面を閉じたら 3 秒数えてから再開
+// SPEC-104: 中断する画面を閉じたら少し止めてから再開 (= SPEC-142: Ready → Go!)
 // 実行: node --test tests/resume-countdown.test.mjs
 import { test } from "node:test";
 import assert from "node:assert/strict";
 const { state, pauseTime, resumeTime } = await import("../js/state.js");
-const { shouldCountdown, countdownNumber, tickResumeCountdown, resetResumeCountdown, isResumeCounting, RESUME_COUNTDOWN_MS } = await import("../js/battle/resume-countdown.js");
+const { shouldCountdown, countdownWord, tickResumeCountdown, resetResumeCountdown, isResumeCounting, RESUME_COUNTDOWN_MS, RESUME_GO_MS } = await import("../js/battle/resume-countdown.js");
 
 const frames = (from, to, step = 16) => { for (let t = from; t <= to; t += step) tickResumeCountdown(t); };
 
@@ -12,10 +12,12 @@ test("数えるかの判定と数字", () => {
   assert.equal(shouldCountdown({ active: true, elapsedMs: 200, pausedMs: 1000 }), false, "ステージの始まりは数えない");
   assert.equal(shouldCountdown({ active: true, elapsedMs: 5000, pausedMs: 50 }), false, "一瞬の止めは数えない");
   assert.equal(shouldCountdown({ active: false, elapsedMs: 5000, pausedMs: 1000 }), false);
-  assert.deepEqual([3000, 2001, 2000, 1, 0].map(countdownNumber), [3, 3, 2, 1, 1]);
+  assert.deepEqual([800, 1, 0, -5].map(countdownWord), ["Ready", "Ready", "Go!", "Go!"]);
+  assert.equal(RESUME_COUNTDOWN_MS, 800, "SPEC-142: 止めるのは Ready のあいだだけ (= 3 秒から 0.8 秒)");
+  assert.equal(RESUME_GO_MS, 500);
 });
 
-test("レベルアップを閉じると、 3 秒止まってから動き出す", () => {
+test("レベルアップを閉じると、 Ready のあいだ止まってから (= Go! で) 動き出す", () => {
   state.battle.active = true;
   state.battle.stageElapsedMs = 30000;
   state.pauseFlags = 0;
@@ -48,7 +50,7 @@ test("数えているあいだにメニューが開いたら、 閉じてから�
   resumeTime();                // メニューを閉じる
   tickResumeCountdown(5016);
   frames(5032, 5016 + RESUME_COUNTDOWN_MS - 40);
-  assert.equal(state.pauseFlags, 1, "閉じてから 3 秒は止まったまま");
+  assert.equal(state.pauseFlags, 1, "閉じてから Ready のあいだは止まったまま");
   tickResumeCountdown(9000 + 5000);   // タブを離れていた (= 間が空いた)
   assert.equal(state.pauseFlags, 1, "戻ってきたら数え直す");
   frames(14016, 14016 + RESUME_COUNTDOWN_MS + 32);
