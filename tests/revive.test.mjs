@@ -61,6 +61,7 @@ test("流れの配線: 倒れたら粒子 → 1.6 秒後に半透明の結果の
   assert.match(go, /presentResult\(modal, "allClear"/);
   assert.doesNotMatch(go, /presentResult\(modal, "lose"/, "lose のテロップは出さない");
   assert.match(go, /await _reviveGather\(\);\s*\/\/ SPEC-150[^\n]*\n\s*resumeTime\(\);/);
+  assert.match(go, /if \(_reviving\) return;/, "集まっているあいだに 2 度押されても 1 回");
   assert.match(go, /playSe\(SFX\.PICK_HEAL, 0, 0\.8\);\s*\/\/ 3_heal_resurrection/);
   assert.match(go, /b\.heroDissolved = ok;/);
   assert.match(go, /clearReviveFx\(\);\s*\/\/ SPEC-150/);

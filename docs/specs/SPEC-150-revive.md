@@ -2,7 +2,7 @@
 id: SPEC-150
 title: Revive Instead of Retry — Hero Dissolves Into Pixels on Defeat, Mine Offers the Golden Watch of the Queen, Strengthen in the Skill Tree, Then the Pixels Gather Back and the Hero Revives
 status: Done
-pr: TBD
+pr: 188
 phase: v1.7 Onboarding
 kind: Changed
 ---

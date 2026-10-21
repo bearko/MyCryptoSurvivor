@@ -195,16 +195,21 @@ export function onBackFromTree({ bought = 0 } = {}) {
   naviSay(naviLines("afterTree", { bought }), { place: "result" });
 }
 
+let _reviving = false;   // SPEC-150: 集まっている 1.5 秒のあいだに 2 度押されても 1 回
 export async function applyRetry() {
-  clearTimeout(_showTimer);
-  document.getElementById("gameOverModal")?.classList.add("hidden");
-  naviHide();   // SPEC-116
-  await _reviveGather();   // SPEC-150: 粒子が集まりきってから、 その場所にヒーローが立つ
-  resumeTime();
-  state.currentStageIdx = 0;       // SPEC-030: リトライは常にステージ 1 から
-  // 循環 import 回避のため動的に startBattle を取得
-  const m = await import("./index.js");
-  m.startBattle(state.ownedHero);
+  if (_reviving) return;
+  _reviving = true;
+  try {
+    clearTimeout(_showTimer);
+    document.getElementById("gameOverModal")?.classList.add("hidden");
+    naviHide();   // SPEC-116
+    await _reviveGather();   // SPEC-150: 粒子が集まりきってから、 その場所にヒーローが立つ
+    resumeTime();
+    state.currentStageIdx = 0;       // SPEC-030: リトライは常にステージ 1 から
+    // 循環 import 回避のため動的に startBattle を取得
+    const m = await import("./index.js");
+    m.startBattle(state.ownedHero);
+  } finally { _reviving = false; }
 }
 
 function _wireOnce() {
