@@ -110,8 +110,9 @@ test("流れの配線: 倒れたら粒子 → 渦に入ったらマインちゃ�
 test("SPEC-152: 吸い込みのあいだは暗いまま → hold → 降りこみながら晴れる。 木を開いているあいだ渦は隠す。 止まっているあいだは揺らさない", () => {
   const fx = read("../js/battle/revive-fx.js");
   assert.match(fx, /if \(k >= 1\) \{ _mode = "hold"; _finish\(true\); \}/);
-  assert.match(fx, /\} else if \(_mode === "hold"\) \{\n\s+_ctx\.fillStyle = `rgba\(0,0,0,\$\{REVIVE\.dark\}\)`;/);
-  assert.match(fx, /_mode === "rain"[^]*?rgba\(0,0,0,\$\{\(REVIVE\.dark \* \(1 - k\)\)\.toFixed\(2\)\}\)/);
+  assert.match(fx, /\} else if \(_mode === "hold"\) \{\n\s+_ctx\.fillStyle = "rgba\(0,0,0,1\)";/, "降りこみが始まるまで真っ暗");
+  assert.match(fx, /_mode === "rain"[^]*?rgba\(0,0,0,\$\{\(1 - easeOutCubic\(k\)\)\.toFixed\(2\)\}\)/, "降りこみながら晴れる");
+  assert.match(fx, /REVIVE\.dark \+ \(1 - REVIVE\.dark\) \* k/, "吸い込みながら真っ暗に");
   const tree = read("../js/skill-tree.js");
   assert.match(tree, /classList\.add\("revive-fx--hold"\)/);
   assert.match(tree, /classList\.remove\("revive-fx--hold"\)/);

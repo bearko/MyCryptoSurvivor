@@ -260,7 +260,7 @@ function _frame(now) {
     }
   } else if (_mode === "sink") {
     const k = Math.min(1, t / (REVIVE.sinkMs / 1000));
-    _ctx.fillStyle = `rgba(0,0,0,${REVIVE.dark})`; _ctx.fillRect(0, 0, w, h);   // SPEC-152: 吸い込みのあいだは暗いまま (= 前のステージを見せない)
+    _ctx.fillStyle = `rgba(0,0,0,${(REVIVE.dark + (1 - REVIVE.dark) * k).toFixed(2)})`; _ctx.fillRect(0, 0, w, h);   // SPEC-152: 吸い込みながら真っ暗に (= 前のステージを見せない)
     for (const p of _parts) {
       vortexStep(p, dt * (1 + k * 3));   // 速く回りながら細くなり
       const v = vortexPos(p, _center.x, _center.y, _spindleH * (1 - k * 0.6), _spindleR * (1 - k * 0.7));
@@ -270,10 +270,10 @@ function _frame(now) {
     }
     if (k >= 1) { _mode = "hold"; _finish(true); }   // SPEC-152: 降りこみが始まるまで暗いまま
   } else if (_mode === "hold") {
-    _ctx.fillStyle = `rgba(0,0,0,${REVIVE.dark})`; _ctx.fillRect(0, 0, w, h);
+    _ctx.fillStyle = "rgba(0,0,0,1)"; _ctx.fillRect(0, 0, w, h);   // SPEC-152: 降りこみが始まるまで真っ暗
   } else if (_mode === "rain") {
     const k = Math.min(1, t / (REVIVE.rainMs / 1000));
-    _ctx.fillStyle = `rgba(0,0,0,${(REVIVE.dark * (1 - k)).toFixed(2)})`; _ctx.fillRect(0, 0, w, h);   // SPEC-152: 降りこみながら晴れる
+    _ctx.fillStyle = `rgba(0,0,0,${(1 - easeOutCubic(k)).toFixed(2)})`; _ctx.fillRect(0, 0, w, h);   // SPEC-152: 降りこみながら真っ暗から晴れる
     for (const p of _parts) {
       const kk = Math.max(0, Math.min(1, (k - p.delay) / (1 - p.delay)));
       const q = lerpPos(p.gx, p.gy, p.tx, p.ty, easeOutCubic(kk));
