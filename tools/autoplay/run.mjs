@@ -84,7 +84,9 @@ await p.evaluate(({ K, BUY }) => {
           return { c, price: Number((c.querySelector(".shop-price")?.textContent ?? "").replace(/[^\d]/g, "")) || 0, isBuff: /強化エクステ/.test(txt), isNew: /NEW/.test(txt), lv: own?.level ?? 0, starter: String(extId) === String(s.battle?.starterExtId) };
         });
         let order;
-        if (BUY === "focus") order = cards.sort((x, y) => (y.starter - x.starter) || ((!x.isNew && !x.isBuff) - (!y.isNew && !y.isBuff)) || (y.lv - x.lv) || (x.price - y.price));
+        // focus: 初期武器 → 持っている武器の段上げ (= 段の高いほう) → 新しい武器 (= 3 本まで) → 強化 → 残りは安い順
+        const rank = (x) => (x.starter ? 0 : (!x.isNew && !x.isBuff) ? 1 : (x.isNew && !x.isBuff && (s.ownedExtensions ?? []).length < 4) ? 2 : x.isBuff && !x.isNew ? 3 : 4);
+        if (BUY === "focus") order = cards.sort((x, y) => (rank(x) - rank(y)) || (y.lv - x.lv) || (x.price - y.price));
         else order = cards.sort((x, y) => x.price - y.price);
         let any = false;
         for (const x of order) { if (BUY === "weapons" && x.isBuff) continue; if (x.price <= s.shop.ce && x.price > 0 || x.price === 0) { x.c.click(); A.buys++; any = true; break; } }

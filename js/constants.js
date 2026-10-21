@@ -357,8 +357,9 @@ export const SHOP_EVERY_MS      = 40000;           // そのあと 40 秒ごと
 export const SHOP_PER_STAGE     = 6;               // 1 ステージの店の数 (= ボスの前に終わる)
 export const SHOP_OFFERS        = 4;               // 品の枚数 (= マゼランは +1)
 // SPEC-162: 行き先の段 Lv.1〜15 の値段 (= ステージ 1)。 装備と CE がステージをまたいで残るので、 1 回の挑戦で 15 段を登る前提。
-//   Lv10 (= 今までの最大) まで合計 3,555、 Lv15 まで合計 24,555。 ステージ 2・3 は SHOP_STAGE_MUL
-export const SHOP_PRICE         = [15, 25, 40, 80, 150, 260, 420, 650, 950, 1400, 2000, 2800, 3900, 5300, 7000];
+//   SPEC-163: 序盤の CE の収入 (= 1 秒に 1〜2) で 2 分までに主武器を Lv.4〜5 にできる傾き。
+//   Lv10 (= 今までの最大) まで合計 2,285、 Lv15 まで合計 12,785。 ステージ 2・3 は SHOP_STAGE_MUL
+export const SHOP_PRICE         = [15, 20, 30, 50, 90, 150, 240, 380, 560, 800, 1100, 1500, 2000, 2600, 3300];
 export const SHOP_PRICE_LL      = 20000;           // LL ランクアップ (= Lv.5 の 2 倍。 SPEC-122)
 export const SHOP_STAGE_MUL     = [1, 1.8, 2.6];   // 雑魚の CE が ×1/×2/×3 なので値段も上げる
 export const SHOP_BANS          = 3;               // お断りは 1 挑戦 3 回まで
@@ -414,8 +415,8 @@ export const STAGE_TABLE = [
     gimmick: "beads",    // SPEC-064: そろばんの珠
     // SPEC-078 → SPEC-163: 洪水はゆるく (= ×12 → ×5、 pow 2.5 → 1.8)。 2:00 の群れ 16 体で「どばーっ」と来て圧死していたので、
     //   群れは 2:30 から 10 体。 密度の目標も半分 (= 画面の 45%)。 装備が育つ速さ (= CE の収入) と同じ傾きで敵を増やす
-    flood: { fromMs: 40000, fullMs: 230000, maxMul: 5, packFromMs: 150000, packEveryMs: 15000, packSize: 10, pow: 1.8 },
-    density: { fromMs: 60000, fullMs: 230000, max: 0.45 },
+    flood: { fromMs: 40000, fullMs: 230000, maxMul: 4, packFromMs: 170000, packEveryMs: 15000, packSize: 8, pow: 1.8 },
+    density: { fromMs: 90000, fullMs: 230000, max: 0.35 },
     maxEnemies: 260,
   },
   {

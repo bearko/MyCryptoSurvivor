@@ -8,7 +8,7 @@
 // 効果はすべて足し算の倍率 (= 強化エクステンション (SPEC-011) はその上に掛かる。 buffs.js)。
 
 import { state } from "./state.js";
-import { TREE_NODES, EXT_MASTERY, MAIN_CHANCE_PER_RANK } from "./skill-data.js";
+import { TREE_NODES, EXT_MASTERY, MAIN_CHANCE_PER_RANK, MAIN_CHANCE_BASE } from "./skill-data.js";
 import { nodeRank } from "./skill-logic.js";
 import { EXT_START_LEVEL_STEP,
   CONTACT_COOLDOWN_MS, REROLL_PER_BATTLE, STOCK_LIMIT_WEAPON, STOCK_LIMIT_BUFF,
@@ -250,7 +250,7 @@ export function formatStat(f, v, lang = "ja") {
   if (f === "num") return `${sign}${a}`;
   if (f === "cut") return `−${Math.round(a * 100)}%`;
   if (f === "lv") return `Lv ＋${a}`;   // SPEC-139: 仕込み
-  if (f === "main") return `${Math.round(a * MAIN_CHANCE_PER_RANK * 100)}%`;   // SPEC-144: 得意武器 (= 段 × 20%)
+  if (f === "main") return `${Math.round((MAIN_CHANCE_BASE + a * MAIN_CHANCE_PER_RANK) * 100)}%`;   // SPEC-144: 得意武器 (= SPEC-163: 50% ＋ 段 × 15%)
   if (f === "robot") { const s = ROBOT_SEC[Math.max(1, Math.min(ROBOT_SEC.length, a)) - 1]; return lang === "en" ? `${s}s` : `${s} 秒`; }   // SPEC-140   // SPEC-131: 値引き (= 正の数で持つ)
   if (f === "ce20") return `${sign}${a * 20}`;   // SPEC-109: 先手は 1 段 = 20 CE
   if (f === "sec") return lang === "en" ? `+${a}s` : `＋${a} 秒`;
@@ -291,6 +291,6 @@ export const weaponDmgMul = (extId) => 1 + perk(`wdmg_${extId}`);
 /** SPEC-131: その強化エクステのショップの値引き (= 強化の目利き。 0〜0.3) */
 export const buffPriceCut = (extId) => Math.min(0.9, Math.max(0, perk(`cut_${extId}`)));
 /** SPEC-144: 得意武器 (= 札を引くときに初期武器が必ず並ぶ確率。 0〜0.6) */
-export const mainWeaponChance = () => Math.min(1, Math.max(0, perk("mainBias") * MAIN_CHANCE_PER_RANK));
+export const mainWeaponChance = () => Math.min(1, Math.max(0, MAIN_CHANCE_BASE + perk("mainBias") * MAIN_CHANCE_PER_RANK));   // SPEC-163: 土台 50%
 /** SPEC-139: 仕込み (= 手に入れたときに足す Lv) */
 export const startLevelBonus = (extId) => Math.max(0, perk(`slv_${extId}`) | 0) * EXT_START_LEVEL_STEP;   // SPEC-162: 15 段なので 1 段 = 2 段ぶん

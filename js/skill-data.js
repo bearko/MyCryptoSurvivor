@@ -178,8 +178,10 @@ for (const [route, extId, kind, ja, en, icon, x, y, requires, hero] of EXT_MASTE
 export const START_LV_GUM = 150;
 export const START_LV_MAX = 2;
 export const MAIN_BIAS_MAX = 3;
+/** SPEC-163: 初期武器の札が並ぶ確率 (= 何も取っていなくても 50%。 得意武器で段ごとに ＋15%) */
+export const MAIN_CHANCE_BASE = 0.5;
 /** SPEC-144: 得意武器 1 段で、 札を引くときに初期武器が必ず並ぶ確率 (= 20% / 40% / 60%) */
-export const MAIN_CHANCE_PER_RANK = 0.2;
+export const MAIN_CHANCE_PER_RANK = 0.15;   // SPEC-163: 20% → 15% (= 土台 50% に足す)
 /** SPEC-145: 伸ばす向き (= 本作の武器は下・ほかのタイトルの武器は上・強化は U の外側) */
 export const EXT_TOOTH = Object.fromEntries(EXT_MASTERY.map(([route, extId, , , , , , y]) => [extId,
   route === "wm" ? (y === -3 ? [0, 1] : [0, -1]) : (y === 3 ? [0, -1] : [0, 1])]));
@@ -205,7 +207,7 @@ for (const [route, extId, kind, ja, en, icon, x, y] of EXT_MASTERY) {
 }
 NODES.push({
   ...N("wm_main", "wm", "atk_dmg", 0, 0, "repeat", "得意武器", "Favored Weapon",
-    "ショップとレベルアップで札が並ぶたびに、 初期武器の札が必ず並ぶ確率 20%（段ごとに ＋20%。 最大 60%）", "Each time shop or level-up cards are dealt, 20% chance per rank (max 60%) that your starting weapon is guaranteed among them",
+    "ショップとレベルアップで札が並ぶたびに、 初期武器の札が必ず並ぶ確率 50% → 65%（段ごとに ＋15%。 最大 95%）", "Each time shop or level-up cards are dealt, the chance that your starting weapon is guaranteed among them goes 50% → 65% (+15% per rank, max 95%)",
     { gum: 100 }, 3001, { mainBias: 1 }, MAIN_BIAS_MAX),
   x: 1, y: -1, requires: ["atk_dmg"],
 });
