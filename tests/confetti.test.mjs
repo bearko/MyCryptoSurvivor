@@ -50,7 +50,7 @@ test("配線: ステージクリアと全クリアで紙吹雪、 閉じたら�
 test("EASY: 敵の数は 1/3。 ステージ 1 は雑魚が弱く、 ステージ 2 から本気", () => {
   assert.equal(EASY_STAGES[0].spawnIntervalMs, 960);
   assert.equal(EASY_STAGES[1].spawnIntervalMs, 1140);
-  assert.equal(EASY_STAGES[2].spawnIntervalMs, 1140);
+  assert.equal(EASY_STAGES[2].spawnIntervalMs, 570);   // 負ける設計のステージ 3 は 1/2
   assert.ok(EASY_STAGES[0].enemyDmgMul <= 0.5);
   assert.ok(EASY_STAGES[1].enemyDmgMul > EASY_STAGES[0].enemyDmgMul);
 });
