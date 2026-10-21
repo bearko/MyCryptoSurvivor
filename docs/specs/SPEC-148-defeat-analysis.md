@@ -2,7 +2,7 @@
 id: SPEC-148
 title: Defeat Analysis — Damage Taken by Source, DPS and Damage Dealt per Weapon, Comparison With the Previous Defeat and Personal Best, and Mine's Skill Suggestions
 status: Done
-pr: TBD
+pr: 187
 phase: v1.7 Onboarding
 kind: Added
 ---
