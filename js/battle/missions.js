@@ -282,8 +282,8 @@ function _openOffer(mission, forced = null) {
   playSe(SFX.GIMMICK_WARN, 100, 0.5);
   // SPEC-137: 初めてのミッションだけ、 マインちゃんが受け方と★を説明する (= 画面の下の通信の帯)
   _naviShown = isEasy() ? false : naviTipModal("mission.offer", [
-    { key: "navi.mission.1", pose: "pointer" },
-    { key: "navi.mission.2", pose: "wink" },
+    { key: "navi.mission.1", pose: "pointer", voice: "mission.1" },   // SPEC-159: ボイス
+    { key: "navi.mission.2", pose: "wink", voice: "mission.2" },
   ]);
   if (isEasy()) showLesson("s2.mission");   // SPEC-147: 説明はレッスンで (= 上に重なる)
 }

@@ -18,17 +18,20 @@ const { naviLines, RETIRED_VOICES } = await import("../js/navi.js");
 const { TIP_KEYS } = await import("../js/navi-tips.js");
 const { normalizeSettings, updateSettings, DEFAULT_SETTINGS } = await import("../js/settings.js");
 const { STAGE_TABLE } = await import("../js/constants.js");
+const { ADVICE_NODES } = await import("../js/battle/run-stats.js");   // SPEC-159
+const { LESSON_KEYS } = await import("../js/easy.js");
+const { TELOP_KINDS } = await import("../js/result-telop.js");
 const ui = JSON.parse(readFileSync(new URL("../data/i18n/ui.json", import.meta.url), "utf8"));
 const heroesRaw = JSON.parse(readFileSync(new URL("../data/heroes.json", import.meta.url), "utf8"));
 const heroes = Array.isArray(heroesRaw) ? heroesRaw : (heroesRaw.heroes ?? Object.values(heroesRaw));
 
 test("ボイスのファイルがすべてある (= MP3。 長さも分かっている)", () => {
-  assert.equal(Object.keys(VOICE_LINES).length, 57);   // 台本 35 本 ＋ 追加の録音 8 本 (= 許褚は差し替え。 SPEC-097) ＋ 倒れたとき・スキルツリー 13 本 (= SPEC-116) ＋ 最初の店の説明 1 本
+  assert.equal(Object.keys(VOICE_LINES).length, 89);   // 台本 35 本 ＋ 追加の録音 8 本 (= 許褚は差し替え。 SPEC-097) ＋ 倒れたとき・スキルツリー 13 本 (= SPEC-116) ＋ 最初の店の説明 1 本 ＋ SPEC-159 の 32 本
   for (const [id, v] of Object.entries(VOICE_LINES)) {
     assert.match(v.file, /^assets\/voice\/mine\/[\w.]+\.mp3$/, id);
     assert.ok(existsSync(new URL(`../${v.file}`, import.meta.url)), v.file);
     assert.ok(statSync(new URL(`../${v.file}`, import.meta.url)).size < 80000, `${v.file} は小さい`);
-    assert.ok(v.ms > 500 && v.ms < 8000, `${id}: ${v.ms}`);
+    assert.ok(v.ms > 500 && v.ms < 10000, `${id}: ${v.ms}`);   // SPEC-159: 「敵の弾に削られてるね…」が 9.1 秒
   }
   assert.ok(hasVoice("title.call"));
 });
@@ -43,6 +46,13 @@ test("マインちゃんのどのセリフにもボイスがある", () => {
     // SPEC-116: 倒れたとき・スキルツリー
     ...naviLines("lose", { guide: true }), ...[0, 1, 2].flatMap((n) => naviLines("lose", { n })),
     ...naviLines("treeHint"), ...["root", "first", "noGum", "done", "claimable", "idle"].flatMap((step) => naviLines("tree", { step })),
+    // SPEC-159: 4 回目の録音 (= EASY のすすめ・復活・木から戻った・おすすめ・ボスの予告・EASY のステージ・ミッション・レッスン・テロップ)
+    ...naviLines("mode", { first: true }), ...naviLines("revive"), ...naviLines("afterTree", { bought: 1 }), ...naviLines("afterTree", { bought: 0 }),
+    ...Object.keys(ADVICE_NODES).map((key) => naviLines("advice", { key, vars: { a: "a", b: "b" } })[0]),
+    ...naviLines("bossWarn"), ...naviLines("stage", { stageIdx: 0, stageCount: 2, stageName: "n", bossSec: 15 }),
+    { key: "navi.mission.1", voice: "mission.1" }, { key: "navi.mission.2", voice: "mission.2" },   // js/battle/missions.js
+    ...LESSON_KEYS.map((k) => ({ key: `lesson.${k}`, voice: `lesson.${k}` })),   // js/lesson.js (= hasVoice で付ける)
+    ...Object.values(TELOP_KINDS).map((k) => ({ key: k.line, voice: k.voice })),   // js/result-telop.js
   ];
   for (const l of all) {
     // SPEC-097: ボイスをまだ録っていないヒーローの紹介だけは、 文だけ

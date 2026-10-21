@@ -2,6 +2,7 @@
 //   node tools/voice/build.mjs <WAV のフォルダ>            … 台本の全部 (= ORDER)
 //   node tools/voice/build.mjs <WAV のフォルダ> --added    … 追加の録音 (= 「…_added.wav」。 ADDED) だけ変換して、 いまの一覧に足す
 //   node tools/voice/build.mjs <WAV のフォルダ> --lessons  … SPEC-147: EASY のレッスン (= 「番号-…_lesson.wav」。 LESSONS)
+//   node tools/voice/build.mjs <WAV のフォルダ> --added4   … SPEC-159: 4 回目 (= 「番号-…-mine_added.wav」。 ADDED_4。 null は既存を優先して捨てる)
 //   WAV は「番号-セリフ-….wav」 (= 番号は 00 がタイトルコール、 01 から ORDER の並び。 作者の台本の CSV と同じ)。
 //   ffmpeg / ffprobe が要る (= このツールだけ。 ゲームは MP3 を読むだけ)
 import { execFileSync } from "node:child_process";
@@ -56,21 +57,41 @@ export const LESSONS = [
   "lesson.s2.lose", "lesson.s2.root", "lesson.s2.thunder", "lesson.s2.clear",
 ];
 
+/**
+ * SPEC-159: 4 回目の追加の録音 (= 2026-10-21。 「番号-…-mine_added.wav」。 番号は 00 から。 台本は docs/voice/script-mine-keys.txt の並びそのもの)。
+ * 89 本のうち、 もう同じセリフのボイスがあるもの (= タイトル・ヒーローの紹介・ステージ・ひとこと…) は null (= 既存を優先して捨てる)。
+ * 新しいのは ミッション 2・復活 1・木から戻った 2・EASY のすすめ 1・レッスン 15・おすすめ 6・EASY のステージ 1・ボスの予告 1・テロップ 3 (= 32 本)
+ */
+export const ADDED_4 = [
+  "mission.1", "mission.2", "revive.intro", "afterTree.bought", "afterTree.none", "mode.easy", "lesson.s1.move", "lesson.s1.ce", "lesson.s1.shop", "lesson.s1.boss",
+  "lesson.s1.clear", "lesson.s2.start", "lesson.s2.rare", "lesson.s2.gift", "lesson.s2.mission", "lesson.s2.reward", "lesson.s2.boss", "lesson.s2.lose", "lesson.s2.root", "lesson.s2.thunder",
+  "lesson.s2.clear", "advice.shot", "advice.crowdDps", "advice.crowdMove", "advice.boss", "advice.gimmick", "advice.hp", null, null, null,
+  null, null, null, null, null, null, null, null, null, null,
+  null, null, null, null, null, null, null, null, null, null,
+  null, null, null, null, null, null, null, null, null, null,
+  null, null, null, null, null, null, null, null, null, "stage.1.easy",
+  "boss.warn", null, null, null, null, null, null, null, null, null,
+  null, null, null, null, null, null, "telop.clear", "telop.allClear", "telop.lose",
+];
+
 const OUT_DIR = "assets/voice/mine";
 const src = process.argv[2];
 const added2 = process.argv.includes("--added2");   // SPEC-116: 2 回目の追加の録音
 const added3 = process.argv.includes("--added3");   // 3 回目の追加の録音
 const lessons = process.argv.includes("--lessons");   // SPEC-147: EASY のレッスン
-const added = added2 || added3 || lessons || process.argv.includes("--added");   // 追加の録音だけ変換し、 いまの一覧に足す
-const BATCH = lessons ? LESSONS : (added3 ? ADDED_3 : (added2 ? ADDED_2 : ADDED));
+const added4 = process.argv.includes("--added4");   // SPEC-159: 4 回目の追加の録音
+const added = added2 || added3 || added4 || lessons || process.argv.includes("--added");   // 追加の録音だけ変換し、 いまの一覧に足す
+const BATCH = added4 ? ADDED_4 : (lessons ? LESSONS : (added3 ? ADDED_3 : (added2 ? ADDED_2 : ADDED)));
 const SUFFIX_ADDED2 = /-MyCryptoSurvivors_tutorial_skilltree\.wav$/i;
-const SUFFIX = lessons ? /_lesson\.wav$/i : (added3 ? /_added3\.wav$/i : (added2 ? SUFFIX_ADDED2 : /_added\.wav$/i));
+const SUFFIX_ADDED4 = /-mine_added\.wav$/i;
+const SUFFIX = added4 ? SUFFIX_ADDED4 : (lessons ? /_lesson\.wav$/i : (added3 ? /_added3\.wav$/i : (added2 ? SUFFIX_ADDED2 : /_added\.wav$/i)));
 if (!src) { console.error("usage: node tools/voice/build.mjs <wav dir> [--added | --added2 | --added3 | --lessons]"); process.exit(1); }
 mkdirSync(OUT_DIR, { recursive: true });
 const wavs = readdirSync(src).filter((f) => /^\d+-.*\.wav$/i.test(f) && (added ? SUFFIX.test(f) : !/_added\d*\.wav$/i.test(f) && !SUFFIX_ADDED2.test(f)));
 const lines = added ? { ...(await import("../../js/voice-lines.js")).VOICE_LINES } : {};
 for (const f of wavs) {
   const n = Number(f.split("-")[0]);
+  if (added4 && n < ADDED_4.length && ADDED_4[n] === null) continue;   // SPEC-159: 既存のボイスを優先して捨てる
   const id = (added ? BATCH : ORDER)[n];
   if (!id) throw new Error(`番号 ${n} のボイスの名前がない: ${f}`);
   const out = join(OUT_DIR, `${id}.mp3`);
@@ -79,8 +100,8 @@ for (const f of wavs) {
   const sec = Number(execFileSync("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", out]).toString().trim());
   lines[id] = { file: out, ms: Math.round(sec * 1000) };
 }
-const ALL = [...new Set([...ORDER, ...ADDED, ...ADDED_2, ...ADDED_3, ...LESSONS])];
-const missing = (added ? BATCH : ORDER).filter((id) => !lines[id]);
+const ALL = [...new Set([...ORDER, ...ADDED, ...ADDED_2, ...ADDED_3, ...LESSONS, ...ADDED_4.filter(Boolean)])];
+const missing = (added ? BATCH : ORDER).filter((id) => id && !lines[id]);
 if (missing.length) throw new Error(`WAV がない: ${missing.join(", ")}`);
 const body = ALL.filter((id) => lines[id]).map((id) => `  "${id}": ${JSON.stringify(lines[id])},`).join("\n");
 writeFileSync("js/voice-lines.js", `// ============================================================

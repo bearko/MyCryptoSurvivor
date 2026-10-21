@@ -12,6 +12,7 @@ import { prefersReducedMotion } from "./motion.js";
 import { naviFrameUrl, NAVI_POSES, naviHide } from "./navi.js";
 import { heroImg } from "./heroes.js";
 import { t } from "./i18n.js";
+import { hasVoice, playVoice } from "./voice.js";   // SPEC-159
 
 export const TELOP_MS = 1600;
 /** マインちゃんがポーズを変えるとき (= 帯が止まったあと) */
@@ -19,9 +20,9 @@ export const TELOP_POSE2_MS = 700;
 
 /** 結果ごとの表示 (= 純関数。 tests/result-telop.test.mjs) */
 export const TELOP_KINDS = {
-  clear:    { label: "NODE CLEAR",      sub: "telop.clear",    line: "telop.navi.clear",    poses: ["sparkle", "wink"],   tone: "win" },
-  allClear: { label: "ALL NODES CLEAR", sub: "telop.allClear", line: "telop.navi.allClear", poses: ["sparkle", "hooray"], tone: "win" },
-  lose:     { label: "SIGNAL LOST",     sub: "telop.lose",     line: "telop.navi.lose",     poses: ["teary", "cry"],      tone: "lose" },
+  clear:    { label: "NODE CLEAR",      sub: "telop.clear",    line: "telop.navi.clear",    poses: ["sparkle", "wink"],   tone: "win",  voice: "telop.clear" },
+  allClear: { label: "ALL NODES CLEAR", sub: "telop.allClear", line: "telop.navi.allClear", poses: ["sparkle", "hooray"], tone: "win",  voice: "telop.allClear" },
+  lose:     { label: "SIGNAL LOST",     sub: "telop.lose",     line: "telop.navi.lose",     poses: ["teary", "cry"],      tone: "lose", voice: "telop.lose" },   // SPEC-159: 帯の吹き出しのボイス
 };
 
 export function telopSpec(kind) {
@@ -105,6 +106,7 @@ export function presentResult(modal, kind, { heroId = null, then = () => {} } = 
   _el.classList.remove("hidden", "result-telop--run");
   void _el.offsetWidth;   // アニメーションをかけ直す
   _el.classList.add("result-telop--run");
+  if (hasVoice(spec.voice)) playVoice(spec.voice);   // SPEC-159: 「やりました！」 (= 帯が出た瞬間)
   _timers.push(setTimeout(() => { ain.src = naviFrameUrl(NAVI_POSES[spec.poses[1]]); }, TELOP_POSE2_MS));
   _timers.push(setTimeout(_finish, TELOP_MS));
 }
