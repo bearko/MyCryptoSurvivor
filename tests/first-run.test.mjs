@@ -1,4 +1,4 @@
-// SPEC-146: 初めての人の最初の挑戦 (= meta.runs が 0) だけ、 脅威の段階を上げず、 ショップを出さない (= レベルアップで強くなる)。
+// SPEC-146: 初めての人の最初の挑戦 (= meta.runs が 0) だけ、 脅威の段階を上げない (= ショップを出さない決まりは SPEC-147 で外した)。
 //           倒れたら、 スキルツリーからそのまま「もう一度挑む」
 // 実行: node --test tests/first-run.test.mjs
 import { test } from "node:test";
@@ -21,9 +21,9 @@ test("初めての挑戦は T0 のまま。 2 回目からは今までどおり 
 test("つなぎ: 初めての挑戦の印・段階・ショップ", () => {
   const idx = read("js/battle/index.js");
   assert.match(idx, /state\.run\.firstRun = \(getMeta\(\)\.runs \| 0\) === 0 && !state\.rtaMode;/);
-  assert.match(idx, /if \(isShopMode\(\) && !state\.run\?\.firstRun\) \{/);
+  assert.match(idx, /if \(isShopMode\(\)\) \{/, "SPEC-147: ショップはステージ 1 から");
   const en = read("js/battle/enemies.js");
-  assert.equal((en.match(/runThreatTier\(state\.killCount, \{ firstRun: !!state\.run\?\.firstRun \}\)/g) ?? []).length, 2, "知らせと型の両方");
+  assert.equal((en.match(/runThreatTier\(state\.killCount, \{ firstRun: !!state\.run\?\.firstRun, easy: isEasy\(\) \}\)/g) ?? []).length, 2, "知らせと型の両方");
   assert.doesNotMatch(en, /[^n]threatTier\(state\.killCount\)/);
 });
 

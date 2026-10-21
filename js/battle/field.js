@@ -30,6 +30,8 @@ import { pushDamageNumber, hitEnemy } from "./damage.js";
 import { fxBurst, fxThunder } from "./fx.js";
 import { playSe } from "../audio.js";
 import { reportChestOpened } from "../platform.js";   // SPEC-096
+import { easyStage } from "../easy.js";   // SPEC-147
+import { showLesson } from "../lesson.js";   // SPEC-147
 
 function _stage() {
   return STAGE_TABLE[state.currentStageIdx ?? 0] ?? STAGE_TABLE[0];
@@ -51,6 +53,7 @@ export function resetField() {
   b.nextChestIdx = 0;
   b.bossChestAtMs = null;   // SPEC-081
   b.robotMs = 0;   // SPEC-140 (= BGM は startBattle が戻す)
+  b.easyThunderDropped = false;   // SPEC-147
   b.robotPrevBgm = null;
   b.nextPotAtMs = POT_RESPAWN_MS;
   for (let i = 0; i < POT_INITIAL; i++) _spawnProp("pot", 200, 600);
@@ -60,10 +63,17 @@ export function resetField() {
 export function tickField(_dt) {
   const b = state.battle;
   const t = b.stageElapsedMs ?? 0;
-  // 宝箱 (= 1 ステージ 4 つ、 決まった時刻)
-  while ((b.nextChestIdx ?? 0) < chestTimesMs().length && t >= chestTimesMs()[b.nextChestIdx]) {
+  // 宝箱 (= 1 ステージ 4 つ、 決まった時刻)。 SPEC-147: EASY は短い表
+  const ez = easyStage();
+  const chestAt = ez?.chestTimesMs ?? chestTimesMs();
+  while ((b.nextChestIdx ?? 0) < chestAt.length && t >= chestAt[b.nextChestIdx]) {
     b.nextChestIdx += 1;
     _spawnProp("chest", 220, 420);
+  }
+  // SPEC-147: EASY のステージ 3 は、 ボスが出た瞬間に雷鼓を足もとに落とす (= ボスに大ダメージを体験する。 予告で落とすと雑魚に使ってしまう)
+  if (ez?.thunderAtBoss && !b.easyThunderDropped && b.bossSpawned) {
+    b.easyThunderDropped = true;
+    spawnItem("thunder", b.player.x + 70, b.player.y - 40);
   }
   // SPEC-081: ボス戦の宝箱 (= 枠の中に、 ボスが出て少ししてから一定の間隔で)
   if (b.bossSpawned && !b.bossDefeated && b.arena) {
@@ -220,6 +230,7 @@ export function applyItem(kind) {
     robotOn(robotSec());   // SPEC-140
   } else if (kind === "thunder") {
     thunderStrike();   // SPEC-063
+    if (easyStage() && (state.currentStageIdx ?? 0) === 2) showLesson("s3.thunder");   // SPEC-147
   } else if (kind === "magnet") {
     // 落ちている CE を全部吸い寄せる (= gems.js が毎フレーム近づける)
     for (const g of b.gems) g.magnet = true;

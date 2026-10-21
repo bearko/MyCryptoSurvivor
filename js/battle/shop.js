@@ -30,6 +30,7 @@ import {
 } from "./shop-logic.js";
 import { pushDamageNumber } from "./damage.js";
 import { canHeal } from "./missions.js";   // SPEC-112
+import { easyStage } from "../easy.js";   // SPEC-147
 export { isShopMode, shopTimesMs, shopProgress } from "./shop-logic.js";
 
 // ============================================================
@@ -89,7 +90,8 @@ export function tickShop() {
   const s = state.shop;
   const b = state.battle;
   if (!s || _open || !b.active || b.gameOver) return;
-  const times = shopTimesMs(state.currentStageIdx ?? 0);
+  const times = easyStage()?.shopTimesMs ?? shopTimesMs(state.currentStageIdx ?? 0);   // SPEC-147: EASY は短い
+  b.easyShopTimes = easyStage() ? times : null;
   const done = b.bossSpawned || s.nextIdx >= times.length;
   renderShopBar(done ? null : { sec: nextShopSec(b.stageElapsedMs ?? 0, state.currentStageIdx ?? 0, s.nextIdx), ratio: shopProgress(b.stageElapsedMs ?? 0, state.currentStageIdx ?? 0, s.nextIdx), merchant: s.nextMerchant });
   if (done) return;

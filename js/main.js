@@ -2,6 +2,8 @@
 // main.js — エントリポイント
 // ============================================================
 
+import { hasPlayed } from "./played.js";   // SPEC-147
+import { hasClearedEasy } from "./easy.js";   // SPEC-147
 import { state, pauseTime, resumeTime } from "./state.js";
 import { initI18n, setLang, getLang, t, tpl, onLangChange } from "./i18n.js";
 import { installMenu, openMenu } from "./menu.js";
@@ -167,6 +169,12 @@ function setupTitleScreen() {
   if (bg) bg.style.backgroundImage = `url("${img("Image/Backgrounds/1001.png")}")`;
 }
 
+/** SPEC-147: EASY をクリアした画面から、 モード選択へ (= タイトルを通さない) */
+export function openModeSelectFromTitle() {
+  document.getElementById("titleScreen")?.classList.add("hidden");
+  dismissTitle();
+}
+
 function dismissTitle() {
   unlockAudio();   // SPEC-017: 初回 user gesture で audio policy 解除
   startMenuBgm();  // SPEC-069: モード選択・ヒーロー選択は land.mp3 (= 押した操作の中で替える。 ワイプのあとだと iOS で止められる)
@@ -174,7 +182,7 @@ function dismissTitle() {
   // SPEC-055: ワイプで切り替える
   playWipe(() => {
     showModeSelect();
-    naviSay(naviLines("mode"), { place: "mode" });   // SPEC-059: 画面の下の通信の帯 (= カードと重ならない)
+    naviSay(naviLines("mode", { first: !hasPlayed() && !hasClearedEasy() }), { place: "mode" });   // SPEC-059: 画面の下の通信の帯。 SPEC-147: 初めては EASY をすすめる
   }, { label: "NODE // CONNECT" });
 }
 

@@ -23,6 +23,8 @@ import { perk } from "../perks.js";   // SPEC-090c
 import { pourShopCeIntoSig } from "./shop.js";   // SPEC-128
 import { heroImg } from "../heroes.js";
 import { loadShare, shouldOfferShare, openSharePrompt, closeSharePrompt } from "../share-x.js";   // SPEC-143
+import { isEasy } from "../easy.js";   // SPEC-147
+import { showLesson } from "../lesson.js";   // SPEC-147
 
 let _wired = false;
 
@@ -78,7 +80,7 @@ export function triggerStageEndOrTransition() {
 
   // SPEC-039 / SPEC-096: 共通基盤のアチーブメント (= ステージ 1・2・全クリア・ファオ・ボス 3 体・RTA・ABSOLUTE ×2.0)
   const endIdx = state.currentStageIdx ?? 0;
-  reportStageEnd(endIdx, STAGE_TABLE.length, {
+  if (!isEasy()) reportStageEnd(endIdx, STAGE_TABLE.length, {   // SPEC-147: EASY は共通基盤に送らない
     bossDefeated: !!state.battle.bossDefeated,
     bossEnemyId: STAGE_TABLE[endIdx]?.bossEnemyId ?? null,
     stages: state.run.stages,
@@ -87,7 +89,7 @@ export function triggerStageEndOrTransition() {
     absolute: state.absolute,
   });
   // SPEC-040: RTA の区切り (= RTA で始めた run だけ。 IGT は各ステージのゲーム内時間の合計)
-  if (state.rtaMode) reportRtaStageEnd(state.currentStageIdx ?? 0, STAGE_TABLE.length, state.run.totalElapsedMs);
+  if (state.rtaMode && !isEasy()) reportRtaStageEnd(state.currentStageIdx ?? 0, STAGE_TABLE.length, state.run.totalElapsedMs);
 
   const isLast = (state.currentStageIdx ?? 0) >= STAGE_TABLE.length - 1;
   if (isLast) {
@@ -115,8 +117,9 @@ export function triggerStageEndOrTransition() {
       countUp(document.getElementById("stageTransitionKills"), snap?.kills ?? 0, { durMs: 600, delayMs: 250 });
       renderRewards(document.getElementById("stageTransitionRewards"), { gum: snap?.gum ?? 0, dust: snap?.dust ?? 0 }, { delayMs: 500 });   // SPEC-090 + SPEC-132
       renderGumBreakdown(document.getElementById("stageTransitionGum"), { rows: snap?.gumRows ?? [], bonus: snap?.gumBonus ?? 0, mul: snap?.gumMul ?? 0 });   // SPEC-136
-      // SPEC-143: ステージ 1 のクリアで、 マインちゃんが X での投稿をすすめる (= 結果が出そろってから重ねる)
-      if (shouldOfferShare(loadShare(), { stageIdx: endIdx, rta: !!state.rtaMode })) {
+      if (isEasy() && endIdx === 0) showLesson("s1.clear");   // SPEC-147
+      // SPEC-143: ステージ 1 のクリアで、 マインちゃんが X での投稿をすすめる (= 結果が出そろってから重ねる。 EASY では出さない)
+      if (!isEasy() && shouldOfferShare(loadShare(), { stageIdx: endIdx, rta: !!state.rtaMode })) {
         clearTimeout(_shareTimer);
         _shareTimer = setTimeout(() => { if (!modal?.classList.contains("hidden")) openSharePrompt(); }, SHARE_DELAY_MS);
       }
@@ -171,6 +174,11 @@ function _renderTransitionModal() {
   const subEl     = document.getElementById("stageTransitionSub");
   const proceedEl = document.getElementById("stageTransitionProceed");
   const idx       = state.currentStageIdx ?? 0;
+  // SPEC-147: EASY のステージ 1・2 ではスキルツリーを開かない (= ステージ 3 で初めて)
+  const treeBtn = document.getElementById("stageTransitionSkillTree");
+  const treeLock = document.getElementById("stageTransitionTreeLock");
+  treeBtn?.classList.toggle("hidden", isEasy());
+  if (treeLock) { treeLock.classList.toggle("hidden", !isEasy()); treeLock.textContent = t("tree.lockedEasy", "🔒 スキルツリーはステージ 3 で開く"); }
   const next      = STAGE_TABLE[idx + 1];
   const cur       = STAGE_TABLE[idx];
 

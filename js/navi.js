@@ -69,6 +69,8 @@ export function naviLines(scene, ctx = {}) {
       return [list[Math.abs(ctx.n | 0) % list.length]];
     }
     case "mode":
+      // SPEC-147: 初めての人 (= EASY をまだクリアしていない・NORMAL も遊んでいない) には EASY をすすめる
+      if (ctx.first) return [{ key: "navi.mode.easy", pose: "sparkle" }];
       return [
         { key: "navi.mode.1", pose: "cross", mood: "cross", voice: "mode.1" },
         { key: "navi.mode.2", pose: "pointer", voice: "mode.2" },

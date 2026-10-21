@@ -121,11 +121,24 @@
     <p class="mode-select__sub" id="modeSelectSub">難易度を選んで進む</p>
 
     <div class="mode-select__cards">
+      <!-- SPEC-147: EASY (= 初めての人のための短い 3 ステージ。 マインちゃんが案内。 クリアは 1 回でよい) -->
+      <article class="mode-card mode-card--easy" data-mode="EASY" id="modeCardEasy">
+        <header class="mode-card__head">
+          <h3 class="mode-card__name">EASY</h3>
+          <span class="mode-card__mul" id="modeCardEasyMul">案内つき</span>
+        </header>
+        <p class="mode-card__desc" id="modeCardEasyDesc">短い 3 ステージで、 遊び方をマインちゃんが案内。 クリアは 1 回でよい。</p>
+        <p class="mode-card__done hidden" id="modeCardEasyDone">✓ クリア済み</p>
+        <button class="btn mode-card__cta" id="btnModeEasy">EASY で始める</button>
+      </article>
+
       <article class="mode-card" data-mode="NORMAL" id="modeCardNormal">
         <header class="mode-card__head">
           <h3 class="mode-card__name">NORMAL</h3>
           <span class="mode-card__mul" id="modeCardNormalMul">×1.00</span>
         </header>
+        <!-- SPEC-147: EASY をクリアするまでロック (= 前から遊んでいる人は開いている) -->
+        <p class="mode-card__lock mode-card__lock--easy hidden" id="modeCardNormalLock">🔒 EASY をクリアすると選べるようになる</p>
         <p class="mode-card__desc" id="modeCardNormalDesc">通常のバランス。 全 4 軸が 1.0×。 スコア倍率 1.00。</p>
         <button class="btn mode-card__cta" id="btnModeNormal">これで始める</button>
       </article>
@@ -290,6 +303,7 @@
       <!-- SPEC-128: 残った CE を固有スキルへ振った結果 (= CE は次のステージへ持ち越さない) -->
       <div class="result-sigpour hidden" id="stageTransitionSig" data-reveal></div>
       <!-- SPEC-132: ステージクリアのたびにスキルツリーへ (= 閉じるとこの画面に戻る。 次のステージから効く) -->
+      <p class="result-tree-lock hidden" id="stageTransitionTreeLock">🔒 スキルツリーはステージ 3 で開く</p>
       <button class="btn gameover-modal__retry result-tree-btn" id="stageTransitionSkillTree" data-reveal><img alt="" aria-hidden="true" /><span data-i18n="tree.openResult">スキルツリーへ</span><span class="tree-badge hidden" id="stageTreeBadge" aria-hidden="true"></span></button>
       <div class="result-next" id="stageTransitionSub" data-reveal></div>
       <button class="btn gameover-modal__retry" id="stageTransitionProceed"
@@ -473,6 +487,8 @@
       <div class="gum-bd hidden" id="activityReportGum" data-reveal></div>
       <!-- SPEC-106: そのヒーローで初めて全クリア → LL の解放 -->
       <p class="report-ll hidden" id="activityReportLL" role="status"></p>
+      <!-- SPEC-147: EASY をクリアしたら、 NORMAL へ -->
+      <button class="btn gameover-modal__retry report-to-normal hidden" id="activityReportToNormal" data-reveal>NORMAL に挑む ▶</button>
       <button class="btn gameover-modal__retry result-tree-btn" id="activityReportSkillTree" data-reveal><img alt="" aria-hidden="true" /><span data-i18n="tree.openResult">スキルツリーへ</span></button>
       <div class="gameover-modal__form">
         <label class="gameover-form__label" id="activityReportNameLabel" for="activityReportName">プレイヤー名</label>
@@ -604,6 +620,18 @@
           <button class="btn btn--ghost mission-offer__no" id="shareLater" type="button">あとで</button>
           <button class="btn share-x__post" id="sharePost" type="button"><span class="share-x__logo" aria-hidden="true">𝕏</span> <span data-i18n="share.post">で投稿する</span></button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SPEC-147: EASY のレッスン (= 止めて、 マインちゃんが読み上げる。 ほかの画面の上) -->
+  <div id="lessonModal" class="lesson hidden" role="dialog" aria-modal="true" aria-live="assertive">
+    <div class="lesson__card">
+      <img class="lesson__face" alt="" width="96" height="128" />
+      <div class="lesson__body">
+        <span class="lesson__kicker">NAVI // MINE</span>
+        <p class="lesson__text"></p>
+        <button class="btn lesson__next" id="lessonNext" type="button">つぎへ ▶</button>
       </div>
     </div>
   </div>

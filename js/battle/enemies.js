@@ -34,6 +34,8 @@ import { tickShooter, nextFireMs } from "./enemy-shots.js";
 import { runThreatTier, rollVariant, applyVariant, crossLine, crossedOut, CROSS, VARIANTS } from "./threat.js";   // SPEC-107
 import { showThreatNotice } from "./milestones.js";   // SPEC-107
 import { missionMods } from "./missions.js";   // SPEC-112
+import { isEasy, easyStage, bossSpawnAtMs, bossWarnLeadMs } from "../easy.js";   // SPEC-147
+import { showLesson } from "../lesson.js";   // SPEC-147
 import {
   floodMul, packAngles, separateEnemies, stageMaxEnemies, spawnBudget,
   densityTarget, screenDensity, densityShortfall, DENSITY_CHECK_MS, DENSITY_GAIN, DENSITY_MAX_PER_CHECK,
@@ -70,12 +72,14 @@ export function tickEnemies(dt, nowMs) {
 
   // SPEC-022 / SPEC-030: ボス時刻到達で 1 度だけスポーン (= ボス id はステージ別)
   // SPEC-045: 出る前に予告 (= SPEC-071 で 10 秒前。 1 ステージ 1 回。 fx 側で 2 回目を弾く)
-  if (!b.bossSpawned && b.stageElapsedMs >= BOSS_SPAWN_AT_MS - BOSS_WARNING_LEAD_MS) {
+  // SPEC-147: EASY は短い (= bossSpawnAtMs / bossWarnLeadMs が定数の代わり)
+  const bossAt = bossSpawnAtMs(), warnLead = bossWarnLeadMs();
+  if (!b.bossSpawned && b.stageElapsedMs >= bossAt - warnLead) {
     fxBossIncoming();
     // SPEC-061: 出るまでの残りを数える (= ゲームの中の時間)
-    fxBossCountdown(BOSS_SPAWN_AT_MS - b.stageElapsedMs, BOSS_WARNING_LEAD_MS);
+    fxBossCountdown(bossAt - b.stageElapsedMs, warnLead);
   }
-  if (!b.bossSpawned && b.stageElapsedMs >= BOSS_SPAWN_AT_MS) {
+  if (!b.bossSpawned && b.stageElapsedMs >= bossAt) {
     clearForBoss();   // SPEC-079: ほかの敵は消え (= CE は落とさない)、 枠が閉じはじめる
     spawnEnemyAtRing(stage.bossEnemyId);
     b.bossSpawned = true;
@@ -94,8 +98,10 @@ export function tickEnemies(dt, nowMs) {
   const cap = stageMaxEnemies(stage);   // SPEC-065 / SPEC-078: ステージごと (= 320 / 440 / 600)
   // SPEC-065: 大群のステージは、 中盤から湧きが速まる
   const mods = missionMods();   // SPEC-112: ミッションの効き目 (= 無ければ効かない値)
-  const spawnInterval = ENEMY_SPAWN_INTERVAL_MS * (stage.spawnIntervalMul ?? 1)
-    / Math.max(0.1, absSpawnMul) / floodMul(stage.flood, b.stageElapsedMs) / mods.spawnMul;
+  const ez = easyStage();   // SPEC-147: EASY は決まった間隔 (= flood・density・寄せ直し・群れは使わない)
+  const spawnInterval = ez
+    ? ez.spawnIntervalMs / mods.spawnMul
+    : ENEMY_SPAWN_INTERVAL_MS * (stage.spawnIntervalMul ?? 1) / Math.max(0.1, absSpawnMul) / floodMul(stage.flood, b.stageElapsedMs) / mods.spawnMul;
   // SPEC-078: 経った時間ぶん湧かせる (= 1 コマに何体でも。 湧きを大きく速めても上限で止まる)
   // SPEC-079: ボス戦のあいだは湧かない
   const bud = spawnBudget(b.spawnAcc, dms, spawnInterval, b.bossSpawned ? 0 : cap - b.enemies.length);
@@ -108,7 +114,7 @@ export function tickEnemies(dt, nowMs) {
 
   // SPEC-078: 画面の敵の密度を、 時刻ごとの目標まで足す (= 強い武器でどんどん倒しても、 ボスの直前は画面が敵で埋まる)
   // SPEC-079: ボス戦のあいだは足さない・寄せ直さない。 SPEC-112: 撃つ敵だけのミッションのあいだも足さない (= 弾で画面が埋まらない)
-  const dn = (b.bossSpawned || mods.shooterOnly) ? null : stage.density;
+  const dn = (b.bossSpawned || mods.shooterOnly || ez) ? null : stage.density;
   if (dn && b.enemies.length < cap) {
     b.densityCheckMs = (b.densityCheckMs ?? 0) - dms;
     if (b.densityCheckMs <= 0) {
@@ -126,7 +132,7 @@ export function tickEnemies(dt, nowMs) {
   // SPEC-078: 置いていかれた敵 (= 自分が走り去って、 画面から遠く離れた敵) を、 画面のすぐ外へ寄せ直す。
   //   上限まで湧いた敵の多くが画面の外に残ると、 画面が埋まらないため。 HP はそのまま (= 撃破にも数えない)
   //   SPEC-084: ボスの前 (= 密度の目標が上がりきるころ) だけ。 序盤は逃げ回れば敵を置いていける
-  if (recycleActive(dn, b.stageElapsedMs)) {
+  if (!ez && recycleActive(dn, b.stageElapsedMs)) {
     b.recycleCheckMs = (b.recycleCheckMs ?? 0) - dms;
     if (b.recycleCheckMs <= 0) {
       b.recycleCheckMs = RECYCLE_CHECK_MS;
@@ -144,7 +150,7 @@ export function tickEnemies(dt, nowMs) {
   }
 
   // SPEC-065: 群れ (= 1 方向から、 まとまって押し寄せる)
-  const fl = stage.flood;
+  const fl = ez ? null : stage.flood;
   if (fl && !b.bossSpawned && !mods.shooterOnly && b.stageElapsedMs >= Math.max(fl.packFromMs, b.nextPackMs ?? 0)) {
     b.nextPackMs = b.stageElapsedMs + fl.packEveryMs;
     const pool = currentPool(b.stageElapsedMs);
@@ -159,8 +165,15 @@ export function tickEnemies(dt, nowMs) {
     }
   }
 
+  // SPEC-147: EASY のステージ 2 は決まった時刻にレアエネミーを 1 体 (= ギフト券のレッスン)
+  if (ez?.rareAtMs != null && !b.easyRareDone && !b.bossSpawned && b.stageElapsedMs >= ez.rareAtMs) {
+    b.easyRareDone = true;
+    spawnEnemyAtRing(RARE_ENEMY_IDS[0]);
+    b.lastRareSpawnMs = nowMs;
+    showLesson("s2.rare");
+  }
   // SPEC-033: レアエネミーを 1 分に 1 回スポーン (= 全ステージ共通。 SPEC-079 でボス戦のあいだは出さない)
-  if (!b.bossSpawned && b.enemies.length < cap &&
+  if (!ez && !b.bossSpawned && b.enemies.length < cap &&
       b.stageElapsedMs >= rareIntervalMs() &&
       nowMs - b.lastRareSpawnMs >= rareIntervalMs()) {
     const rid = RARE_ENEMY_IDS[Math.floor(Math.random() * RARE_ENEMY_IDS.length)];
@@ -169,7 +182,7 @@ export function tickEnemies(dt, nowMs) {
   }
 
   // SPEC-107: そのステージの撃破数で脅威の段階が上がる (= 上がったら知らせる)
-  const tier = runThreatTier(state.killCount, { firstRun: !!state.run?.firstRun });   // SPEC-146: 初めての挑戦は T0 のまま
+  const tier = runThreatTier(state.killCount, { firstRun: !!state.run?.firstRun, easy: isEasy() });   // SPEC-146 / 147: 初めての挑戦・EASY は T0 のまま
   if (tier > (b.threatTier ?? 0)) { b.threatTier = tier; showThreatNotice(tier); }
   // SPEC-107: 横断の列 (= T3 から。 予告の線を見せてから、 画面の端から反対の端へ一直線に)
   if (!b.bossSpawned) _tickCrossers(tier, cap);
@@ -348,8 +361,10 @@ export function spawnEnemyAtRing(enemyId = 101, at = null, { variant = undefined
   const absHp    = isBoss ? 1 : (state.absolute?.hpMul    ?? 1);
   const absDmg   = isBoss ? 1 : (state.absolute?.dmgMul   ?? 1);
   const absSpeed = isBoss ? 1 : (state.absolute?.speedMul ?? 1);
-  const hpMul  = isBoss ? 1 : (stage.enemyHpMul  ?? 1) * absHp;
-  const dmgMul = isBoss ? 1 : (stage.enemyDmgMul ?? 1) * absDmg;
+  // SPEC-147: EASY は雑魚の強さをステージごとに上書きし、 ボスの HP も下げる
+  const ezs = easyStage();
+  const hpMul  = isBoss ? (ezs?.bossHpMul ?? 1) : (ezs?.enemyHpMul ?? stage.enemyHpMul ?? 1) * absHp;
+  const dmgMul = isBoss ? 1 : (ezs?.enemyDmgMul ?? stage.enemyDmgMul ?? 1) * absDmg;
   const xpMul  = isBoss ? 1 : (stage.xpMul       ?? 1);
 
   // SPEC-080: ボスは型を増やしたぶん HP も増やす (= BOSS_MOVES の hpMul)
@@ -384,7 +399,7 @@ export function spawnEnemyAtRing(enemyId = 101, at = null, { variant = undefined
   });
   // SPEC-107: 脅威の段階で強い型が混じる (= ボス・レアには付けない。 CE も型の倍率で増える)
   if (!isBoss && !spec.isRare) {
-    const v = variant !== undefined ? variant : rollVariant(runThreatTier(state.killCount, { firstRun: !!state.run?.firstRun }), { shooter: spec.behavior === "shooter" });
+    const v = variant !== undefined ? variant : rollVariant(runThreatTier(state.killCount, { firstRun: !!state.run?.firstRun, easy: isEasy() }), { shooter: spec.behavior === "shooter" });
     if (v && VARIANTS[v]) applyVariant(b.enemies[b.enemies.length - 1], v, enemyId);
   }
 }

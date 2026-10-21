@@ -12,6 +12,7 @@ import { playSe } from "./audio.js";
 import { SFX } from "./constants.js";
 import { t, getLang, setLang, onLangChange } from "./i18n.js";
 import { resetNaviTips, seenNaviTipCount } from "./navi-tips.js";
+import { resetLessons, seenLessonCount } from "./lesson.js";   // SPEC-147
 import { playVoice } from "./voice.js";
 import { canPickAvatar, openAvatarPicker } from "./platform.js";   // SPEC-092
 
@@ -59,7 +60,7 @@ function _render() {
   // SPEC-068: マインちゃんの補足をもう一度 (= 見たものがなければ押せない)
   const tips = $("settingsTipsReset");
   if (tips) {
-    const none = seenNaviTipCount() === 0;
+    const none = seenNaviTipCount() + seenLessonCount() === 0;   // SPEC-147: レッスンも
     tips.disabled = none;
     tips.textContent = none && _tipsJustReset ? t("settings.tipsDone", "また話すね！") : t("settings.tipsReset", "もう一度聞く");
   }
@@ -101,6 +102,7 @@ export function installSettingsUI() {
   });
   $("settingsTipsReset")?.addEventListener("click", () => {
     resetNaviTips();
+    resetLessons();   // SPEC-147
     _tipsJustReset = true;
     _render();
   });

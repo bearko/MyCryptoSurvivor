@@ -105,6 +105,8 @@ export const state = {
   // - NORMAL  : 通常プレイ (= ABSOLUTE 倍率 = 全 1.0、 score × 1.0)
   // - ABSOLUTE: ユーザーが 4 軸の倍率を 0.5〜2.0 で調整、 平均がスコア倍率に
   regulation: "NORMAL",
+  // SPEC-147: EASY (= 短い 3 ステージ・レッスン・根を取るまで弱い。 共通基盤には送らない)
+  easyMode: false,
   // SPEC-040: 「RTA で始める」を選んだ run だけ true (= bearko.games 共通基盤で時間を計る。 ルールは NORMAL)
   rtaMode: false,
   // SPEC-090c: スキルツリーの効果 (= startBattle が perks.js の perksForRun で置く。 RTA では NO_PERKS)

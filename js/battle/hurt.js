@@ -6,6 +6,7 @@
 // 被弾の間隔 (= 無敵時間) は共通で、 スキルツリーの「受け身」で伸びる。
 // HP が 0 になったら、 「不死鳥」を持っていて 1 回の挑戦でまだ使っていなければ 50% で立ち上がる。
 
+import { easyStage } from "../easy.js";   // SPEC-147
 import { state } from "../state.js";
 import { SFX } from "../constants.js";
 import { pushDamageNumber } from "./damage.js";
@@ -25,7 +26,7 @@ export function hurtPlayer(raw, { boss = false, shake = boss } = {}) {
   const b = state.battle;
   if (b.gameOver || b.contactCooldownMs > 0) return false;
   let taken = raw * (state.buffs?.dmgTakenMul ?? 1) * missionMods().dmgMul;   // SPEC-112: 四面楚歌
-  if (boss) taken *= bossDmgTakenMul();
+  if (boss) taken *= bossDmgTakenMul() * (easyStage()?.bossDmgMul ?? 1);   // SPEC-147: EASY のボスは軽い
   const takenInt = Math.max(1, Math.round(taken));
   state.stats.hp = Math.max(0, state.stats.hp - takenInt);
   b.contactCooldownMs = contactCooldownMs();
