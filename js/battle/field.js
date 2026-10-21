@@ -14,12 +14,13 @@ import {
   POT_RADIUS, POT_HP, POT_INITIAL, POT_MAX_ON_FIELD, POT_RESPAWN_MS, POT_CE_GEMS, POT_DROPS,
   CHEST_RADIUS, CHEST_HP, CHEST_TIMES_MS, CHEST_CE_GEMS, CHEST_DROPS, CHEST_DROPS_RTA, WATCH_DURATION_MS,
   ITEM_RADIUS, ITEM_PICKUP_RADIUS, HEAL_RATIO, THUNDER_BOSS_RATIO,
-  STAGE_TABLE, SFX, BOSS_CHEST, BOSS_CHEST_DROPS,
+  STAGE_TABLE, SFX, BOSS_CHEST, BOSS_CHEST_DROPS, BGM_ROBOT,
 } from "../constants.js";
 // SPEC-090c: スキルツリーで変わる定数は、 定数の代わりにここを呼ぶ
 import { sigHealMul } from "./signature.js";   // SPEC-100
 import { canHeal } from "./missions.js";   // SPEC-112
-import { chestTimesMs, bossChestCfg, bossChestDrops, potMaxOnField, potDrops, itemPickupMul, healRatio, thunderBossRatio } from "../perks.js";
+import { chestTimesMs, bossChestCfg, bossChestDrops, potMaxOnField, potDrops, itemPickupMul, healRatio, thunderBossRatio, chestDropsFor, robotSec } from "../perks.js";
+import { startBgm, currentBgmPath } from "../audio.js";
 import { ARENA } from "./arena.js";
 import { spawnMagicCard } from "./magic-cards.js";
 import { obstacleRect, rollTable, pickSpawnPoint, inView } from "./field-geom.js";
@@ -49,6 +50,8 @@ export function resetField() {
   b.items.length = 0;
   b.nextChestIdx = 0;
   b.bossChestAtMs = null;   // SPEC-081
+  b.robotMs = 0;   // SPEC-140 (= BGM は startBattle が戻す)
+  b.robotPrevBgm = null;
   b.nextPotAtMs = POT_RESPAWN_MS;
   for (let i = 0; i < POT_INITIAL; i++) _spawnProp("pot", 200, 600);
 }
@@ -155,7 +158,7 @@ export function dropFromProp(e) {
 
 /** 宝箱から出るもの (= SPEC-054: RTA のときだけ懐中時計も出る) */
 export function chestDrops() {
-  return state.rtaMode ? CHEST_DROPS_RTA : CHEST_DROPS;
+  return state.rtaMode ? CHEST_DROPS_RTA : (chestDropsFor(false) ?? CHEST_DROPS);   // SPEC-140: 合体ロボ
 }
 
 function _scatterGems(x, y, n, value) {
@@ -213,6 +216,8 @@ export function applyItem(kind) {
     pushDamageNumber(b.player.x, b.player.y - b.player.r - 4, "×2 SPEED!", "#ffe39a", "lg");
     fxBurst(b.player.x, b.player.y, "#ffe39a", 16, 180);
     playSe(SFX.PICK_BUFF, 120, 0.6);
+  } else if (kind === "robot") {
+    robotOn(robotSec());   // SPEC-140
   } else if (kind === "thunder") {
     thunderStrike();   // SPEC-063
   } else if (kind === "magnet") {
@@ -223,6 +228,35 @@ export function applyItem(kind) {
     playSe(SFX.GEM_PICKUP, 80, 0.6);
   }
   naviTipOnce(`item.${kind}`);   // SPEC-068: 初めて拾ったときだけ、 マインちゃんがひとこと
+}
+
+/**
+ * SPEC-140: 合体ロボ — sec 秒の無敵 (= 被弾のあとの無敵と同じしくみ)。 そのあいだ虹色に光り、 BGM が変わる。
+ * 続けて拾うと長いほうに延びる。 時間はステージのゲーム内時間 (= 止まっているあいだは減らない)
+ */
+export function robotOn(sec) {
+  const b = state.battle;
+  const ms = Math.max(0, sec) * 1000;
+  if (!((b.robotMs ?? 0) > 0)) {
+    b.robotPrevBgm = currentBgmPath();
+    startBgm(BGM_ROBOT, 0.32);
+  }
+  b.robotMs = Math.max(b.robotMs ?? 0, ms);
+  b.contactCooldownMs = Math.max(b.contactCooldownMs ?? 0, ms);
+  pushDamageNumber(b.player.x, b.player.y - b.player.r - 4, "INVINCIBLE!", "#ffd6ff", "lg");
+  fxBurst(b.player.x, b.player.y, "#ff9bf5", 18, 220);
+  playSe(SFX.PICK_BUFF, 120, 0.6);
+}
+
+/** SPEC-140: 毎フレーム (= battle/index.js)。 切れたら BGM を戻す */
+export function tickRobot(dt) {
+  const b = state.battle;
+  if (!((b.robotMs ?? 0) > 0)) return;
+  b.robotMs = Math.max(0, b.robotMs - dt * 1000);
+  if (b.robotMs > 0) return;
+  const prev = b.robotPrevBgm;
+  b.robotPrevBgm = null;
+  if (prev && b.active && !b.gameOver && currentBgmPath() === BGM_ROBOT) startBgm(prev, 0.32);
 }
 
 /**

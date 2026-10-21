@@ -14,6 +14,7 @@ import {
   CONTACT_COOLDOWN_MS, REROLL_PER_BATTLE, STOCK_LIMIT_WEAPON, STOCK_LIMIT_BUFF,
   POT_MAX_ON_FIELD, CHEST_TIMES_MS, HEAL_RATIO, THUNDER_BOSS_RATIO,
   BOSS_CHEST, BOSS_CHEST_DROPS, POT_DROPS, RARE_SPAWN_INTERVAL_MS,
+  CHEST_DROPS, ROBOT_EXT_IDS, ROBOT_SEC, ROBOT_DROP_W,
 } from "./constants.js";
 
 /** 何も取っていないときの表 (= すべて 0。 倍率は 1 + 値、 個数は + 値) */
@@ -30,6 +31,7 @@ export const NO_PERKS = Object.freeze({
   ...Object.fromEntries(EXT_MASTERY.filter((e) => e[2] === "w").map(([, extId]) => [`cut_${extId}`, 0])),
   ...Object.fromEntries(EXT_MASTERY.map(([, extId]) => [`slv_${extId}`, 0])),
   mainBias: 0,
+  robot: 0,   // SPEC-140: 合体ロボの段
 });
 
 /** 段で積まず、 値をそのまま置くもの (= 1 つの節しか持たない) */
@@ -114,10 +116,20 @@ export const healRatio = () => perk("pancakeHeal") || HEAL_RATIO;
 export const thunderBossRatio = () => Math.round((THUNDER_BOSS_RATIO + perk("thunderBossRatio")) * 1000) / 1000;
 /** ボス戦の宝箱の間隔 */
 export const bossChestCfg = () => (perk("bossChestFast") ? { ...BOSS_CHEST, ...BOSS_CHEST_FAST } : BOSS_CHEST);
+/** SPEC-140: 合体ロボを解放していれば表に足す (= 純関数) */
+export function withRobot(table, w, rank = perk("robot")) {
+  return rank > 0 && w > 0 ? [...table, { kind: "robot", w }] : table;
+}
+/** SPEC-140: 合体ロボの段 (= 0 は出ない)・絵・無敵の秒 */
+export const robotRank = () => Math.max(0, Math.min(ROBOT_SEC.length, perk("robot") | 0));
+export const robotExtId = (rank = robotRank()) => ROBOT_EXT_IDS[Math.max(1, rank) - 1];
+export const robotSec = (rank = robotRank()) => ROBOT_SEC[Math.max(1, rank) - 1];
 /** ボス戦の宝箱の中身 */
-export const bossChestDrops = () => (perk("bossCardRate") ? reweight(BOSS_CHEST_DROPS, "card", perk("bossCardRate")) : BOSS_CHEST_DROPS);
+export const bossChestDrops = () => withRobot(perk("bossCardRate") ? reweight(BOSS_CHEST_DROPS, "card", perk("bossCardRate")) : BOSS_CHEST_DROPS, ROBOT_DROP_W.boss);
 /** 壺の中身 */
-export const potDrops = () => (perk("pancakeWeight") ? scaleWeight(POT_DROPS, "heal", perk("pancakeWeight")) : POT_DROPS);
+export const potDrops = () => withRobot(perk("pancakeWeight") ? scaleWeight(POT_DROPS, "heal", perk("pancakeWeight")) : POT_DROPS, ROBOT_DROP_W.pot);
+/** SPEC-140: ふつうの宝箱の中身 (= RTA は懐中時計の表のまま。 スキルツリーも切れているので出ない) */
+export const chestDropsFor = (rta) => (rta ? null : withRobot(CHEST_DROPS, ROBOT_DROP_W.chest));
 /** レアエネミーの間隔 */
 export const rareIntervalMs = () => (perk("rareIntervalSec") ? perk("rareIntervalSec") * 1000 : RARE_SPAWN_INTERVAL_MS);
 /** お助けアイテムを拾う範囲の倍率 */
@@ -221,6 +233,7 @@ export const STAT_ROWS = [
   ...EXT_MASTERY.filter((e) => e[2] === "w").map(([, extId, , ja, en]) => ({ key: `cut_${extId}`, route: "bm", f: "cut", ja: `${ja}の値段`, en: `${en} price` })),
   ...EXT_MASTERY.map(([, extId, , ja, en]) => ({ key: `slv_${extId}`, route: "sl", f: "lv", ja: `${ja}の初期レベル`, en: `${en} start level` })),
   { key: "mainBias", route: "wm", f: "num", ja: "初期武器の出やすさ", en: "Starting weapon odds" },
+  { key: "robot", route: "itm", f: "robot", ja: "合体ロボの無敵", en: "Robot invincibility" },   // SPEC-140
 ];
 const STAT_KEYS = new Set(STAT_ROWS.map((r) => r.key));
 
@@ -232,7 +245,8 @@ export function formatStat(f, v, lang = "ja") {
   if (f === "pct") return `${sign}${Math.round(a * 100)}%`;
   if (f === "num") return `${sign}${a}`;
   if (f === "cut") return `−${Math.round(a * 100)}%`;
-  if (f === "lv") return `Lv ＋${a}`;   // SPEC-139: 仕込み   // SPEC-131: 値引き (= 正の数で持つ)
+  if (f === "lv") return `Lv ＋${a}`;   // SPEC-139: 仕込み
+  if (f === "robot") { const s = ROBOT_SEC[Math.max(1, Math.min(ROBOT_SEC.length, a)) - 1]; return lang === "en" ? `${s}s` : `${s} 秒`; }   // SPEC-140   // SPEC-131: 値引き (= 正の数で持つ)
   if (f === "ce20") return `${sign}${a * 20}`;   // SPEC-109: 先手は 1 段 = 20 CE
   if (f === "sec") return lang === "en" ? `+${a}s` : `＋${a} 秒`;
   if (f === "ps") return lang === "en" ? `${a}/s` : `${a}/秒`;

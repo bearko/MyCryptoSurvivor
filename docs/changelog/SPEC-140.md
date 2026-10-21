@@ -1,0 +1,1 @@
+- **お助けアイテム「合体ロボ」** (`js/battle/field.js` + `js/perks.js` + `js/skill-data.js` + `js/battle/render.js`): スキルツリーで解放すると壺・宝箱から出る。 拾うと無敵（段で 3〜8 秒・絵が Common → Legendary）。 無敵のあいだは虹色に光り、 BGM が替わる

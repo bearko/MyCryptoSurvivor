@@ -28,6 +28,8 @@ export const ROUTES = [
   { id: "bm", name: { ja: "目利き", en: "Bargains" }, color: "#7fd6c2", minor: true, label: [5, 6.6] },
   // SPEC-139: エクステ別の初期レベル (= 仕込み。 成長の「先手」から左上へ)
   { id: "sl", name: { ja: "仕込み", en: "Preparation" }, color: "#a8e063", minor: true, label: [-6, -7.4] },
+  // SPEC-140: お助けアイテム (= 合体ロボ。 生存の「自然治癒」の左)
+  { id: "itm", name: { ja: "お助け", en: "Helpers" }, color: "#ff9bf5", minor: true, label: [-4.4, 2.9] },
 ];
 export const ROUTE_MAP = Object.fromEntries(ROUTES.map((r) => [r.id, r]));
 
@@ -204,6 +206,16 @@ NODES.push({
     "ショップとレベルアップで、 ヒーローの初期武器が出やすい（段ごと）", "Your hero's starting weapon shows up more often in shops and level-ups (per rank)",
     { gum: 100 }, 3001, { mainBias: 1 }, MAIN_BIAS_MAX),
   x: 1, y: -1, requires: ["atk_dmg"],
+});
+
+/**
+ * SPEC-140: 合体ロボ (= 解放すると壺・宝箱から出る。 拾うと無敵。 段で絵のレアリティ (= Common → Legendary) と秒 (= 3/4/5/6/8) が上がる)
+ */
+NODES.push({
+  ...N("itm_robot", "itm", "vit_regen", 0, 0, "repeat", "合体ロボ", "Combined Robot",
+    "壺と宝箱から合体ロボが出る。 拾うと無敵（3 / 4 / 5 / 6 / 8 秒。 段でレアリティが上がる）", "Pots and chests drop a Combined Robot. Pick it up to become invincible (3/4/5/6/8 s; rarity rises per rank)",
+    { gum: 120 }, 1123, { robot: 1 }, 5),
+  x: -3, y: 2, requires: ["vit_regen"],
 });
 
 export const NODE_MAP = Object.fromEntries(NODES.map((n) => [n.id, n]));

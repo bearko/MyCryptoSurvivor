@@ -328,6 +328,12 @@ export const THUNDER_FX_MS        = 420;     // 稲妻の線が見えている�
 export const WATCH_EXT_ID      = 1111;        // 懐中時計
 export const WATCH_DURATION_MS = 10000;       // 実時間
 export const WATCH_SPEED       = 2;
+// SPEC-140: 合体ロボ (= 拾うと無敵。 スキルツリーで解放すると壺・宝箱から出る。 段で絵のレアリティと秒が上がる)
+//   絵は合体ロボシリーズの Common → Legendary。 無敵のあいだは虹色に光り、 BGM が変わる
+export const ROBOT_EXT_IDS = [1123, 2123, 3123, 4123, 5123];
+export const ROBOT_SEC     = [3, 4, 5, 6, 8];
+export const ROBOT_DROP_W  = { pot: 6, chest: 15, boss: 10 };
+export const BGM_ROBOT     = "Audio/BGM/raid.mp3";
 export const CHEST_DROPS_RTA = [{ kind: "watch", w: 50 }, { kind: "heal", w: 20 }, { kind: "magnet", w: 15 }, { kind: "thunder", w: 15 }];
 
 // ============================================================
