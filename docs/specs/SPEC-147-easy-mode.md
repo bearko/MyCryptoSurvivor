@@ -2,7 +2,7 @@
 id: SPEC-147
 title: EASY Mode — A Guided 3-Stage Run for First-Timers (Short Stages, Mine's Voiced Lessons, Designed Loss on Stage 3, Skill Tree Awakening, Then NORMAL)
 status: Draft
-pr: TBD
+pr: 185
 phase: v1.7 Onboarding
 kind: Added
 ---
