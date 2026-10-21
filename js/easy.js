@@ -11,6 +11,7 @@ import { state } from "./state.js";
 import { BOSS_SPAWN_AT_MS, BOSS_WARNING_LEAD_MS, LS_PREFIX, STAGE_TABLE } from "./constants.js";
 import { owns } from "./skill-logic.js";
 import { ROOT_ID } from "./skill-data.js";
+import { isStory, storyStage, storyOverride } from "./story.js";   // SPEC-165
 
 export const LS_EASY_CLEARED = `${LS_PREFIX}.easyCleared`;
 export const LS_LESSONS = `${LS_PREFIX}.lessons`;
@@ -49,16 +50,19 @@ export const LESSON_KEYS = Object.freeze([
 
 /** SPEC-154: ステージの数 (= EASY は 2、 ほかは STAGE_TABLE) */
 export function stageCount() {
-  return isEasy() ? EASY_STAGES.length : STAGE_TABLE.length;
+  if (isStory()) return 1;   // SPEC-165: ストーリーは 1 ステージ完結
+  return state.easyMode ? EASY_STAGES.length : STAGE_TABLE.length;
 }
 
+/** チュートリアルか (= EASY かストーリー。 共通基盤に送らない・操作ガイドを出さない・段階は T0 のまま) */
 export function isEasy() {
-  return !!state.easyMode;
+  return !!state.easyMode || isStory();
 }
 
 /** いまのステージの上書き (= EASY でなければ null) */
 export function easyStage(idx = state.currentStageIdx ?? 0) {
-  return isEasy() ? (EASY_STAGES[Math.max(0, Math.min(EASY_STAGES.length - 1, idx | 0))] ?? null) : null;
+  if (isStory()) return storyOverride(storyStage());   // SPEC-165: レシピを EASY の上書きと同じ形で
+  return state.easyMode ? (EASY_STAGES[Math.max(0, Math.min(EASY_STAGES.length - 1, idx | 0))] ?? null) : null;
 }
 
 /** ボスが出る時刻・予告の長さ (= 戦闘の各所が定数の代わりに呼ぶ) */
@@ -70,8 +74,8 @@ export function bossWarnLeadMs() {
 }
 
 /** ヒーローの倍率 (= EASY で根を取るまで 0.6。 ほかは 1。 純関数) */
-export function easyHeroMul(meta, easy = isEasy()) {
-  return easy && !owns(meta, ROOT_ID) ? EASY_HERO_MUL : 1;
+export function easyHeroMul(meta, easy = !!state.easyMode) {
+  return easy && !owns(meta, ROOT_ID) ? EASY_HERO_MUL : 1;   // SPEC-165: ストーリーには効かない (= レシピの heroMul で)
 }
 
 /** EASY をクリアしたか (= 純関数。 storage は getItem を持つもの) */

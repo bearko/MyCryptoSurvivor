@@ -134,6 +134,9 @@ export function naviLines(scene, ctx = {}) {
     case "revive":
       // SPEC-150: 倒れたら、 まず王妃の黄金時計で復活させてあげる (= SPEC-159: ボイス)
       return [{ key: "navi.revive.intro", pose: "pointer", voice: "revive.intro" }];
+    case "story":
+      // SPEC-165: ストーリーの文 (= key をそのまま。 録音があれば同じ名前)
+      { const key = String(ctx.key ?? ""); if (!key) return []; return [{ key, pose: ctx.pose ?? "pointer", vars: ctx.vars ?? {}, voice: hasVoice(key) ? key : null }]; }
     case "advice":
       // SPEC-148: 倒れた理由からのおすすめ (= 文は advice.*、 節の名前は vars。 SPEC-159: ボイスの名前は文の key と同じ)
       { const key = String(ctx.key ?? "advice.hp"); return [{ key, pose: "pointer", vars: ctx.vars ?? {}, voice: hasVoice(key) ? key : null }]; }

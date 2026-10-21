@@ -43,6 +43,7 @@ import { voiceMs } from "../voice.js";   // SPEC-151
 import { removeConfetti } from "../confetti.js";   // SPEC-149
 import { hideCoach } from "./coach.js";   // SPEC-151: 渦のあいだ操作ガイドは出さない
 import { CHAR_SPRITE_RATIO, img } from "../constants.js";   // SPEC-150
+import { isStory, storyStage, storyAllows, landOf } from "../story.js";   // SPEC-165
 
 let _wired = false;
 let _showTimer = 0;   // SPEC-150: 粒子が舞い上がってから結果の画面を出す
@@ -96,7 +97,7 @@ export function triggerGameOver(reason = "lose") {
       onNode: (id) => import("../skill-tree.js").then((m) => m.openSkillTree({ focus: id, returnTo: modal, retry: true })),
     });
     // SPEC-155: おすすめの強化 (= 木へ行かずにここで。 買えたら「復活する」を脈打たせて、 マインちゃんが「強くなったね」)
-    if (reason !== "clear" && !state.rtaMode) {
+    if (reason !== "clear" && !state.rtaMode && !isStory()) {   // SPEC-165: ストーリーでは木のおすすめは出さない
       renderRevivePicks(document.getElementById("gameOverPicks"), {
         adviceNodes: suggest(state.lastRunStats?.analysis?.sum)?.nodes ?? [],
         onBought: () => onBackFromTree({ bought: 1 }),
@@ -231,6 +232,7 @@ async function _reviveRain() {
 function sayOnLose(reason, modal) {
   modal?.classList.remove("gameover-modal--navi");
   if (reason === "clear") return;
+  if (isStory()) { modal?.classList.add("gameover-modal--navi"); naviSay(naviLines("story", { key: "story.lose", pose: "teary" }), { place: "result" }); return; }   // SPEC-165: 同じステージをやり直す
   if (isEasy() && showLesson("s2.lose")) return;   // SPEC-147: 初めてはレッスンで。 SPEC-160: 2 回目からは下の励まし
   // SPEC-151: 粒子の演出のときは、 全身のマインちゃんが「復活させてあげる」をもう言っているので、 帯では 2 行目だけ
   // SPEC-155: 説明は初回だけ (= 粒子が出せない端末でも、 2 回目からは帯で言い直さない)
@@ -343,6 +345,7 @@ export async function returnToTitle({ navi = true } = {}) {
   m.stopBattle?.();
   // run / hero / regulation を reset
   state.currentStageIdx = 0;
+  state.storyId         = null;   // SPEC-165
   state.ownedHero       = null;
   state.pendingHeroPick = null;
   state.stats.hp        = state.statsMax.hp;
@@ -419,7 +422,19 @@ function _heroName() {
 export function easyRetryGate() {
   const again = document.getElementById("gameOverRetry");
   const tree = document.getElementById("gameOverSkillTree");
-  const gate = isEasy() && !owns(getMeta(), ROOT_ID);
+  // SPEC-165: ストーリーでは木はレシピが許すまで出さない。 「復活する」はそのまま (= 同じステージをやり直す)
+  if (isStory()) {
+    again?.classList.remove("hidden");
+    tree?.classList.toggle("hidden", !storyAllows("tree"));
+    tree?.classList.remove("gameover-modal__again--pulse");
+    document.getElementById("gameOverModal")?.classList.remove("gameover-modal--gate");
+    for (const id of ["gameOverName", "gameOverToTitle"]) { const el = document.getElementById(id); if (el) el.disabled = false; }
+    document.querySelector("#gameOverModal .gameover-modal__form")?.classList.add("hidden");   // ランキングには送らない (= 短いステージの点)
+    return;
+  }
+  document.querySelector("#gameOverModal .gameover-modal__form")?.classList.remove("hidden");
+  tree?.classList.remove("hidden");
+  const gate = state.easyMode && !owns(getMeta(), ROOT_ID);
   again?.classList.toggle("hidden", gate);
   tree?.classList.toggle("gameover-modal__again--pulse", gate);
   // SPEC-164: 根を取るまでは「スキルツリーへ」を押してもらう (= 大きく出し、 ランキング送信とタイトルに戻るは押せない)
@@ -450,7 +465,10 @@ function _renderGameOverModal() {
   if (levelEl)   levelEl.textContent   = `Lv.${stats.level}`;
   if (killsEl)   killsEl.textContent   = String(stats.kills);
   const stageEl = document.getElementById("gameOverStage");
-  if (stageEl) {
+  if (stageEl && isStory()) {   // SPEC-165: 「1-2 オーシャン」
+    const r = storyStage(); const land = landOf(r.id);
+    stageEl.textContent = `${r.id}  ${t(`story.land.${land.id}`, land.id)}`;
+  } else if (stageEl) {
     const n = (state.currentStageIdx ?? 0) + 1;
     const cur = STAGE_TABLE[n - 1];
     const line = tpl(t(stats.reason === "clear" ? "result.stageOf" : "result.fellAt", "Stage {n} / {total}"),

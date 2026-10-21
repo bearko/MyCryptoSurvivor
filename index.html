@@ -54,6 +54,8 @@
   <link rel="stylesheet" href="css/shop.css" />
   <!-- SPEC-112: ミッション -->
   <link rel="stylesheet" href="css/missions.css" />
+  <!-- SPEC-165: ストーリー -->
+  <link rel="stylesheet" href="css/story.css" />
 </head>
 <body>
 
@@ -122,6 +124,17 @@
 
     <div class="mode-select__cards">
       <!-- SPEC-147: EASY (= 初めての人のための短い 3 ステージ。 マインちゃんが案内。 クリアは 1 回でよい) -->
+      <!-- SPEC-165: ストーリー (= 5 ランド・25 ステージ。 できるまでは EASY の隣に β で) -->
+      <article class="mode-card mode-card--story" data-mode="STORY" id="modeCardStory">
+        <header class="mode-card__head">
+          <h3 class="mode-card__name" id="modeCardStoryName">ストーリー（β）</h3>
+          <span class="mode-card__mul" id="modeCardStoryMul">案内つき</span>
+        </header>
+        <p class="mode-card__desc" id="modeCardStoryDesc">5 つのランドを旅して、 遊び方を 1 つずつ。 短いステージで、 マインちゃんが案内するよ。</p>
+        <p class="mode-card__done hidden" id="modeCardStoryDone"></p>
+        <button class="btn mode-card__cta" id="btnModeStory">ストーリーを始める</button>
+      </article>
+
       <article class="mode-card mode-card--easy" data-mode="EASY" id="modeCardEasy">
         <header class="mode-card__head">
           <h3 class="mode-card__name">EASY</h3>
@@ -172,6 +185,18 @@
     </div>
 
     <button class="btn btn--ghost mode-select__back" id="btnModeBack">タイトルに戻る</button>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SPEC-165: ストーリーのランドマップ                               -->
+  <!-- ============================================================ -->
+  <section id="storyMapScreen" class="title-screen story-map hidden">
+    <header class="story-map__head">
+      <h2 class="story-map__title" id="storyMapTitle" data-kicker="STORY">ストーリー</h2>
+      <p class="story-map__sub" id="storyMapSub"></p>
+    </header>
+    <div class="story-map__lands" id="storyMapLands"></div>
+    <button class="btn btn--ghost story-map__back" id="storyMapBack">◀ モード選択へ</button>
   </section>
 
   <!-- ============================================================ -->
@@ -238,6 +263,8 @@
         <div class="joystick__stick" id="joystickStick"></div>
       </div>
       <!-- SPEC-046: ステージの始まりの帯 (= 遊びは止めない) -->
+      <!-- SPEC-165: ストーリーの目標 (= 倒す n / N など。 HUD の下) -->
+      <div id="storyGoal" class="story-goal hidden" role="status"></div>
       <div id="stageIntro" class="stage-intro hidden" aria-live="polite">
         <span class="stage-intro__no num" id="stageIntroNo"></span>
         <span class="stage-intro__name" id="stageIntroName"></span>
@@ -317,6 +344,8 @@
       <div class="result-next" id="stageTransitionSub" data-reveal></div>
       <button class="btn gameover-modal__retry" id="stageTransitionProceed"
               data-i18n="stage.proceed">次のステージへ</button>
+      <!-- SPEC-165: ストーリーではマップへ戻れる -->
+      <button class="btn btn--secondary result-story-map hidden" id="stageTransitionMap" type="button">マップへ</button>
     </div>
   </div>
 

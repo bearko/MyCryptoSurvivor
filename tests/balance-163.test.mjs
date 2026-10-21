@@ -43,7 +43,7 @@ test("木の効き目: 頑丈なからだ 6%・厚い皮 4%・鋭い一撃 5%・
 
 test("店: 同じ札を続けて買える (= 買っても札は残り、 上がりきったら売り切れ)", () => {
   const shop = read("../js/battle/shop.js");
-  assert.match(shop, /o\.sold = !offerFor\(extId, new Set\(s\.bans\)\);/);
+  assert.match(shop, /o\.sold = !offerFor\(extId, new Set\(s\.bans\)\) \|\| !!_storyShop\(\)\?\.only;/);   // SPEC-165: ストーリーの固定の品は 1 回だけ
   assert.match(shop, /o\.bought = \(o\.bought \| 0\) \+ 1;/);
   assert.match(shop, /o\.sale = false;/, "セールは 1 回だけ");
 });

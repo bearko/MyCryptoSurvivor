@@ -6,6 +6,7 @@
 // 描画時は既読なら drawImage、 未読 / 失敗なら呼出側で fallback (= 単色円)。
 
 import { heroImg } from "../heroes.js";
+import { storyStage, landOf } from "../story.js";   // SPEC-165
 import { enemyImg, ENEMY_ROSTER } from "../enemies.js";
 import { extImg } from "../extensions.js";
 import { img, GEM_ICON_PATH, BG_IMAGE_PATH, STAGE_TABLE, MAGIC_CARD_EXT_ID } from "../constants.js";
@@ -174,7 +175,8 @@ export function getGemSprite() {
 export function getBackgroundSprite() {
   const idx   = state.currentStageIdx ?? 0;
   const stage = STAGE_TABLE[idx];
-  const path  = stage?.bgPath ?? BG_IMAGE_PATH;
+  const st    = storyStage();   // SPEC-165: ストーリーはランドの背景 (= MCH のランドの絵)
+  const path  = st ? landOf(st.id).bg : (stage?.bgPath ?? BG_IMAGE_PATH);
   return _loadImage(img(path));
 }
 

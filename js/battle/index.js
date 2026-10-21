@@ -60,6 +60,8 @@ import { isEasy, easyStage, easyHeroMul, stageCount } from "../easy.js";   // SP
 import { newRunStats, tickRunStats } from "./run-stats.js";   // SPEC-148
 import { tickLessons, clearLessons, showLesson } from "../lesson.js";   // SPEC-147
 import { clearBossChest } from "./boss-chest.js";   // SPEC-153
+import { isStory, storyStage, landOf } from "../story.js";   // SPEC-165
+import { resetStoryBattle, tickStoryBattle } from "./story-battle.js";   // SPEC-165
 
 let _canvas = null;
 let _ctx = null;
@@ -186,17 +188,19 @@ export function startBattle(hero) {
   b.lastRareSpawnMs    = performance.now();
   // SPEC-162: 装備はステージをまたいで残る (= ステージ 1 だけ空から。 同じステージのやり直しは入ったときの装備に戻す)
   carryOwnedExtensions(state.currentStageIdx ?? 0);
+  if (isStory()) state.ownedExtensions = (storyStage()?.startExt ?? []).map((o) => ({ ...o }));   // SPEC-165: 開始装備はレシピが決める
   state.killCount       = 0;                    // SPEC-009: 撃破カウンタ
   state.lastRunStats    = null;                 // SPEC-009: snapshot
   resetBuffs();                                 // SPEC-011: 強化系列の効果リセット (= 引き継いだ強化は下で掛け直す)
   resetField();                                 // SPEC-053: 建物・壺・アイテム (= プレイヤーを (0, 0) に置いたあと)
   resetGimmicks();                              // SPEC-064: ステージの仕掛け
   resetArena();                                 // SPEC-079: ボス戦の枠を外す
+  resetStoryBattle();                           // SPEC-165: ストーリーの進み (= クリア条件・目印・一言)
 
   // SPEC-014: hero.stats.hp / agi から HP 上限と移動速度を派生 (= hero ごとに性能差)
   // SPEC-147: EASY は根 (= サバイバーの覚醒) を取るまで弱い (= HP と攻撃 ×0.6。 根で ×1.0 に戻る)
   const ezMul        = easyHeroMul(getMeta());
-  const maxHp        = Math.round(baseMaxHp(heroMaxHp(hero)) * ezMul);   // SPEC-090c: 頑丈なからだ・鉄壁
+  const maxHp        = Math.round(baseMaxHp(heroMaxHp(hero)) * ezMul * (storyStage()?.heroMul?.hp ?? 1));   // SPEC-090c: 頑丈なからだ・鉄壁。 SPEC-165: 試練では HP を多く
   state.statsMax.hp  = maxHp;
   b.baseMaxHp        = maxHp;   // SPEC-090c: アーマーはこれに足す (= buffs.js)
   state.stats.hp     = maxHp;
@@ -289,8 +293,9 @@ function _showStageIntro() {
   const stage = STAGE_TABLE[idx];
   const no = document.getElementById("stageIntroNo");
   const name = document.getElementById("stageIntroName");
-  if (no) no.textContent = tpl(t("stage.introNo", "STAGE {n}"), { n: String(idx + 1) });
-  if (name) name.textContent = stage ? t(stage.nameKey, stage.nameKey) : "";
+  const story = storyStage();   // SPEC-165: 「1-2」とランドの名前
+  if (no) no.textContent = story ? story.id : tpl(t("stage.introNo", "STAGE {n}"), { n: String(idx + 1) });
+  if (name) name.textContent = story ? `${t(`story.land.${landOf(story.id).id}`, "")}  ${t(`story.${story.id}.name`, "")}` : (stage ? t(stage.nameKey, stage.nameKey) : "");
   // SPEC-056: 帯の手前にヒーロー
   const heroEl = document.getElementById("stageIntroHero");
   if (heroEl && state.ownedHero) heroEl.src = heroImg(state.ownedHero.heroId);
@@ -300,6 +305,10 @@ function _showStageIntro() {
   clearTimeout(_introTimer);
   _introTimer = setTimeout(() => el.classList.add("hidden"), 2300);
   // SPEC-056: マインちゃんがステージを告げる (= 戦闘では押せない。 言い終えると引っこむ)
+  if (story) {   // SPEC-165: ステージの始まりの一言はレシピの文
+    naviSay(naviLines("story", { key: story.lines?.intro ?? "" }), { place: "battle", autoHideMs: 2200, top: _commTop() });
+    return;
+  }
   naviSay(naviLines("stage", {
     stageIdx: idx, stageCount: stageCount(), rta: !!state.rtaMode,   // SPEC-154
     stageName: stage ? t(stage.nameKey, stage.nameKey) : "",
@@ -368,6 +377,7 @@ function _step(dt, now) {
   tickGems(dt);                  // SPEC-007: 拾う + level up trigger
   tickMagicCards(dt);            // SPEC-033: マジックカード (= 即時 LV up アイテム)
   tickField(dt);                 // SPEC-053: 壺・宝箱を出す + お助けアイテムを拾う
+  tickStoryBattle();             // SPEC-165: ストーリーのクリア条件・ハート・一言
   tickRobot(dt);                 // SPEC-140: 合体ロボの無敵
   tickRegen(dt);                 // SPEC-011: Ramen 系列の HP regen
   tickCoach(dt, v.x !== 0 || v.y !== 0);   // SPEC-042: 操作ガイド

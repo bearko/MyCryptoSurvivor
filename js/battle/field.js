@@ -32,6 +32,7 @@ import { fxBurst, fxThunder } from "./fx.js";
 import { playSe } from "../audio.js";
 import { reportChestOpened } from "../platform.js";   // SPEC-096
 import { easyStage } from "../easy.js";   // SPEC-147
+import { storyAllows } from "../story.js";   // SPEC-165
 import { showLesson } from "../lesson.js";   // SPEC-147
 
 function _stage() {
@@ -57,7 +58,7 @@ export function resetField() {
   b.easyThunderDropped = false;   // SPEC-147
   b.robotPrevBgm = null;
   b.nextPotAtMs = POT_RESPAWN_MS;
-  for (let i = 0; i < POT_INITIAL; i++) _spawnProp("pot", 200, 600);
+  if (storyAllows("pots")) for (let i = 0; i < POT_INITIAL; i++) _spawnProp("pot", 200, 600);   // SPEC-165
 }
 
 /** 1 frame: 壺・宝箱を時刻どおりに出し、 アイテムを拾う */
@@ -86,7 +87,7 @@ export function tickField(_dt) {
     }
   }
   // 壺 (= 一定の間隔で、 場にある数が上限より少なければ 1 つ足す)
-  if (t >= (b.nextPotAtMs ?? POT_RESPAWN_MS)) {
+  if (storyAllows("pots") && t >= (b.nextPotAtMs ?? POT_RESPAWN_MS)) {
     b.nextPotAtMs = t + POT_RESPAWN_MS;
     const pots = b.enemies.reduce((n, e) => n + (e.propKind === "pot" ? 1 : 0), 0);
     if (pots < potMaxOnField()) _spawnProp("pot", 250, 700);
@@ -157,14 +158,14 @@ export function dropFromProp(e) {
   if (e.propKind === "chest") {
     // SPEC-081: ボス戦の宝箱は、 マジックカード (= その場でレベルアップ) も出る
     const kind = rollTable(e.bossChest ? bossChestDrops() : chestDrops(), Math.random());
-    if (kind === "card") spawnMagicCard(e.x, e.y);
-    else spawnItem(kind, e.x, e.y);
+    if (kind === "card") { if (storyAllows("magicCards")) spawnMagicCard(e.x, e.y); }
+    else if (storyAllows(`items:${kind}`)) spawnItem(kind, e.x, e.y);   // SPEC-165
     _scatterGems(e.x, e.y, CHEST_CE_GEMS, gem);
     return;
   }
   const kind = rollTable(potDrops(), Math.random());
   if (kind === "ce") _scatterGems(e.x, e.y, POT_CE_GEMS, gem);
-  else spawnItem(kind, e.x, e.y);
+  else if (storyAllows(`items:${kind}`)) spawnItem(kind, e.x, e.y);   // SPEC-165
 }
 
 /** 宝箱から出るもの (= SPEC-054: RTA のときだけ懐中時計も出る) */

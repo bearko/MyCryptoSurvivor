@@ -108,6 +108,8 @@ export const state = {
   regulation: "NORMAL",
   // SPEC-147: EASY (= 短い 3 ステージ・レッスン・根を取るまで弱い。 共通基盤には送らない)
   easyMode: false,
+  // SPEC-165: ストーリーのステージ (= "1-2"。 null ならストーリーの外)
+  storyId: null,
   // SPEC-040: 「RTA で始める」を選んだ run だけ true (= bearko.games 共通基盤で時間を計る。 ルールは NORMAL)
   rtaMode: false,
   // SPEC-090c: スキルツリーの効果 (= startBattle が perks.js の perksForRun で置く。 RTA では NO_PERKS)

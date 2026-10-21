@@ -12,6 +12,7 @@
 import { state } from "../state.js";
 import { t } from "../i18n.js";   // SPEC-148: 仕掛けの名前
 import { STAGE_TABLE, WORLD_W, WORLD_H, CHEST_DROPS, SFX } from "../constants.js";
+import { storyAllows } from "../story.js";   // SPEC-165
 import { stageMaxEnemies } from "./horde.js";
 import { hitEnemy, pushDamageNumber } from "./damage.js";   // SPEC-129: pushDamageNumber が抜けていて、 木馬が出るとステージ 3 が止まっていた
 import { hurtPlayer } from "./hurt.js";   // SPEC-090c
@@ -144,7 +145,7 @@ function _stage() {
 
 /** ステージの始まりに呼ぶ */
 export function resetGimmicks() {
-  const kind = _stage().gimmick ?? null;
+  const kind = storyAllows(`gimmick`) ? (_stage().gimmick ?? null) : null;   // SPEC-165: ストーリーはレシピが許すときだけ
   state.battle.gimmick = {
     kind,
     nextMs: kind === "beads" ? BEADS.firstMs : (kind === "punch" ? PUNCH.firstMs : 0),

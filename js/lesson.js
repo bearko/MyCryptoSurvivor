@@ -16,6 +16,7 @@ import { hasVoice, voiceMs, isVoicePlaying } from "./voice.js";
 import { isEasy, loadLessons, saveLessons, LESSON_KEYS, LS_LESSONS } from "./easy.js";
 import { showCursor, hideCursor } from "./lesson-cursor.js";
 import { BOSS_SPAWN_POS } from "./battle/arena.js";
+import { isStory } from "./story.js";   // SPEC-165
 
 /** 番号ごとのポーズ (= 無ければ pointer) */
 const POSE = {
@@ -83,7 +84,7 @@ function _cursorTarget(key) {
  * レッスンを出す (= EASY のときだけ。 見たことがあれば何もしない)。 順番に入れたら true
  */
 export function showLesson(key) {
-  if (!isEasy() || !globalThis.document) return false;
+  if (!isEasy() || isStory() || !globalThis.document) return false;   // SPEC-165: ストーリーの文はレシピで
   const seen = _getSeen();
   if (!lessonPending(seen, key)) return false;
   seen.add(key);
@@ -165,7 +166,7 @@ export function timedLesson({ stageIdx, elapsedMs, shopAtMs, bossWarnAtMs, kills
 }
 
 export function tickLessons() {
-  if (!isEasy()) return;
+  if (!isEasy() || isStory()) return;
   const b = state.battle;
   if (!b?.active || b.gameOver || state.pauseFlags > 0) return;
   if (isVoicePlaying()) return;   // SPEC-151: 「ここは node ホレリス」の声が終わってから (= 「新しいステージ！」と重ねない)

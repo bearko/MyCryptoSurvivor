@@ -15,6 +15,9 @@ const opt = (k, d) => { const i = args.indexOf(`--${k}`); return i >= 0 ? args[i
 const MODE = opt("mode", "normal"), HERO = Number(opt("hero", 10001)), K = Number(opt("k", 0.3)), GUM = Number(opt("gum", 0));
 const RUNS = Number(opt("runs", 1)), MAXSEC = Number(opt("maxsec", 330)), REAL = args.includes("--real"), BUY = opt("buy", "all"), LABEL = opt("label", `${MODE}-k${K}-g${GUM}`), OUT = opt("out", null);
 const SAMPLE_MS = 10000, STEP_MS = 250;
+// SPEC-165: ストーリー (= --mode story --stage 1-1 --count 5: その行から順に count 個。 倒れたら同じ行をやり直す。 --runs は やり直しの上限)
+const STAGE = opt("stage", "1-1"), COUNT = Number(opt("count", 1));
+const STORY_IDS = [1, 2, 3, 4, 5].flatMap((w) => [1, 2, 3, 4, 5].map((i) => `${w}-${i}`));
 
 const b = await chromium.launch({ args: ["--disable-background-timer-throttling", "--disable-renderer-backgrounding", "--disable-backgrounding-occluded-windows"] });
 const ctx = await b.newContext({ viewport: { width: 390, height: 844 } });
@@ -22,14 +25,15 @@ const p = await ctx.newPage();
 const errs = [];
 p.on("pageerror", (e) => errs.push(e.message));
 await ctx.route((u) => !u.href.startsWith(BASE) && !u.href.includes("raw.githubusercontent.com"), (r) => r.abort());
-await p.addInitScript(({ gum }) => { try {
+await p.addInitScript(({ gum, story }) => { try {
   localStorage.setItem("mcs.settings", JSON.stringify({ bgm: 0, se: 0, voice: 0, reduceFx: true }));
   localStorage.setItem("mcs.played", "1"); localStorage.setItem("mcs.easyCleared", "1"); localStorage.setItem("mcs.coachSeen", "1"); localStorage.setItem("mcs.reviveSeen", "1");
   localStorage.setItem("mcs.naviTips", JSON.stringify(["item.heal", "item.magnet", "item.watch", "item.thunder", "item.card", "item.bossChest", "gimmick.beads", "gimmick.punch", "gimmick.trojan", "enemy.shooter", "mission.offer"]));
   localStorage.setItem("mcs.lessons", JSON.stringify(["s1.move", "s1.ce", "s1.shop", "s1.boss", "s1.clear", "s2.start", "s2.rare", "s2.gift", "s2.mission", "s2.reward", "s2.boss", "s2.lose", "s2.root", "s2.thunder", "s2.clear"]));
   localStorage.setItem("mcs.shareX", JSON.stringify({ claimed: true, skips: 0 }));
   localStorage.setItem("mcs.meta.v1", JSON.stringify({ gum, dust: 0, runs: 1, nodes: {} }));
-} catch {} }, { gum: GUM });
+  if (story) localStorage.setItem("mcs.story", JSON.stringify({ cleared: story.cleared, best: {}, bonds: [] }));   // SPEC-165: その行まで開けておく
+} catch {} }, { gum: GUM, story: MODE === "story" ? { cleared: STORY_IDS.slice(0, STORY_IDS.indexOf(STAGE)) } : null });
 if (!REAL) await p.clock.install({ time: new Date("2026-10-21T00:00:00Z") });
 const tick = async (ms) => { if (REAL) await p.waitForTimeout(ms); else await p.clock.runFor(ms); };
 await p.goto(`${BASE}/index.html`);
@@ -53,9 +57,15 @@ async function buyTree() {
 }
 const TREE = opt("tree", "auto");   // auto: 根 → 安い順に GUM が尽きるまで / none: 木を触らない (= EASY の 1 回目)
 const tree0 = TREE === "none" ? { bought: [], gumLeft: GUM, nodes: 0 } : await buyTree();
+if (MODE === "story") {
+  // SPEC-165: ストーリーの札 → ランドマップ → その行の丸 (= ヒーロー選択は開かない)
+  await p.click("#btnModeStory", { force: true }); await tick(1500);
+  await p.evaluate((id) => document.querySelector(`[data-story="${id}"]`)?.click(), STAGE); await tick(1500);   // Playwright の click は見える位置まで待つことがあるので、 ページの中で押す
+} else {
 await p.click(MODE === "easy" ? "#btnModeEasy" : "#btnModeNormal", { force: true }); await tick(1500);
 await p.evaluate((hero) => { const tiles = [...document.querySelectorAll("#heroSelectGrid .hero-tile")]; (tiles.find((t) => t.dataset.heroId === String(hero) && !t.disabled && !t.classList.contains("locked")) ?? tiles.find((t) => !t.disabled && !t.classList.contains("locked")))?.click(); }, HERO); await tick(400);
 await p.click("#heroSelectCta", { force: true });
+}
 for (let k = 0; k < 100 && !(await p.evaluate(() => !!window.__state?.battle?.active)); k++) await tick(200);
 
 // ページの中の操作 (= 1 コマごとに呼ぶ。 止まっている画面を片づけ、 動き、 10 秒ごとに様子を記録)
@@ -81,7 +91,8 @@ await p.evaluate(({ K, BUY }) => {
           const m = txt.match(/Lv\.(\d+) → Lv\.(\d+)/);
           const extId = Number(c.dataset.extId ?? c.closest(".shop-offer")?.dataset.extId ?? 0);
           const own = (s.ownedExtensions ?? []).find((o) => String(o.extId) === String(extId));
-          return { c, price: Number((c.querySelector(".shop-price")?.textContent ?? "").replace(/[^\d]/g, "")) || 0, isBuff: /強化エクステ/.test(txt), isNew: /NEW/.test(txt), lv: own?.level ?? 0, starter: String(extId) === String(s.battle?.starterExtId) };
+          const chip = c.querySelector(".shop-price");
+          return { c, price: chip?.classList.contains("shop-price--gift") ? 0 : (Number((chip?.textContent ?? "").replace(/[^\d]/g, "")) || 0), isBuff: /強化エクステ/.test(txt), isNew: /NEW/.test(txt), lv: own?.level ?? 0, starter: String(extId) === String(s.battle?.starterExtId) };
         });
         let order;
         // focus: 初期武器 → 持っている武器の段上げ (= 段の高いほう) → 新しい武器 (= 3 本まで) → 強化 → 残りは安い順
@@ -129,7 +140,9 @@ await p.evaluate(({ K, BUY }) => {
     if (act?.kind === "charge" && (act.phase === "windup" || act.phase === "dash")) for (let d = 0; d <= 620; d += 50) add(boss.x + act.dx * d, boss.y + act.dy * d, 130, 3);
     if (act?.kind === "slam" && act.phase === "windup") add(boss.x, boss.y, (act.radius ?? 150) + 60, 4);
     let vx = 0, vy = 0;
-    if (near > 0 || boss) {
+    // SPEC-165: ストーリーの弱い雑魚からは逃げない (= 人は立って斬らせる。 HP が半分を切ったら逃げる)
+    const brave = !!b.story && s.stats.hp > s.statsMax.hp * 0.5 && !boss;
+    if ((near > 0 && !brave) || boss) {
       // 端に寄る向きは少し嫌う。 真ん中から 500 を超えたら戻る向きを好む。 ボスがいれば、 ボスとの距離が ringD から離れる向きを嫌う
       const dc = Math.hypot(P.x, P.y);
       let bi = 0, bv = Infinity;
@@ -138,7 +151,13 @@ await p.evaluate(({ K, BUY }) => {
     } else {
       let best = null, bd = 1e9; for (const g of [...(b.gems ?? []), ...(b.items ?? []), ...(b.magicCards ?? [])]) { const d = Math.hypot(g.x - P.x, g.y - P.y); if (d < bd) { bd = d; best = g; } }
       if (best && bd < 500) { vx = (best.x - P.x) / bd; vy = (best.y - P.y) / bd; }
-      const dc = Math.hypot(P.x, P.y); if (dc > 500) { vx += -P.x / dc; vy += -P.y / dc; }
+      // SPEC-165: ストーリーの到達 (= 光る地点へ。 お助けアイテムが近ければ先に拾う。 真ん中へ戻る癖は使わない)
+      const goal = b.story?.goal;
+      if (goal) {
+        const it = (b.items ?? []).map((g) => ({ g, d: Math.hypot(g.x - P.x, g.y - P.y) })).sort((a, c) => a.d - c.d)[0];
+        if (it && it.d < 160) { vx = (it.g.x - P.x) / it.d; vy = (it.g.y - P.y) / it.d; }
+        else { const d = Math.hypot(goal.x - P.x, goal.y - P.y) || 1; vx = (goal.x - P.x) / d; vy = (goal.y - P.y) / d; }
+      } else { const dc = Math.hypot(P.x, P.y); if (dc > 500) { vx += -P.x / dc; vy += -P.y / dc; } }
     }
     setKey("KeyD", vx > 0.3); setKey("KeyA", vx < -0.3); setKey("KeyS", vy > 0.3); setKey("KeyW", vy < -0.3);
     return { st: "play", idx, el };
@@ -151,12 +170,34 @@ const stageOf = (idx) => run.stages.find((x) => x.idx === idx) ?? (run.stages.pu
 const snapshot = async () => p.evaluate(() => ({ kills: window.__state.killCount | 0, ce: Math.round(window.__state.shop?.ce ?? 0), owned: (window.__state.ownedExtensions ?? []).map((o) => `${o.extId}:${o.level}`).join(" "), lv: window.__state.level, sig: window.__state.shop?.sigLevel ?? 1, dealt: Object.values(window.__state.run.stats?.dealt ?? {}).reduce((a, v) => a + v, 0) | 0, gum: JSON.parse(localStorage.getItem("mcs.meta.v1") ?? "{}").gum ?? 0 }));
 const wall0 = Date.now();
 let guard = 0;
+let _dbg = 0;
 while (true) {
   await tick(STEP_MS);
   const r = await p.evaluate(() => window.__auto.step());
+  if (process.env.AUTO_DEBUG && ++_dbg % 20 === 1) console.error("step", _dbg, JSON.stringify(r), await p.evaluate(() => ({ hp: window.__state.stats.hp, en: window.__state.battle?.enemies?.length, px: Math.round(window.__state.battle?.player?.x ?? 0), py: Math.round(window.__state.battle?.player?.y ?? 0), pause: window.__state.pauseFlags, go: !document.getElementById("gameOverModal").classList.contains("hidden") })));
   if (r.st === "play" || r.st === "paused") {
     if (r.el > MAXSEC * 1000) { const sn = await snapshot(); Object.assign(stageOf(r.idx), { timeout: true, sec: Math.round(r.el / 1000), ...sn }); run.result = "timeout"; run.samples = await p.evaluate(() => window.__auto.samples.splice(0)); run.gumAfter = sn.gum; runs.push(run); console.error(`[${LABEL}] run ${run.n}: timeout at stage ${r.idx + 1} ${Math.round(r.el / 1000)}s`); break; }
     guard = 0; continue;
+  }
+  if (r.st === "clear" && MODE === "story") {
+    // SPEC-165: 行ごとに記録。 count ぶん進めたら終わり (= 次の行が無ければそこで終わり)
+    const sn = await snapshot(); const id = await p.evaluate(() => window.__state.storyId);
+    run.stages.push({ id, cleared: true, sec: Math.round(r.el / 1000), ...sn });
+    console.error(`[${LABEL}] ${id}: clear ${Math.round(r.el / 1000)}s kills=${sn.kills} ce=${sn.ce} owned=[${sn.owned}] gum=${sn.gum}`);
+    const more = run.stages.filter((s) => s.cleared).length < COUNT && await p.evaluate(() => { const b = document.getElementById("stageTransitionProceed"); return !!b && !b.classList.contains("hidden"); });
+    if (!more) { run.result = "done"; run.samples = await p.evaluate(() => window.__auto.samples.splice(0)); run.gumAfter = sn.gum; runs.push(run); break; }
+    await p.evaluate(() => { window.__auto.lastHp = null; document.getElementById("stageTransitionProceed")?.click(); }); await tick(1500);
+    for (let k = 0; k < 100 && !(await p.evaluate(() => !!window.__state?.battle?.active && !window.__state.battle.gameOver)); k++) await tick(200);
+    continue;
+  }
+  if (r.st === "lose" && MODE === "story") {
+    const sn = await snapshot(); const id = await p.evaluate(() => window.__state.storyId);
+    run.stages.push({ id, cleared: false, sec: Math.round(r.el / 1000), ...sn });
+    console.error(`[${LABEL}] ${id}: lose ${Math.round(r.el / 1000)}s kills=${sn.kills} hp0`);
+    if (run.stages.filter((s) => !s.cleared).length >= RUNS) { run.result = "lose"; run.samples = await p.evaluate(() => window.__auto.samples.splice(0)); run.gumAfter = sn.gum; runs.push(run); break; }
+    await p.evaluate(async () => { window.__auto.lastHp = null; const G = await import("/js/battle/gameover.js"); G.applyRetry(); }); await tick(1500);
+    for (let k = 0; k < 100 && !(await p.evaluate(() => !!window.__state?.battle?.active && !window.__state.battle.gameOver)); k++) await tick(200);
+    continue;
   }
   if (r.st === "clear") {
     const sn = await snapshot(); const st = stageOf(r.idx); Object.assign(st, { cleared: true, sec: Math.round(r.el / 1000), ...sn });
@@ -178,5 +219,5 @@ while (true) {
 }
 const out = { label: LABEL, mode: MODE, hero: HERO, k: K, gum0: GUM, runs, errors: errs, wallSec: Math.round((Date.now() - wall0) / 1000) };
 if (OUT) (await import("node:fs")).writeFileSync(OUT, JSON.stringify(out, null, 1));
-console.log(JSON.stringify({ label: LABEL, runs: runs.map((r) => ({ n: r.n, result: r.result, stages: r.stages.map((s) => `${s.idx + 1}:${s.cleared ? "clear" : "lose"}@${s.sec}s k${s.kills} ce${s.ce} [${s.owned}]`), gumAfter: r.gumAfter, tree: r.tree.bought.length })), errors: errs.slice(0, 3), wallSec: out.wallSec }, null, 1));
+console.log(JSON.stringify({ label: LABEL, runs: runs.map((r) => ({ n: r.n, result: r.result, stages: r.stages.map((s) => `${s.id ?? (s.idx + 1)}:${s.cleared ? "clear" : "lose"}@${s.sec}s k${s.kills} ce${s.ce} [${s.owned}]`), gumAfter: r.gumAfter, tree: r.tree.bought.length })), errors: errs.slice(0, 3), wallSec: out.wallSec }, null, 1));
 await b.close();

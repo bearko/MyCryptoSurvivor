@@ -1,0 +1,55 @@
+/* SPEC-165: ストーリーモード (= ランドマップ・店の only・顔見せ・目標の帯) */
+
+/* .title-screen は真ん中寄せ (= 行が多いと上が切れる) なので、 上から並べてスクロールさせる */
+.story-map { display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 10px; padding: max(14px, var(--safe-t)) 12px max(18px, var(--safe-b)); overflow-y: auto; text-align: left; }
+.story-map::after { display: none; }
+.story-map__head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 0 4px; }
+.story-map__title { margin: 0; font-size: 22px; font-weight: 900; letter-spacing: 1px; }
+.story-map__title::before { content: attr(data-kicker); display: block; font-size: 11px; letter-spacing: 3px; opacity: 0.7; }
+.story-map__sub { margin: 0; font-size: 13px; opacity: 0.85; }
+.story-map__lands { display: flex; flex-direction: column; gap: 10px; }
+.story-map__back { align-self: flex-start; margin-top: 6px; }
+
+.story-land {
+  position: relative; display: flex; flex-direction: column; gap: 8px; padding: 10px 12px 12px; border-radius: 14px;
+  border: 1.5px solid var(--land, #888); background-size: cover; background-position: center; overflow: hidden;
+  box-shadow: inset 0 0 0 999px rgba(10, 8, 20, 0.5);
+}
+.story-land__name { margin: 0; display: flex; align-items: baseline; gap: 8px; font-size: 18px; font-weight: 900; color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8); }
+.story-land__name small { font-size: 11px; letter-spacing: 2px; color: var(--land, #ccc); }
+.story-land__stages { display: flex; flex-wrap: wrap; gap: 8px; }
+.story-stage {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  min-width: 62px; height: 54px; padding: 0 8px; border-radius: 12px; cursor: pointer;
+  border: 1.5px solid rgba(255, 255, 255, 0.35); background: rgba(0, 0, 0, 0.45); color: #fff; font: inherit;
+}
+.story-stage b { font-size: 16px; }
+.story-stage span { font-size: 11px; opacity: 0.85; }
+.story-stage.is-cleared { border-color: var(--land, #8c8); background: rgba(0, 0, 0, 0.3); }
+.story-stage.is-cleared span { color: #9ef0b0; }
+.story-stage.is-current { border-color: #ffe17a; box-shadow: 0 0 14px rgba(255, 215, 120, 0.7); animation: story-pulse 1.4s ease-in-out infinite; }
+.story-stage.is-locked, .story-stage.is-todo { opacity: 0.45; cursor: not-allowed; }
+@keyframes story-pulse { 0%, 100% { box-shadow: 0 0 8px rgba(255, 215, 120, 0.45); } 50% { box-shadow: 0 0 20px rgba(255, 215, 120, 0.9); } }
+:root[data-reduce-fx] .story-stage.is-current { animation: none; }
+
+/* モード選択の札 */
+.mode-card--story { border-color: #ffe17a; }
+
+/* 店の only (= 品を固定。 リロール・ギフト・お断り・取り置き・固有スキルを出さない) */
+.shop-modal--story #shopReroll, .shop-modal--story #shopGiftFirstWrap, .shop-modal--story #shopBans, .shop-modal--story #shopBansLeft,
+.shop-modal--story #shopWalletBans, .shop-modal--story #shopSig, .shop-modal--story .shop-corner, .shop-modal--story #shopSub, .shop-modal--story #shopIntro { display: none !important; }
+.shop-modal--story .shop-card { box-shadow: 0 0 18px rgba(255, 225, 122, 0.75); }
+.shop-modal--story #shopLeave[disabled] { opacity: 0.4; cursor: not-allowed; }
+
+/* 戦闘の目標の帯 (= HUD の下) */
+.story-goal { position: absolute; left: 50%; transform: translateX(-50%); z-index: 5; padding: 3px 12px; border-radius: 999px; background: rgba(0, 0, 0, 0.55); color: #ffe9a6; font-size: 13px; font-weight: 700; pointer-events: none; white-space: nowrap; }
+.story-goal.hidden { display: none; }
+
+/* 顔見せ (= シャドーヒーローが右から入って一言) */
+.story-cameo { position: fixed; right: 4vw; bottom: 22vh; z-index: 60; width: min(40vw, 260px); pointer-events: none; opacity: 0; transform: translateX(40px); transition: opacity 0.35s ease, transform 0.35s ease; }
+.story-cameo img { width: 100%; image-rendering: pixelated; filter: drop-shadow(0 0 18px rgba(170, 120, 255, 0.8)); }
+.story-cameo--in { opacity: 1; transform: translateX(0); }
+.story-cameo--out { opacity: 0; transform: translateX(40px); }
+
+/* 結果の画面の「マップへ」 */
+.result-story-map { margin-top: 0.3rem; }
