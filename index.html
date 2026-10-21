@@ -367,7 +367,7 @@
   <div id="gameOverModal" class="gameover-modal hidden" role="dialog" aria-modal="true"
        aria-labelledby="gameOverTitle">
     <div class="gameover-modal__card">
-      <h2 class="gameover-modal__title result-title" id="gameOverTitle" data-reveal data-i18n="gameover.title" data-kicker="RESULT">ゲームオーバー</h2>
+      <h2 class="gameover-modal__title result-title" id="gameOverTitle" data-reveal data-i18n="gameover.title" data-kicker="REVIVE">力尽きた……</h2>
       <div class="result-stage-name" id="gameOverStage" data-reveal></div>
       <div class="result-tiles" data-reveal>
         <div class="result-tile"><span class="result-tile__icon" aria-hidden="true">⏱</span>
@@ -387,8 +387,8 @@
       <!-- SPEC-148: 負けた理由の分析 (= 被ダメの内訳・とどめ・前回と自己ベストとの比較・与ダメ・マインちゃんのおすすめ) -->
       <div class="anl hidden" id="gameOverAnalysis" data-reveal></div>
       <button class="btn gameover-modal__retry result-tree-btn" id="gameOverSkillTree" data-reveal><img alt="" aria-hidden="true" /><span data-i18n="tree.openResult">スキルツリーへ</span></button>
-      <!-- SPEC-146: もう一度挑む (= スキルツリーのすぐ下。 負けて → 強くして → すぐ挑むを回す) -->
-      <button class="btn gameover-modal__retry gameover-modal__again" id="gameOverRetry" data-reveal>もう一度挑む ▶</button>
+      <!-- SPEC-146: もう一度挑む (= スキルツリーのすぐ下。 負けて → 強くして → すぐ挑むを回す)。 SPEC-150: 「復活する」 (= 王妃の黄金時計の絵つき。 src は gameover.js) -->
+      <button class="btn gameover-modal__retry gameover-modal__again" id="gameOverRetry" data-reveal><img class="gameover-modal__clock" alt="" aria-hidden="true" /><span data-i18n="gameover.revive">復活する ▶</span></button>
       <div class="gameover-modal__form">
         <label class="gameover-form__label" for="gameOverName" data-i18n="gameover.namelabel">プレイヤー名</label>
         <input class="gameover-form__input" id="gameOverName" type="text" maxlength="30" autocomplete="off" />

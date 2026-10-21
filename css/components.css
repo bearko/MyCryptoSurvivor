@@ -1041,6 +1041,10 @@ a.title-screen__next[href]:hover { border-color: var(--accent); }
   animation: modal-fade-in 0.2s ease;
 }
 .gameover-modal.hidden { display: none !important; }
+/* SPEC-150: 復活のあいだは半透明 (= 後ろで粒子が舞っているのが見える) */
+.gameover-modal--revive { background: rgba(15, 12, 22, 0.62); backdrop-filter: blur(1.5px); -webkit-backdrop-filter: blur(1.5px); }
+.gameover-modal--revive .gameover-modal__card { background-color: rgba(20, 16, 30, 0.84); }
+.gameover-modal__clock { width: 1.5em; height: 1.5em; margin-right: 0.4em; vertical-align: -0.4em; image-rendering: pixelated; filter: drop-shadow(0 0 6px rgba(255, 215, 120, 0.8)); }
 
 .gameover-modal__card {
   width: 100%; max-width: 400px;
@@ -2062,3 +2066,26 @@ a.title-screen__next[href]:hover { border-color: var(--accent); }
 @media (max-width: 420px) { .lesson__face { width: 72px; height: 96px; } .lesson__text { font-size: 0.92rem; } }
 .result-tree-lock { margin: 6px 0; font-size: 0.82rem; color: var(--muted); text-align: center; }
 .report-to-normal { width: 100%; font-size: 1.05rem; }
+
+/* ============================================================
+   SPEC-150: 復活の演出 (= 結果の画面のすぐ下の固定 canvas と「REVIVE!」)
+   ============================================================ */
+.revive-fx { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: calc(var(--z-modal-top) + 1); display: none; }
+.revive-fx.revive-fx--on { display: block; }
+.revive-text {
+  position: fixed; transform: translate(-50%, -50%); pointer-events: none; z-index: calc(var(--z-modal-top) + 1);
+  font-weight: 900; font-size: 2.2rem; letter-spacing: 0.12em; color: #fff7d6;
+  text-shadow: 0 0 10px rgba(255, 215, 120, 0.95), 0 0 28px rgba(255, 190, 60, 0.7), 0 2px 0 rgba(0, 0, 0, 0.6);
+  animation: revive-text 0.9s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+}
+@keyframes revive-text {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+  25%  { opacity: 1; transform: translate(-50%, -50%) scale(1.15); }
+  60%  { opacity: 1; transform: translate(-50%, -56%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -70%) scale(1.05); }
+}
+@media (prefers-reduced-motion: reduce) { .revive-text { animation: none; opacity: 0; } }
+
+/* SPEC-149: 紙吹雪 (= 画面の一番上。 押せる) */
+.confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: calc(var(--z-help) + 2); display: none; }
+.confetti.confetti--on { display: block; }

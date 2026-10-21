@@ -34,8 +34,12 @@ import { owns } from "../skill-logic.js";   // SPEC-147
 import { ROOT_ID } from "../skill-data.js";   // SPEC-147
 import { collectAnalysis, renderAnalysis, adviceVars } from "./analysis-ui.js";   // SPEC-148
 import { suggest } from "./run-stats.js";   // SPEC-148
+import { dissolveHero, gatherHero, clearReviveFx, dimReviveFx, setReviveLabel, REVIVE, REVIVE_EXT_ID } from "./revive-fx.js";   // SPEC-150
+import { removeConfetti } from "../confetti.js";   // SPEC-149
+import { CHAR_SPRITE_RATIO, img } from "../constants.js";   // SPEC-150
 
 let _wired = false;
+let _showTimer = 0;   // SPEC-150: 粒子が舞い上がってから結果の画面を出す
 let _loseN = Math.floor(Math.random() * 3);   // SPEC-116: 倒れたときのひとことの順番 (= 続けて同じにしない)
 
 /**
@@ -68,24 +72,37 @@ export function triggerGameOver(reason = "lose") {
   _wireOnce();
   _renderGameOverModal();
   const modal = document.getElementById("gameOverModal");
-  modal?.classList.remove("hidden");
-  setChatVisible(true);   // SPEC-091: 結果の画面では全体チャットを出す
-  // SPEC-058: テロップのあと、 SPEC-046: 上から順に出し、 撃破数を数え上げる
-  presentResult(modal, reason === "clear" ? "allClear" : "lose", {
-    heroId: state.ownedHero?.heroId ?? null,
-    then: () => {
-      revealIn(modal);
-      countUp(document.getElementById("gameOverKills"), state.lastRunStats?.kills ?? 0, { durMs: 600, delayMs: 250 });
-      renderRewards(document.getElementById("gameOverRewards"), state.lastRunStats?.rewards ?? {}, { delayMs: 500 });   // SPEC-090
-      renderGumBreakdown(document.getElementById("gameOverGum"), state.lastRunStats?.rewards);   // SPEC-136
-      // SPEC-148: 分析の表 (= おすすめの節を押すと、 その節を選んだ状態で木が開く。 RTA では木が効かないのでおすすめは出さない)
-      renderAnalysis(document.getElementById("gameOverAnalysis"), state.lastRunStats?.analysis, {
-        advice: !state.rtaMode,
-        onNode: (id) => import("../skill-tree.js").then((m) => m.openSkillTree({ focus: id, returnTo: modal, retry: true })),
-      });
-      sayOnLose(reason, modal);   // SPEC-116
-    },
-  });
+  // SPEC-046: 上から順に出し、 撃破数を数え上げる
+  const reveal = () => {
+    revealIn(modal);
+    countUp(document.getElementById("gameOverKills"), state.lastRunStats?.kills ?? 0, { durMs: 600, delayMs: 250 });
+    renderRewards(document.getElementById("gameOverRewards"), state.lastRunStats?.rewards ?? {}, { delayMs: 500 });   // SPEC-090
+    renderGumBreakdown(document.getElementById("gameOverGum"), state.lastRunStats?.rewards);   // SPEC-136
+    // SPEC-148: 分析の表 (= おすすめの節を押すと、 その節を選んだ状態で木が開く。 RTA では木が効かないのでおすすめは出さない)
+    renderAnalysis(document.getElementById("gameOverAnalysis"), state.lastRunStats?.analysis, {
+      advice: !state.rtaMode,
+      onNode: (id) => import("../skill-tree.js").then((m) => m.openSkillTree({ focus: id, returnTo: modal, retry: true })),
+    });
+    sayOnLose(reason, modal);   // SPEC-116
+  };
+  clearTimeout(_showTimer);
+  if (reason === "clear") {
+    modal?.classList.remove("hidden", "gameover-modal--revive");
+    setChatVisible(true);   // SPEC-091: 結果の画面では全体チャットを出す
+    presentResult(modal, "allClear", { heroId: state.ownedHero?.heroId ?? null, then: reveal });   // SPEC-058: テロップのあと
+  } else {
+    // SPEC-150: lose のテロップの代わりに、 ヒーローが粒子になって舞い上がる (= 1.6 秒)。 そのあと半透明の結果の画面が重なり、 粒子は後ろで漂い続ける
+    const dissolved = _startDissolve();
+    modal?.classList.toggle("gameover-modal--revive", dissolved);
+    const show = () => {
+      if (!state.battle.gameOver || !modal) return;   // そのあいだにやめていたら出さない
+      modal.classList.remove("hidden");
+      dimReviveFx(true);   // SPEC-150: 粒は札の上を薄く舞う
+      setChatVisible(true);   // SPEC-091
+      reveal();
+    };
+    if (dissolved) _showTimer = setTimeout(show, REVIVE.dissolveMs); else show();
+  }
   // 残っていた Level-up モーダルが有れば閉じる (= 同フレームで LV up と死亡が起きる場合)
   const lv = document.getElementById("levelUpModal");
   if (lv && !lv.classList.contains("hidden")) {
@@ -104,26 +121,66 @@ export function triggerGameOver(reason = "lose") {
 }
 
 /**
+ * SPEC-150: 倒れたヒーローが粒子になって舞い上がる (= 戦闘の絵からは消す)。 出せたら true
+ */
+function _startDissolve() {
+  const b = state.battle;
+  const canvas = document.getElementById("battleCanvas");
+  const sp = b.playerSprite;
+  if (!canvas || !sp?.ready || sp.failed || !b.player) return false;
+  const rect = canvas.getBoundingClientRect();
+  const r = b.player.r;
+  const ok = dissolveHero({
+    x: rect.left + (b.player.x - b.camera.x),
+    y: rect.top + (b.player.y - b.camera.y) - r * 0.12,   // render.js の絵の位置 (= 足もとの揺れは無視)
+    size: r * CHAR_SPRITE_RATIO,
+    img: sp.img,
+  });
+  b.heroDissolved = ok;
+  return ok;
+}
+
+/** SPEC-150: 「復活する」: 粒子がフィールドの真ん中 (= 再開後のヒーローの位置) に集まる。 集まりきったら resolve */
+async function _reviveGather() {
+  const b = state.battle;
+  const canvas = document.getElementById("battleCanvas");
+  if (!b.heroDissolved || !canvas || !b.player) return false;
+  const rect = canvas.getBoundingClientRect();
+  const r = b.player.r;
+  setReviveLabel(t("revive.flash", "REVIVE!"));
+  const ok = await gatherHero({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 - r * 0.12, size: r * CHAR_SPRITE_RATIO });
+  if (ok) {
+    playSe(SFX.PICK_HEAL, 0, 0.8);   // 3_heal_resurrection.mp3
+    await new Promise((r) => setTimeout(r, Math.round(REVIVE.flashMs * 0.7)));   // 閃光と「REVIVE!」が立ってから、 ステージの帯
+  }
+  return ok;
+}
+
+/**
  * SPEC-116: 倒れたとき、 マインちゃんが画面の下の帯でスキルツリーへ誘う。
- * スキルツリーを始めていなければ (= 根をまだ取っていない) 入口を教え、 始めていれば 3 つのひとことを順に。
- * RTA ではスキルツリーが効かないので言わない
+ * SPEC-150: まず「王妃の黄金時計で復活させてあげる」 (= 吹き出しを押すと 2 行目)。
+ * 2 行目は、 スキルツリーを始めていなければ (= 根をまだ取っていない) 入口の案内、 始めていれば SPEC-148 のおすすめ (= 無ければ 3 つのひとことを順に)。
+ * RTA ではスキルツリーが効かないので 2 行目は無い
  */
 function sayOnLose(reason, modal) {
   modal?.classList.remove("gameover-modal--navi");
-  if (reason === "clear" || state.rtaMode) return;
+  if (reason === "clear") return;
   if (isEasy()) { showLesson("s3.lose"); return; }   // SPEC-147: 説明はレッスンで
-  const guide = treeNudge(getMeta());
+  const lines = naviLines("revive");   // SPEC-150
+  if (!state.rtaMode) {
+    const guide = treeNudge(getMeta());
+    // SPEC-148: 木を始めていれば、 SPEC-116 のひとことの代わりに、 被ダメの内訳からのおすすめを 1 つ
+    const sug = guide ? null : suggest(state.lastRunStats?.analysis?.sum);
+    if (sug) lines.push(...naviLines("advice", { key: sug.key, vars: adviceVars(sug) }));
+    else { if (!guide) _loseN += 1; lines.push(...naviLines("lose", { guide, n: _loseN })); }
+  }
   modal?.classList.add("gameover-modal--navi");
-  // SPEC-148: 木を始めていれば、 SPEC-116 のひとことの代わりに、 被ダメの内訳からのおすすめを 1 つ
-  const sug = guide ? null : suggest(state.lastRunStats?.analysis?.sum);
-  if (sug) { naviSay(naviLines("advice", { key: sug.key, vars: adviceVars(sug) }), { place: "result" }); return; }
-  if (!guide) _loseN += 1;
-  naviSay(naviLines("lose", { guide, n: _loseN }), { place: "result" });
+  naviSay(lines, { place: "result" });
 }
 
-/** SPEC-146: もう一度挑むの文言 (= NORMAL は「もう一度挑む」。 RTA と ABSOLUTE は今までどおり「今のレギュレーションで再走」) */
+/** SPEC-146 → SPEC-150: 「復活する」の文言 (= RTA と ABSOLUTE は「今のレギュレーションで復活する」) */
 export function retryLabel() {
-  return state.rtaMode || state.regulation === REGULATION_ABSOLUTE ? t("gameover.retryCurrent", "今のレギュレーションで再走") : t("gameover.again", "もう一度挑む ▶");
+  return state.rtaMode || state.regulation === REGULATION_ABSOLUTE ? t("gameover.reviveCurrent", "今のレギュレーションで復活する") : t("gameover.revive", "復活する ▶");
 }
 
 /** SPEC-146: スキルツリーから戻ったとき (= 強くしたなら、 マインちゃんが「もう一度」を押す) */
@@ -139,8 +196,10 @@ export function onBackFromTree({ bought = 0 } = {}) {
 }
 
 export async function applyRetry() {
+  clearTimeout(_showTimer);
   document.getElementById("gameOverModal")?.classList.add("hidden");
   naviHide();   // SPEC-116
+  await _reviveGather();   // SPEC-150: 粒子が集まりきってから、 その場所にヒーローが立つ
   resumeTime();
   state.currentStageIdx = 0;       // SPEC-030: リトライは常にステージ 1 から
   // 循環 import 回避のため動的に startBattle を取得
@@ -152,9 +211,11 @@ function _wireOnce() {
   if (_wired) return;
   _wired = true;
 
-  // SPEC-037: 「今のレギュレーションで再走」 (= 既存 retry の挙動と同じ)。 SPEC-146: NORMAL は「もう一度挑む」
-  document.getElementById("gameOverRetry")
-    ?.addEventListener("click", applyRetry);
+  // SPEC-037: 「今のレギュレーションで再走」 (= 既存 retry の挙動と同じ)。 SPEC-146: NORMAL は「もう一度挑む」。 SPEC-150: 「復活する」 (= 王妃の黄金時計の絵つき)
+  const retryBtn = document.getElementById("gameOverRetry");
+  retryBtn?.addEventListener("click", applyRetry);
+  const clock = retryBtn?.querySelector("img");
+  if (clock) clock.src = img(`Image/Extensions/${REVIVE_EXT_ID}.png`);
 
   // SPEC-037: 「タイトルに戻る」 — 戦闘停止 / state リセットして title 画面へ
   document.getElementById("gameOverToTitle")
@@ -174,6 +235,9 @@ function _wireOnce() {
 /** タイトルへ戻す。 navi: タイトルのセリフを言わせるか (= SPEC-093。 すぐスキルツリーを開くときは false) */
 export async function returnToTitle({ navi = true } = {}) {
   startTitleBgm();   // SPEC-069: タイトルの曲 (= craft.mp3)。 押した操作の中で替える (= 下の await のあとだと iOS で止められる)
+  clearTimeout(_showTimer);
+  clearReviveFx();   // SPEC-150
+  removeConfetti();  // SPEC-149
   document.getElementById("gameOverModal")?.classList.add("hidden");
   // 全 modal close
   for (const id of ["levelUpModal", "stageTransitionModal", "activityReportModal", "rankingModal"]) {
@@ -272,7 +336,7 @@ export function easyRetryGate() {
 
 function _renderGameOverModal() {
   const again = document.getElementById("gameOverRetry");
-  if (again) again.textContent = retryLabel();   // SPEC-146
+  if (again) { const sp = again.querySelector("span"); if (sp) sp.textContent = retryLabel(); else again.textContent = retryLabel(); }   // SPEC-146 / SPEC-150
   easyRetryGate();   // SPEC-147
   const stats = state.lastRunStats;
   if (!stats) return;
@@ -281,9 +345,9 @@ function _renderGameOverModal() {
   if (titleEl) {
     titleEl.textContent = (stats.reason === "clear")
       ? t("gameover.titleClear", "Clear!")
-      : t("gameover.title", "Game Over");
+      : t("gameover.title", "力尽きた……");   // SPEC-150
     // SPEC-058: 英字の小見出しも結果に合わせる
-    titleEl.dataset.kicker = (stats.reason === "clear") ? "ALL CLEAR" : "SIGNAL LOST";
+    titleEl.dataset.kicker = (stats.reason === "clear") ? "ALL CLEAR" : "REVIVE";   // SPEC-150
   }
   const elapsedEl = document.getElementById("gameOverElapsed");
   const levelEl   = document.getElementById("gameOverLevel");

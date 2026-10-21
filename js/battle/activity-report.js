@@ -36,6 +36,8 @@ import { markPlayed } from "../played.js";
 import { isEasy, markEasyCleared } from "../easy.js";   // SPEC-147
 import { showLesson } from "../lesson.js";   // SPEC-147
 import { collectAnalysis, renderAnalysis } from "./analysis-ui.js";   // SPEC-148
+import { stopVoice } from "../voice.js";   // SPEC-149
+import { startConfetti, removeConfetti } from "../confetti.js";   // SPEC-149
 
 let _wired = false;
 
@@ -57,6 +59,7 @@ function showLLUnlocked(extId) {
 
 export function triggerActivityReport() {
   pauseTime();
+  stopVoice();   // SPEC-149: レッスンの読み上げが残っていても、 クリアの演出を優先する
   const easy = isEasy();   // SPEC-147: EASY は ABSOLUTE・RTA を開かず、 LL も共通基盤も送らない。 代わりに EASY クリアを覚える
   if (!easy) markPlayed();   // SPEC-088: 1 回遊び終えた (= 次から ABSOLUTE・RTA が選べる)
   if (easy) markEasyCleared();
@@ -90,6 +93,7 @@ export function triggerActivityReport() {
       renderRewards(document.getElementById("activityReportRewards"), _rewards ?? {}, { delayMs: 900 });   // SPEC-090
       renderGumBreakdown(document.getElementById("activityReportGum"), _rewards);   // SPEC-136
       renderAnalysis(document.getElementById("activityReportAnalysis"), analysis);   // SPEC-148
+      startConfetti();   // SPEC-149
       if (llFirst) showLLUnlocked(HERO_STARTING_WEAPON[state.ownedHero?.heroId]);   // SPEC-106
       if (easy) showLesson("s3.clear");   // SPEC-147
     },
@@ -131,6 +135,7 @@ function _wireOnce() {
 }
 
 async function _onRetryClick() {
+  removeConfetti();   // SPEC-149
   document.getElementById("activityReportModal")?.classList.add("hidden");
   state.currentStageIdx = 0;       // ステージ 1 から
   // state.run は applyHeroPick で初期化されるため、 retry でもクリア

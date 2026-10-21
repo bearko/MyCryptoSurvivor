@@ -127,6 +127,9 @@ export function naviLines(scene, ctx = {}) {
       ];
       return [list[Math.abs(ctx.n | 0) % list.length]];
     }
+    case "revive":
+      // SPEC-150: 倒れたら、 まず王妃の黄金時計で復活させてあげる (= ボイスはまだない)
+      return [{ key: "navi.revive.intro", pose: "pointer" }];
     case "advice":
       // SPEC-148: 倒れた理由からのおすすめ (= 文は advice.*、 節の名前は vars。 ボイスはまだない)
       return [{ key: String(ctx.key ?? "advice.hp"), pose: "pointer", vars: ctx.vars ?? {} }];
