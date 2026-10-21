@@ -288,20 +288,29 @@
   <!-- ============================================================ -->
   <!-- Stage transition modal (= SPEC-030)                           -->
   <!-- ============================================================ -->
-  <div id="stageTransitionModal" class="gameover-modal stage-clear-modal hidden" role="dialog" aria-modal="true"
+  <div id="stageTransitionModal" class="gameover-modal stage-clear-modal result-split hidden" role="dialog" aria-modal="true"
        aria-labelledby="stageTransitionTitle">
     <div class="gameover-modal__card stage-clear-card">
       <div class="stage-pips" id="stageTransitionPips" data-reveal aria-hidden="true"></div>
       <h2 class="gameover-modal__title result-title" id="stageTransitionTitle" data-reveal
           data-i18n="stage.clearTitle" data-kicker="NODE CLEAR">Stage Clear!</h2>
       <div class="result-stage-name" id="stageTransitionCurrent" data-reveal></div>
-      <div class="result-tiles" id="stageTransitionTiles" data-reveal></div>
-      <!-- SPEC-090: ボスを倒したときのゴールドダスト -->
-      <div class="result-rewards hidden" id="stageTransitionRewards" data-reveal></div>
-      <!-- SPEC-136: GUM の内訳 (= 遊んだぶんが GUM になった式) -->
-      <div class="gum-bd hidden" id="stageTransitionGum" data-reveal></div>
-      <!-- SPEC-128: 残った CE を固有スキルへ振った結果 (= CE は次のステージへ持ち越さない) -->
-      <div class="result-sigpour hidden" id="stageTransitionSig" data-reveal></div>
+      <!-- SPEC-158: 時間・撃破・レベルは 1 行の小さな字 (= REVIVE と同じ。 主役は GUM とゴールドダスト) -->
+      <div class="result-mini" data-reveal>
+        <span class="result-mini__item">⏱ <span class="num" id="stageTransitionElapsed"></span></span>
+        <span class="result-mini__item">💀 <span class="num" id="stageTransitionKills"></span></span>
+        <span class="result-mini__item">⬆ <span class="num" id="stageTransitionLevel"></span></span>
+      </div>
+      <!-- SPEC-090: ボスを倒したときのゴールドダスト (= SPEC-158: 大きく) -->
+      <div class="result-rewards result-rewards--hero hidden" id="stageTransitionRewards" data-reveal></div>
+      <!-- SPEC-158: 内訳は「くわしく」に畳む (= PC では左の列に常に出る) -->
+      <button type="button" class="result-more" id="stageTransitionMore" data-reveal aria-expanded="false" aria-controls="stageTransitionMoreBody"><span data-i18n="result.more">くわしく</span> <span class="result-more__arrow" aria-hidden="true">▼</span></button>
+      <div class="result-more-body hidden" id="stageTransitionMoreBody">
+        <!-- SPEC-136: GUM の内訳 (= 遊んだぶんが GUM になった式) -->
+        <div class="gum-bd hidden" id="stageTransitionGum"></div>
+        <!-- SPEC-128: 残った CE を固有スキルへ振った結果 (= CE は次のステージへ持ち越さない) -->
+        <div class="result-sigpour hidden" id="stageTransitionSig"></div>
+      </div>
       <!-- SPEC-132: ステージクリアのたびにスキルツリーへ (= 閉じるとこの画面に戻る。 次のステージから効く) -->
       <p class="result-tree-lock hidden" id="stageTransitionTreeLock">🔒 スキルツリーはステージ 3 で開く</p>
       <button class="btn gameover-modal__retry result-tree-btn" id="stageTransitionSkillTree" data-reveal><img alt="" aria-hidden="true" /><span data-i18n="tree.openResult">スキルツリーへ</span><span class="tree-badge hidden" id="stageTreeBadge" aria-hidden="true"></span></button>
@@ -364,7 +373,7 @@
   <!-- ============================================================ -->
   <!-- Game Over modal (= SPEC-009)                                   -->
   <!-- ============================================================ -->
-  <div id="gameOverModal" class="gameover-modal hidden" role="dialog" aria-modal="true"
+  <div id="gameOverModal" class="gameover-modal result-split hidden" role="dialog" aria-modal="true"
        aria-labelledby="gameOverTitle">
     <div class="gameover-modal__card">
       <h2 class="gameover-modal__title result-title" id="gameOverTitle" data-reveal data-i18n="gameover.title" data-kicker="">REVIVE</h2>

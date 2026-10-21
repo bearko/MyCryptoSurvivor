@@ -207,6 +207,7 @@ export const SFX = {
   PICK_HEAL:       "Audio/SE/Battle/3_heal_resurrection.mp3",
   GAME_OVER_LOSE:  "Audio/SE/Jingles/lose.mp3",
   GAME_OVER_CLEAR: "Audio/SE/Jingles/win.mp3",
+  STAGE_CLEAR:     "Audio/SE/Jingles/win.mp3",   // SPEC-158: ステージクリア (= NODE CLEAR の帯が出る瞬間)
   UI_CLICK:        "Audio/SE/Actions/crash.mp3",   // SPEC-060: ボタンを押したとき
   THUNDER:         "Audio/SE/Battle/2_area_damage.mp3",   // SPEC-063: 雷鼓
   GIMMICK_WARN:    "Audio/SE/Battle/5_debuff_status_effect.mp3",   // SPEC-064: 仕掛けの予告 (= 珠の列・木馬)

@@ -1,0 +1,1 @@
+- **ステージクリアの画面を REVIVE と同じ組み立てに・勝利の SE・ドックと 3 列・X の #ポチゲー** (`index.html` + `js/battle/stage-transition.js` + `css/result-ui.css` + `css/components.css` + `js/share-x.js`): 時間・撃破・レベルは 1 行の小さな字、 GUM とゴールドダストは大きく、 内訳と CE の振り先は「くわしく」（PC では左の列）。 NODE CLEAR の帯が出る瞬間に勝利のジングル。 2 列にするかは窓ではなく札の置き場の幅で決める（チャットのドックが開いていればデータ・結果・チャットの 3 列）。 X の投稿の本文に #ポチゲー

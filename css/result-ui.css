@@ -802,12 +802,14 @@
 .pick__desc { margin: 0.1rem 0 0; font-size: 0.72rem; line-height: 1.4; color: #d9d4c4; }
 .pick__buy { display: flex; flex-direction: column; align-items: center; gap: 0.05rem; min-width: 5.2rem; padding: 0.35rem 0.6rem; font-size: 0.82rem; }
 .pick__cost { font-size: 0.62rem; font-weight: 700; opacity: 0.85; }
-@media (min-width: 980px) {
-  /* PC: 内訳と分析を左に広げて、 右に結果とボタン (= 「くわしく」は要らない) */
-  #gameOverModal .gameover-modal__card { max-width: 960px; display: grid; grid-template-columns: minmax(0, 1fr) 420px; column-gap: 1.2rem; align-items: start; }
-  #gameOverModal .gameover-modal__card > * { grid-column: 2; }
-  /* 左の列は右の 9 つ (= 題・ステージ・1 行・報酬・おすすめ・木・復活・名前・戻る) ぶんの行にまたがる。 多くまたがると空の行の gap だけ札が伸びる */
-  #gameOverModal #gameOverMoreBody { grid-column: 1; grid-row: 1 / span 9; align-self: start; position: sticky; top: 0; display: block !important; }
-  #gameOverModal #gameOverMore { display: none; }
-  #gameOverModal .gum-bd, #gameOverModal .anl { max-width: none; }
+/* SPEC-155 / SPEC-158: 置き場 (= .gameover-modal。 チャットのドックを引いた幅) が広ければ 2 列:
+   左に内訳 (と分析)、 右に結果・報酬・ボタン (= 「くわしく」は要らない)。 REVIVE とステージクリアの両方 (= .result-split)。
+   ドックが開いていれば データ・結果・チャットの 3 列に、 畳んでいれば 2 列で全面に並ぶ */
+@container (min-width: 940px) {
+  .result-split .gameover-modal__card { max-width: 960px; display: grid; grid-template-columns: minmax(0, 1fr) 420px; column-gap: 1.2rem; align-items: start; }
+  .result-split .gameover-modal__card > * { grid-column: 2; }
+  /* 左の列は右の 9〜10 個ぶんの行にまたがる。 多くまたがると空の行の gap だけ札が伸びる */
+  .result-split .result-more-body { grid-column: 1; grid-row: 1 / span 9; align-self: start; position: sticky; top: 0; display: block !important; }
+  .result-split .result-more { display: none; }
+  .result-split .gum-bd, .result-split .anl, .result-split .result-sigpour { max-width: none; }
 }

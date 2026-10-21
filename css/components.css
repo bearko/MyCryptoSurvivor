@@ -1036,6 +1036,7 @@ a.title-screen__next[href]:hover { border-color: var(--accent); }
 .gameover-modal {
   position: fixed; inset: 0; z-index: var(--z-modal-top);
   right: var(--chat-dock, 0px);   /* SPEC-156: チャットのドックのぶん狭める (= PC の 2 列の札がドックの下に隠れない) */
+  container-type: inline-size;    /* SPEC-158: 2 列にするかは、 窓ではなくこの置き場の幅 (= ドックを引いたぶん) で決める */
   background: rgba(15, 12, 22, 0.95);
   display: flex; align-items: center; justify-content: center;
   padding: max(1rem, var(--safe-t)) max(1rem, var(--safe-r)) max(1rem, var(--safe-b)) max(1rem, var(--safe-l));

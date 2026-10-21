@@ -7,10 +7,11 @@ import { readFileSync } from "node:fs";
 const { shareUrl, loadShare, saveShare, shouldOfferShare, SHARE_GUM, SHARE_MAX_SKIPS, GAME_URL, SHARE_TAG, SHARE_KEY } = await import("../js/share-x.js");
 const ui = JSON.parse(readFileSync(new URL("../data/i18n/ui.json", import.meta.url), "utf8"));
 
-test("投稿の URL に文・#MyCryptoGames・ゲームの URL が入る", () => {
+test("投稿の URL に文・#ポチゲー (= 本文)・#MyCryptoGames・ゲームの URL が入る", () => {
   const u = new URL(shareUrl("ステージ 1 をクリア！"));
   assert.equal(u.origin + u.pathname, "https://x.com/intent/tweet");
-  assert.equal(u.searchParams.get("text"), "ステージ 1 をクリア！");
+  assert.equal(u.searchParams.get("text"), "ステージ 1 をクリア！ #ポチゲー", "SPEC-158: ポータルが拾う札を本文に");
+  assert.equal(new URL(shareUrl("もう #ポチゲー 入り")).searchParams.get("text"), "もう #ポチゲー 入り", "2 度は足さない");
   assert.equal(u.searchParams.get("hashtags"), "MyCryptoGames");
   assert.equal(u.searchParams.get("url"), "https://survivor.bearko.games/");
   assert.deepEqual([SHARE_GUM, SHARE_TAG, GAME_URL, SHARE_MAX_SKIPS], [100, "MyCryptoGames", "https://survivor.bearko.games/", 3]);
