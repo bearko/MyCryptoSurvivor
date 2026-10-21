@@ -46,7 +46,7 @@ export function hitEnemy(idx, dmg, src = "other") {
   const dmgInt = Math.max(0, Math.round(dmg));
   if (dmgInt <= 0) return false;
   e.hp -= dmgInt;
-  if (!e.isProp) recordDealt(state.run?.stats, src, dmgInt, !!e.isBoss);   // SPEC-148: 壺・宝箱は数えない
+  if (!e.isProp && src !== "gimmick") recordDealt(state.run?.stats, src, dmgInt, !!e.isBoss);   // SPEC-148: 壺・宝箱と、 仕掛け (= 自分の火力ではない) は数えない
   e.hitFreezeMs = HIT_FREEZE_MS;
   fxEnemyHit(e);   // SPEC-045: 一瞬白く光る
   // SPEC-057: 大きいダメージほど大きく、 金色で

@@ -119,7 +119,7 @@ test("マインちゃんのおすすめは被ダメの内訳で決まり、 節�
 test("与ダメは hitEnemy の出どころで、 被ダメは hurtPlayer の種類で記録する (= 配線)", () => {
   const dmg = read("../js/battle/damage.js");
   assert.match(dmg, /export function hitEnemy\(idx, dmg, src = "other"\)/);
-  assert.match(dmg, /if \(!e\.isProp\) recordDealt\(state\.run\?\.stats, src, dmgInt, !!e\.isBoss\)/);
+  assert.match(dmg, /if \(!e\.isProp && src !== "gimmick"\) recordDealt\(state\.run\?\.stats, src, dmgInt, !!e\.isBoss\)/);   // 仕掛けは自分の火力ではない
   assert.match(dmg, /recordKill\(state\.run\?\.stats\)/);
   const hurt = read("../js/battle/hurt.js");
   assert.match(hurt, /recordTaken\(state\.run\?\.stats, k, takenInt/);
