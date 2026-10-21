@@ -2,7 +2,7 @@
 id: SPEC-164
 title: EASY Guidance Gates — No Ring on the CE Lesson, Skill-Tree-Only Revive Before the Root, Root-First Skill Tree, and a Gentle Stage 2 (Harmless Mobs, Long Boss, Thunder Drum for Half)
 status: Done
-pr: TBD
+pr: 204
 phase: v1.8 Balance
 kind: Changed
 ---
