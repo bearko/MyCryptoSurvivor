@@ -157,7 +157,9 @@ export function dropFromProp(e) {
   const gem = Math.max(1, Math.round(xpMul));
   if (e.propKind === "chest") {
     // SPEC-081: ボス戦の宝箱は、 マジックカード (= その場でレベルアップ) も出る
-    const kind = (!e.bossChest && storyStage()?.chestDrop) || rollTable(e.bossChest ? bossChestDrops() : chestDrops(), Math.random());   // SPEC-165: レシピで固定
+    const cd = !e.bossChest ? storyStage()?.chestDrop : null;   // SPEC-165: レシピで固定 (= 列なら n 個目)
+    const fixed = Array.isArray(cd) ? cd[Math.min(b.storyChestN = (b.storyChestN ?? 0) + 1, cd.length) - 1] : cd;
+    const kind = fixed || rollTable(e.bossChest ? bossChestDrops() : chestDrops(), Math.random());
     if (kind === "card") { if (storyAllows("magicCards")) spawnMagicCard(e.x, e.y); }
     else if (storyAllows(`items:${kind}`)) spawnItem(kind, e.x, e.y);   // SPEC-165
     _scatterGems(e.x, e.y, CHEST_CE_GEMS, gem);

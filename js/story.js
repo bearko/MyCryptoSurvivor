@@ -35,6 +35,10 @@ export const HEAL_DROP_BELOW = 0.5;
  *   hero / startExt       : 固定のヒーローと開始装備 (= W1〜W2 は MCH ウォーリアー。 "select" = ヒーロー選択を開く / "keep" = 前に選んだ人)
  *   treeFirst             : ステージの前にスキルツリーを開く (= 3-1。 根を取るまでほかを押せない)
  *   shooters              : { fromMs, everyMs, max, ids } 撃つ敵 (= features.shooters のとき)
+ *   variants              : { giant, runner } 型のついた雑魚の混じる割合 (= 4-1。 無ければ段階の表)
+ *   gimmick               : "beads" | "punch" | "trojan" 土地の仕掛け (= features.gimmick のとき)
+ *   mission               : { id, atMs, star, durS, must } 決まった時刻に持ちかける (= must なら断れない)
+ *   chestDrop             : 宝箱の中身 (= 1 つなら文字列、 列なら n 個目の宝箱の中身)
  *   clear                 : { kind: "kills", n } | { kind: "survive", sec } | { kind: "reach", points: [{ x, y }] } | { kind: "collect", n } | { kind: "boss" }
  *                           | { kind: "shadowSurvive", sec } | { kind: "shadowDefeat" } (= シャドーの試練。 §6)
  *   shadow                : { id, giver, mode: "survive" | "defeat", atMs, hp, dmg, speed, moves, aura: { spawnMul, speedMul } } (= battle/shadow.js)
@@ -195,6 +199,58 @@ export const STORY_STAGES = Object.freeze([
     showGum: true,
     lines: { intro: "story.3-5.intro", mid: [{ on: "bossWarn", key: "story.3-5.mid" }, { on: "item:thunder", key: "story.3-5.thunder" }], clear: "story.3-5.clear" },
   },
+  // ---- W4 ライム: 型・仕掛け・ミッション・お助け・2 人目の強敵 (= 60〜90 秒) ----
+  {
+    id: "4-1", world: 4, hero: "keep", startExt: [],
+    clear: { kind: "kills", n: 60 }, targetSec: 75,
+    spawn: { everyMs: 900, pool: [101, 124, 134], max: 10 }, enemyMul: { hp: 1.3, dmg: 0.5 },
+    features: { ce: true, tree: true, shop: true, variants: true },
+    variants: { giant: 0.2, runner: 0.2 },
+    shop: { atMs: [25000], offers: [], only: false, price: null, mustBuy: false },
+    showGum: true,
+    lines: { intro: "story.4-1.intro", mid: [{ on: "variant:giant", key: "story.4-1.giant" }, { on: "variant:runner", key: "story.4-1.runner" }], clear: "story.4-1.clear" },
+  },
+  {
+    id: "4-2", world: 4, hero: "keep", startExt: [],
+    clear: { kind: "survive", sec: 60 }, targetSec: 60,
+    spawn: { everyMs: 1300, pool: [101, 124], max: 8 }, enemyMul: { hp: 1.2, dmg: 0.5 },
+    features: { ce: true, tree: true, gimmick: true },
+    gimmick: "beads",
+    showGum: true,
+    lines: { intro: "story.4-2.intro", mid: [{ on: "gimmick", key: "story.4-2.mid" }], clear: "story.4-2.clear" },
+  },
+  {
+    id: "4-3", world: 4, hero: "keep", startExt: [],
+    clear: { kind: "kills", n: 50 }, targetSec: 75,
+    spawn: { everyMs: 1000, pool: [101, 124, 134], max: 9 }, enemyMul: { hp: 1.3, dmg: 0.5 },
+    features: { ce: true, tree: true, shop: true, mission: true },
+    shop: { atMs: [40000], offers: [], only: false, price: null, mustBuy: false },
+    mission: { id: "alexander", atMs: 8000, star: 1, durS: 30, must: true },   // 試練を越えた相手が依頼してくる。 受けるまで出られない
+    showGum: true,
+    lines: { intro: "story.4-3.intro", mid: [{ on: "missionOffer", key: "story.4-3.offer" }, { on: "missionClear", key: "story.4-3.cleared" }], clear: "story.4-3.clear" },
+  },
+  {
+    id: "4-4", world: 4, hero: "keep", startExt: [],
+    clear: { kind: "survive", sec: 60 }, targetSec: 60,
+    spawn: { everyMs: 700, pool: [101, 124, 134], max: 14 }, enemyMul: { hp: 1.2, dmg: 0.5 },
+    features: { ce: true, tree: true, chests: true, items: ["watch", "robot"] },
+    chestTimesMs: [8000, 30000], chestDrop: ["watch", "robot"],
+    showGum: true,
+    lines: { intro: "story.4-4.intro", mid: [{ on: "item:watch", key: "story.4-4.watch" }, { on: "item:robot", key: "story.4-4.robot" }], clear: "story.4-4.clear" },
+  },
+  {
+    id: "4-5", world: 4, hero: "keep", startExt: [],
+    clear: { kind: "shadowDefeat" }, targetSec: 90,
+    spawn: { everyMs: 1200, pool: [101, 124], max: 8 }, enemyMul: { hp: 1.2, dmg: 0.45 }, heroMul: { hp: 1.5 },
+    features: { ce: true, tree: true, shop: true, shooters: true, items: ["heal"] },
+    shop: { atMs: [20000], offers: [], only: false, price: null, mustBuy: false },
+    shooters: { fromMs: 12000, everyMs: 7000, max: 3, ids: [166] },   // 鉄砲隊
+    heal: { below: 0.5 },
+    shadow: { id: "nobunaga", giver: 450, mode: "defeat", atMs: 10000, hp: 1800, dmg: 12, speed: 60, moves: { burst: 5000, charge: 7000 }, first: { burst: 3000, charge: 5000 }, burst: { n: 8, speed: 170, dmg: 8, iconId: 5055 } },   // 1,800 HP (= W4 の DPS 40〜60 で 30〜45 秒)
+    bond: { who: "nobunaga", unlock: ["passive:thunder30"] },   // 雷鼓の対ボス 20% → 30%
+    showGum: true,
+    lines: { intro: "story.4-5.intro", mid: [{ on: "shadow", key: "story.4-5.mid" }, { on: "shooter", key: "story.4-5.shooter" }], clear: "story.4-5.clear" },
+  },
 ]);
 
 export const STORY_MAP = Object.freeze(Object.fromEntries(STORY_STAGES.map((s) => [s.id, s])));
@@ -244,7 +300,10 @@ export function storyOverride(recipe) {
     bossDmgMul: boss?.dmgMul ?? 1,
     chestTimesMs: f.chests ? (recipe.chestTimesMs ?? [15000]) : [],
     rareAtMs: f.rare ? (recipe.rareAtMs ?? 5000) : null,
-    missionAtMs: null,
+    missionAtMs: f.mission ? (recipe.mission?.atMs ?? null) : null,
+    missionId: recipe.mission?.id ?? null, missionStar: recipe.mission?.star ?? 1, missionDurS: recipe.mission?.durS ?? null, missionMust: !!recipe.mission?.must,
+    variants: f.variants ? (recipe.variants ?? null) : null,
+    gimmick: f.gimmick ? (recipe.gimmick ?? null) : null,
     thunderAtBoss: !!boss?.thunder,
     thunderBossRatio: boss?.thunderRatio ?? undefined,
     pool: recipe.spawn?.pool ?? null,

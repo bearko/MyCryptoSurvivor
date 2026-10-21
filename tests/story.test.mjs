@@ -20,11 +20,15 @@ test("5 ランド × 5 = 25 の id。 ランドは MCH の名前と背景 (= Oce
   for (const l of LANDS) assert.ok(ui[`story.land.${l.id}`]?.ja && ui[`story.land.${l.id}`]?.en, l.id);
 });
 
-test("W1〜W3 の 15 行: 1 行 1 要素 (= 新しい feature は 1 つずつ)、 15〜60 秒、 クリア条件が 1 つ、 文が ja / en にある、 装備が実在する", () => {
+test("W1〜W4 の 20 行: 1 行 1 要素 (= 新しい feature は 1 つずつ)、 15〜60 秒、 クリア条件が 1 つ、 文が ja / en にある、 装備が実在する", () => {
   const w1 = STORY_STAGES.filter((s) => s.world === 1);
   assert.deepEqual(w1.map((s) => s.id), ["1-1", "1-2", "1-3", "1-4", "1-5"]);
   assert.deepEqual(STORY_STAGES.filter((s) => s.world === 2).map((s) => s.id), ["2-1", "2-2", "2-3", "2-4", "2-5"]);
   assert.deepEqual(STORY_STAGES.filter((s) => s.world === 3).map((s) => s.id), ["3-1", "3-2", "3-3", "3-4", "3-5"]);
+  assert.deepEqual(STORY_STAGES.filter((s) => s.world === 4).map((s) => s.id), ["4-1", "4-2", "4-3", "4-4", "4-5"]);
+  assert.deepEqual(storyOverride(STORY_MAP["4-1"]).variants, { giant: 0.2, runner: 0.2 }); assert.equal(storyOverride(STORY_MAP["4-2"]).gimmick, "beads");
+  assert.equal(storyOverride(STORY_MAP["4-3"]).missionAtMs, 8000); assert.equal(storyOverride(STORY_MAP["4-3"]).missionMust, true); assert.equal(storyOverride(STORY_MAP["4-4"]).missionAtMs, null);
+  assert.equal(STORY_MAP["4-5"].shadow.mode, "defeat"); assert.deepEqual(STORY_MAP["4-5"].bond.unlock, ["passive:thunder30"]);
   assert.equal(STORY_MAP["3-1"].treeFirst, true); assert.equal(STORY_MAP["3-2"].hero, "select"); assert.equal(STORY_MAP["3-5"].boss.id, 171);
   assert.equal(storyOverride(STORY_MAP["3-5"]).bossId, 171); assert.equal(storyOverride(STORY_MAP["3-5"]).bossAtMs, 45000); assert.equal(storyOverride(STORY_MAP["3-4"]).shooters.ids[0], 166); assert.equal(storyOverride(STORY_MAP["3-3"]).shooters, null);
   let seen = new Set();
@@ -32,9 +36,9 @@ test("W1〜W3 の 15 行: 1 行 1 要素 (= 新しい feature は 1 つずつ)�
     assert.ok(s.targetSec >= 15 && (s.world > 1 || s.targetSec <= 60), `${s.id}: ${s.targetSec}s`);
     assert.ok(["kills", "survive", "reach", "collect", "boss", "shadowSurvive", "shadowDefeat"].includes(s.clear.kind), s.id);
     if (s.shadow) { assert.ok(ui[`shadow.${s.shadow.id}.appear`]?.ja && ui[`shadow.${s.shadow.id}.win`]?.ja, s.id); assert.ok(["survive", "defeat"].includes(s.shadow.mode)); assert.equal(s.bond?.who, s.shadow.id, "試練は絆を結ぶ"); }
-    if (s.chestDrop) assert.ok(s.features.chests && s.features.items?.includes(s.chestDrop), `${s.id}: chestDrop は features にも`);
+    if (s.chestDrop) for (const k of (Array.isArray(s.chestDrop) ? s.chestDrop : [s.chestDrop])) assert.ok(s.features.chests && s.features.items?.includes(k), `${s.id}: chestDrop は features にも`);
     // 壊せるもの (= 宝箱・壺と、 そこから出る棒磁石) は 1 つの要素として数える (= 2-3)
-    const group = (k) => (k === "chests" || k === "pots" || k === "items:magnet" ? "breakables" : (k === "rare" || k === "magicCards" ? "rare" : (k === "items:thunder" || k === "items:heal" || k === "bossChest" ? "boss" : k)));
+    const group = (k) => (k === "chests" || k === "pots" || k === "items:magnet" ? "breakables" : (k === "rare" || k === "magicCards" ? "rare" : (k === "items:thunder" || k === "items:heal" || k === "bossChest" ? "boss" : (k === "items:watch" || k === "items:robot" ? "helpers" : k))));
     const f = Object.keys(s.features ?? {}).filter((k) => s.features[k] && k !== "items").concat((s.features?.items ?? []).map((k) => `items:${k}`)).map(group);
     const fresh = [...new Set(f)].filter((k) => !seen.has(k));
     assert.ok(fresh.length <= 1, `${s.id}: 新しい要素が ${fresh.join(",")}`);

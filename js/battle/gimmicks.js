@@ -12,7 +12,8 @@
 import { state } from "../state.js";
 import { t } from "../i18n.js";   // SPEC-148: 仕掛けの名前
 import { STAGE_TABLE, WORLD_W, WORLD_H, CHEST_DROPS, SFX } from "../constants.js";
-import { storyAllows } from "../story.js";   // SPEC-165
+import { storyAllows, storyStage } from "../story.js";   // SPEC-165
+import { easyStage } from "../easy.js";
 import { stageMaxEnemies } from "./horde.js";
 import { hitEnemy, pushDamageNumber } from "./damage.js";   // SPEC-129: pushDamageNumber が抜けていて、 木馬が出るとステージ 3 が止まっていた
 import { hurtPlayer } from "./hurt.js";   // SPEC-090c
@@ -145,7 +146,7 @@ function _stage() {
 
 /** ステージの始まりに呼ぶ */
 export function resetGimmicks() {
-  const kind = storyAllows(`gimmick`) ? (_stage().gimmick ?? null) : null;   // SPEC-165: ストーリーはレシピが許すときだけ
+  const kind = storyAllows(`gimmick`) ? (storyStage()?.gimmick ?? _stage().gimmick ?? null) : null;   // SPEC-165: ストーリーはレシピが許すときだけ (= 種類もレシピ)
   state.battle.gimmick = {
     kind,
     nextMs: kind === "beads" ? BEADS.firstMs : (kind === "punch" ? PUNCH.firstMs : 0),
@@ -157,7 +158,7 @@ export function resetGimmicks() {
 }
 
 function _dmgMul() {
-  return (_stage().enemyDmgMul ?? 1) * (state.absolute?.dmgMul ?? 1);
+  return (easyStage()?.enemyDmgMul ?? _stage().enemyDmgMul ?? 1) * (state.absolute?.dmgMul ?? 1);   // SPEC-165: ストーリーの痛さもレシピ
 }
 
 /** 仕掛けが自分に当たった (= 被弾の間隔は体当たりと共通) */
@@ -219,6 +220,7 @@ function _tickBeads(g, dms, el) {
     }
     playSe(SFX.GIMMICK_WARN, 0, 0.3);
     naviTipOnce("gimmick.beads");   // SPEC-068: 初めての列だけ
+    state.battle.story?.events?.push(`gimmick`);   // SPEC-165: 初めての列の一言
   }
   for (let k = g.rows.length - 1; k >= 0; k--) {
     const row = g.rows[k];

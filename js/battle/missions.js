@@ -248,7 +248,8 @@ export function tickMissions() {
   if (ez) {
     if (ez.missionAtMs != null && !m.easyDone && now >= ez.missionAtMs && !b.bossSpawned) {
       m.easyDone = true;
-      _openOffer(MISSION_MAP.alexander, { star: 1, durS: ez.missionDurS ?? 20 });
+      _openOffer(MISSION_MAP[ez.missionId ?? "alexander"] ?? MISSION_MAP.alexander, { star: ez.missionStar ?? 1, durS: ez.missionDurS ?? 20, must: !!ez.missionMust });   // SPEC-165: ストーリーは相手も★も決め打ち
+      state.battle?.story?.events?.push("missionOffer");
     }
     return;
   }
@@ -315,7 +316,7 @@ export function acceptMission() {
 
 /** 断る (= N)。 何も起きない */
 export function declineMission() {
-  if (!_offer) return;
+  if (!_offer || _forced?.must) return;   // SPEC-165: 4-3 は断れない
   state.mission.prevId = _offer.id;
   _closeOffer();
 }
@@ -328,6 +329,7 @@ function _closeOffer() {
 }
 
 function _finish(res) {
+  if (res === "clear") state.battle?.story?.events?.push("missionClear");   // SPEC-165
   const m = state.mission;
   const a = m.active;
   m.active = null;
@@ -453,6 +455,8 @@ function _renderOffer() {
   set("missionOfferTime", tpl(t("mission.time", "{n} 秒"), { n: String(tier.durS) }));
   set("missionOfferGoal", _goalText(tier));
   set("missionOfferReward", rewardSummary(mission, star, stageIdx));
+  document.getElementById("missionDecline")?.classList.toggle("hidden", !!_forced?.must);   // SPEC-165: 断れないときは隠す
+  document.getElementById("missionOfferStars")?.classList.toggle("hidden", !!_forced);   // ★が決め打ちのときは選べない (= 見せない)
   const w = document.getElementById("missionOffer");
   if (w) w.dataset.star = String(star);
   set("missionOfferWeight", "★".repeat(star));
