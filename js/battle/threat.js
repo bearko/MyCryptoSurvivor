@@ -46,6 +46,15 @@ export const VARIANT_SPRITES = Object.freeze({
   164: { giant: 165, runner: 162, crosser: 167, elite: 169 },   // バイトバンディット
 });
 
+/**
+ * SPEC-146: 初めての人の最初の挑戦 (= meta.runs が 0) は、 段階を上げない (= T0 のまま)。
+ * ステージ 1 の 1〜2 分で T1 (= 巨大・疾走) に入り、 初めての人が倒れていた (= 共通基盤の記録と自動プレイで確かめた)。
+ * 2 回目からは今までどおり (= RTA・レギュレーション・総合スコアに効く難しさは変えない)
+ */
+export function runThreatTier(kills, { firstRun = false } = {}) {
+  return firstRun ? 0 : threatTier(kills);
+}
+
 /** そのステージの撃破数 → 段階 (= 純関数) */
 export function threatTier(kills) {
   const k = Math.max(0, kills | 0);

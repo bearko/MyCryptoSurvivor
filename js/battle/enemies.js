@@ -31,7 +31,7 @@ import { BOSS_MOVES, bossHoldsStill } from "./boss-moves.js";
 import { getObstacleRects } from "./field.js";
 import { resolveCircle, slideAlongWall } from "./field-geom.js";
 import { tickShooter, nextFireMs } from "./enemy-shots.js";
-import { threatTier, rollVariant, applyVariant, crossLine, crossedOut, CROSS, VARIANTS } from "./threat.js";   // SPEC-107
+import { runThreatTier, rollVariant, applyVariant, crossLine, crossedOut, CROSS, VARIANTS } from "./threat.js";   // SPEC-107
 import { showThreatNotice } from "./milestones.js";   // SPEC-107
 import { missionMods } from "./missions.js";   // SPEC-112
 import {
@@ -169,7 +169,7 @@ export function tickEnemies(dt, nowMs) {
   }
 
   // SPEC-107: そのステージの撃破数で脅威の段階が上がる (= 上がったら知らせる)
-  const tier = threatTier(state.killCount);
+  const tier = runThreatTier(state.killCount, { firstRun: !!state.run?.firstRun });   // SPEC-146: 初めての挑戦は T0 のまま
   if (tier > (b.threatTier ?? 0)) { b.threatTier = tier; showThreatNotice(tier); }
   // SPEC-107: 横断の列 (= T3 から。 予告の線を見せてから、 画面の端から反対の端へ一直線に)
   if (!b.bossSpawned) _tickCrossers(tier, cap);
@@ -384,7 +384,7 @@ export function spawnEnemyAtRing(enemyId = 101, at = null, { variant = undefined
   });
   // SPEC-107: 脅威の段階で強い型が混じる (= ボス・レアには付けない。 CE も型の倍率で増える)
   if (!isBoss && !spec.isRare) {
-    const v = variant !== undefined ? variant : rollVariant(threatTier(state.killCount), { shooter: spec.behavior === "shooter" });
+    const v = variant !== undefined ? variant : rollVariant(runThreatTier(state.killCount, { firstRun: !!state.run?.firstRun }), { shooter: spec.behavior === "shooter" });
     if (v && VARIANTS[v]) applyVariant(b.enemies[b.enemies.length - 1], v, enemyId);
   }
 }

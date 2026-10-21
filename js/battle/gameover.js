@@ -14,7 +14,7 @@ import { t, tpl, onLangChange } from "../i18n.js";
 import {
   getPlayerName, setPlayerName, submitScore, getRankingApiUrl,
 } from "../ranking-client.js";
-import { APP_VERSION, SFX, computeRegulationMul } from "../constants.js";
+import { APP_VERSION, SFX, computeRegulationMul, REGULATION_ABSOLUTE } from "../constants.js";   // SPEC-146: 再走の文言
 import { formatElapsed } from "../survival.js";
 import { stopBgm, playSe } from "../audio.js";
 import { abortRtaRun, scoreMetrics, reportRunScore, defaultPlayerName, platformUserName, setChatVisible } from "../platform.js";
@@ -104,6 +104,22 @@ function sayOnLose(reason, modal) {
   naviSay(naviLines("lose", { guide, n: _loseN }), { place: "result" });
 }
 
+/** SPEC-146: もう一度挑むの文言 (= NORMAL は「もう一度挑む」。 RTA と ABSOLUTE は今までどおり「今のレギュレーションで再走」) */
+export function retryLabel() {
+  return state.rtaMode || state.regulation === REGULATION_ABSOLUTE ? t("gameover.retryCurrent", "今のレギュレーションで再走") : t("gameover.again", "もう一度挑む ▶");
+}
+
+/** SPEC-146: スキルツリーから戻ったとき (= 強くしたなら、 マインちゃんが「もう一度」を押す) */
+export function onBackFromTree({ bought = 0 } = {}) {
+  const modal = document.getElementById("gameOverModal");
+  if (!modal || modal.classList.contains("hidden") || state.rtaMode) return;
+  const btn = document.getElementById("gameOverRetry");
+  btn?.classList.remove("gameover-modal__again--pulse"); void btn?.offsetWidth;
+  btn?.classList.add("gameover-modal__again--pulse");
+  modal.classList.add("gameover-modal--navi");
+  naviSay(naviLines("afterTree", { bought }), { place: "result" });
+}
+
 export async function applyRetry() {
   document.getElementById("gameOverModal")?.classList.add("hidden");
   naviHide();   // SPEC-116
@@ -118,7 +134,7 @@ function _wireOnce() {
   if (_wired) return;
   _wired = true;
 
-  // SPEC-037: 「今のレギュレーションで再走」 (= 既存 retry の挙動と同じ)
+  // SPEC-037: 「今のレギュレーションで再走」 (= 既存 retry の挙動と同じ)。 SPEC-146: NORMAL は「もう一度挑む」
   document.getElementById("gameOverRetry")
     ?.addEventListener("click", applyRetry);
 
@@ -228,6 +244,8 @@ function _heroName() {
 }
 
 function _renderGameOverModal() {
+  const again = document.getElementById("gameOverRetry");
+  if (again) again.textContent = retryLabel();   // SPEC-146
   const stats = state.lastRunStats;
   if (!stats) return;
   // SPEC-027: ボス撃破 / 5 分耐久 はクリア表記、 死亡は従来通りゲームオーバー

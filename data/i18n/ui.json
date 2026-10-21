@@ -312,6 +312,10 @@
   "gameover.submitting": { "ja": "送信中…",                          "en": "Submitting…" },
   "gameover.submitOk":   { "ja": "送信完了",                        "en": "Submitted!" },
   "gameover.submitFail": { "ja": "送信失敗: {err}",                  "en": "Submit failed: {err}" },
+  "gameover.again": { "ja": "もう一度挑む ▶", "en": "Try again ▶" },
+  "tree.retryNow": { "ja": "もう一度挑む", "en": "Try again" },
+  "navi.afterTree.bought": { "ja": "強くなったね！ さっきより楽に戦えるはず。さっそく「もう一度挑む」！", "en": "You got stronger! It should be easier this time. Hit “Try again”!" },
+  "navi.afterTree.none": { "ja": "GUM は挑むたびに貯まるよ。まずは「もう一度挑む」で稼ごう！", "en": "You earn GUM every run. Hit “Try again” to earn more!" },
   "gameover.retry":      { "ja": "リトライ",                        "en": "Retry" },
   "gameover.noApi":      { "ja": "ランキング API 未設定",             "en": "Ranking API not configured" },
 

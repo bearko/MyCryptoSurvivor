@@ -93,8 +93,8 @@ export function installSkillTree() {
   _screen = document.getElementById("skillTreeScreen");
   document.getElementById("btnTitleSkillTree")?.addEventListener("click", () => openSkillTree());
   // 結果の画面から (= ゲームオーバー・全クリア・SPEC-132 のステージクリア): その画面を隠して木を開き、 閉じたら元の画面に戻す
-  for (const [id, modalId, midRun] of [
-    ["gameOverSkillTree", "gameOverModal", false],
+  for (const [id, modalId, midRun, retry] of [
+    ["gameOverSkillTree", "gameOverModal", false, true],   // SPEC-146: 倒れたあとは木から「もう一度挑む」
     ["activityReportSkillTree", "activityReportModal", false],
     ["stageTransitionSkillTree", "stageTransitionModal", true],
   ]) {
@@ -102,7 +102,7 @@ export function installSkillTree() {
     if (!btn) continue;
     btn.addEventListener("click", () => {
       const back = document.getElementById(modalId) ?? btn.closest('[role="dialog"]');
-      openSkillTree({ returnTo: back, midRun });
+      openSkillTree({ returnTo: back, midRun, retry: !!retry });
     });
     const ic = btn.querySelector("img");
     if (ic) ic.src = img(ICON_GUM);
@@ -175,11 +175,15 @@ export function renderHeroPerks() {
  */
 let _returnTo = null;
 let _midRun = false;
-export function openSkillTree({ focus = null, returnTo = null, midRun = false } = {}) {
+let _retry = false;   // SPEC-146: 倒れたあとに開いた (= 「もう一度挑む」を木の右下に)
+let _bought = 0;      // SPEC-146: 開いているあいだに取った・上げた数
+export function openSkillTree({ focus = null, returnTo = null, midRun = false, retry = false } = {}) {
   if (_open || !_screen) return;
   _open = true;
   _returnTo = returnTo;
   _midRun = !!midRun;
+  _retry = !!retry;
+  _bought = 0;
   _returnTo?.classList.add("hidden");   // SPEC-132: 元の画面は消さずに隠すだけ (= 閉じたらそのまま戻る)
   _selected = null;
   _resetAsk = false;
@@ -223,6 +227,13 @@ function sayOnOpen() {
   sayTree(claimableNodes(m).length ? "claimable" : "idle");
 }
 
+/** SPEC-146: 木からそのまま「もう一度挑む」 (= 結果の画面を通らずにステージ 1 から) */
+function retryFromTree() {
+  _returnTo = null;   // 結果の画面には戻さない
+  closeSkillTree();
+  import("./battle/gameover.js").then((g) => g.applyRetry()).catch(() => {});
+}
+
 export function closeSkillTree() {
   if (!_open) return;
   _open = false;
@@ -235,7 +246,13 @@ export function closeSkillTree() {
   // SPEC-093: 戻った先 (= タイトル) のセリフ
   naviHide();
   // SPEC-132: 結果の画面から開いたなら、 その画面に戻す
-  if (_returnTo) { _returnTo.classList.remove("hidden"); _returnTo = null; return; }
+  if (_returnTo) {
+    const back = _returnTo;
+    _returnTo.classList.remove("hidden"); _returnTo = null;
+    // SPEC-146: 倒れたあとなら、 マインちゃんが「もう一度挑む」へ (= 強くしたかで言い分ける)
+    if (_retry && back.id === "gameOverModal") import("./battle/gameover.js").then((g) => g.onBackFromTree({ bought: _bought })).catch(() => {});
+    return;
+  }
   if (!document.getElementById("titleScreen")?.classList.contains("hidden")) naviTitle({ greet: false });
 }
 
@@ -354,14 +371,17 @@ function buildScreen() {
   // SPEC-132: 戻るは木の右下 (= スマホで押しやすい。 開く前の画面に戻る)
   const backBtn = h("button", { class: "tree-tool tree-back2", type: "button", onclick: closeSkillTree },
     h("span", { "aria-hidden": "true" }, "◀"), h("span", {}, t("tree.backTo", "戻る")));
+  // SPEC-146: 倒れたあとに開いたときは、 戻るの上に「もう一度挑む」 (= 強くして、 そのまま挑む)
+  const retryBtn = _retry ? h("button", { class: "tree-tool tree-retry", type: "button", onclick: retryFromTree },
+    h("span", {}, t("tree.retryNow", "もう一度挑む")), h("span", { "aria-hidden": "true" }, "▶")) : null;
   // SPEC-094: 広い画面は Workshop と同じく、 右の列に「詳しい欄」と「いまの効果」を縦に並べる。 狭い画面は下の欄と右上の札
   const wide = WIDE.matches;
   _screen.classList.toggle("wide", wide);
   if (wide) {
-    main.append(viewport, minimap, tools, backBtn, h("div", { class: "tree-side" }, sheet, stats));
+    main.append(viewport, minimap, tools, backBtn, ...(retryBtn ? [retryBtn] : []), h("div", { class: "tree-side" }, sheet, stats));
     clear(_screen).append(bg, head, routeBar, main);
   } else {
-    main.append(viewport, minimap, tools, backBtn, stats);
+    main.append(viewport, minimap, tools, backBtn, ...(retryBtn ? [retryBtn] : []), stats);
     clear(_screen).append(bg, head, routeBar, main, sheet);
   }
 
@@ -745,6 +765,7 @@ function unlock(n) {
   const stepBefore = treeGuide(m);
   if (!spend(r.cost)) return;
   setNodeRank(n.id, r.rank);
+  _bought += 1;   // SPEC-146
   const burst = n.kind === "root";
   playSe(SFX.LEVEL_UP, 0, 0.6);
   notice(r.rank > 1 ? tpl(t("tree.upgraded", "「{name}」Lv {lv}！"), { name: nameOf(n), lv: r.rank }) : tpl(t("tree.bought", "「{name}」を解放！"), { name: nameOf(n) }), "good");

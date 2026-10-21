@@ -460,3 +460,18 @@
   .tree-sheet .dt-conds { margin: 4px 0; font-size: 12px; }
   .tree-sheet .tree-btn { padding-top: 8px; padding-bottom: 8px; font-size: 15px; }
 }
+
+/* SPEC-146: 倒れたあとに開いたときの「もう一度挑む」 (= 戻るの上。 金色で目立たせる) */
+.tree-retry {
+  position: absolute; left: 10px; bottom: 64px; z-index: 6;   /* 狭い画面は左下のボタンの上 (= 右下はミニマップと戻る) */
+  display: flex; gap: 6px; align-items: center; justify-content: center;
+  min-width: 150px; height: 46px; padding: 0 16px;
+  font-weight: 800; font-size: 15px; color: #2a1a05;
+  background: linear-gradient(180deg, #ffe9a6, #f0b84b 55%, #c98a1c);
+  border: 1.5px solid #fff2c4; border-radius: 10px;
+  box-shadow: 0 0 18px rgba(255, 196, 64, 0.55), 0 4px 0 rgba(0, 0, 0, 0.35);
+  animation: tree-retry-pulse 1.6s ease-in-out infinite;
+}
+.tree-screen.wide .tree-retry { left: auto; right: 350px; }
+@keyframes tree-retry-pulse { 0%, 100% { box-shadow: 0 0 10px rgba(255, 196, 64, 0.4), 0 4px 0 rgba(0, 0, 0, 0.35); } 50% { box-shadow: 0 0 24px rgba(255, 196, 64, 0.85), 0 4px 0 rgba(0, 0, 0, 0.35); } }
+:root[data-reduce-fx] .tree-retry { animation: none; }

@@ -72,7 +72,7 @@ test("SPEC-132: ステージクリアの画面からスキルツリーへ (= 閉
   assert.ok(read("index.html").includes('id="stageTransitionSkillTree"'));
   const tree = read("js/skill-tree.js");
   assert.match(tree, /\["stageTransitionSkillTree", "stageTransitionModal", true\]/);
-  assert.match(tree, /if \(_returnTo\) \{ _returnTo\.classList\.remove\("hidden"\)/);
+  assert.match(tree, /if \(_returnTo\) \{\n\s+const back = _returnTo;\n\s+_returnTo\.classList\.remove\("hidden"\)/);
   assert.match(tree, /tree-back2/);
   assert.doesNotMatch(tree, /returnToTitle\(/, "結果の画面から開いてもタイトルに戻さない");
   assert.match(read("js/battle/stage-transition.js"), /grantStageGum\(snap, \{ gumMul: perk\("gumMul"\) \}\)/);

@@ -371,6 +371,8 @@
       <!-- SPEC-136: GUM の内訳 (= 遊んだぶんが GUM になった式) -->
       <div class="gum-bd hidden" id="gameOverGum" data-reveal></div>
       <button class="btn gameover-modal__retry result-tree-btn" id="gameOverSkillTree" data-reveal><img alt="" aria-hidden="true" /><span data-i18n="tree.openResult">スキルツリーへ</span></button>
+      <!-- SPEC-146: もう一度挑む (= スキルツリーのすぐ下。 負けて → 強くして → すぐ挑むを回す) -->
+      <button class="btn gameover-modal__retry gameover-modal__again" id="gameOverRetry" data-reveal>もう一度挑む ▶</button>
       <div class="gameover-modal__form">
         <label class="gameover-form__label" for="gameOverName" data-i18n="gameover.namelabel">プレイヤー名</label>
         <input class="gameover-form__input" id="gameOverName" type="text" maxlength="30" autocomplete="off" />
@@ -379,7 +381,6 @@
       </div>
       <div class="gameover-modal__choices">
         <button class="btn btn--secondary" id="gameOverToTitle" data-i18n="gameover.toTitle">タイトルに戻る</button>
-        <button class="btn gameover-modal__retry" id="gameOverRetry" data-i18n="gameover.retryCurrent">今のレギュレーションで再走</button>
         <!-- SPEC-052: RTA のときだけ -->
         <a class="btn btn--ghost result-portal hidden" id="gameOverPortal" href="https://bearko.games/" data-i18n="result.toPortal">bearko.games に戻る</a>
       </div>
