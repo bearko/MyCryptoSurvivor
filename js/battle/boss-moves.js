@@ -106,7 +106,7 @@ export function tickBossMoves(dt) {
   if (b.gameOver) return;
   const dms = dt * 1000;
   for (const boss of b.enemies) {
-    if (!boss.isBoss) continue;
+    if (!boss.isBoss && !boss.isShadow) continue;   // SPEC-165: シャドーは mv を持って生まれる
     const mv = _mv(boss);
     if (!mv) continue;
     mv.shake = 0;

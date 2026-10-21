@@ -20,21 +20,26 @@ test("5 ランド × 5 = 25 の id。 ランドは MCH の名前と背景 (= Oce
   for (const l of LANDS) assert.ok(ui[`story.land.${l.id}`]?.ja && ui[`story.land.${l.id}`]?.en, l.id);
 });
 
-test("W1 の 5 行: 1 行 1 要素 (= 新しい feature は 1 つずつ)、 15〜60 秒、 クリア条件が 1 つ、 文が ja / en にある、 装備が実在する", () => {
+test("W1〜W2 の 10 行: 1 行 1 要素 (= 新しい feature は 1 つずつ)、 15〜60 秒、 クリア条件が 1 つ、 文が ja / en にある、 装備が実在する", () => {
   const w1 = STORY_STAGES.filter((s) => s.world === 1);
   assert.deepEqual(w1.map((s) => s.id), ["1-1", "1-2", "1-3", "1-4", "1-5"]);
+  assert.deepEqual(STORY_STAGES.filter((s) => s.world === 2).map((s) => s.id), ["2-1", "2-2", "2-3", "2-4", "2-5"]);
   let seen = new Set();
   for (const s of STORY_STAGES) {
     assert.ok(s.targetSec >= 15 && (s.world > 1 || s.targetSec <= 60), `${s.id}: ${s.targetSec}s`);
-    assert.ok(["kills", "survive", "reach", "collect", "boss"].includes(s.clear.kind), s.id);
-    const f = Object.keys(s.features ?? {}).filter((k) => s.features[k] && k !== "items").concat((s.features?.items ?? []).map((k) => `items:${k}`));
-    const fresh = f.filter((k) => !seen.has(k));
+    assert.ok(["kills", "survive", "reach", "collect", "boss", "shadowSurvive", "shadowDefeat"].includes(s.clear.kind), s.id);
+    if (s.shadow) { assert.ok(ui[`shadow.${s.shadow.id}.appear`]?.ja && ui[`shadow.${s.shadow.id}.win`]?.ja, s.id); assert.ok(["survive", "defeat"].includes(s.shadow.mode)); assert.equal(s.bond?.who, s.shadow.id, "試練は絆を結ぶ"); }
+    if (s.chestDrop) assert.ok(s.features.chests && s.features.items?.includes(s.chestDrop), `${s.id}: chestDrop は features にも`);
+    // 壊せるもの (= 宝箱・壺と、 そこから出る棒磁石) は 1 つの要素として数える (= 2-3)
+    const group = (k) => (k === "chests" || k === "pots" || k === "items:magnet" ? "breakables" : k);
+    const f = Object.keys(s.features ?? {}).filter((k) => s.features[k] && k !== "items").concat((s.features?.items ?? []).map((k) => `items:${k}`)).map(group);
+    const fresh = [...new Set(f)].filter((k) => !seen.has(k));
     assert.ok(fresh.length <= 1, `${s.id}: 新しい要素が ${fresh.join(",")}`);
     f.forEach((k) => seen.add(k));
     for (const key of [s.lines.intro, s.lines.clear, ...(s.lines.mid ?? []).map((m) => m.key), `story.${s.id}.name`]) assert.ok(ui[key]?.ja && ui[key]?.en, key);
     for (const o of s.startExt) assert.ok(EXT.some((e) => String(e.extId) === String(o.extId)), `${s.id}: ext ${o.extId}`);
     if (s.shop) { for (const id of s.shop.offers) assert.ok(EXT.some((e) => String(e.extId) === String(id)), `${s.id}: shop ${id}`); assert.ok(s.features.shop); }
-    assert.equal(s.hero, 10001, "W1〜W2 は MCH ウォーリアー");
+    if (s.world <= 2) assert.equal(s.hero, 10001, "W1〜W2 は MCH ウォーリアー");
   }
   // 1-1 は CE も店も無し、 1-2 は店だけ (= ただ・買うまで閉じられない)、 1-4 はハート、 1-5 は到達
   assert.equal(storyAllows("ce", STORY_MAP["1-1"]), false); assert.equal(storyAllows("shop", STORY_MAP["1-1"]), false);
@@ -81,6 +86,11 @@ test("クリア条件 (= 純関数): 倒す・耐える・到達・集める・�
   assert.equal(storyCleared(r({ kind: "boss" }), { bossDefeated: true }), true);
   assert.deepEqual(storyGoal(r({ kind: "survive", sec: 30 }), { elapsedMs: 12400 }), { kind: "survive", now: 12, goal: 30 });
   assert.deepEqual(storyGoal(r({ kind: "kills", n: 8 }), { kills: 3 }), { kind: "kills", now: 3, goal: 8 });
+  assert.equal(storyCleared(r({ kind: "shadowSurvive", sec: 15 }), { shadowMs: 14999 }), false); assert.equal(storyCleared(r({ kind: "shadowSurvive", sec: 15 }), { shadowMs: 15000 }), true);
+  assert.equal(storyCleared(r({ kind: "shadowDefeat" }), { shadowDefeated: true }), true);
+  const bonded = S.withBond(S.withBond({ cleared: [], best: {}, bonds: [] }, "alexander"), "lubu");
+  assert.deepEqual(S.bondRewards(bonded), { gifts: 2, unlock: ["item:watch"] });
+  assert.deepEqual(S.bondRewards({ cleared: [], best: {}, bonds: [] }), { gifts: 0, unlock: [] });
 });
 
 test("つなぎ: easy.js はストーリーをチュートリアルとして扱い、 レシピを EASY の形で返す。 レッスンは出ない。 ランドマップ・札・結果の画面", () => {
