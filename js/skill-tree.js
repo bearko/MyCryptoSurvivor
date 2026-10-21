@@ -375,7 +375,7 @@ function buildScreen() {
     h("span", { "aria-hidden": "true" }, "◀"), h("span", {}, t("tree.backTo", "戻る")));
   // SPEC-146: 倒れたあとに開いたときは、 戻るの上に「もう一度挑む」 (= 強くして、 そのまま挑む)
   const retryBtn = _retry ? h("button", { class: "tree-tool tree-retry", type: "button", onclick: retryFromTree },
-    h("span", {}, t("tree.retryNow", "もう一度挑む")), h("span", { "aria-hidden": "true" }, "▶")) : null;
+    h("span", {}, t("tree.retryNow", "復活する")), h("span", { "aria-hidden": "true" }, "▶")) : null;
   // SPEC-094: 広い画面は Workshop と同じく、 右の列に「詳しい欄」と「いまの効果」を縦に並べる。 狭い画面は下の欄と右上の札
   const wide = WIDE.matches;
   _screen.classList.toggle("wide", wide);

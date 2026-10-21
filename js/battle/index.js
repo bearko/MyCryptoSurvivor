@@ -125,6 +125,7 @@ export function startBattle(hero) {
 
   // SPEC-010: hero / 敵の sprite preload (= 描画は ready 待ち、 fallback は単色円)
   b.playerSprite       = getHeroSprite(hero);
+  b.heroDissolved      = false;   // SPEC-150: 復活して戻ってきた
   b.defaultEnemySprite = getDefaultEnemySprite();
   getBackgroundSprite();   // SPEC-026: 背景画像 preload (= 戻り値は render 側で参照)
 

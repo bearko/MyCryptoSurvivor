@@ -1,0 +1,1 @@
+- **EASY の釣り合い直し・レッスンのボイスの中断・クリアの紙吹雪** (`js/easy.js` + `js/confetti.js` + `js/battle/stage-transition.js` + `js/battle/activity-report.js`): EASY の敵を 1/3 にし、 ステージ 1 は動かなくても倒れず、 ステージ 2 は動かないと倒れる。 説明の途中でボスを倒したらボイスを切ってクリアの SE。 ステージクリアと全クリアで紙吹雪（マイクリの金宝箱の演出の値のまま: 120 粒・12 色）

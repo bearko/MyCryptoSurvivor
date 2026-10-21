@@ -5,7 +5,7 @@
 // レッスンは「つぎへ」で進め、 店は買えるだけ買い、 ミッションは受け、 倒れたら木で根と安い節を取って再挑戦 (= 4 回まで)。
 // K は受けるダメージの補正 (= tools/autoplay/stage1.mjs と同じ)。 出力: 流れのログと、 クリアしたか・何回目か
 const { chromium } = await import(process.env.PLAYWRIGHT ?? 'playwright');
-const BASE = process.argv[2] ?? 'http://localhost:8790'; const K = +(process.env.K ?? 0.15);
+const BASE = process.argv[2] ?? 'http://localhost:8790'; const K = +(process.env.K ?? 0.15); const MOVE = +(process.env.MOVE ?? 1); const MAXA = +(process.env.MAXA ?? 4);   // SPEC-149: MOVE=0 で動かない。 MAXA は挑む回数
 const b = await chromium.launch(); const ctx = await b.newContext({ viewport: { width: 390, height: 844 } }); const p = await ctx.newPage(); const errs = [];
 p.on('pageerror', (e) => errs.push(e.message));
 await ctx.route((u) => !u.href.startsWith(BASE) && !u.href.includes('raw.githubusercontent.com'), (r) => r.abort());
@@ -19,7 +19,7 @@ await p.evaluate(() => [...document.querySelectorAll('#heroSelectGrid .hero-tile
 await p.click('#heroSelectCta', { force: true });
 await p.waitForFunction(() => window.__state?.battle?.active, null, { timeout: 30000 });
 const seenLessons = []; const log = []; let attempts = 0; let shots = 0;
-const out = await p.evaluate(async (K) => await new Promise((resolve) => {
+const out = await p.evaluate(async ([K, MOVE, MAXA]) => await new Promise((resolve) => {
   const s = window.__state; const keys = new Set(); const seen = []; const log = []; let attempts = 1; let lastHp = null; let lastStage = -1;
   const setKey = (code, on) => { if (on === keys.has(code)) return; on ? keys.add(code) : keys.delete(code); window.dispatchEvent(new KeyboardEvent(on ? 'keydown' : 'keyup', { code, key: code })); };
   const vis = (id) => { const el = document.getElementById(id); return !!el && !el.classList.contains('hidden') && getComputedStyle(el).display !== 'none'; };
@@ -35,13 +35,13 @@ const out = await p.evaluate(async (K) => await new Promise((resolve) => {
     if (vis('shopModal')) { for (const c of document.querySelectorAll('.shop-offer:not(.shop-offer--sold) .shop-card')) c.click(); document.getElementById('shopLeave')?.click(); return; }
     if (vis('missionOffer')) { document.getElementById('missionAccept')?.click(); return; }
     if (vis('missionReward')) { document.querySelector('#missionRewardChoices button')?.click(); return; }
-    if (vis('stageTransitionModal')) { log.push(`clear s${s.currentStageIdx + 1} ${t}s kills=${s.killCount} treeHidden=${document.getElementById('stageTransitionSkillTree').classList.contains('hidden')}`); document.getElementById('stageTransitionProceed')?.click(); return; }
+    if (vis('stageTransitionModal')) { log.push(`clear s${s.currentStageIdx + 1} ${t}s kills=${s.killCount} hp=${Math.round(s.stats.hp)}/${Math.round(s.statsMax.hp)} treeHidden=${document.getElementById('stageTransitionSkillTree').classList.contains('hidden')}`); document.getElementById('stageTransitionProceed')?.click(); return; }
     if (vis('activityReportModal')) { clearInterval(iv); resolve({ ok: true, attempts, log, seen, easyCleared: localStorage.getItem('mcs.easyCleared'), toNormal: vis('activityReportToNormal'), title: document.getElementById('activityReportTitle').textContent }); return; }
     if (vis('gameOverModal')) {
       const retryHidden = document.getElementById('gameOverRetry').classList.contains('hidden');
       const meta = JSON.parse(localStorage.getItem('mcs.meta.v1') ?? '{}');
       log.push(`lose s${s.currentStageIdx + 1} ${t}s kills=${s.killCount} retryHidden=${retryHidden} gum=${meta.gum}`);
-      if (attempts >= 4) { clearInterval(iv); resolve({ ok: false, attempts, log, seen }); return; }
+      if (attempts >= MAXA) { clearInterval(iv); resolve({ ok: false, attempts, log, seen }); return; }
       attempts++;
       // 木で根と安い節を取る (= 画面を通さずに)
       const m = await import('/js/meta.js'); const L = await import('/js/skill-logic.js'); const D = await import('/js/skill-data.js');
@@ -57,8 +57,9 @@ const out = await p.evaluate(async (K) => await new Promise((resolve) => {
     let best = null, bd = 1e9; for (const g of [...(b.gems ?? []), ...(b.items ?? []), ...(b.magicCards ?? [])]) { const d = Math.hypot(g.x - P.x, g.y - P.y); if (d < bd) { bd = d; best = g; } }
     if (best && bd < 400 && Math.hypot(vx, vy) < 0.5) { vx += (best.x - P.x) / bd * 0.7; vy += (best.y - P.y) / bd * 0.7; }
     const dc = Math.hypot(P.x, P.y); if (dc > 500) { vx += -P.x / dc * 0.5; vy += -P.y / dc * 0.5; }
+    if (!MOVE) { vx = 0; vy = 0; }
     setKey('KeyD', vx > 0.1); setKey('KeyA', vx < -0.1); setKey('KeyS', vy > 0.1); setKey('KeyW', vy < -0.1);
   }, 40);
-}), K);
+}), [K, MOVE, MAXA]);
 console.log(JSON.stringify(out, null, 1)); console.log('errors', errs);
 await b.close();

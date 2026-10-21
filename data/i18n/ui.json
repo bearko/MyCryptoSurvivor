@@ -283,7 +283,7 @@
   "levelup.owned.max":   { "ja": "MAX",                             "en": "MAX" },
   "ext.new":             { "ja": "NEW",                             "en": "NEW" },
 
-  "gameover.title":      { "ja": "ゲームオーバー",                  "en": "Game Over" },
+  "gameover.title":      { "ja": "力尽きた……",                    "en": "Down…" },
   "gameover.titleClear": { "ja": "クリア!",                          "en": "Clear!" },
 
   "stage.clearTitle":    { "ja": "ステージクリア!",                  "en": "Stage Clear!" },
@@ -313,9 +313,13 @@
   "gameover.submitOk":   { "ja": "送信完了",                        "en": "Submitted!" },
   "gameover.submitFail": { "ja": "送信失敗: {err}",                  "en": "Submit failed: {err}" },
   "gameover.again": { "ja": "もう一度挑む ▶", "en": "Try again ▶" },
-  "tree.retryNow": { "ja": "もう一度挑む", "en": "Try again" },
-  "navi.afterTree.bought": { "ja": "強くなったね！ さっきより楽に戦えるはず。さっそく「もう一度挑む」！", "en": "You got stronger! It should be easier this time. Hit “Try again”!" },
-  "navi.afterTree.none": { "ja": "GUM は挑むたびに貯まるよ。まずは「もう一度挑む」で稼ごう！", "en": "You earn GUM every run. Hit “Try again” to earn more!" },
+  "gameover.revive": { "ja": "復活する ▶", "en": "Revive ▶" },
+  "gameover.reviveCurrent": { "ja": "今のレギュレーションで復活する", "en": "Revive with this regulation" },
+  "revive.flash": { "ja": "REVIVE!", "en": "REVIVE!" },
+  "navi.revive.intro": { "ja": "めげないで！この「王妃の黄金時計」のチカラで復活させてあげる！チカラを引き継げるようにスキルツリーで強化しよう！", "en": "Don't give up! I'll bring you back with the Golden Watch of the Queen! Strengthen the Skill Tree so your power carries over!" },
+  "tree.retryNow": { "ja": "復活する", "en": "Revive" },
+  "navi.afterTree.bought": { "ja": "強くなったね！ さっきより楽に戦えるはず。さっそく「復活する」！", "en": "You got stronger! It should be easier this time. Hit “Revive”!" },
+  "navi.afterTree.none": { "ja": "GUM は挑むたびに貯まるよ。まずは「復活する」で稼ごう！", "en": "You earn GUM every run. Hit “Revive” to earn more!" },
   "gameover.retry":      { "ja": "リトライ",                        "en": "Retry" },
   "gameover.noApi":      { "ja": "ランキング API 未設定",             "en": "Ranking API not configured" },
 

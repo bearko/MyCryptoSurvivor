@@ -35,8 +35,11 @@ test("はじめて木を開いたときは、 強化のしかた → ずっと�
 test("結果の画面の下の帯で言う (= RTA では言わない)", () => {
   assert.ok(NAVI_DOCK_PLACES.includes("result"));
   const src = readFileSync(new URL("../js/battle/gameover.js", import.meta.url), "utf8");
-  assert.match(src, /if \(reason === "clear" \|\| state\.rtaMode\) return;/);
-  assert.match(src, /naviSay\(naviLines\("lose", \{ guide, n: _loseN \}\), \{ place: "result" \}\)/);
+  assert.match(src, /if \(reason === "clear"\) return;/);
+  // SPEC-150: まず「復活させてあげる」、 RTA でなければ 2 行目に SPEC-116 / SPEC-148
+  assert.match(src, /const lines = naviLines\("revive"\);/);
+  assert.match(src, /lines\.push\(\.\.\.naviLines\("lose", \{ guide, n: _loseN \}\)\)/);
+  assert.match(src, /naviSay\(lines, \{ place: "result" \}\)/);
   const css = readFileSync(new URL("../css/chars.css", import.meta.url), "utf8");
   assert.match(css, /\.navi--dock\[data-place="result"\] \{ z-index: calc\(var\(--z-modal-top\) \+ 5\); \}/);
 });

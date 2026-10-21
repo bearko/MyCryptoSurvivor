@@ -164,7 +164,7 @@ test("倒れた画面と全クリアの画面に表を出す。 倒れたとき�
   assert.match(go, /renderAnalysis\(document\.getElementById\("gameOverAnalysis"\), state\.lastRunStats\?\.analysis, \{\s*advice: !state\.rtaMode,/);
   assert.match(go, /openSkillTree\(\{ focus: id, returnTo: modal, retry: true \}\)/);
   assert.match(go, /const sug = guide \? null : suggest\(state\.lastRunStats\?\.analysis\?\.sum\);/);
-  assert.match(go, /naviSay\(naviLines\("advice", \{ key: sug\.key, vars: adviceVars\(sug\) \}\), \{ place: "result" \}\)/);
+  assert.match(go, /if \(sug\) lines\.push\(\.\.\.naviLines\("advice", \{ key: sug\.key, vars: adviceVars\(sug\) \}\)\);/);   // SPEC-150: 復活の 2 行目
   const ar = read("../js/battle/activity-report.js");
   assert.match(ar, /collectAnalysis\(\{ cleared: true \}\)/);
   assert.match(ar, /renderAnalysis\(document\.getElementById\("activityReportAnalysis"\), analysis\)/);

@@ -25,6 +25,8 @@ import { heroImg } from "../heroes.js";
 import { loadShare, shouldOfferShare, openSharePrompt, closeSharePrompt } from "../share-x.js";   // SPEC-143
 import { isEasy } from "../easy.js";   // SPEC-147
 import { showLesson } from "../lesson.js";   // SPEC-147
+import { stopVoice } from "../voice.js";   // SPEC-149: 説明の途中でボスを倒したら、 ボイスを切ってクリアの SE
+import { startConfetti, removeConfetti } from "../confetti.js";   // SPEC-149
 
 let _wired = false;
 
@@ -60,6 +62,7 @@ let _shareTimer = 0;
 
 export function triggerStageEndOrTransition() {
   if (state.battle.gameOver) return;
+  stopVoice();   // SPEC-149: レッスンの読み上げが残っていても、 クリアの演出を優先する
 
   // SPEC-033: 終了直前にステージ snapshot を保存 (= activity report 用)
   _captureStageSnapshot();
@@ -117,6 +120,7 @@ export function triggerStageEndOrTransition() {
       countUp(document.getElementById("stageTransitionKills"), snap?.kills ?? 0, { durMs: 600, delayMs: 250 });
       renderRewards(document.getElementById("stageTransitionRewards"), { gum: snap?.gum ?? 0, dust: snap?.dust ?? 0 }, { delayMs: 500 });   // SPEC-090 + SPEC-132
       renderGumBreakdown(document.getElementById("stageTransitionGum"), { rows: snap?.gumRows ?? [], bonus: snap?.gumBonus ?? 0, mul: snap?.gumMul ?? 0 });   // SPEC-136
+      startConfetti();   // SPEC-149: 紙吹雪 (= マイクリの金宝箱の演出)
       if (isEasy() && endIdx === 0) showLesson("s1.clear");   // SPEC-147
       // SPEC-143: ステージ 1 のクリアで、 マインちゃんが X での投稿をすすめる (= 結果が出そろってから重ねる。 EASY では出さない)
       if (!isEasy() && shouldOfferShare(loadShare(), { stageIdx: endIdx, rta: !!state.rtaMode })) {
@@ -148,6 +152,7 @@ export function resultTilesHtml({ timeText, kills, level, killsId }) {
  */
 async function _onProceedClick() {
   clearTimeout(_shareTimer);   // SPEC-143
+  removeConfetti();   // SPEC-149
   closeSharePrompt();
   document.getElementById("stageTransitionModal")?.classList.add("hidden");
   state.currentStageIdx = (state.currentStageIdx ?? 0) + 1;

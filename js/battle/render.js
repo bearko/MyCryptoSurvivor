@@ -390,6 +390,7 @@ export function renderBattle(ctx, nowMs = 0) {
   const px = player.x - camera.x;
   const py = player.y - camera.y;
   // SPEC-077: 足もとにシアンの薄い円 (= 当たりの目安)。 絵は切り抜かずに大きく、 動く向きへ少し傾けて弾ませる
+  if (state.battle.heroDissolved) return _afterPlayer(ctx, camera, w, h, nowMs);   // SPEC-150: 粒子になっているあいだは描かない (= 当たりの円も HP バーも)
   drawHitDisc(ctx, px, py, player.r, "hero");
   const robot = (state.battle.robotMs ?? 0) > 0;
   if (robot) _drawRainbowAura(ctx, px, py, player.r, nowMs, state.battle.robotMs);   // SPEC-140: 無敵のあいだは虹色に光る
@@ -417,7 +418,11 @@ export function renderBattle(ctx, nowMs = 0) {
                HP_BAR_PLAYER_WIDTH, HP_BAR_PLAYER_HEIGHT,
                state.stats.hp / state.statsMax.hp);
   }
+  _afterPlayer(ctx, camera, w, h, nowMs);
+}
 
+/** SPEC-150: ヒーローより上に描くもの (= 粒子になっているあいだも描く) */
+function _afterPlayer(ctx, camera, w, h, nowMs) {
   // SPEC-064: そろばんの珠 (= 敵より上)
   renderGimmicksOver(ctx, camera, w, h);
 
