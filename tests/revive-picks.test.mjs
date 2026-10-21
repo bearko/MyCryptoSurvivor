@@ -12,10 +12,11 @@ const { ADVICE_NODES, suggest } = await import("../js/battle/run-stats.js");
 const read = (p) => readFileSync(new URL(p, import.meta.url), "utf8");
 const meta = (gum = 0, dust = 0, nodes = {}) => ({ gum, dust, nodes: { ...nodes } });
 
-test("根をまだ取っていなければ、 おすすめは根だけ (= 0 GUM で覚醒)", () => {
-  assert.deepEqual(pickRecommendations(meta(0), ["vit_hp"]), [ROOT_ID]);
-  assert.deepEqual(pickRecommendations(meta(9999), []), [ROOT_ID]);
+test("根をまだ取っていなければ、 おすすめは出さない (= SPEC-157: 初回は「スキルツリーへ」から木が広がるのを見てもらう)", () => {
+  assert.deepEqual(pickRecommendations(meta(0), ["vit_hp"]), []);
+  assert.deepEqual(pickRecommendations(meta(9999), []), []);
   assert.deepEqual(pickRecommendations(null, []), []);
+  assert.ok(pickRecommendations(meta(500, 0, { [ROOT_ID]: 1 }), []).length > 0, "根を取ってあれば出る");
 });
 
 test("根を取ってあれば、 倒れた理由のおすすめを先に、 残りを安い順で 3 つまで。 得意武器 (wm_main) は出さない", () => {
@@ -66,7 +67,6 @@ test("復活の画面: おすすめの欄は木のボタンの上。 買えた�
   assert.match(go, /if \(fromTree\) renderRevivePicks\(/, "木から戻ったら描き直す");
   const picksJs = read("../js/battle/revive-picks.js");
   assert.match(picksJs, /const r = tryBuy\(m, id\);[\s\S]*if \(!spend\(r\.cost\)\)[\s\S]*setNodeRank\(id, r\.rank\);/, "木と同じ手順で買う");
-  assert.match(picksJs, /if \(n\.kind === "root" && isEasy\(\)\) showLesson\("s2\.root"\);/, "EASY の覚醒のレッスン");
   const css = read("../css/result-ui.css");
   assert.match(css, /@media \(min-width: 980px\) \{[\s\S]*#gameOverModal \.gameover-modal__card \{ max-width: 960px; display: grid; grid-template-columns: minmax\(0, 1fr\) 420px;/);
   assert.match(css, /#gameOverModal #gameOverMoreBody \{ grid-column: 1;[^}]*display: block !important; \}/, "PC では「くわしく」を開かずに左に");

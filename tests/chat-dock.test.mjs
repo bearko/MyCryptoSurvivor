@@ -65,6 +65,7 @@ test("画面の側は right: var(--chat-dock) で避け、 木は広い画面の
   assert.match(tree, /const wide = isWide\(\);/);
   assert.match(tree, /onChatDockChange\(rebuild\);/, "ドックを畳む・広げると組み直す");
   assert.match(tree, /chatLayout\(\) === "dock" \? h\("button", \{ class: "tree-tool tree-chat"/, "PC のドックのときだけボタン");
+  assert.match(tree, /\.\.\.\(chatBtn \? \[chatBtn\] : \[\]\)/, "SPEC-157: ドックでないとき頭に \"null\" が出ていた");
   assert.match(read("../js/main.js"), /installChatDock\(\);/);
   assert.match(read("../js/platform.js"), /window\.dispatchEvent\(new Event\("mcs:chat"\)\)/, "出す・隠すでも置き直す");
   const ui = JSON.parse(read("../data/i18n/ui.json"));

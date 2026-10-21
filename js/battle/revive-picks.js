@@ -7,24 +7,22 @@
 // 上半分は純関数 (= テストする)。 下半分が DOM。
 
 import { getMeta, spend, setNodeRank } from "../meta.js";
-import { tryBuy, claimableNodes, nodeCost, nodeRank, nodeMax, owns, nodeVisible } from "../skill-logic.js";
+import { tryBuy, claimableNodes, nodeCost, nodeRank, nodeMax, owns } from "../skill-logic.js";
 import { NODE_MAP, ROOT_ID } from "../skill-data.js";
 import { t, getLang } from "../i18n.js";
 import { img, SFX } from "../constants.js";
 import { playSe } from "../audio.js";
 import { setRichText } from "../rich-text.js";
-import { isEasy } from "../easy.js";
-import { showLesson } from "../lesson.js";
 
 export const PICKS_MAX = 3;
 
 /**
  * おすすめの節の id (= 純関数)。 meta: いまの木。 adviceNodes: SPEC-148 のおすすめ (= 無ければ [])
- *   根をまだ取っていなければ [根]。 そうでなければ おすすめのうち買えるもの → 残りを安い順 (= 得意武器は除く) で 3 つまで
+ *   根をまだ取っていなければ [] (= SPEC-157: 初回は「スキルツリーへ」から木が広がるのを見てもらう。 おすすめは 2 回目から)。
+ *   取ってあれば おすすめのうち買えるもの → 残りを安い順 (= 得意武器は除く) で 3 つまで
  */
 export function pickRecommendations(meta, adviceNodes = []) {
-  if (!meta) return [];
-  if (!owns(meta, ROOT_ID)) return nodeVisible(meta, ROOT_ID) ? [ROOT_ID] : [];
+  if (!meta || !owns(meta, ROOT_ID)) return [];
   const can = claimableNodes(meta);
   const canIds = new Set(can.map((n) => n.id));
   const out = [];
@@ -80,7 +78,6 @@ export function renderRevivePicks(el, { adviceNodes = [], onBought = null } = {}
       const r = buyPick(id);
       if (!r.ok) { playSe(SFX.UI_CLICK, 0, 0.3); return; }
       playSe(SFX.LEVEL_UP, 0, 0.5);
-      if (n.kind === "root" && isEasy()) showLesson("s2.root");   // SPEC-147: 覚醒
       renderRevivePicks(el, { adviceNodes, onBought });
       onBought?.(id, r.rank);
     });
