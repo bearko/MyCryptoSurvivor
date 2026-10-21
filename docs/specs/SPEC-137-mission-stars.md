@@ -2,7 +2,7 @@
 id: SPEC-137
 title: Mission Difficulty Stars ★1–★3 — Stricter Rules and Richer Rewards, Gift Tickets From ★2, Star Colors, White Fog, Mine's First-Mission Guide
 status: Done
-pr: TBD
+pr: 175
 phase: v1.6 Missions
 kind: Changed
 ---
