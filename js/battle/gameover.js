@@ -34,8 +34,12 @@ import { owns } from "../skill-logic.js";   // SPEC-147
 import { ROOT_ID } from "../skill-data.js";   // SPEC-147
 import { collectAnalysis, renderAnalysis, adviceVars } from "./analysis-ui.js";   // SPEC-148
 import { suggest } from "./run-stats.js";   // SPEC-148
-import { dissolveHero, gatherHero, clearReviveFx, dimReviveFx, setReviveLabel, REVIVE, REVIVE_EXT_ID } from "./revive-fx.js";   // SPEC-150
+import { dissolveHero, sinkHero, rainHero, clearReviveFx, setReviveLabel, REVIVE, REVIVE_EXT_ID } from "./revive-fx.js";   // SPEC-150 / SPEC-151
+import { resetResumeCountdown as _noCountdown } from "./resume-countdown.js";   // SPEC-151: 降りこんだあとの再開に Ready → Go! は出さない
+import { NAVI_TYPE_MS } from "../navi.js";   // SPEC-151
+import { voiceMs } from "../voice.js";   // SPEC-151
 import { removeConfetti } from "../confetti.js";   // SPEC-149
+import { hideCoach } from "./coach.js";   // SPEC-151: 渦のあいだ操作ガイドは出さない
 import { CHAR_SPRITE_RATIO, img } from "../constants.js";   // SPEC-150
 
 let _wired = false;
@@ -69,6 +73,7 @@ export function triggerGameOver(reason = "lose") {
   };
   pauseTime();
   hideMissionUi();   // SPEC-112: 受けていたミッションの帯を消す
+  hideCoach();       // SPEC-151
   _wireOnce();
   _renderGameOverModal();
   const modal = document.getElementById("gameOverModal");
@@ -91,17 +96,26 @@ export function triggerGameOver(reason = "lose") {
     setChatVisible(true);   // SPEC-091: 結果の画面では全体チャットを出す
     presentResult(modal, "allClear", { heroId: state.ownedHero?.heroId ?? null, then: reveal });   // SPEC-058: テロップのあと
   } else {
-    // SPEC-150: lose のテロップの代わりに、 ヒーローが粒子になって舞い上がる (= 1.6 秒)。 そのあと半透明の結果の画面が重なり、 粒子は後ろで漂い続ける
-    const dissolved = _startDissolve();
-    modal?.classList.toggle("gameover-modal--revive", dissolved);
+    // SPEC-150 / SPEC-151: lose のテロップの代わりに、 ヒーローが粒子になって舞い上がり、 真ん中の渦に入る。
+    // 渦に入ったらマインちゃんが全身で「王妃の黄金時計で復活させてあげる」 (= 時計の絵つき)。 言い終えたら引っこみ、 半透明の結果の画面が渦の上に重なる
     const show = () => {
       if (!state.battle.gameOver || !modal) return;   // そのあいだにやめていたら出さない
+      _hideWatch();
       modal.classList.remove("hidden");
-      dimReviveFx(true);   // SPEC-150: 粒は札の上を薄く舞う
       setChatVisible(true);   // SPEC-091
       reveal();
     };
-    if (dissolved) _showTimer = setTimeout(show, REVIVE.dissolveMs); else show();
+    const dissolved = _startDissolve(() => {
+      if (!state.battle.gameOver) return;
+      const lines = naviLines("revive");
+      const ms = lines.reduce((a, l) => a + Math.max(t(l.key, l.key).length * NAVI_TYPE_MS, voiceMs(l.voice)), 0) + REVIVE_LINE_HOLD_MS;
+      _showWatch();
+      naviSay(lines, { place: "revive", autoHideMs: REVIVE_LINE_HOLD_MS, onTapNavi: () => { clearTimeout(_showTimer); naviHide(); show(); } });
+      clearTimeout(_showTimer);
+      _showTimer = setTimeout(show, ms + 260);
+    });
+    modal?.classList.toggle("gameover-modal--revive", dissolved);
+    if (!dissolved) show();
   }
   // 残っていた Level-up モーダルが有れば閉じる (= 同フレームで LV up と死亡が起きる場合)
   const lv = document.getElementById("levelUpModal");
@@ -111,19 +125,24 @@ export function triggerGameOver(reason = "lose") {
     state.pendingPickIsStarter = false;
     resumeTime();   // levelup の pauseTime を解く (= triggerGameOver の +1 と相殺ではなく独立)
   }
-  // SPEC-017: BGM 停止 + 結果 SE
+  // SPEC-017: BGM 停止 + 結果 SE。 SPEC-151: 倒れたときは lose のジングルを鳴らさず (= 気落ちさせない)、 ダメージの音をゆっくり
   stopBgm();
-  const sfx = (reason === "clear") ? SFX.GAME_OVER_CLEAR : SFX.GAME_OVER_LOSE;
-  playSe(sfx, 0, 0.7);
+  if (reason === "clear") playSe(SFX.GAME_OVER_CLEAR, 0, 0.7);
+  else playSe(SFX.PLAYER_DAMAGED, 0, 0.8, DEATH_SE_RATE);
   // SPEC-060: ジングルが鳴り終わってから、 メニューの BGM (= まだこの画面にいれば)
   startMenuBgmAfterJingle(reason === "clear" ? "win" : "lose",
     () => !document.getElementById("gameOverModal")?.classList.contains("hidden"));
 }
 
+/** SPEC-151: マインちゃんのセリフのあと、 結果の画面を出すまでの間 (= 読み終えてから) */
+const REVIVE_LINE_HOLD_MS = 1400;
+/** SPEC-151: 倒れたときの SE (= ダメージの音をゆっくり。 lose のジングルは鳴らさない) */
+const DEATH_SE_RATE = 0.45;
+
 /**
- * SPEC-150: 倒れたヒーローが粒子になって舞い上がる (= 戦闘の絵からは消す)。 出せたら true
+ * SPEC-150 / SPEC-151: 倒れたヒーローが粒子になって舞い上がる (= 戦闘の絵からは消す)。 出せたら true。 渦に入ったら onVortex
  */
-function _startDissolve() {
+function _startDissolve(onVortex) {
   const b = state.battle;
   const canvas = document.getElementById("battleCanvas");
   const sp = b.playerSprite;
@@ -135,24 +154,52 @@ function _startDissolve() {
     y: rect.top + (b.player.y - b.camera.y) - r * 0.12,   // render.js の絵の位置 (= 足もとの揺れは無視)
     size: r * CHAR_SPRITE_RATIO,
     img: sp.img,
+    onVortex,
   });
   b.heroDissolved = ok;
   return ok;
 }
 
-/** SPEC-150: 「復活する」: 粒子がフィールドの真ん中 (= 再開後のヒーローの位置) に集まる。 集まりきったら resolve */
-async function _reviveGather() {
+/** SPEC-151: 王妃の黄金時計の絵 (= マインちゃんが話すあいだ、 右に大きく) */
+let _watch = null;
+function _showWatch() {
+  _hideWatch();
+  _watch = document.createElement("img");
+  _watch.className = "revive-watch";
+  _watch.alt = "";
+  _watch.setAttribute("aria-hidden", "true");
+  _watch.src = img(`Image/Extensions/${REVIVE_EXT_ID}.png`);
+  document.body.appendChild(_watch);
+}
+function _hideWatch() {
+  if (!_watch) return;
+  const el = _watch; _watch = null;
+  el.classList.add("revive-watch--out");
+  setTimeout(() => el.remove(), 400);
+}
+
+/**
+ * SPEC-151: 「復活する」: 渦が画面の下へ吸い込まれ (= 結果の画面は消えている)、 戦闘を始めてから、
+ * ステージの真ん中に上から粒が降りこんでヒーローの姿になる。 姿になるまで戦闘は止めておく
+ */
+async function _reviveSink() {
+  if (!state.battle.heroDissolved) return false;
+  return sinkHero();
+}
+async function _reviveRain() {
   const b = state.battle;
   const canvas = document.getElementById("battleCanvas");
-  if (!b.heroDissolved || !canvas || !b.player) return false;
+  if (!canvas || !b.player) { b.heroDissolved = false; return false; }
   const rect = canvas.getBoundingClientRect();
   const r = b.player.r;
+  b.heroDissolved = true;
+  pauseTime();
   setReviveLabel(t("revive.flash", "REVIVE!"));
-  const ok = await gatherHero({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 - r * 0.12, size: r * CHAR_SPRITE_RATIO });
-  if (ok) {
-    playSe(SFX.PICK_HEAL, 0, 0.8);   // 3_heal_resurrection.mp3
-    await new Promise((r) => setTimeout(r, Math.round(REVIVE.flashMs * 0.7)));   // 閃光と「REVIVE!」が立ってから、 ステージの帯
-  }
+  const ok = await rainHero({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 - r * 0.12, size: r * CHAR_SPRITE_RATIO });
+  if (ok) playSe(SFX.PICK_HEAL, 0, 0.8);   // 3_heal_resurrection.mp3
+  b.heroDissolved = false;
+  resumeTime();
+  _noCountdown();   // Ready → Go! は出さない (= 降りこんだ瞬間から動ける)
   return ok;
 }
 
@@ -166,7 +213,8 @@ function sayOnLose(reason, modal) {
   modal?.classList.remove("gameover-modal--navi");
   if (reason === "clear") return;
   if (isEasy()) { showLesson("s3.lose"); return; }   // SPEC-147: 説明はレッスンで
-  const lines = naviLines("revive");   // SPEC-150
+  // SPEC-151: 粒子の演出のときは、 全身のマインちゃんが「復活させてあげる」をもう言っているので、 帯では 2 行目だけ
+  const lines = state.battle.heroDissolved ? [] : naviLines("revive");   // SPEC-150
   if (!state.rtaMode) {
     const guide = treeNudge(getMeta());
     // SPEC-148: 木を始めていれば、 SPEC-116 のひとことの代わりに、 被ダメの内訳からのおすすめを 1 つ
@@ -174,6 +222,7 @@ function sayOnLose(reason, modal) {
     if (sug) lines.push(...naviLines("advice", { key: sug.key, vars: adviceVars(sug) }));
     else { if (!guide) _loseN += 1; lines.push(...naviLines("lose", { guide, n: _loseN })); }
   }
+  if (!lines.length) return;
   modal?.classList.add("gameover-modal--navi");
   naviSay(lines, { place: "result" });
 }
@@ -201,14 +250,16 @@ export async function applyRetry() {
   _reviving = true;
   try {
     clearTimeout(_showTimer);
+    _hideWatch();
     document.getElementById("gameOverModal")?.classList.add("hidden");
     naviHide();   // SPEC-116
-    await _reviveGather();   // SPEC-150: 粒子が集まりきってから、 その場所にヒーローが立つ
+    const sunk = await _reviveSink();   // SPEC-151: 渦が下へ吸い込まれてから
     resumeTime();
     state.currentStageIdx = 0;       // SPEC-030: リトライは常にステージ 1 から
     // 循環 import 回避のため動的に startBattle を取得
     const m = await import("./index.js");
     m.startBattle(state.ownedHero);
+    if (sunk) await _reviveRain();   // SPEC-151: ステージの真ん中に上から降りこんで姿になる
   } finally { _reviving = false; }
 }
 
@@ -241,6 +292,7 @@ function _wireOnce() {
 export async function returnToTitle({ navi = true } = {}) {
   startTitleBgm();   // SPEC-069: タイトルの曲 (= craft.mp3)。 押した操作の中で替える (= 下の await のあとだと iOS で止められる)
   clearTimeout(_showTimer);
+  _hideWatch();      // SPEC-151
   clearReviveFx();   // SPEC-150
   removeConfetti();  // SPEC-149
   document.getElementById("gameOverModal")?.classList.add("hidden");

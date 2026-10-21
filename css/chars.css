@@ -196,6 +196,9 @@
 @media (max-height: 760px) {
   .navi[data-place="title"] { --s: 1; --peek: 0.1; }
 }
+/* SPEC-151: 復活 (= 渦の前に全身で出て、 王妃の黄金時計で復活させてあげると言う)。 結果の画面より上 */
+.navi[data-place="revive"] { --s: 2; --peek: 0.1; z-index: calc(var(--z-modal-top) + 5); }
+@media (max-height: 760px) { .navi[data-place="revive"] { --s: 1; } }
 
 /* 通信の帯 (= モード選択・ヒーロー選択。 SPEC-059)
    画面の下の専用の帯に、 顔のアイコンとセリフ。 画面のほうが帯の高さぶんを空けるので、 ほかの UI と重ならない。

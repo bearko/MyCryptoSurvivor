@@ -1042,8 +1042,9 @@ a.title-screen__next[href]:hover { border-color: var(--accent); }
 }
 .gameover-modal.hidden { display: none !important; }
 /* SPEC-150: 復活のあいだは半透明 (= 後ろで粒子が舞っているのが見える) */
-.gameover-modal--revive { background: rgba(15, 12, 22, 0.62); backdrop-filter: blur(1.5px); -webkit-backdrop-filter: blur(1.5px); }
-.gameover-modal--revive .gameover-modal__card { background-color: rgba(20, 16, 30, 0.84); }
+.gameover-modal--revive { background: rgba(15, 12, 22, 0.22); }   /* SPEC-151: 渦の canvas がもう暗くしている (= 後ろの渦がうっすら見える) */
+.gameover-modal--revive .gameover-modal__card { background: rgba(20, 16, 30, 0.42); }   /* SPEC-151: 札は半透明 (= 後ろの渦がうっすら)。 ボタンは不透明のまま */
+.gameover-modal--revive .gum-bd, .gameover-modal--revive .anl { background: rgba(0, 0, 0, 0.22); }
 .gameover-modal__clock { width: 1.5em; height: 1.5em; margin-right: 0.4em; vertical-align: -0.4em; image-rendering: pixelated; filter: drop-shadow(0 0 6px rgba(255, 215, 120, 0.8)); }
 
 .gameover-modal__card {
@@ -2070,10 +2071,10 @@ a.title-screen__next[href]:hover { border-color: var(--accent); }
 /* ============================================================
    SPEC-150: 復活の演出 (= 結果の画面のすぐ下の固定 canvas と「REVIVE!」)
    ============================================================ */
-.revive-fx { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: calc(var(--z-modal-top) + 1); display: none; }
+.revive-fx { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: calc(var(--z-modal-top) - 1); display: none; }   /* SPEC-151: 結果の画面の後ろ */
 .revive-fx.revive-fx--on { display: block; }
 .revive-text {
-  position: fixed; transform: translate(-50%, -50%); pointer-events: none; z-index: calc(var(--z-modal-top) + 1);
+  position: fixed; transform: translate(-50%, -50%); pointer-events: none; z-index: calc(var(--z-modal-top) - 1);
   font-weight: 900; font-size: 2.2rem; letter-spacing: 0.12em; color: #fff7d6;
   text-shadow: 0 0 10px rgba(255, 215, 120, 0.95), 0 0 28px rgba(255, 190, 60, 0.7), 0 2px 0 rgba(0, 0, 0, 0.6);
   animation: revive-text 0.9s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
@@ -2089,3 +2090,16 @@ a.title-screen__next[href]:hover { border-color: var(--accent); }
 /* SPEC-149: 紙吹雪 (= 画面の一番上。 押せる) */
 .confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: calc(var(--z-help) + 2); display: none; }
 .confetti.confetti--on { display: block; }
+
+/* SPEC-151: 王妃の黄金時計の絵 (= マインちゃんが全身で話すあいだ、 右に浮かぶ) */
+.revive-watch {
+  position: fixed; right: max(5vw, var(--safe-r)); top: 36%; width: min(40vw, 200px); height: auto;
+  transform: translateY(-62%); pointer-events: none; z-index: calc(var(--z-modal-top) + 4);
+  filter: drop-shadow(0 0 18px rgba(255, 215, 120, 0.9)) drop-shadow(0 0 48px rgba(255, 190, 60, 0.55));
+  animation: revive-watch-in 0.7s var(--ease-spring, cubic-bezier(0.2, 0.9, 0.3, 1.2)) both, revive-watch-float 3.2s ease-in-out 0.7s infinite;
+}
+.revive-watch--out { animation: revive-watch-out 0.4s ease-in both !important; }
+@keyframes revive-watch-in { from { opacity: 0; transform: translateY(-40%) scale(0.6) rotate(-12deg); } to { opacity: 1; transform: translateY(-62%) scale(1) rotate(0); } }
+@keyframes revive-watch-float { 0%, 100% { transform: translateY(-62%); } 50% { transform: translateY(-68%); } }
+@keyframes revive-watch-out { to { opacity: 0; transform: translateY(-62%) scale(0.8); } }
+@media (prefers-reduced-motion: reduce) { .revive-watch { animation: none; } }

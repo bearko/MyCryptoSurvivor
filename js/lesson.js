@@ -10,7 +10,7 @@
 import { state, pauseTime, resumeTime } from "./state.js";
 import { t } from "./i18n.js";
 import { naviFrameUrl, NAVI_POSES } from "./navi.js";
-import { playVoice, hasVoice, voiceMs } from "./voice.js";
+import { playVoice, hasVoice, voiceMs, isVoicePlaying, stopVoice } from "./voice.js";
 import { playSe } from "./audio.js";
 import { SFX } from "./constants.js";
 import { isEasy, loadLessons, saveLessons, LESSON_KEYS, LS_LESSONS } from "./easy.js";
@@ -72,6 +72,7 @@ function _show(key) {
   void el.offsetWidth;
   el.classList.add("lesson--in");
   const vid = `lesson.${key}`;
+  stopVoice();   // SPEC-151: ステージの告げ声などが残っていたら切る (= 重ねない)
   const spoke = hasVoice(vid) && playVoice(vid);
   playSe(SFX.UI_CLICK, 0, 0.25);
   // 読み上げが終わってしばらくしたら、 自分で閉じる (= 押さなくても進む)
@@ -145,6 +146,7 @@ export function tickLessons() {
   if (!isEasy() || _open) return;
   const b = state.battle;
   if (!b?.active || b.gameOver || state.pauseFlags > 0) return;
+  if (isVoicePlaying()) return;   // SPEC-151: 「ここは node ホレリス」の声が終わってから (= 「新しいステージ！」と重ねない)
   const stageIdx = state.currentStageIdx ?? 0;
   const key = timedLesson({
     stageIdx, elapsedMs: b.stageElapsedMs ?? 0, kills: state.killCount | 0, seen: _getSeen(),
