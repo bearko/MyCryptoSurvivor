@@ -18,7 +18,7 @@ import { state, pauseTime, resumeTime } from "../state.js";
 import { img, SFX, BOSS_SPAWN_AT_MS, BOSS_WARNING_LEAD_MS } from "../constants.js";
 import { shopTimesMs } from "./shop-logic.js";
 import { t, tpl, onLangChange } from "../i18n.js";
-import { playSe } from "../audio.js";
+import { playSe, setMissionSilence } from "../audio.js";
 import { applyItem, healBy } from "./field.js";
 import { SHOP_STAGE_MUL } from "../constants.js";
 import { grantMissionGum, missionGum } from "../meta.js";   // SPEC-131: 達成の確定 GUM
@@ -55,6 +55,9 @@ export const MISSIONS = [
   { id: "xiangyu",     giver: 893, boon: "power",   tiers: [T(20, { dmgMul: 3 }, { n: 3 }), T(20, { dmgMul: 6 }, { n: 6 }), T(20, { dmgMul: 10 }, { n: 10 })] },
   { id: "nightingale", giver: 495, boon: "guard",   tiers: [T(10, {}, { goal: { noHit: true } }), T(20, {}, { goal: { noHit: true } }), T(30, {}, { goal: { noHit: true } })] },
   { id: "napoleon",    giver: 445, boon: "thunder", tiers: [T(30, {}, { goal: { kills: 100 }, n: 100 }), T(30, {}, { goal: { kills: 200 }, n: 200 }), T(30, {}, { goal: { kills: 350 }, n: 350 })] },
+  // SPEC-138: 風林火山 (= 風: 敵の足が速い・林: 音が消える・火: 敵が増える・山: 動けない)。 ★で対象が広がり、 すべて同時に効く
+  { id: "shingen",     giver: 519, boon: "guard",
+    tiers: [T(30, { speedMul: 1.4, silent: true }), T(30, { speedMul: 1.4, silent: true, spawnMul: 3 }), T(20, { speedMul: 1.4, silent: true, spawnMul: 3, noMove: true })] },
   { id: "caocao",      giver: 467, boon: "magnet",  tiers: [T(30, { sizeMul: 0.8, speedMul: 1.1 }), T(30, { sizeMul: 0.6, speedMul: 1.2 }), T(30, { sizeMul: 0.45, speedMul: 1.4 })] },
 ];
 export const MISSION_MAP = Object.fromEntries(MISSIONS.map((m) => [m.id, m]));
@@ -83,7 +86,7 @@ export function saveStar(star, storage = globalThis.localStorage) {
 }
 
 /** 効かない値 (= ミッションが無いとき) */
-export const NO_MODS = Object.freeze({ spawnMul: 1, speedMul: 1, dmgMul: 1, sizeMul: 1, fogR: null, fogA: null, shooterOnly: false, shotMul: 1, hiddenShots: false, noHeal: false });
+export const NO_MODS = Object.freeze({ spawnMul: 1, speedMul: 1, dmgMul: 1, sizeMul: 1, fogR: null, fogA: null, shooterOnly: false, shotMul: 1, hiddenShots: false, noHeal: false, silent: false, noMove: false });
 
 /** そのミッションの効き目 (= 足りない項目は効かない値) */
 export function modsOf(mission, star = 1) {
@@ -168,6 +171,16 @@ export function missionMods() {
   return a ? modsOf(MISSION_MAP[a.id], a.star) : NO_MODS;
 }
 
+/** SPEC-138: 動けるか (= 信玄の「山」のあいだは動けない。 player.js が読む) */
+export function canMove() {
+  return !missionMods().noMove;
+}
+
+/** SPEC-138: 信玄の「林」のあいだは BGM と効果音を消す (= 終われば戻す) */
+function _syncSilence() {
+  setMissionSilence(!!missionMods().silent);
+}
+
 /** 回復してよいか (= 始皇帝の「不老不死の探求」のあいだは回復しない) */
 export function canHeal() {
   return !missionMods().noHeal;
@@ -192,7 +205,7 @@ export function boostSpeedMul() {
 
 /** ステージの始まり (= battle/index.js の startBattle)。 ショップで遊ぶときだけ */
 export function resetMissionsForStage(enabled) {
-  hideMissionUi();
+  hideMissionUi();   // SPEC-138: 音も戻す
   if (!enabled) { state.mission = null; return; }
   const prev = state.mission?.prevId ?? null;
   state.mission = { prevId: prev, count: 0, wave: -1, planAt: null, planId: null, active: null };
@@ -216,6 +229,7 @@ export function tickMissions() {
   if (m.boost && !activeBoost()) { m.boost = null; _renderBar(); }
   else if (m.boost && !m.active) _renderBar();
 
+  _syncSilence();
   if (m.active) {
     const a = m.active;
     const mission = MISSION_MAP[a.id];
@@ -279,6 +293,7 @@ export function acceptMission() {
   _closeOffer();
   _renderBar();
   playSe(SFX.LEVEL_UP, 100, 0.45);
+  _syncSilence();
 }
 
 /** 断る (= N)。 何も起きない */
@@ -299,6 +314,7 @@ function _finish(res) {
   const m = state.mission;
   const a = m.active;
   m.active = null;
+  _syncSilence();   // SPEC-138: 達成の音が聞こえるように、 先に戻す
   const mission = MISSION_MAP[a.id];
   _renderBar();
   if (res === "clear") {
@@ -544,6 +560,7 @@ function _showResult(mission, res) {
 /** タイトルに戻る・ゲームオーバー・ステージの始まり (= 画面を消す。 pauseFlags は呼ぶ側がまとめて戻す) */
 export function hideMissionUi() {
   _offer = null;
+  setMissionSilence(false);   // SPEC-138
   if (_naviShown) { _naviShown = false; naviHide(); }
   _reward = null;
   _barKey = "";

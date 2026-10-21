@@ -9,7 +9,7 @@ import { resolveCircle } from "./field-geom.js";
 import { currentBounds } from "./arena.js";
 import { dashMul } from "../perks.js";   // SPEC-090c
 import { sigSpeedMul } from "./signature.js";   // SPEC-100
-import { boostSpeedMul } from "./missions.js";   // SPEC-125
+import { boostSpeedMul, canMove } from "./missions.js";   // SPEC-125 / SPEC-138: 信玄の「山」
 
 const HALF_W = WORLD_W / 2;
 const HALF_H = WORLD_H / 2;
@@ -22,6 +22,7 @@ const HALF_H = WORLD_H / 2;
  * @param {{x:number,y:number}} input - unit vector (= |v| ≤ 1)
  */
 export function tickPlayer(dt, input) {
+  if (!canMove()) input = { x: 0, y: 0 };   // SPEC-138: 動かざること山の如し
   const p   = state.battle.player;
   // SPEC-090c: 逃げ足 (= 無敵時間のあいだだけ速い)
   const mul = (state.buffs?.speedMul ?? 1) * (state.battle.contactCooldownMs > 0 ? dashMul() : 1) * sigSpeedMul() * boostSpeedMul();   // SPEC-100: 虎痴・女王直属海賊。 SPEC-125: 力添え
