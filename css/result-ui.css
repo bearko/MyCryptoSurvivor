@@ -813,3 +813,8 @@
   .result-split .result-more { display: none; }
   .result-split .gum-bd, .result-split .anl, .result-split .result-sigpour { max-width: none; }
 }
+
+/* SPEC-164: 根を取るまでの REVIVE (= EASY): 「スキルツリーへ」だけ押せる。 大きく出し、 ランキング送信とタイトルに戻るは薄く */
+.gameover-modal--gate .result-tree-btn { font-size: 1.15rem; padding: 0.9rem 1rem; box-shadow: 0 0 22px rgba(255, 196, 64, 0.75), 0 4px 0 rgba(0, 0, 0, 0.35); }
+.gameover-modal--gate .result-tree-btn img { width: 26px; height: 26px; }
+.gameover-modal--gate .gameover-form .btn[disabled], .gameover-modal--gate .gameover-form input[disabled], .gameover-modal--gate #gameOverToTitle[disabled] { opacity: 0.35; filter: grayscale(1); cursor: not-allowed; }

@@ -16,7 +16,7 @@ export const LS_EASY_CLEARED = `${LS_PREFIX}.easyCleared`;
 export const LS_LESSONS = `${LS_PREFIX}.lessons`;
 
 /** 根を取るまでのヒーローの弱さ (= HP と攻撃。 EASY だけ) */
-export const EASY_HERO_MUL = 0.6;
+export const EASY_HERO_MUL = 0.5;   // SPEC-164: 0.6 → 0.5 (= 根を取ったときの跳ね上がりを大きく)
 
 /**
  * ステージごとの上書き (= ms)。 NORMAL の表に無いものだけ
@@ -28,13 +28,16 @@ export const EASY_HERO_MUL = 0.6;
  *   rareAtMs          : レアエネミーを必ず出す時刻 (= null なら出さない)
  *   missionAtMs       : ミッションを必ず持ちかける時刻 (= ★1・durS)
  *   thunderAtBoss     : ボスが出た瞬間に雷鼓を足もとに落とす (= 雑魚に使ってしまわないよう、 予告ではなくボスが出てから)
+ *   thunderBossRatio  : 雷鼓がボスの HP の何割を削るか (= SPEC-164: EASY だけ上書き。 無ければ perks の値)
  */
 export const EASY_STAGES = Object.freeze([
   // SPEC-149: 敵の数は 1/3 (= 湧きの間隔 ×3)。 ステージ 1 は動かなくても倒れない
   { bossAtMs: 15000, warnMs: 4000,  shopTimesMs: [10000],  spawnIntervalMs: 960, enemyHpMul: 0.5, enemyDmgMul: 0.25, bossHpMul: 0.015, bossDmgMul: 0.25, chestTimesMs: [5000],  rareAtMs: null, missionAtMs: null, thunderAtBoss: false },
   // SPEC-154: EASY は 2 ステージ。 ステージ 2 は負ける設計 (= 根を取ってから復活して勝つ)。 レアとミッションもここで必ず体験する
   //   SPEC-163: 攻撃 ×2.2 → ×1.7・ボスの攻撃 ×0.7 → ×0.6 (= 不慣れな人 (K 0.5) が根を取っても倒れていた。 根なしはそれでも倒れる)
-  { bossAtMs: 30000, warnMs: 5000,  shopTimesMs: [15000],  spawnIntervalMs: 570, enemyHpMul: 1.6, enemyDmgMul: 1.7,  bossHpMul: 0.032, bossDmgMul: 0.6,  chestTimesMs: [10000], rareAtMs: 5000, missionAtMs: 8000, missionDurS: 15, thunderAtBoss: true },
+  //   SPEC-164 (作者の決定): 根を取れば雑魚はほぼ動かなくても倒れない (攻撃 ×0.6)。 ボスは痛くない (×0.3) が長い (HP 4,050 = 45,000 × 0.09)。
+  //   雷鼓はボスの HP の半分 (thunderBossRatio 0.5) を一気に削る体験。 根なし (HP ×0.5) はそれでも押し切られる
+  { bossAtMs: 30000, warnMs: 5000,  shopTimesMs: [15000],  spawnIntervalMs: 570, enemyHpMul: 1.6, enemyDmgMul: 0.6,  bossHpMul: 0.09, bossDmgMul: 0.3,  chestTimesMs: [10000], rareAtMs: 5000, missionAtMs: 8000, missionDurS: 15, thunderAtBoss: true, thunderBossRatio: 0.5 },
 ]);
 
 /** レッスンの番号 (= 出す順。 文は data/i18n/ui.json の lesson.<番号>、 ボイスは lesson.<番号>) */

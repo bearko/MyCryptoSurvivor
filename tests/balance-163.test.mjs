@@ -26,12 +26,12 @@ test("ステージの湧き: 始まりはゆっくり (= 0.8 秒 × 1.4 / 1.1 / 
   }
 });
 
-test("ボスの HP は 12,000 / 45,000 / 100,000 が最終値 (= BOSS_MOVES.hpMul は 1。 その時刻の装備の単体 DPS で 20〜30 秒)。 EASY は 180 / 1,440", async () => {
+test("ボスの HP は 12,000 / 45,000 / 100,000 が最終値 (= BOSS_MOVES.hpMul は 1。 その時刻の装備の単体 DPS で 20〜30 秒)。 EASY は 180 / 4,050", async () => {
   assert.deepEqual([171, 373, 1189].map((id) => ENEMY_SPECS[id].hp), [12000, 45000, 100000]);
   const { BOSS_MOVES } = await import("../js/battle/boss-moves.js");
   for (const id of [171, 373, 1189]) assert.equal(BOSS_MOVES[id].hpMul, 1);
   const { EASY_STAGES } = await import("../js/easy.js");
-  assert.deepEqual(EASY_STAGES.map((s, i) => Math.round(ENEMY_SPECS[[171, 373][i]].hp * s.bossHpMul)), [180, 1440]);
+  assert.deepEqual(EASY_STAGES.map((s, i) => Math.round(ENEMY_SPECS[[171, 373][i]].hp * s.bossHpMul)), [180, 4050]);   // SPEC-164: ステージ 2 は長いボス戦 (雷鼓で半分)
 });
 
 test("木の効き目: 頑丈なからだ 6%・厚い皮 4%・鋭い一撃 5%・手早さ 3% (段ごと)", () => {

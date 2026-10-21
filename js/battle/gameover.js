@@ -422,6 +422,9 @@ export function easyRetryGate() {
   const gate = isEasy() && !owns(getMeta(), ROOT_ID);
   again?.classList.toggle("hidden", gate);
   tree?.classList.toggle("gameover-modal__again--pulse", gate);
+  // SPEC-164: 根を取るまでは「スキルツリーへ」を押してもらう (= 大きく出し、 ランキング送信とタイトルに戻るは押せない)
+  document.getElementById("gameOverModal")?.classList.toggle("gameover-modal--gate", gate);
+  for (const id of ["gameOverSubmit", "gameOverName", "gameOverToTitle"]) { const el = document.getElementById(id); if (el) el.disabled = gate; }
 }
 
 function _renderGameOverModal() {
@@ -469,4 +472,5 @@ function _renderGameOverModal() {
   const noApi     = !getRankingApiUrl();
   if (submitBtn) submitBtn.disabled = noApi;
   if (msg) msg.textContent = noApi ? t("gameover.noApi", "Ranking API not configured") : "";
+  easyRetryGate();   // SPEC-164: 送信ボタンの disabled を決めたあとに、 根なしのゲートを重ねる
 }

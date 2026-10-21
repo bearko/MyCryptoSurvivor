@@ -68,7 +68,7 @@ function _cursorTarget(key) {
     return best;
   };
   switch (key) {
-    case "s1.ce":    return { world: () => { const g = nearest(b?.gems); return g ? { x: g.x, y: g.y } : null; } };
+    case "s1.ce":    return null;   // SPEC-164: CE は小さく動くので、 輪で囲むと何を指しているか分からなかった (= 作者の決定。 カーソルは当てない)
     case "s1.shop":  return { el: "#shopBar" };
     case "s1.boss":
     case "s2.boss":  return { world: () => ({ x: BOSS_SPAWN_POS.x, y: BOSS_SPAWN_POS.y }) };
