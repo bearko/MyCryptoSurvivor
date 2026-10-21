@@ -26,7 +26,7 @@ import { tickWeapons } from "./weapons.js";
 import { tickProjectiles } from "./projectiles.js";
 import { tickGems } from "./gems.js";
 import { tickMagicCards } from "./magic-cards.js";
-import { resetField, tickField } from "./field.js";
+import { resetField, tickField, tickRobot } from "./field.js";   // SPEC-140: 合体ロボ
 import { rebuildWeaponsFromOwned } from "./extensions-as-weapons.js";
 import { renderBattle } from "./render.js";
 import { getHeroSprite, getDefaultEnemySprite, getBackgroundSprite } from "./sprites.js";
@@ -321,6 +321,7 @@ function _step(dt, now) {
   tickGems(dt);                  // SPEC-007: 拾う + level up trigger
   tickMagicCards(dt);            // SPEC-033: マジックカード (= 即時 LV up アイテム)
   tickField(dt);                 // SPEC-053: 壺・宝箱を出す + お助けアイテムを拾う
+  tickRobot(dt);                 // SPEC-140: 合体ロボの無敵
   tickRegen(dt);                 // SPEC-011: Ramen 系列の HP regen
   tickCoach(dt, v.x !== 0 || v.y !== 0);   // SPEC-042: 操作ガイド
   tickMilestones(_commTop() + 64);          // SPEC-105: 撃破数の節目 (= 止めない)

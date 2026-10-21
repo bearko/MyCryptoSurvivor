@@ -21,6 +21,7 @@ import { shakeOffset, renderFxWorld, renderFxScreen } from "./fx.js";
 import { absorbScale } from "./absorb.js";   // SPEC-102
 import { renderSignatureWorld } from "./signature.js";   // SPEC-100
 import { missionMods } from "./missions.js";   // SPEC-112
+import { robotExtId } from "../perks.js";   // SPEC-140
 import { renderLLWorld } from "./ll.js";   // SPEC-101
 import { renderArenaWorld, renderBossMarkerPointer } from "./arena-render.js";
 import { renderBossMovesWorld } from "./boss-moves-render.js";
@@ -418,6 +419,8 @@ export function renderBattle(ctx, nowMs = 0) {
   const py = player.y - camera.y;
   // SPEC-077: 足もとにシアンの薄い円 (= 当たりの目安)。 絵は切り抜かずに大きく、 動く向きへ少し傾けて弾ませる
   drawHitDisc(ctx, px, py, player.r, "hero");
+  const robot = (state.battle.robotMs ?? 0) > 0;
+  if (robot) _drawRainbowAura(ctx, px, py, player.r, nowMs, state.battle.robotMs);   // SPEC-140: 無敵のあいだは虹色に光る
   const lean = (player.face ?? 0) * 0.14;
   const hop = player.moving ? Math.abs(Math.sin((player.walkT ?? 0) * 11)) * player.r * 0.16 : Math.sin(nowMs / 420) * player.r * 0.03;
   const sp = state.battle.playerSprite;
@@ -426,6 +429,7 @@ export function renderBattle(ctx, nowMs = 0) {
     ctx.save();
     ctx.translate(px, py + player.r * 0.55);   // 足もとを軸に傾ける
     ctx.rotate(lean);
+    if (robot) ctx.filter = `hue-rotate(${Math.round(nowMs / 3) % 360}deg) saturate(1.8) brightness(1.15)`;   // 効かない環境では無視される
     drewPlayer = drawSprite(ctx, sp, 0, -player.r * 0.55 - player.r * 0.12 - hop, player.r * CHAR_SPRITE_RATIO);
     ctx.restore();
   }
@@ -491,6 +495,7 @@ const ITEM_EXT_ID = { heal: HEAL_EXT_ID, magnet: MAGNET_EXT_ID, watch: WATCH_EXT
 
 /** アイテムの絵の ID */
 export function itemExtId(kind) {
+  if (kind === "robot") return robotExtId();   // SPEC-140: 段でレアリティが上がる
   return ITEM_EXT_ID[kind] ?? null;
 }
 
@@ -570,6 +575,24 @@ function _drawChestShape(ctx, cx, cy, size) {
   return true;
 }
 
+/** SPEC-140: 合体ロボの虹色の光 (= 色が回る輪を重ねる。 残り 1 秒は点滅) */
+function _drawRainbowAura(ctx, px, py, r, nowMs, leftMs) {
+  ctx.save();
+  const fade = leftMs < 1000 ? 0.35 + 0.65 * Math.abs(Math.sin(nowMs / 70)) : 1;
+  const base = (nowMs / 4) % 360;
+  ctx.globalCompositeOperation = "lighter";
+  for (let i = 0; i < 6; i++) {
+    const g = ctx.createRadialGradient(px, py, r * 0.4, px, py, r * (1.5 + i * 0.12));
+    g.addColorStop(0, `hsla(${(base + i * 60) % 360}, 100%, 65%, ${0.34 * fade})`);
+    g.addColorStop(1, `hsla(${(base + i * 60) % 360}, 100%, 60%, 0)`);
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(px + Math.cos(nowMs / 160 + i) * r * 0.18, py + Math.sin(nowMs / 160 + i) * r * 0.18, r * (1.5 + i * 0.12), 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
 function _drawItems(ctx, camera, w, h, nowMs) {
   for (const it of state.battle.items ?? []) {
     const sx = it.x - camera.x;
@@ -577,7 +600,8 @@ function _drawItems(ctx, camera, w, h, nowMs) {
     const size = ITEM_ICON_SIZE;
     if (sx + size < 0 || sx - size > w || sy + size < 0 || sy - size > h) continue;
     ctx.globalAlpha = 0.4;
-    ctx.fillStyle = it.kind === "heal" ? "#b8f5c0" : (it.kind === "watch" ? "#ffe39a" : (it.kind === "thunder" ? "#fff3a0" : "#cfe3ff"));
+    ctx.fillStyle = it.kind === "heal" ? "#b8f5c0" : (it.kind === "watch" ? "#ffe39a" : (it.kind === "thunder" ? "#fff3a0"
+      : (it.kind === "robot" ? `hsl(${(nowMs / 6) % 360}, 90%, 70%)` : "#cfe3ff")));   // SPEC-140: 合体ロボは虹色
     ctx.beginPath();
     ctx.arc(sx, sy, size * 0.7, 0, Math.PI * 2);
     ctx.fill();
