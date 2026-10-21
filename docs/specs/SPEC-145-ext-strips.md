@@ -2,7 +2,7 @@
 id: SPEC-145
 title: Per-Extension Bargain and Prep Nodes Extend Straight From Each Mastery — Weapons in Rows Above Attack, Buff Bargains in a U Beside Treasure
 status: Done
-pr: TBD
+pr: 183
 phase: v1.6 Skill Tree
 kind: Changed
 ---
