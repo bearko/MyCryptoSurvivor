@@ -2,7 +2,7 @@
 id: SPEC-163
 title: Balance Pass Around the Expected DPS Curve — Gentler Spawn Flood and Density, HP-Based Stage Scaling for Carried-Over Gear, Bigger Bosses, Stronger Skill Tree Ranks, Repeat-Buy Shop Cards, a Desk Simulator and a Fast Autoplay Harness
 status: Done
-pr: TBD
+pr: 203
 phase: v1.8 Balance
 kind: Changed
 ---
