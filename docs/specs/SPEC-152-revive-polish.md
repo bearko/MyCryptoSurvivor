@@ -2,7 +2,7 @@
 id: SPEC-152
 title: Revive Polish — Stay Dark Until the Pixels Rain In, Skill Tree Not Dimmed by the Vortex, No Opening Shop in EASY (Opening Shop Becomes the "Early Opening" Node), and the Frozen Screen-Shake Offset
 status: Done
-pr: TBD
+pr: 191
 phase: v1.7 Onboarding
 kind: Changed
 ---
