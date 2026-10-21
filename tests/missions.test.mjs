@@ -12,8 +12,8 @@ const { BOSS_SPAWN_AT_MS, BOSS_WARNING_LEAD_MS } = await import("../js/constants
 
 const ui = JSON.parse(readFileSync(new URL("../data/i18n/ui.json", import.meta.url), "utf8"));
 
-test("出し手は 10 人 (= SPEC-103 7.4 の表。 シャドーの絵の番号)", () => {
-  assert.deepEqual(MISSIONS.map((m) => m.giver), [481, 767, 450, 433, 468, 463, 893, 495, 445, 467]);
+test("出し手は 11 人 (= SPEC-103 7.4 の表 ＋ SPEC-138 の武田信玄。 シャドーの絵の番号)", () => {
+  assert.deepEqual(MISSIONS.map((m) => m.giver), [481, 767, 450, 433, 468, 463, 893, 495, 445, 519, 467]);
   for (const m of MISSIONS) {
     for (const k of ["giver", "title", "desc"]) assert.ok(ui[`mission.${m.id}.${k}`]?.ja && ui[`mission.${m.id}.${k}`]?.en, `${m.id}.${k}`);
     assert.equal(m.tiers.length, 3, m.id);
@@ -44,6 +44,21 @@ test("効き目: 無いときは効かない値。 ミッションごとの中�
     const sig = (s) => JSON.stringify(tierOf(m, s));
     assert.notEqual(sig(1), sig(2), m.id); assert.notEqual(sig(2), sig(3), m.id);
   }
+});
+
+test("SPEC-138: 風林火山 (= ★1 風林・★2 風林火・★3 風林火山。 すべて同時に効く)", () => {
+  const s = MISSION_MAP.shingen;
+  const has = (star) => { const m = modsOf(s, star); return [m.speedMul > 1, m.silent, m.spawnMul > 1, m.noMove]; };
+  assert.deepEqual(has(1), [true, true, false, false]);
+  assert.deepEqual(has(2), [true, true, true, false]);
+  assert.deepEqual(has(3), [true, true, true, true]);
+  assert.equal(s.giver, 519);
+  for (const k of ["x1", "x2", "x3", "thanks"]) assert.ok(ui[`mission.shingen.${k}`]?.ja && ui[`mission.shingen.${k}`]?.en, k);
+  assert.equal(NO_MODS.silent, false); assert.equal(NO_MODS.noMove, false);
+  const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), "utf8");
+  assert.match(read("js/battle/player.js"), /if \(!canMove\(\)\) input = \{ x: 0, y: 0 \}/);
+  assert.match(read("js/audio.js"), /if \(_seMuted \|\| _silent\) return;/);
+  assert.match(read("js/battle/missions.js"), /setMissionSilence\(!!missionMods\(\)\.silent\)/);
 });
 
 test("SPEC-137: 選んだ★を覚えておく・説明の数は★で変わる", () => {

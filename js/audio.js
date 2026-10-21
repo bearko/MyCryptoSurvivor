@@ -166,6 +166,7 @@ function _playBgmElement() {
       _bgmSrc = _bgmPath;
     }
     _bgm.volume = vol;
+    _bgm.muted = _silent;   // SPEC-138
     return _tryPlay();
   } catch (_) {
     return null;
@@ -242,6 +243,15 @@ export function resumeBgm() {
 onSettingsChange(() => applyAudioSettings());
 
 let _seMuted = false;
+let _silent = false;   // SPEC-138: ミッション (= 信玄の「林」) で BGM と効果音を消している
+/** SPEC-138: ミッションのあいだ BGM と効果音を消す (= 曲は止めずに音だけ消し、 終われば続きから) */
+export function setMissionSilence(on) {
+  on = !!on;
+  if (on === _silent) return;
+  _silent = on;
+  if (_bgm) { try { _bgm.muted = on; } catch (_) {} }
+}
+export function isMissionSilent() { return _silent; }
 /** SPEC-083: 効果音を止める (= ヒーロー選択の武器のプレビューは音を出さない) */
 export function setSeMuted(on) {
   _seMuted = !!on;
@@ -255,7 +265,7 @@ export function setSeMuted(on) {
  * @param {number} rate - 再生の速さ (= 音の高さ。 1 がそのまま)
  */
 export function playSe(relPath, throttleMs = 80, volume = 0.5, rate = 1) {
-  if (_seMuted) return;
+  if (_seMuted || _silent) return;
   const vol = mixVolume(volume, getSettings().se);
   if (vol <= 0) return;
   const now = Date.now();
