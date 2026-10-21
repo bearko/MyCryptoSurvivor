@@ -93,9 +93,10 @@ export function naviLines(scene, ctx = {}) {
     case "stage": {
       const i = ctx.stageIdx | 0;
       const last = (ctx.stageCount | 0) > 0 && i === ctx.stageCount - 1;
-      const key = i === 0 ? "navi.stage.first" : (last ? "navi.stage.last" : "navi.stage.next");
-      const voice = `stage.${i + 1}`;   // SPEC-085: ステージの名前ごとのボイス
-      const lines = [{ key, vars: { stage: ctx.stageName ?? "" }, pose: last ? "hooray" : "pointer", voice: hasVoice(voice) ? voice : null }];
+      // SPEC-153: EASY はボスが 15 秒で来るので「4 分で」とは言わない (= 秒を入れる)
+      const key = i === 0 ? (ctx.bossSec ? "navi.stage.first.easy" : "navi.stage.first") : (last ? "navi.stage.last" : "navi.stage.next");
+      const voice = i === 0 && ctx.bossSec ? "stage.1.easy" : `stage.${i + 1}`;   // SPEC-085: ステージの名前ごとのボイス
+      const lines = [{ key, vars: { stage: ctx.stageName ?? "", sec: String(ctx.bossSec ?? "") }, pose: last ? "hooray" : "pointer", voice: hasVoice(voice) ? voice : null }];
       if (i === 0 && ctx.rta) lines.push({ key: "navi.stage.rta", pose: "wink", voice: "stage.rta" });
       return lines;
     }
@@ -127,6 +128,9 @@ export function naviLines(scene, ctx = {}) {
       ];
       return [list[Math.abs(ctx.n | 0) % list.length]];
     }
+    case "bossWarn":
+      // SPEC-153: ボスの予告 (= 中央の赤いエリア)
+      return [{ key: "navi.boss.warn", pose: "cross", voice: "boss.warn" }];
     case "revive":
       // SPEC-150: 倒れたら、 まず王妃の黄金時計で復活させてあげる (= ボイスはまだない)
       return [{ key: "navi.revive.intro", pose: "pointer" }];

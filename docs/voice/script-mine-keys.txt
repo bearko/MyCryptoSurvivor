@@ -1,0 +1,81 @@
+navi.mission.1	ミッションだよ！ シャドーヒーローが試練を持ちかけてきた。受けるか断るか、選んでね。
+navi.mission.2	★を増やすと条件は厳しくなるけど、ごほうびも豪華に。ギフト券は★2から！ 失敗しても罰はないよ。
+navi.revive.intro	めげないで！この「王妃の黄金時計」のチカラで復活させてあげる！チカラを引き継げるようにスキルツリーで強化しよう！
+navi.afterTree.bought	強くなったね！ さっきより楽に戦えるはず。さっそく「復活する」！
+navi.afterTree.none	GUM は挑むたびに貯まるよ。まずは「復活する」で稼ごう！
+navi.mode.easy	初めてだね！ まずは EASY から。遊び方を案内するよ！
+lesson.s1.move	攻撃は自動だよ！ 動かすのはヒーローだけ。指でドラッグ（PC は WASD）してね
+lesson.s1.ce	敵を倒すと CE が落ちるよ。拾い集めよう！
+lesson.s1.shop	定期的にショップが開くよ。集めた CE で強化しよう！ 初回は 1 品サービス！
+lesson.s1.boss	時間が経つとボスが来る！ 倒したら次のステージだよ
+lesson.s1.clear	ナイス！ CE は次のステージに持ち越せないから、使い切ってね
+lesson.s2.start	新しいステージ！ エクステンションは引き継がれないけど、パッシブは引き継がれるよ。敵も仕掛けも変わる！
+lesson.s2.rare	光ってる敵はレアエネミー！ 倒すとギフト券を落とすよ
+lesson.s2.gift	ギフト券はショップでお得にランクアップできる券だよ。次の店で使ってみて！
+lesson.s2.mission	シャドーヒーローのミッション！ 受けるか断るか選べる。失敗しても罰はないよ
+lesson.s2.reward	達成したらごほうび！ ★が高いほど豪華で、ギフト券も入ってる
+lesson.s2.boss	ボスもステージごとに変わるよ！
+lesson.s3.start	ここからは本気の敵！ 生き残れるかな……
+lesson.s3.lose	惜しい！ でも大丈夫。スキルツリーでヒーローを強くできるよ。「スキルツリーへ」を押して！
+lesson.s3.root	覚醒！ ヒーローの力が大きく上がったよ！ ほかのスキルも取って、もう一度挑もう！
+lesson.s3.thunder	雷鼓だ！ ボスにも大ダメージ！
+lesson.s3.clear	EASY クリア！ 次は NORMAL に挑戦しよう。スキルツリーの強化も忘れずにね！
+advice.shot	弾で削られてるね。「{a}」（受けるダメージ −3%）か「{b}」（無敵時間）がおすすめ！
+advice.crowdDps	囲まれてるね。「{a}」や「{b}」で火力を上げよう！
+advice.crowdMove	数に押されてるね。「{a}」か「{b}」で距離を取ろう！
+advice.boss	ボスの一撃が重いね。「{a}」や「{b}」（ボスの道）を！
+advice.gimmick	仕掛けに当たってるね。予告が出たら離れよう！
+advice.hp	HP が足りないね。「{a}」で底上げしよう！
+navi.title.1	ようこそ、ノードの最前線へ！ ナビのマインちゃんだよ。
+navi.title.2	敵の群れを生きのびて、3 つのノードを突破しよう！
+navi.tap.1	呼んだ？ 準備ができたら Press to Start！
+navi.tap.2	ヒーローたちが待ってるよ！
+navi.tap.3	わっ、くすぐったい……！
+navi.tap.4	迷ったら「遊び方」を見てね。
+navi.lose.guide	惜しかったね……！「スキルツリーへ」を押してみて！ヒーローをもっと強くできるよ！
+navi.lose.1	惜しかったね。スキルツリーを強化してリベンジしよう！
+navi.lose.2	頑張ったね！たまった GUM でスキルを強化しよう！
+navi.lose.3	まだまだこれから！少し休んだら、また挑んでみよう。スキルツリーの強化も忘れずにね
+navi.tree.intro.1	ここがスキルツリー！挑戦で貯めた GUM とゴールドダストで、ヒーローの力を伸ばせるよ
+navi.tree.intro.2	強化はずっと引き継がれて、どのヒーローにも効くよ。遊べば遊ぶほど強くなれる！
+navi.tree.hint	GUM が貯まったよ！「スキルツリー」で次の挑戦を楽にしよう！
+navi.tree.root	まんなかのスキルを 2 回押してみて！ここから始まるよ！
+navi.tree.first	緑に光っているのが強化できるスキルだよ。2 回押すと GUM で解放！
+navi.tree.noGum	GUM が足りないみたい。挑戦して貯めてこよう！
+navi.tree.done	やったね！ 効果は右の欄に表示されるよ。次の挑戦からは強くてニューゲームだ！
+navi.tree.claimable	解放できるスキルが光ってるよ！
+navi.tree.idle	挑戦で GUM を貯めて、また来てね。
+navi.mode.1	難易度を選んで。迷ったら NORMAL で！
+navi.mode.2	ABSOLUTE は 4 つの軸を自分で決める。きついほどスコアが伸びるよ。
+navi.hero.open	いっしょに走るヒーローを選んで！
+navi.hero.pick	{name}！ 最初の武器は「{weapon}」だよ。
+navi.hero.pick.10001	MCHウォーリアー！「ブレード」が周りを回って斬り払うよ！
+navi.hero.pick.4006	ビリー・ザ・キッド！「リボルバー」で四方八方に早撃ち！
+navi.hero.pick.2043	霧隠才蔵！「手裏剣」を次々に打ち込むよ！
+navi.hero.pick.2016	アナスタシア！「雪だるま」を置いて、凍る爆発で吹き飛ばそう！
+navi.hero.pick.2003	ジャックザリッパー！ 対角線に「ナイフ」を飛ばすよ！
+navi.hero.pick.4041	ニコラ・テスラ！「レーザーガン」で貫く光線！
+navi.hero.pick.1006	ピタゴラス！ 「ノービスブック」が周囲を守るよ！
+navi.hero.pick.1007	大長今！ 大きな「ホーキ」で敵をまとめて掃き飛ばそう！
+navi.hero.pick.2013	許褚！「マレット」を四方に投げつけるよ！
+navi.hero.pick.4052	フランシス・ドレーク！「パロット」が敵の頭上に舞い降りる！
+navi.stage.first.easy	{stage} に接続！ {sec} 秒でボスが来るよ。
+navi.boss.warn	中央の赤いエリアにボスが来るよ！ 気をつけて！
+navi.stage.first	{stage} に接続！ 4 分でボスが来るよ。
+navi.stage.next	次は {stage}！ 敵が硬くなるから気をつけて。
+navi.stage.last	最後のノード、{stage}！ ここを抜ければクリアだよ！
+navi.stage.rta	RTA 計測中！ 宝箱の懐中時計を狙って！
+navi.boss	ボスが来た！ 敵は消えたよ。枠の中で決着をつけよう！
+navi.tip.item.heal	パンケーキで HP が回復！ 壺や宝箱から出るよ。
+navi.tip.item.magnet	棒磁石！ 落ちているCEをぜんぶ吸い寄せたよ。
+navi.tip.item.watch	懐中時計！ 10 秒間、ぜんぶが 2 倍速で進むよ。
+navi.tip.item.thunder	雷鼓！ 画面の敵をまとめて一掃。ボスにも効くよ！
+navi.tip.item.bossChest	ボス戦の宝箱！ マジックカードや雷鼓が出るよ。壊して強くなろう！
+navi.tip.item.card	マジックカード！ 拾うとその場で 1 レベル上がるよ。
+navi.tip.gimmick.beads	線の上をそろばんの珠が転がるよ！ 列からよけて。敵もはじいてくれる！
+navi.tip.gimmick.punch	床の印にパンチが来る！ 1 つは足もとだよ。印から出て！
+navi.tip.gimmick.trojan	トロイの木馬！ 開くと敵があふれるよ。先に壊せば宝箱の中身！
+navi.tip.enemy.shooter	離れて撃ってくる敵だよ！ 線が出たら、その向きからずれて。
+telop.navi.clear	やりました！
+telop.navi.allClear	ぜんぶ突破です！
+telop.navi.lose	まだ、いけます……！

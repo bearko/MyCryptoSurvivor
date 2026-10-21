@@ -769,3 +769,20 @@
   .anl { font-size: 0.66rem; padding: 0.4rem 0.55rem; }
   .anl__cmp { font-size: 0.64rem; }
 }
+
+/* ============================================================
+   SPEC-153: 復活の画面 (= 何を得たかを大きく。 したことは 1 行。 内訳と分析は「くわしく」)
+   ============================================================ */
+.result-mini { display: flex; justify-content: center; gap: 1.1rem; font-size: 0.78rem; color: var(--muted); margin: 0.1rem 0 0.2rem; }
+.result-mini__item .num { color: #e9e2cf; font-weight: 700; }
+.result-rewards--hero { gap: 0.6rem; margin: 0.35rem auto 0.45rem; }
+.result-rewards--hero .reward { padding: 0.45rem 0.9rem; font-size: 1rem; }
+.result-rewards--hero .reward__icon { width: 30px; height: 30px; }
+.result-rewards--hero .reward__value { font-size: 1.5rem; }
+.result-more {
+  display: inline-flex; align-items: center; gap: 0.3rem; margin: 0 auto 0.4rem;
+  font: inherit; font-size: 0.72rem; font-weight: 700; color: var(--muted); background: none; border: 0; cursor: pointer; padding: 0.2rem 0.6rem;
+}
+.result-more__arrow { transition: transform 0.2s ease; display: inline-block; }
+.result-more--open .result-more__arrow { transform: rotate(180deg); }
+.result-more-body.hidden { display: none; }

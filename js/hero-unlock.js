@@ -7,8 +7,13 @@
 // 解放した人はこの端末にも覚える (= 通信できないときも選べる)。
 // 上半分は純関数 (= テストする)。 下半分が SDK と localStorage。
 
-/** 最初から使える 2 人 (= ブレードとリボルバー) */
-export const STARTER_HEROES = [10001, 4006];
+import { hasClearedEasy } from "./easy.js";   // SPEC-153
+import { hasPlayed } from "./played.js";   // SPEC-153
+
+/** 最初から使える人 (= ブレード)。 SPEC-153: リボルバー (= ビリー・ザ・キッド) は EASY クリアの報酬になった */
+export const STARTER_HEROES = [10001];
+/** SPEC-153: EASY クリアで仲間になる人 (= ビリー・ザ・キッド)。 EASY ができる前から遊んでいた人はそのまま使える */
+export const EASY_REWARD_HERO = 4006;
 
 /**
  * heroId → 解放するアチーブメント。 並びは「次の仲間」で案内する順 (= 本作の 4 人 → ほかのタイトルの近い順)。
@@ -51,11 +56,12 @@ export function heroForTrophy(trophyId) {
  * @param {Iterable<number>} remembered
  * @returns {Set<number>}
  */
-export function unlockedHeroes(ownedTrophyIds = [], remembered = []) {
+export function unlockedHeroes(ownedTrophyIds = [], remembered = [], { easyCleared = false } = {}) {
   const owned = new Set(ownedTrophyIds);
   const out = new Set(STARTER_HEROES);
+  if (easyCleared) out.add(EASY_REWARD_HERO);   // SPEC-153
   for (const u of HERO_UNLOCKS) if (owned.has(u.trophy)) out.add(u.heroId);
-  for (const id of remembered) if (STARTER_HEROES.includes(Number(id)) || unlockOf(id)) out.add(Number(id));
+  for (const id of remembered) if (STARTER_HEROES.includes(Number(id)) || Number(id) === EASY_REWARD_HERO || unlockOf(id)) out.add(Number(id));
   return out;
 }
 
@@ -86,8 +92,18 @@ function _save() {
 
 /** いま使えるヒーロー (= Set<heroId>) */
 export function getUnlockedHeroes() {
-  if (!_unlocked) _unlocked = unlockedHeroes([], _loadRemembered());
+  if (!_unlocked) _unlocked = unlockedHeroes([], _loadRemembered(), { easyCleared: hasClearedEasy() || hasPlayed() });   // SPEC-153: EASY ができる前から遊んでいた人もビリーを使える
   return _unlocked;
+}
+
+/** SPEC-153: EASY をクリアした (= ビリー・ザ・キッドが仲間になる)。 新しく解放されたら heroId の配列、 もう使えたなら [] */
+export function unlockEasyReward() {
+  const before = getUnlockedHeroes();
+  if (before.has(EASY_REWARD_HERO)) return [];
+  _unlocked = new Set([...before, EASY_REWARD_HERO]);
+  _save();
+  for (const fn of _listeners) { try { fn([EASY_REWARD_HERO]); } catch (e) { console.warn("[hero-unlock]", e); } }
+  return [EASY_REWARD_HERO];
 }
 
 export function isHeroUnlocked(heroId) {
@@ -102,7 +118,7 @@ export function onHeroesUnlocked(fn) {
 /** アチーブメントの ID から解放を足す。 新しく解放された heroId を返す */
 export function noteTrophies(trophyIds) {
   const before = getUnlockedHeroes();
-  const next = unlockedHeroes(trophyIds, before);
+  const next = unlockedHeroes(trophyIds, before, { easyCleared: before.has(EASY_REWARD_HERO) });
   const added = [...next].filter((id) => !before.has(id));
   if (added.length === 0) return [];
   _unlocked = next;

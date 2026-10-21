@@ -91,6 +91,7 @@ test("流れの配線: 倒れたら粒子 → 渦に入ったらマインちゃ�
   // 戦闘の絵からヒーローを消す (= 当たりの円も HP バーも)
   const render = read("../js/battle/render.js");
   assert.match(render, /if \(state\.battle\.heroDissolved\) return _afterPlayer\(/);
+  assert.match(render, /function _afterPlayer\(ctx, camera, w, h, nowMs\) \{\n[^\n]*\n\s+const \{ player, magicCards, damageNumbers, enemies \} = state\.battle;\n\s+const mods = missionMods\(\);/, "切り出した関数は renderBattle の局所変数を自分で読み直す (= SPEC-153 の regression)");
   assert.match(read("../js/battle/index.js"), /b\.heroDissolved\s*= false;/);
   // 王妃の黄金時計 (= MCH 5111) のボタンと絵
   assert.equal(REVIVE_EXT_ID, 5111);

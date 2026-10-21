@@ -34,6 +34,7 @@ import {
 } from "../ranking-client.js";
 import { markPlayed } from "../played.js";
 import { isEasy, markEasyCleared } from "../easy.js";   // SPEC-147
+import { unlockEasyReward } from "../hero-unlock.js";   // SPEC-153
 import { showLesson } from "../lesson.js";   // SPEC-147
 import { collectAnalysis, renderAnalysis } from "./analysis-ui.js";   // SPEC-148
 import { stopVoice } from "../voice.js";   // SPEC-149
@@ -62,7 +63,7 @@ export function triggerActivityReport() {
   stopVoice();   // SPEC-149: レッスンの読み上げが残っていても、 クリアの演出を優先する
   const easy = isEasy();   // SPEC-147: EASY は ABSOLUTE・RTA を開かず、 LL も共通基盤も送らない。 代わりに EASY クリアを覚える
   if (!easy) markPlayed();   // SPEC-088: 1 回遊び終えた (= 次から ABSOLUTE・RTA が選べる)
-  if (easy) markEasyCleared();
+  if (easy) { markEasyCleared(); unlockEasyReward(); }   // SPEC-153: ビリー・ザ・キッドが仲間に
   // SPEC-106: そのヒーローで全ステージをクリアした (= 初めてなら LL の解放を知らせる)
   const llFirst = !easy && addHeroClear(state.ownedHero?.heroId) && !!getExt(HERO_STARTING_WEAPON[state.ownedHero?.heroId])?.ll;
   _rewards = { ...grantRunRewards(true, { gumMul: perk("gumMul") }), dust: runDust() };   // SPEC-090: 全クリアの GUM (+ SPEC-090c 金勘定)
