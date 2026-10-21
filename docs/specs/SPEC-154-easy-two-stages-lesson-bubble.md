@@ -2,7 +2,7 @@
 id: SPEC-154
 title: Lessons as the Top Comm Bubble With a Cursor (No Cut-Ins, Game Keeps Running), EASY Cut to Two Stages, Shop Gauge Fixed on Stages 2/3, Skill Tree Reachable From the Stage-Clear Screen Once Awakened, and the Boss Chest Turning Into the Gold Dust Icon
 status: Done
-pr: TBD
+pr: 193
 phase: v1.7 Onboarding
 kind: Changed
 ---
