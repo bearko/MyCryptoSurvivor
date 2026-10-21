@@ -254,9 +254,10 @@ export const ENEMY_SPECS = {
   124:  { hp:   55, dmg: 14, speed: 75, radius: 14, xpValue:   2 },
   134:  { hp:   95, dmg: 18, speed: 70, radius: 16, xpValue:   4 },
   164:  { hp:  160, dmg: 22, speed: 65, radius: 19, xpValue:   7 },
-  171:  { hp: 3000, dmg: 30, speed: 45, radius: 48, xpValue:  60 },
-  373:  { hp: 4500, dmg: 30, speed: 50, radius: 52, xpValue: 100 },   // 覚醒魔王ファオ
-  1189: { hp: 6000, dmg: 30, speed: 55, radius: 50, xpValue: 150 },   // yamap
+  // SPEC-163: ボスの HP は、 そのステージのボスの時刻に育っている装備の DPS で 20〜30 秒 (= 3000 / 4500 / 6000 → 5000 / 11000 / 20000)
+  171:  { hp: 5000, dmg: 30, speed: 45, radius: 48, xpValue:  60 },
+  373:  { hp: 11000, dmg: 30, speed: 50, radius: 52, xpValue: 100 },   // 覚醒魔王ファオ
+  1189: { hp: 20000, dmg: 30, speed: 55, radius: 50, xpValue: 150 },   // yamap
   // SPEC-033: rare enemies (= ~2× normal hp、 +20-30 xp)
   // SPEC-034: radius × 1.5 (= 視認性向上、 当たり判定もそのまま大きく)
   147:  { hp:  160, dmg: 16, speed: 78, radius: 21, xpValue:  20, isRare: true },   // クリーパー フラペチーノ ドッピオ (= 14 → 21)
@@ -406,15 +407,16 @@ export const STAGE_TABLE = [
     enemyHpMul:        1.0,
     enemyDmgMul:       1.0,
     xpMul:             1.0,
-    spawnIntervalMul:  1.0,
+    // SPEC-163: 始まりの湧きを DPS の期待値 (= 初期武器 Lv.1 で 15〜25/秒) に合わせる (= 0.8 秒 → 1.1 秒に 1 体)
+    spawnIntervalMul:  1.4,
     // SPEC-062: 撃ってくる敵 (= fromMs から everyMs ごとに 1 体。 同時に max 体まで)
     shooters: { fromMs: 90000, everyMs: 10000, max: 3, ids: [166] },
     gimmick: "beads",    // SPEC-064: そろばんの珠
-    // SPEC-078: 0:30 からボスの直前 (= 3:50) にかけて湧きを速め、 画面の敵の密度を目標 (= density) に保つ。
-    //   ボスの直前に画面の半分を敵が埋める
-    flood: { fromMs: 30000, fullMs: 230000, maxMul: 12, packFromMs: 120000, packEveryMs: 12000, packSize: 16, pow: 2.5 },
-    density: { fromMs: 20000, fullMs: 230000, max: 0.85 },
-    maxEnemies: 320,
+    // SPEC-078 → SPEC-163: 洪水はゆるく (= ×12 → ×5、 pow 2.5 → 1.8)。 2:00 の群れ 16 体で「どばーっ」と来て圧死していたので、
+    //   群れは 2:30 から 10 体。 密度の目標も半分 (= 画面の 45%)。 装備が育つ速さ (= CE の収入) と同じ傾きで敵を増やす
+    flood: { fromMs: 40000, fullMs: 230000, maxMul: 5, packFromMs: 150000, packEveryMs: 15000, packSize: 10, pow: 1.8 },
+    density: { fromMs: 60000, fullMs: 230000, max: 0.45 },
+    maxEnemies: 260,
   },
   {
     idx: 1,
@@ -429,16 +431,17 @@ export const STAGE_TABLE = [
     ],
     bossAttack: "fao",
     bossAttackExtId: 5055,            // とっておきのフルーツパフェ
-    enemyHpMul:        1.5,
-    enemyDmgMul:       1.25,
+    // SPEC-163: 装備が引き継がれる (= SPEC-162) ので、 数ではなく HP で強くする (= ×1.5 → ×2.2)。 湧きの始まりはステージ 1 より少し速いだけ
+    enemyHpMul:        2.2,
+    enemyDmgMul:       1.4,
     xpMul:             2.0,
-    spawnIntervalMul:  0.85,
+    spawnIntervalMul:  1.1,
     shooters: { fromMs: 45000, everyMs: 7000, max: 6, ids: [166, 136] },   // SPEC-062
     gimmick: "punch",    // SPEC-064: パンチカード
-    // SPEC-078: ボスの直前に画面の 3/4 を敵が埋める
-    flood: { fromMs: 20000, fullMs: 230000, maxMul: 16, packFromMs: 120000, packEveryMs: 10000, packSize: 20, pow: 2.5 },
-    density: { fromMs: 15000, fullMs: 230000, max: 1.45 },
-    maxEnemies: 440,
+    // SPEC-078 → SPEC-163: 洪水 ×16 → ×7、 群れは 2:00 から 14 体、 密度は 1.45 → 0.7
+    flood: { fromMs: 30000, fullMs: 230000, maxMul: 7, packFromMs: 120000, packEveryMs: 12000, packSize: 14, pow: 1.8 },
+    density: { fromMs: 40000, fullMs: 230000, max: 0.7 },
+    maxEnemies: 380,
   },
   {
     idx: 2,
@@ -453,16 +456,17 @@ export const STAGE_TABLE = [
     ],
     bossAttack: "yamap",
     bossAttackExtId: 5002,            // グランダルメ
-    enemyHpMul:        2.0,
-    enemyDmgMul:       1.5,
-    xpMul:             3.0,
-    spawnIntervalMul:  0.7,
+    // SPEC-163: HP ×2.0 → ×3.5 (= 引き継いだ装備が Lv.7〜10 まで育っている前提)。 湧きの始まりはステージ 2 より少し速いだけ
+    enemyHpMul:        3.5,
+    enemyDmgMul:       1.8,
+    xpMul:             3.5,
+    spawnIntervalMul:  0.9,
     shooters: { fromMs: 30000, everyMs: 5000, max: 9, ids: [166, 136] },   // SPEC-062
     gimmick: "trojan",   // SPEC-064: トロイの木馬
-    // SPEC-065: 中盤から大群。 SPEC-078: ボスの直前に画面の 9 割を敵が埋める (= 湧きを大きく速め、 上限も上げる)
-    flood: { fromMs: 15000, fullMs: 230000, maxMul: 20, packFromMs: 90000, packEveryMs: 8000, packSize: 28, pow: 2.5 },
-    density: { fromMs: 10000, fullMs: 230000, max: 1.65 },
-    maxEnemies: 600,
+    // SPEC-065 / SPEC-078 → SPEC-163: 洪水 ×20 → ×9、 群れは 1:40 から 18 体、 密度は 1.65 → 0.95
+    flood: { fromMs: 20000, fullMs: 230000, maxMul: 9, packFromMs: 100000, packEveryMs: 10000, packSize: 18, pow: 1.8 },
+    density: { fromMs: 30000, fullMs: 230000, max: 0.95 },
+    maxEnemies: 480,
   },
 ];
 

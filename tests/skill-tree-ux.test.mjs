@@ -40,11 +40,11 @@ test("木の中の案内: 根 → 最初の 1 つ (= いちばん安い節) → 
 test("いまの効果の欄: 効いている数値だけを道の順に。 選んだ節で変わる行には買ったあとの値", () => {
   const now = computePerks(meta({ [ROOT_ID]: 1, atk_dmg: 3, vit_pancake: 1 }));
   const { rows, flags } = perkRows(now, null, "ja");
-  assert.deepEqual(rows.map((r) => [r.label, r.value]), [["攻撃", "＋9%"]]);
+  assert.deepEqual(rows.map((r) => [r.label, r.value]), [["攻撃", "＋15%"]]);   // SPEC-163: 5%/段
   assert.deepEqual(flags, ["大盛り"]);
   const next = computePerks(meta({ [ROOT_ID]: 1, atk_dmg: 4, vit_pancake: 1, atk_cd: 1 }));
   const b = perkRows(now, next, "ja").rows;
-  assert.deepEqual(b.map((r) => [r.label, r.value, r.next]), [["攻撃", "＋9%", "＋12%"], ["クールダウン", "—", "−2%"]]);
+  assert.deepEqual(b.map((r) => [r.label, r.value, r.next]), [["攻撃", "＋15%", "＋20%"], ["クールダウン", "—", "−3%"]]);
   assert.equal(perkRows(NO_PERKS, null, "en").rows.length, 0);
   assert.equal(perkRows(computePerks(meta({ atk_dmg: 1 })), null, "en").rows[0].label, "Attack");
 });

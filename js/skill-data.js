@@ -45,16 +45,16 @@ export const NODES = [
     cost: { gum: 0, dust: 0 }, icon: 5033, fx: {} },
 
   // ---- 生存 (赤) ----
-  N("vit_hp",      "vit", ROOT_ID,     1,  0, "repeat",   "頑丈なからだ", "Tough Body",     "最大 HP ＋4%（段ごと）", "Max HP +4% per rank",                                { gum: 40 },             1004, { hpMul: 0.04 }, 5),
-  N("vit_armor",   "vit", "vit_hp",    2, -1, "repeat",   "厚い皮",       "Thick Hide",     "受けるダメージ −3%（段ごと）", "Damage taken −3% per rank",                     { gum: 60 },             2010, { dmgTakenMul: -0.03 }, 5),
+  N("vit_hp",      "vit", ROOT_ID,     1,  0, "repeat",   "頑丈なからだ", "Tough Body",     "最大 HP ＋6%（段ごと）", "Max HP +6% per rank",                                { gum: 40 },             1004, { hpMul: 0.06 }, 5),   // SPEC-163: 4% → 6%
+  N("vit_armor",   "vit", "vit_hp",    2, -1, "repeat",   "厚い皮",       "Thick Hide",     "受けるダメージ −4%（段ごと）", "Damage taken −4% per rank",                     { gum: 60 },             2010, { dmgTakenMul: -0.04 }, 5),   // SPEC-163: 3% → 4%
   N("vit_regen",   "vit", "vit_hp",    2,  1, "repeat",   "自然治癒",     "Regeneration",   "毎秒 0.2 HP 回復（段ごと）", "Regenerate 0.2 HP per second per rank",         { gum: 80 },             1159, { regen: 0.2 }, 3),
   N("vit_pancake", "vit", "vit_armor", 3, -1, "perk",     "大盛り",       "Big Serving",    "パンケーキの回復 30% → 40%", "Pancake heals 40% instead of 30%",               { gum: 150 },            1129, { pancakeHeal: 0.40 }),
   N("vit_phoenix", "vit", "vit_regen", 3,  1, "perk",     "不死鳥",       "Phoenix",        "1 回の挑戦に 1 度だけ、 HP 0 で倒れずに 50% 回復", "Once per run, survive a fatal hit with 50% HP", { gum: 250 },  5020, { phoenix: 1 }),
   N("cap_vit",     "vit", "vit_hp",    4,  0, "capstone", "鉄壁",         "Iron Wall",      "受けるダメージ −10%、 開始 HP ＋20%", "Damage taken −10%, starting HP +20%",      { gum: 300, dust: 3 },   5004, { dmgTakenMul: -0.10, hpMul: 0.20 }),
 
   // ---- 攻撃 (橙) ----
-  N("atk_dmg",     "atk", ROOT_ID,     1,  0, "repeat",   "鋭い一撃",     "Sharp Strike",   "攻撃力 ＋3%（段ごと）", "Attack +3% per rank",                                  { gum: 40 },             1100, { dmgMul: 0.03 }, 5),
-  N("atk_cd",      "atk", "atk_dmg",   2, -1, "repeat",   "手早さ",       "Quick Hands",    "クールダウン −2%（段ごと）", "Cooldown −2% per rank",                           { gum: 60 },             1111, { cdMul: -0.02 }, 5),
+  N("atk_dmg",     "atk", ROOT_ID,     1,  0, "repeat",   "鋭い一撃",     "Sharp Strike",   "攻撃力 ＋5%（段ごと）", "Attack +5% per rank",                                  { gum: 40 },             1100, { dmgMul: 0.05 }, 5),   // SPEC-163: 3% → 5%
+  N("atk_cd",      "atk", "atk_dmg",   2, -1, "repeat",   "手早さ",       "Quick Hands",    "クールダウン −3%（段ごと）", "Cooldown −3% per rank",                           { gum: 60 },             1111, { cdMul: -0.03 }, 5),   // SPEC-163: 2% → 3%
   N("atk_range",   "atk", "atk_dmg",   2,  1, "repeat",   "長い腕",       "Long Reach",     "攻撃の範囲 ＋4%（段ごと）", "Attack range +4% per rank",                        { gum: 80 },             5013, { rangeMul: 0.04 }, 3),
   N("atk_bullet",  "atk", "atk_cd",    3, -1, "perk",     "二連",         "Double Shot",    "弾数 ＋1", "Projectiles +1",                                                    { gum: 250 },            4002, { bullets: 1 }),
   N("atk_pierce",  "atk", "atk_range", 3,  1, "perk",     "貫く",         "Pierce",         "貫通 ＋1", "Pierce +1",                                                        { gum: 150 },            4187, { pierce: 1 }),
