@@ -34,6 +34,8 @@ import { owns } from "../skill-logic.js";   // SPEC-147
 import { ROOT_ID } from "../skill-data.js";   // SPEC-147
 import { collectAnalysis, renderAnalysis, adviceVars } from "./analysis-ui.js";   // SPEC-148
 import { suggest } from "./run-stats.js";   // SPEC-148
+import { renderRevivePicks } from "./revive-picks.js";   // SPEC-155
+import { hasSeenRevive, markReviveSeen } from "../revive-seen.js";   // SPEC-155
 import { dissolveHero, sinkHero, rainHero, clearReviveFx, setReviveLabel, REVIVE, REVIVE_EXT_ID } from "./revive-fx.js";   // SPEC-150 / SPEC-151
 import { resetResumeCountdown as _noCountdown } from "./resume-countdown.js";   // SPEC-151: 降りこんだあとの再開に Ready → Go! は出さない
 import { NAVI_TYPE_MS } from "../navi.js";   // SPEC-151
@@ -92,6 +94,13 @@ export function triggerGameOver(reason = "lose") {
       advice: !state.rtaMode,
       onNode: (id) => import("../skill-tree.js").then((m) => m.openSkillTree({ focus: id, returnTo: modal, retry: true })),
     });
+    // SPEC-155: おすすめの強化 (= 木へ行かずにここで。 買えたら「復活する」を脈打たせて、 マインちゃんが「強くなったね」)
+    if (reason !== "clear" && !state.rtaMode) {
+      renderRevivePicks(document.getElementById("gameOverPicks"), {
+        adviceNodes: suggest(state.lastRunStats?.analysis?.sum)?.nodes ?? [],
+        onBought: () => onBackFromTree({ bought: 1 }),
+      });
+    } else document.getElementById("gameOverPicks")?.classList.add("hidden");
     sayOnLose(reason, modal);   // SPEC-116
   };
   clearTimeout(_showTimer);
@@ -111,6 +120,9 @@ export function triggerGameOver(reason = "lose") {
     };
     const dissolved = _startDissolve(() => {
       if (!state.battle.gameOver) return;
+      // SPEC-155: 復活のしかたの説明は初回だけ。 2 回目からは渦に入ったらそのまま REVIVE の画面
+      if (hasSeenRevive()) { show(); return; }
+      markReviveSeen();
       const lines = naviLines("revive");
       const ms = lines.reduce((a, l) => a + Math.max(t(l.key, l.key).length * NAVI_TYPE_MS, voiceMs(l.voice)), 0) + REVIVE_LINE_HOLD_MS;
       _showWatch();
@@ -218,7 +230,9 @@ function sayOnLose(reason, modal) {
   if (reason === "clear") return;
   if (isEasy()) { showLesson("s2.lose"); return; }   // SPEC-147: 説明はレッスンで
   // SPEC-151: 粒子の演出のときは、 全身のマインちゃんが「復活させてあげる」をもう言っているので、 帯では 2 行目だけ
-  const lines = state.battle.heroDissolved ? [] : naviLines("revive");   // SPEC-150
+  // SPEC-155: 説明は初回だけ (= 粒子が出せない端末でも、 2 回目からは帯で言い直さない)
+  const lines = state.battle.heroDissolved || hasSeenRevive() ? [] : naviLines("revive");   // SPEC-150
+  if (!state.battle.heroDissolved && lines.length) markReviveSeen();
   if (!state.rtaMode) {
     const guide = treeNudge(getMeta());
     // SPEC-148: 木を始めていれば、 SPEC-116 のひとことの代わりに、 被ダメの内訳からのおすすめを 1 つ
@@ -237,10 +251,11 @@ export function retryLabel() {
 }
 
 /** SPEC-146: スキルツリーから戻ったとき (= 強くしたなら、 マインちゃんが「もう一度」を押す) */
-export function onBackFromTree({ bought = 0 } = {}) {
+export function onBackFromTree({ bought = 0, fromTree = false } = {}) {
   const modal = document.getElementById("gameOverModal");
   if (!modal || modal.classList.contains("hidden") || state.rtaMode) return;
   easyRetryGate();   // SPEC-147: 根を取ったら「もう一度挑む」が出る
+  if (fromTree) renderRevivePicks(document.getElementById("gameOverPicks"), { adviceNodes: suggest(state.lastRunStats?.analysis?.sum)?.nodes ?? [], onBought: () => onBackFromTree({ bought: 1 }) });   // SPEC-155
   const btn = document.getElementById("gameOverRetry");
   btn?.classList.remove("gameover-modal__again--pulse"); void btn?.offsetWidth;
   btn?.classList.add("gameover-modal__again--pulse");

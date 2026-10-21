@@ -163,13 +163,23 @@ export function saveRunLog(log, storage = globalThis.localStorage) {
  * マインちゃんのおすすめ (= SPEC-148 §4。 上から順に最初に当たったもの)
  *   返す: { key (= i18n の advice.*), nodes: [節の id] } か null (= 1 度も受けていない)
  */
+/** おすすめの文 → 節 (= SPEC-155: 台本の CSV も同じ表から名前を入れる) */
+export const ADVICE_NODES = Object.freeze({
+  "advice.shot": ["vit_armor", "mov_ghost"],
+  "advice.crowdDps": ["atk_dmg", "atk_bullet"],
+  "advice.crowdMove": ["mov_speed", "atk_range"],
+  "advice.boss": ["bos_dmg", "bos_tele"],
+  "advice.gimmick": [],
+  "advice.hp": ["vit_hp"],
+});
+const adv = (key) => ({ key, nodes: [...ADVICE_NODES[key]] });
 export function suggest(sum) {
   if (!sum || !(sum.takenTotal > 0)) return null;
   const share = Object.fromEntries(sum.taken.map((x) => [x.kind, x.pct]));
-  if (share.shot >= 45) return { key: "advice.shot", nodes: ["vit_armor", "mov_ghost"] };
-  if (share.contact >= 60 && sum.killsPerMin < LOW_KILLS_PER_MIN) return { key: "advice.crowdDps", nodes: ["atk_dmg", "atk_bullet"] };
-  if (share.contact >= 60) return { key: "advice.crowdMove", nodes: ["mov_speed", "atk_range"] };
-  if (share.boss >= 50) return { key: "advice.boss", nodes: ["bos_dmg", "bos_tele"] };
-  if (share.gimmick >= 40) return { key: "advice.gimmick", nodes: [] };
-  return { key: "advice.hp", nodes: ["vit_hp"] };
+  if (share.shot >= 45) return adv("advice.shot");
+  if (share.contact >= 60 && sum.killsPerMin < LOW_KILLS_PER_MIN) return adv("advice.crowdDps");
+  if (share.contact >= 60) return adv("advice.crowdMove");
+  if (share.boss >= 50) return adv("advice.boss");
+  if (share.gimmick >= 40) return adv("advice.gimmick");
+  return adv("advice.hp");
 }

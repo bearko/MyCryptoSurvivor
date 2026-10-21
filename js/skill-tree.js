@@ -254,7 +254,7 @@ export function closeSkillTree() {
     const back = _returnTo;
     _returnTo.classList.remove("hidden"); _returnTo = null;
     // SPEC-146: 倒れたあとなら、 マインちゃんが「もう一度挑む」へ (= 強くしたかで言い分ける)
-    if (_retry && back.id === "gameOverModal") import("./battle/gameover.js").then((g) => g.onBackFromTree({ bought: _bought })).catch(() => {});
+    if (_retry && back.id === "gameOverModal") import("./battle/gameover.js").then((g) => g.onBackFromTree({ bought: _bought, fromTree: true })).catch(() => {});
     return;
   }
   if (!document.getElementById("titleScreen")?.classList.contains("hidden")) naviTitle({ greet: false });

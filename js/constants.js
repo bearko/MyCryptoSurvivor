@@ -136,6 +136,7 @@ export const LS_COACH_SEEN = `${LS_PREFIX}.coachSeen`;   // SPEC-042: はじめ�
 export const LS_SETTINGS = `${LS_PREFIX}.settings`;     // SPEC-044: 音量・演出を減らす
 export const LS_NAVI_TIPS = `${LS_PREFIX}.naviTips`;    // SPEC-068: マインちゃんが補足したもの (= 次からは黙る)
 export const LS_META = `${LS_PREFIX}.meta.v1`;         // SPEC-090: GUM・ゴールドダスト・スキルツリーで取った節
+export const LS_REVIVE_SEEN = `${LS_PREFIX}.reviveSeen`;   // SPEC-155: 「王妃の黄金時計で復活させてあげる」を 1 度聞いた (= 2 回目からは REVIVE の画面へ直行)。 値は "1"
 export const LS_PLAYED = `${LS_PREFIX}.played`;        // SPEC-088: 1 回でも遊び終えた (= ABSOLUTE・RTA が選べる)。 値は "1"
 
 // ============================================================

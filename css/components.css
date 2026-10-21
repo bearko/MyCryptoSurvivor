@@ -1045,7 +1045,8 @@ a.title-screen__next[href]:hover { border-color: var(--accent); }
 .gameover-modal--revive { background: rgba(15, 12, 22, 0.22); }   /* SPEC-151: 渦の canvas がもう暗くしている (= 後ろの渦がうっすら見える) */
 .gameover-modal--revive .gameover-modal__card { background: rgba(20, 16, 30, 0.42); }   /* SPEC-151: 札は半透明 (= 後ろの渦がうっすら)。 ボタンは不透明のまま */
 .gameover-modal--revive .gum-bd, .gameover-modal--revive .anl { background: rgba(0, 0, 0, 0.22); }
-.gameover-modal__clock { width: 1.5em; height: 1.5em; margin-right: 0.4em; vertical-align: -0.4em; image-rendering: pixelated; filter: drop-shadow(0 0 6px rgba(255, 215, 120, 0.8)); }
+/* SPEC-155: 木のボタン (= .result-tree-btn) と同じ並べ方。 絵と文字を 1 行に並べて折り返さない */
+.gameover-modal__clock { width: 20px; height: 20px; flex: 0 0 auto; image-rendering: pixelated; object-fit: contain; filter: drop-shadow(0 0 6px rgba(255, 215, 120, 0.8)); }
 
 .gameover-modal__card {
   width: 100%; max-width: 400px;
@@ -2025,7 +2026,7 @@ a.title-screen__next[href]:hover { border-color: var(--accent); }
 .rt-quote { color: #fff; font-weight: 800; }
 
 /* SPEC-146: 結果の画面の「もう一度挑む」 (= スキルツリーのすぐ下。 木から戻ったら脈打つ) */
-.gameover-modal__again { width: 100%; margin-top: 8px; font-size: 1.02rem; }
+.gameover-modal__again { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; white-space: nowrap; width: 100%; margin-top: 8px; font-size: 1.02rem; }
 .gameover-modal__again--pulse { animation: again-pulse 0.9s ease-in-out 4; }
 @keyframes again-pulse { 0%, 100% { transform: none; filter: none; } 50% { transform: scale(1.04); filter: brightness(1.25); } }
 :root[data-reduce-fx] .gameover-modal__again--pulse { animation: none; }

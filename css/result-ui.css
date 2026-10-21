@@ -786,3 +786,28 @@
 .result-more__arrow { transition: transform 0.2s ease; display: inline-block; }
 .result-more--open .result-more__arrow { transform: rotate(180deg); }
 .result-more-body.hidden { display: none; }
+
+/* ============================================================
+   SPEC-155: 復活の画面のおすすめの強化 (= 木へ行かずにここで) と、 PC では左に内訳と分析
+   ============================================================ */
+.picks { width: 100%; max-width: 30rem; margin: 0 auto 0.5rem; padding: 0.45rem 0.6rem 0.5rem; border-radius: 10px; background: rgba(0, 0, 0, 0.28); border: 1px solid rgba(240, 193, 75, 0.35); text-align: left; }
+.picks.hidden { display: none; }
+.picks__title { margin: 0 0 0.3rem; font-size: 0.66rem; letter-spacing: 0.1em; color: var(--muted); display: flex; justify-content: space-between; }
+.picks__gum { color: #f6e2a0; font-weight: 800; letter-spacing: 0; }
+.pick { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 0.5rem; align-items: center; padding: 0.3rem 0; border-top: 1px dashed rgba(255, 255, 255, 0.08); }
+.pick:first-of-type { border-top: 0; }
+.pick__icon { width: 34px; height: 34px; image-rendering: pixelated; object-fit: contain; }
+.pick__name { font-size: 0.86rem; font-weight: 800; color: #fff; }
+.pick__rank { font-size: 0.66rem; color: var(--muted); font-weight: 600; margin-left: 0.3rem; }
+.pick__desc { margin: 0.1rem 0 0; font-size: 0.72rem; line-height: 1.4; color: #d9d4c4; }
+.pick__buy { display: flex; flex-direction: column; align-items: center; gap: 0.05rem; min-width: 5.2rem; padding: 0.35rem 0.6rem; font-size: 0.82rem; }
+.pick__cost { font-size: 0.62rem; font-weight: 700; opacity: 0.85; }
+@media (min-width: 980px) {
+  /* PC: 内訳と分析を左に広げて、 右に結果とボタン (= 「くわしく」は要らない) */
+  #gameOverModal .gameover-modal__card { max-width: 960px; display: grid; grid-template-columns: minmax(0, 1fr) 420px; column-gap: 1.2rem; align-items: start; }
+  #gameOverModal .gameover-modal__card > * { grid-column: 2; }
+  /* 左の列は右の 9 つ (= 題・ステージ・1 行・報酬・おすすめ・木・復活・名前・戻る) ぶんの行にまたがる。 多くまたがると空の行の gap だけ札が伸びる */
+  #gameOverModal #gameOverMoreBody { grid-column: 1; grid-row: 1 / span 9; align-self: start; position: sticky; top: 0; display: block !important; }
+  #gameOverModal #gameOverMore { display: none; }
+  #gameOverModal .gum-bd, #gameOverModal .anl { max-width: none; }
+}
