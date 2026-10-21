@@ -2,7 +2,7 @@
 id: SPEC-139
 title: Skill Tree Extension Nodes — Favored Weapon (Starting Weapon Shows Up More), Per-Extension Start Level (Prep), Weapon Price Cuts
 status: Done
-pr: TBD
+pr: 177
 phase: v1.6 Skill Tree
 kind: Added
 ---
