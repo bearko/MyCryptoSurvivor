@@ -2,7 +2,7 @@
 id: SPEC-161
 title: The Skill Tree Opened From the Stage-Clear Screen Gets a "Next Node" Button in the Same Spot as "Revive", Going Straight to the Next Stage Without Returning to the Stage-Clear Screen
 status: Done
-pr: TBD
+pr: 201
 phase: v1.7 Onboarding
 kind: Changed
 ---
