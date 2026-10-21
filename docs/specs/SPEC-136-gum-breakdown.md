@@ -2,7 +2,7 @@
 id: SPEC-136
 title: GUM Breakdown With Formulas — Time, Kills, Stage Clear, Level, Leftover Gift Tickets Converted to GUM
 status: Done
-pr: TBD
+pr: 174
 phase: v1.6 Skill Tree
 kind: Changed
 ---
