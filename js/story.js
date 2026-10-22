@@ -15,12 +15,21 @@ export const LS_STORY = `${LS_PREFIX}.story`;
 
 /** ランド (= ワールド)。 名前・背景・色は MCH のランドそのもの (= Image/Backgrounds の 2x05 系) */
 export const LANDS = Object.freeze([
-  { w: 1, id: "ocean",      bg: "Image/Backgrounds/2105.png", color: "#3aa0e8" },
-  { w: 2, id: "strawberry", bg: "Image/Backgrounds/2205.png", color: "#ef5f8a" },
-  { w: 3, id: "tangerine",  bg: "Image/Backgrounds/2301.png", color: "#f59a2a" },
-  { w: 4, id: "lime",       bg: "Image/Backgrounds/2405.png", color: "#9ad33a" },
-  { w: 5, id: "grape",      bg: "Image/Backgrounds/2605.png", color: "#9b5de5" },
+  // dir: ワールドマップの方角 (= 四神。 北=玄武 オーシャン / 南=朱雀 ストロベリー / 西=白虎 タンジェリン / 東=青龍 ライム / 中央=グレープ)
+  // cryptid: ランドの守護神「クリプタイド」(128px) / sector: ランドセクタのアイコン (64px・5 段のレアリティ) = ステージの札の飾り
+  { w: 1, id: "ocean",      bg: "Image/Backgrounds/2105.png", color: "#3aa0e8", dir: "n", guardian: "genbu",   cryptid: "Image/Cryptids/01_Ocean.png",      sector: "Image/LandSectors/01_Ocean_" },
+  { w: 2, id: "strawberry", bg: "Image/Backgrounds/2205.png", color: "#ef5f8a", dir: "s", guardian: "suzaku",  cryptid: "Image/Cryptids/02_Strawberry.png", sector: "Image/LandSectors/02_Strawberry_" },
+  { w: 3, id: "tangerine",  bg: "Image/Backgrounds/2301.png", color: "#f59a2a", dir: "w", guardian: "byakko",  cryptid: "Image/Cryptids/03_Tangerine.png",  sector: "Image/LandSectors/03_Tangerine_" },
+  { w: 4, id: "lime",       bg: "Image/Backgrounds/2405.png", color: "#9ad33a", dir: "e", guardian: "seiryu",  cryptid: "Image/Cryptids/04_Lime.png",       sector: "Image/LandSectors/04_Lime_" },
+  { w: 5, id: "grape",      bg: "Image/Backgrounds/2605.png", color: "#9b5de5", dir: "c", guardian: "zeus",    cryptid: "Image/Cryptids/06_Grape.png",      sector: "Image/LandSectors/06_Grape_" },
 ]);
+/** ステージの札の飾り (= ランドセクタのレアリティ)。 大型ボス = Legendary / 中ボス (シャドー) = Rare / それ以外 = Common */
+export const SECTOR_RARITY = Object.freeze({ boss: "5_Legendary", shadow: "3_Rare", plain: "1_Common" });
+export function stageRole(recipe) {
+  return recipe?.boss ? "boss" : (recipe?.shadow ? "shadow" : "plain");
+}
+/** 中央にそびえる 天候操作装置ゼウス (= 傘シリーズのレジェンダリー) と 頂上の 覚醒魔王ファオ */
+export const TOWER = Object.freeze({ zeus: "Image/Extensions/5190.png", fao: "Image/Enemies/373.png" });
 /** ランドごとのステージ数 (= 全 25。 行がまだ無いランドは「準備中」として並ぶ) */
 export const STORY_PLAN = Object.freeze({ 1: 5, 2: 5, 3: 5, 4: 5, 5: 5 });
 

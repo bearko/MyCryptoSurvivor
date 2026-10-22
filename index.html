@@ -195,7 +195,20 @@
       <h2 class="story-map__title" id="storyMapTitle" data-kicker="STORY">ストーリー</h2>
       <p class="story-map__sub" id="storyMapSub"></p>
     </header>
-    <div class="story-map__lands" id="storyMapLands"></div>
+    <div class="story-map__board" id="storyMapBoard">
+      <svg class="story-map__paths story-map__paths--back" id="storyMapPathsBack" aria-hidden="true"></svg>
+      <div class="story-map__lands" id="storyMapLands"></div>
+      <svg class="story-map__paths" id="storyMapPaths" aria-hidden="true"></svg>
+    </div>
+    <svg class="story-map__defs" aria-hidden="true" width="0" height="0" style="position:absolute">
+      <filter id="storyMistFilter" x="-20%" y="-20%" width="140%" height="140%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.012 0.02" numOctaves="3" seed="7" result="n">
+          <animate attributeName="baseFrequency" dur="18s" values="0.012 0.02;0.016 0.024;0.012 0.02" repeatCount="indefinite" />
+        </feTurbulence>
+        <feDisplacementMap in="SourceGraphic" in2="n" scale="26" xChannelSelector="R" yChannelSelector="G" />
+        <feGaussianBlur stdDeviation="1.2" />
+      </filter>
+    </svg>
     <button class="btn btn--ghost story-map__back" id="storyMapBack">◀ モード選択へ</button>
   </section>
 
