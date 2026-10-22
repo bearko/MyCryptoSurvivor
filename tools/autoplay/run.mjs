@@ -125,6 +125,7 @@ await p.evaluate(({ K, BUY }) => {
     if (vis("bossChestModal")) { document.querySelector("#bossChestModal button, #bossChestModal .boss-chest__next")?.click(); document.getElementById("bossChestModal")?.click(); return { st: "chest" }; }
     if (vis("storySceneScreen")) { document.getElementById("storySceneNext")?.click(); return { st: "scene" }; }
     { const ru = document.querySelector(".story-rankup"); if (ru) { ru.click(); return { st: "rankup" }; } }   // 1-5 のランクアップの演出は飛ばす
+    { const bd = document.querySelector(".story-bond.is-in"); if (bd) { if (window.__shotBond) { window.__shotBond = false; return { st: "bondShot" }; } bd.click(); return { st: "bond" }; } }   // 越えた瞬間のポップアップは押して進める (= AUTO_SHOT_BOND なら押す前に 1 枚撮る)
     if (vis("storyWorldScreen") && document.querySelector(".story-world__hero")) { document.getElementById("storyWorldScreen")?.click(); return { st: "travel" }; }   // 旅の演出は飛ばす   // SPEC-165: シーン (= 5-5 の前の COVID・エンディング) は押して進める
     if (vis("heroSelectModal")) { const tiles = [...document.querySelectorAll("#heroSelectGrid .hero-tile")].filter((t) => !t.classList.contains("hero-tile--locked")); (tiles[tiles.length - 1] ?? tiles[0])?.click(); document.getElementById("heroSelectCta")?.click(); return { st: "hero" }; }   // SPEC-165: 3-2 (= 新しく仲間になった人を選ぶ)
     if (vis("skillTreeScreen")) { const root = document.querySelector('.tnode[data-id="root"]'); if (root && !root.classList.contains("has")) { root.click(); root.click(); } document.querySelector("#skillTreeScreen .tree-go:not([disabled])")?.click(); return { st: "tree" }; }   // SPEC-165: 3-1 (= 根を取って「ステージへ」)
@@ -190,9 +191,11 @@ const snapshot = async () => p.evaluate(() => ({ kills: window.__state.killCount
 const wall0 = Date.now();
 let guard = 0;
 let _dbg = 0;
+if (process.env.AUTO_SHOT_BOND) await p.evaluate(() => { window.__shotBond = true; });
 while (true) {
   await tick(STEP_MS);
   const r = await p.evaluate(() => window.__auto.step());
+  if (r.st === "bondShot") { await tick(900); await p.screenshot({ path: process.env.AUTO_SHOT_BOND }); console.error(`[${LABEL}] bond popup →`, process.env.AUTO_SHOT_BOND); continue; }
   if (process.env.AUTO_DEBUG && ++_dbg % 20 === 1) console.error("step", _dbg, JSON.stringify(r), await p.evaluate(() => ({ hp: window.__state.stats.hp, en: window.__state.battle?.enemies?.length, px: Math.round(window.__state.battle?.player?.x ?? 0), py: Math.round(window.__state.battle?.player?.y ?? 0), pause: window.__state.pauseFlags, go: !document.getElementById("gameOverModal").classList.contains("hidden") })));
   if (r.st === "play" || r.st === "paused") {
     if (r.el > MAXSEC * 1000) { const sn = await snapshot(); Object.assign(stageOf(r.idx), { timeout: true, sec: Math.round(r.el / 1000), ...sn }); run.result = "timeout"; run.samples = await p.evaluate(() => window.__auto.samples.splice(0)); run.gumAfter = sn.gum; runs.push(run); console.error(`[${LABEL}] run ${run.n}: timeout at stage ${r.idx + 1} ${Math.round(r.el / 1000)}s`); break; }
