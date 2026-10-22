@@ -67,7 +67,8 @@ test("ブレードは大きく速く、 重なった敵にも当たる。 雑魚
   // 2026-10-22: 壺・宝箱はねらう対象 (= 敵より近いか 170px の中なら先に)
   assert.match(a, /export const PROP_AIM_R = 170;/);
   assert.match(a, /if \(prop && \(propD2 < bestD2 \|\| propD2 <= PROP_AIM_R \* PROP_AIM_R\)\) return prop;/);
-  assert.match(read("../js/navi.js"), /export const EYES_FRONT = \{ pointer: "11_idle", smile: "11_idle", sparkle: "02_both_arms_up" \};/);
+  assert.match(read("../js/navi.js"), /export const EYES_FRONT = \{ pointer: "11_idle", sparkle: "02_both_arms_up" \};/);
+  assert.match(read("../js/navi.js"), /key: "navi\.mode\.story", pose: "wink"/, "モード選択の顔は wink か smile (= 作者 2026-10-22)");
   assert.match(read("../js/battle/damage.js"), /if \(!\(isStory\(\) && storyStage\(\)\?\.clear\?\.kind === "boss"\)\)/);
   assert.match(read("../js/story-map.js"), /const toModes = r\?\.unlock === "mode:NORMAL";/);
   assert.match(read("../index.html"), /id="btnModeSkillTree"/);
