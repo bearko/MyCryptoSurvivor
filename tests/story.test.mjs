@@ -39,7 +39,7 @@ test("W1〜W5 の 25 行: 1 行 1 要素 (= 新しい feature は 1 つずつ)�
   assert.match(read("js/battle/story-battle.js"), /story\.goal\.reachHere/, "目印の文は帯の文と別"); assert.equal(STORY_MAP["5-5"].sceneAfter, "ending");
   assert.match(read("js/battle/stage-transition.js"), /if \(r\.scene\) \{/, "プロローグはクリアの画面を出さない");
   assert.match(read("js/mode-select.js"), /enterStory\(\)/, "入り口はプロローグ経由");
-  assert.deepEqual(STORY_MAP["5-1"].shop.must, ["reroll"]); assert.deepEqual(STORY_MAP["3-2"].shop.must, ["ban"]); assert.deepEqual(STORY_MAP["5-2"].shop.must, ["sig"]);   // お断りは 3-2 (= 作者 2026-10-22)
+  assert.deepEqual(STORY_MAP["5-1"].shop.must, ["reroll"]); assert.equal(STORY_MAP["3-2"].shop.must, undefined); assert.deepEqual(STORY_MAP["5-2"].shop.must, ["sig"]);   // お断りは 3-2 で案内だけ (= 作者 2026-10-22: 強制すると詰む)
   assert.equal(STORY_MAP["5-3"].bondOn, "missionClear"); assert.equal(STORY_MAP["5-3"].mission.must, false);
   assert.equal(storyOverride(STORY_MAP["5-4"]).spawnIntervalMs, null); assert.equal(storyOverride(STORY_MAP["5-4"]).shopTimesMs, null); assert.equal(storyOverride(STORY_MAP["5-4"]).maxEnemies, null);
   assert.equal(storyOverride(STORY_MAP["5-5"]).bossId, S.FINAL_BOSS_ID); assert.equal(S.FINAL_BOSS_ID, 681, "ラスボスは COVID-19 (= 作者 2026-10-22)"); assert.equal(storyOverride(STORY_MAP["5-5"]).bossAtMs, 120000); assert.equal(storyOverride(STORY_MAP["5-5"]).missionFree, true); assert.equal(storyOverride(STORY_MAP["5-5"]).chestTimesMs, null);

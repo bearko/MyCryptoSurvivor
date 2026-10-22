@@ -42,14 +42,15 @@ test("店: 買った札は消える・1 回の店で 4 つまで・同じ系列�
   assert.match(sh, /s\.ce -= cost;/);
 });
 
-test("お断りのレクチャーは 3-2 (= 初めてのふつうの品ぞろえ)。 5-1 はリロールだけ", () => {
-  assert.deepEqual(STORY_MAP["3-2"].shop.must, ["ban"]);
+test("お断りは 3-2 で案内だけ (= 強制すると詰む)。 5-1 はリロールだけ", () => {
+  assert.equal(STORY_MAP["3-2"].shop.must, undefined, "お断りは強制しない (= 詰み)");
+  assert.match(read("../js/battle/shop.js"), /possible\[k\]/, "満たせない関所は開く");
   assert.deepEqual(STORY_MAP["5-1"].shop.must, ["reroll"]);
   assert.equal(storyAllows("ban", STORY_MAP["3-2"]), true);
   assert.equal(storyAllows("ban", STORY_MAP["5-1"]), true, "リロールのある店ではお断りも");
   assert.equal(storyAllows("ban", STORY_MAP["2-2"]), false);
   const ui = JSON.parse(read("../data/i18n/ui.json"));
-  for (const k of ["story.3-2.shop", "story.3-2.ban", "story.1-4.strike", "story.treeNudge", "story.goal.done", "story.1-3.ce"]) assert.ok(ui[k]?.ja && ui[k]?.en, k);
+  for (const k of ["story.3-2.shop", "story.1-4.strike", "story.treeNudge", "story.goal.done", "story.1-3.ce"]) assert.ok(ui[k]?.ja && ui[k]?.en, k);
 });
 
 test("ブレードは大きく速く、 重なった敵にも当たる。 雑魚は自分の中心まで来ない。 スマホの長押しと拡大縮小を止める", () => {

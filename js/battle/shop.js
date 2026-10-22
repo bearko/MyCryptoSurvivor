@@ -705,7 +705,10 @@ export function renderShop() {
   if (leave) {
     // SPEC-165: ストーリーで「買うまで閉じられない」 (= mustBuy)
     const done = { reroll: _rerolledHere, ban: _bannedHere, sig: _sigHere, buy: _boughtHere };
-    const left = (sr?.must ?? []).filter((k) => !done[k]);   // SPEC-165: 5-1 リロールとお断り / 5-2 固有スキル
+    // 満たす手段が無くなった関所は開く (= 作者 2026-10-22: 3-2 で全部買って ✕ が無くなり、 閉じられずに詰んだ人が出た)
+    const bannable = _offers.some((o) => !o.sold && offerFor(o.extId, new Set(s.bans)) && canBan(offerFor(o.extId, new Set(s.bans)), state.battle?.starterExtId, s.bansLeft) && s.ce >= _banCost());
+    const possible = { reroll: currentRerollCost() <= s.ce, ban: bannable, sig: true, buy: true };
+    const left = (sr?.must ?? []).filter((k) => !done[k] && possible[k]);   // SPEC-165: 5-1 リロール / 5-2 固有スキル
     const gate = (!!sr?.mustBuy && _boughtHere === 0) || left.length > 0;
     leave.disabled = gate;
     leave.textContent = left.length > 0 ? t(`story.shop.must.${left[0]}`, "やってみよう！") : gate ? t("story.shop.buy", "買おう！")

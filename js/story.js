@@ -229,9 +229,9 @@ export const STORY_STAGES = Object.freeze([
     clear: { kind: "kills", n: 40 }, targetSec: 60,
     spawn: { everyMs: 950, pool: [101, 124, 134], max: 9 }, enemyMul: { hp: 1.3, dmg: 0.5 },
     features: { ce: true, tree: true, shop: true, ban: true },
-    shop: { atMs: [20000], offers: [], only: false, price: null, mustBuy: false, must: ["ban"] },   // 選んだヒーローの店 (= ふつうの品ぞろえ)。 お断りを 1 回使うまで出られない (= 作者 2026-10-22: 序盤に不要な品を外す道具なので、 ここで)
+    shop: { atMs: [20000], offers: [], only: false, price: null, mustBuy: false },   // 選んだヒーローの店 (= ふつうの品ぞろえ)。 お断りは案内だけで強制しない (= 作者 2026-10-22: 全部買って ✕ が無くなり詰んだ人が出た。 気づいた人だけ使う機能)
     showGum: true,
-    lines: { intro: "story.3-2.intro", mid: [{ on: "firstKill", key: "story.3-2.mid" }, { on: "shopOpen", key: "story.3-2.shop" }, { on: "ban", key: "story.3-2.ban" }], clear: "story.3-2.clear" },
+    lines: { intro: "story.3-2.intro", mid: [{ on: "firstKill", key: "story.3-2.mid" }, { on: "shopOpen", key: "story.3-2.shop" }], clear: "story.3-2.clear" },
   },
   {
     id: "3-3", world: 3, hero: "keep", startExt: [],
