@@ -189,3 +189,30 @@
 .story-burst ul { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 3px 12px; font-size: 13px; }
 .story-burst li b { color: #9ef0b0; margin-right: 4px; }
 .story-burst__unlock { grid-column: 1 / -1; color: #d9c6ff; font-size: 12px; text-align: center; }
+
+/* ---------- シーン (= マインちゃんの台詞。 §3.z) ---------- */
+.story-scene { position: fixed; inset: 0; display: block; padding: 0; overflow: hidden; background: #04030a; text-align: left; }
+.story-scene::after { display: none; }
+.story-scene__bg { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 40%, #1a1430 0%, #07060f 65%, #000 100%); }
+.story-scene__bg::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 28px), repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.02) 0 1px, transparent 1px 28px); }
+.story-scene__tap { position: absolute; inset: 0; border: 0; background: transparent; cursor: pointer; }
+.story-scene__face { position: absolute; left: 50%; bottom: 34%; width: 192px; height: 256px; transform: translateX(-50%); image-rendering: pixelated; filter: drop-shadow(0 0 24px rgba(58, 160, 232, 0.5)); pointer-events: none; animation: story-face-in 0.5s ease both; }
+@keyframes story-face-in { from { opacity: 0; transform: translate(-50%, 12px); } to { opacity: 1; transform: translate(-50%, 0); } }
+.story-scene__box { position: absolute; left: 12px; right: 12px; bottom: max(18px, var(--safe-b)); min-height: 30%; padding: 14px 16px 12px; border-radius: 14px; background: rgba(8, 6, 18, 0.92); border: 1.5px solid rgba(58, 160, 232, 0.6); box-shadow: 0 0 24px rgba(58, 160, 232, 0.35); display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+.story-scene__name { font-size: 10px; letter-spacing: 3px; color: #3aa0e8; }
+.story-scene__text { margin: 0; flex: 1; font-size: 15px; line-height: 1.7; min-height: 4.2em; }
+.story-scene__foot { display: flex; align-items: center; justify-content: space-between; pointer-events: auto; }
+.story-scene__no { font-size: 11px; opacity: 0.6; }
+.story-scene__next { padding: 8px 18px; }
+
+/* ---------- 次元の裂け目 (= ゴールに着いた瞬間。 画面がゆがんで暗転) ---------- */
+body.is-rift #app { animation: story-warp 2.6s ease-in forwards; }
+@keyframes story-warp { 0% { filter: none; transform: none; } 30% { filter: hue-rotate(40deg) contrast(1.3) blur(0.5px); transform: skew(1deg, -1deg) scale(1.02); } 60% { filter: hue-rotate(-120deg) contrast(1.8) saturate(2) blur(2px); transform: skew(-3deg, 2deg) scale(1.08) rotate(1deg); } 85% { filter: hue-rotate(200deg) contrast(2.4) blur(6px) brightness(0.5); transform: skew(5deg, -4deg) scale(1.25) rotate(-2deg); } 100% { filter: blur(14px) brightness(0); transform: scale(1.6) rotate(3deg); } }
+.story-rift { position: fixed; inset: 0; z-index: 90; pointer-events: none; overflow: hidden; }
+.story-rift__ring { position: absolute; left: 50%; top: 45%; width: 20px; height: 20px; border-radius: 50%; transform: translate(-50%, -50%); border: 3px solid rgba(187, 134, 252, 0.9); box-shadow: 0 0 30px rgba(187, 134, 252, 0.8), inset 0 0 30px rgba(58, 160, 232, 0.6); animation: story-ring-out 2.2s cubic-bezier(0.2, 0.7, 0.3, 1) forwards; }
+.story-rift__ring--2 { animation-delay: 0.35s; border-color: rgba(58, 160, 232, 0.9); }
+@keyframes story-ring-out { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0.2); } 15% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -50%) scale(60); } }
+.story-rift__dark { position: absolute; inset: 0; background: #000; opacity: 0; animation: story-dark 2.6s ease-in forwards; }
+@keyframes story-dark { 0%, 55% { opacity: 0; } 100% { opacity: 1; } }
+:root[data-reduce-fx] .story-scene__face { animation: none; }
+@media (prefers-reduced-motion: reduce) { body.is-rift #app { animation: story-dark 0.6s forwards; } .story-rift__ring { animation: none; opacity: 0; } .story-rift__dark { animation-duration: 0.6s; } }

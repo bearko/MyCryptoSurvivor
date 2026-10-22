@@ -349,12 +349,29 @@ export const STORY_STAGES = Object.freeze([
     chestTimesMs: null, rareAtMs: 20000, gimmick: "beads", variants: { giant: 0.1, runner: 0.1 }, mission: null,
     boss: { id: 373, atMs: 240000, warnMs: 10000, hpMul: 0.3, dmgMul: 0.6, thunder: false },   // 覚醒魔王ファオ 13,500 HP (= 1 ステージぶんの装備の DPS 400〜600 で 25〜35 秒)
     unlock: "mode:NORMAL",
+    sceneAfter: "ending",   // クリアの画面のあとにエンディングのシーン → マップ
     showGum: true,
     lines: { intro: "story.5-5.intro", mid: [{ on: "bossWarn", key: "story.5-5.mid" }], clear: "story.5-5.clear" },
   },
 ]);
 
-export const STORY_MAP = Object.freeze(Object.fromEntries(STORY_STAGES.map((s) => [s.id, s])));
+/**
+ * プロローグ (= SPEC-165 §3.z)。 ストーリーに入ると説明なしでいきなり始まり、 上のゴールへ走るだけ。 敵は出ない。
+ * ゴールに着くとクリアの画面ではなく、 次元の裂け目 (= rift) → 暗転 → マインちゃんのシーン (= scene) → ワールドマップ。
+ * id は "1-0" (= Ocean の背景を使う。 25 行には数えない。 allStoryIds には入れない)
+ */
+export const PROLOGUE = Object.freeze({
+  id: "1-0", world: 1, hero: 10001, startExt: [{ extId: 10, level: 1 }],
+  clear: { kind: "reach", points: [{ x: 0, y: -640 }] }, targetSec: 20,
+  spawn: { everyMs: 99999, pool: [101], max: 0 }, enemyMul: { hp: 1, dmg: 0 },
+  features: {},
+  showGum: false,
+  scene: "prologue",   // ゴールに着いたら裂け目 → このシーン → ワールドマップ
+  lines: { intro: "story.1-0.intro", mid: [{ on: "reach", key: "story.1-0.reach" }], clear: null },
+});
+export const STORY_MAP = Object.freeze({ ...Object.fromEntries(STORY_STAGES.map((s) => [s.id, s])), [PROLOGUE.id]: PROLOGUE });
+/** プロローグを通ったか (= 進みの cleared に "1-0") */
+export function prologueDone(progress) { return progress.cleared.includes(PROLOGUE.id); }
 
 /** 全 25 の id (= 行が無いものも並ぶ。 ランドマップの丸) */
 export function allStoryIds() {

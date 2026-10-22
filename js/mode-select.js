@@ -20,7 +20,7 @@ import { naviTitle } from "./navi.js";
 import { startTitleBgm } from "./ui-sound.js";
 import { hasPlayed, isModeLocked } from "./played.js";
 import { hasClearedEasy } from "./easy.js";   // SPEC-147
-import { showStoryMap } from "./story-map.js";   // SPEC-165
+import { enterStory } from "./story-map.js";   // SPEC-165
 import { loadStory, allStoryIds } from "./story.js";   // SPEC-165
 
 let _wired   = false;
@@ -58,7 +58,8 @@ function _applyLocks() {
   const easyCleared = hasClearedEasy();
   // SPEC-147: EASY の札 (= 初めての人には光らせる。 クリア済みなら印)
   const easyCard = _$("modeCardEasy");
-  easyCard?.classList.toggle("mode-card--recommend", !played && !easyCleared);
+  easyCard?.classList.remove("mode-card--recommend");   // SPEC-165: おすすめはストーリー (= EASY は最後の PR で外す)
+  _$("modeCardStory")?.classList.toggle("mode-card--recommend", !played && !easyCleared);
   _$("modeCardEasyDone")?.classList.toggle("hidden", !easyCleared);
   for (const { mode, cardId, lockId } of _LOCKABLE) {
     const card = _$(cardId);
@@ -84,7 +85,7 @@ function _wireOnce() {
   _wired = true;
 
   _$("btnModeEasy")?.addEventListener("click", () => _pick(REGULATION_NORMAL, { easy: true }));   // SPEC-147
-  _$("btnModeStory")?.addEventListener("click", () => { state.storyId = null; state.easyMode = false; state.rtaMode = false; playWipe(() => { hideModeSelect(); showStoryMap(); }, { label: "STORY // MAP" }); });   // SPEC-165
+  _$("btnModeStory")?.addEventListener("click", () => { state.storyId = null; state.easyMode = false; state.rtaMode = false; playWipe(() => { hideModeSelect(); enterStory(); }, { label: "STORY" }); });   // SPEC-165: プロローグをまだ通っていなければ、 説明なしでいきなり 1-0
   _$("btnModeNormal")?.addEventListener("click", () => _pick(REGULATION_NORMAL));
   _$("btnModeAbsolute")?.addEventListener("click", () => _pick(REGULATION_ABSOLUTE));
   // SPEC-040: RTA は NORMAL のルール + rtaMode

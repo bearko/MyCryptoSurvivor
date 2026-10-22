@@ -229,6 +229,17 @@
     <p class="story-world__hint" id="storyWorldHint"></p>
   </section>
 
+  <section id="storySceneScreen" class="title-screen story-scene hidden">
+    <div class="story-scene__bg" aria-hidden="true"></div>
+    <button type="button" class="story-scene__tap" id="storySceneTap" aria-label="next"></button>
+    <img class="story-scene__face" id="storySceneFace" alt="" draggable="false" />
+    <div class="story-scene__box">
+      <span class="story-scene__name">NAVI // MINE</span>
+      <p class="story-scene__text" id="storySceneText"></p>
+      <div class="story-scene__foot"><span class="story-scene__no num" id="storySceneNo"></span><button type="button" class="btn story-scene__next" id="storySceneNext">▶</button></div>
+    </div>
+  </section>
+
   <div id="storyStageModal" class="story-stage-modal hidden" role="dialog" aria-modal="true">
     <div class="story-stage-modal__dim" id="storyStageDim"></div>
     <div class="story-stage-modal__card" id="storyStageCard"></div>

@@ -166,6 +166,11 @@ function _storyClear() {
   if (r.unlock === "hero:4006") import("../hero-unlock.js").then((H) => H.unlockEasyReward()).catch(() => {});   // SPEC-165: 3-1 でビリー・ザ・キッドが仲間に
   if (r.unlock === "mode:NORMAL") import("../easy.js").then((E) => E.markEasyCleared()).catch(() => {});   // SPEC-165: 5-5 で NORMAL が開く (= いまのスイッチを立てる。 最後の PR でロックを差し替える)
   state.battle.gameOver = true;
+  if (r.scene) {   // SPEC-165 §3.z: プロローグ (= クリアの画面を出さず、 裂け目 → 暗転 → シーン → マップ)
+    pauseTime();
+    import("../story-map.js").then((m) => m.playRift(() => leaveStoryToMap()));
+    return;
+  }
   pauseTime();
   _wireOnce();
   _renderTransitionModal();
