@@ -855,5 +855,12 @@
   "story.5-5.clear": {"ja": "ファオ撃破！ ストーリー全クリア！ NORMAL が開いたよ。 ここからが本当の始まり——いっしょに走ろう！", "en": "Fao is down! Story complete! NORMAL is now open. This is where it really begins — let's run together!"},
   "shadow.xiangyu.appear": {"ja": "力は山を抜き、 気は世を蓋う。 来い！", "en": "My strength uproots mountains, my spirit covers the world. Come!"},
   "shadow.xiangyu.win": {"ja": "……天が我を滅ぼすのだ。 見事。", "en": "...It is Heaven that destroys me. Well fought."},
-  "shadow.xiangyu.lose": {"ja": "烏江の水は、 まだ流れている。", "en": "The Wu River still flows."}
+  "shadow.xiangyu.lose": {"ja": "烏江の水は、 まだ流れている。", "en": "The Wu River still flows."},
+  "story.guardian.genbu": {"ja": "北 ・ 玄武", "en": "North · Black Tortoise"},
+  "story.guardian.suzaku": {"ja": "南 ・ 朱雀", "en": "South · Vermilion Bird"},
+  "story.guardian.byakko": {"ja": "西 ・ 白虎", "en": "West · White Tiger"},
+  "story.guardian.seiryu": {"ja": "東 ・ 青龍", "en": "East · Azure Dragon"},
+  "story.guardian.zeus": {"ja": "中央 ・ 天候操作装置", "en": "Center · Weather Control"},
+  "story.map.tower": {"ja": "天候操作装置ゼウス ・ 頂上にファオ", "en": "Zeus · Fao at the top"},
+  "story.map.sealed": {"ja": "四方を越えると現れる", "en": "Rises once the four lands fall"}
 }
