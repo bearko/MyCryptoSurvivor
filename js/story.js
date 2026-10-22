@@ -85,6 +85,8 @@ export const HEAL_DROP_BELOW = 0.5;
  *   bondOn                : この出来事で絆を結ぶ (= "missionClear"。 シャドーの無い絆)
  *   bond.burst            : 越えた瞬間の報酬ラッシュの上書き (= 既定は BOND_BURST。 { ce, cards, heal, gum })
  *   map                   : { x, y } ワールド詳細 (S-B) での札の位置 (= 画面の %。 無ければ MAP_PATH)
+ *   spawn.from            : "sides" = 左右と下からだけ湧く (= 1-0。 上のゴールの側からは来ない)
+ *   bounds                : { x, yMax } 見えない壁 (= 1-0。 |x| ≤ x・y ≤ yMax。 上は自由)
  *   clear                 : { kind: "kills", n } | { kind: "survive", sec } | { kind: "reach", points: [{ x, y }] } | { kind: "collect", n } | { kind: "boss" }
  *                           | { kind: "shadowSurvive", sec } | { kind: "shadowDefeat" } (= シャドーの試練。 §6)
  *   shadow                : { id, giver, mode: "survive" | "defeat", atMs, hp, dmg, speed, moves, aura: { spawnMul, speedMul } } (= battle/shadow.js)
@@ -364,8 +366,10 @@ export const STORY_STAGES = Object.freeze([
  */
 export const PROLOGUE = Object.freeze({
   id: "1-0", world: 1, hero: 10001, startExt: [{ extId: 10, level: 1 }],
-  clear: { kind: "reach", points: [{ x: 0, y: -640 }] }, targetSec: 20,
-  spawn: { everyMs: 99999, pool: [101], max: 0 }, enemyMul: { hp: 1, dmg: 0 },
+  clear: { kind: "reach", points: [{ x: 0, y: -640 }], radius: 260 }, targetSec: 20,   // radius: 壁ぎわを走っても素通りしない (= 横いっぱい)
+  // 敵は左右と下から数体だけ (= 追われてゴールへ走る感じ。 立ち止まっても死なない痛さ)
+  spawn: { everyMs: 2600, pool: [101], max: 3, from: "sides" }, enemyMul: { hp: 0.6, dmg: 0.2 },
+  bounds: { x: 240, yMax: 260 },   // 見えない壁 (= 左右 ±240・下は 260 まで。 上はゴールまで)
   features: {},
   showGum: false,
   scene: "prologue",   // ゴールに着いたら裂け目 → このシーン → ワールドマップ
@@ -414,6 +418,8 @@ export function storyOverride(recipe) {
     warnMs: boss?.warnMs ?? 5000,
     shopTimesMs: f.shop && recipe.shop ? (recipe.shop.atMs === null ? null : [...recipe.shop.atMs]) : [],   // null = 本番の表
     spawnIntervalMs: recipe.spawn === null ? null : (recipe.spawn?.everyMs ?? 1200),   // null = 本番の式
+    spawnFrom: recipe.spawn?.from ?? null,
+    bounds: recipe.bounds ?? null,
     enemyHpMul: recipe.enemyMul?.hp ?? 1,
     enemyDmgMul: recipe.enemyMul?.dmg ?? 1,
     bossHpMul: boss?.hpMul ?? 1,
@@ -512,8 +518,8 @@ export function reachPoints(clear) {
   return Array.isArray(clear.points) ? clear.points : [{ x: clear.x ?? 0, y: clear.y ?? 0 }];
 }
 /** いまの地点に触れたか (= 純関数) */
-export function reachedPoint(pt, px, py) {
-  return !!pt && Math.hypot((px ?? 0) - pt.x, (py ?? 0) - pt.y) <= REACH_RADIUS;
+export function reachedPoint(pt, px, py, radius = REACH_RADIUS) {
+  return !!pt && Math.hypot((px ?? 0) - pt.x, (py ?? 0) - pt.y) <= radius;
 }
 
 /**
