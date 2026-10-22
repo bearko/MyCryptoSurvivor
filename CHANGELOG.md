@@ -5,7 +5,436 @@
 ## [Unreleased]
 
 <!-- BEGIN AUTO-UNRELEASED -->
-- （まだありません）
+### Added — SPEC-165 (= Story Mode — Five MCH Lands, 25 Short Stages That Teach One Element Each With a Forced Path, Shadow-Hero Trials as Mid-Bosses That Become NORMAL Mission Givers, Big Bosses Only at 3-5 and 5-5, Replacing EASY and Unlocking NORMAL at the End)
+- **ストーリーモード（β）の土台と W1 オーシャン** (`js/story.js` + `js/story-map.js` + `js/battle/story-battle.js` + `css/story.css` + 戦闘側の差し込み): 5 ランド × 25 ステージのレシピの型（湧き・敵・店の固定・ゲート・クリア条件・文）、 ランドマップ（一本道・遊び直し・準備中）、 EASY の上書きと同じ形で戦闘に読ませる `storyOverride()`。 クリア条件は 倒す・耐える・到達（地点の列）・集める・ボス。 W1 の 5 行（自動攻撃 → 店でただのエリートブレード → CE で本を買う → ハートで回復 → 光る地点へ・呂布の顔見せ）と文 15 本＋α。 モード選択に「ストーリー（β）」の札（EASY は残す）。 自動プレイ `--mode story --stage 1-1 --count 5`
+- **シャドーの試練と W2 ストロベリー** (`js/battle/shadow.js` + `js/story.js` + `js/battle/story-battle.js`): シャドーヒーローを中ボスに（ボスの型を借り、 ミッションの効き目をオーラに。 耐える = 削れない / 倒す = HP あり。 場は縮めない）。 絆 `mcs.story.bonds` と報酬（ギフト券・解放）。 W2 の 5 行（2 品から選ぶ → 全部は買えない → 宝箱・壺・棒磁石で CE を集める → アレキサンダーの試練 15 秒 → 呂布の試練 20 秒）と文。 宝箱の中身の固定・拾った瞬間の一言
+- **W3 タンジェリン** (`js/story.js` + `js/story-map.js` + `js/skill-tree.js` + 戦闘側): 3-1 はステージの前にスキルツリー（根を取るまで「ステージへ ▶」が押せない）・クリアでビリー・ザ・キッドが仲間に、 3-2 からヒーロー選択（`hero: "select"` / `"keep"`）、 3-3 はレアエネミーとギフト券（店で 1 品買うまで出られない）、 3-4 は撃つ敵（赤い線）、 3-5 は初の大型ボス ディープ・ヨシュカ（HP ×0.1・雷鼓・ハート）。 ストーリーの店はリロール・お断り・固有スキルを W5 まで隠す。 絆のギフト券を各ステージの店で持って始める
+- **W4 ライム** (`js/story.js` + `js/battle/enemies.js` + `js/battle/gimmicks.js` + `js/battle/missions.js` + `js/battle/field.js` + `js/perks.js`): 4-1 は型のついた雑魚（巨人・走る）をレシピの割合で、 4-2 はそろばんの珠（種類と痛さもレシピ）、 4-3 はアレキサンダーのミッション★1（断れない・★は決め打ち）、 4-4 は懐中時計と合体ロボ（宝箱の中身を順に固定）、 4-5 はゴースト・織田信長を倒す（鉄砲隊つき）。 絆で雷鼓の対ボスが 30% に
+- **W5 グレープ** (`js/story.js` + `js/battle/shop.js` + `js/battle/missions.js` + `js/battle/story-battle.js` + 戦闘側): 5-1 は店の全部（リロールとお断りを使うまで出られない）、 5-2 は固有スキルの強化とマジックカード（1 段上げるまで出られない・足りなければ手持ちで）、 5-3 は武田信玄の★3「風林火山」（断ってもよい。 達成で絆: 合体ロボ）、 5-4 は本番の湧きでゴースト・項羽を倒す（絆: ギフト券 ×3）、 5-5 は本番の 4 分 → 覚醒魔王ファオ（クリアで NORMAL が開く）。 25 ステージがそろった
+- **ワールドマップ** (`js/story-map.js` + `css/story.css` + `index.html`): ランドの一覧を 1 画面の地図に。 四方に四神のランド（北=玄武 オーシャン / 南=朱雀 ストロベリー / 西=白虎 タンジェリン / 東=青龍 ライム）、 中央に W1〜W4 を越えると立つ 天候操作装置ゼウス と 頂上のファオ。 板はランドの絵に黒い板（α 0.8）、 見出しにクリプタイド、 札にランドセクタのアイコン（大型ボス Legendary / 中ボス Rare / ほか Common）。 開いていないランドは揺れる黒い靄（晴れる瞬間に上へ抜ける）。 ランドの中は折れ線の道、 ランド間は板の裏を通る道
+- **絆の報酬ラッシュ** (`js/battle/story-battle.js` + `js/story.js` + `js/meta.js` + `js/meta-ui.js`): シャドーの試練を越えた瞬間（5-3 はミッション達成の瞬間）に、 足もとへ CE の宝石の輪（120）・マジックカード ×2・ハートが降り、 ギフト券はその場で財布へ、 GUM +30 がクリアの内訳に「絆の報酬」の行で乗る。 画面の真ん中に中身の札（解放したものも）。 作者の方針「報酬は早めに・一気に」
+- **札の飾りをアチーブメントのアートに** (`js/story.js` + `js/story-map.js`): ワールドマップのステージの札に、 MCH のアチーブメント（ランドのクリプタイドの像）を置く。 大型ボス = 金（King 就任）/ 中ボス = 銀（G5 10 回）/ それ以外 = 銅（G5 3 回）
+- **ワールドマップ v2** (`js/story-map.js` + `css/story.css` + `index.html` + `js/story.js`): 3 画面に。 S-A は暗い海の上に 4 つのランドの背景を領土の形に切り抜いた地図（札 1 枚・靄・雲・道・中央の島と塔・ランドへズーム）、 S-B はそのランドの背景を全面に 5 つの札を道で結ぶ（中ボスとボスの上に影・マインちゃんの一言）、 S-C はステージの説明（クリア条件・エネミー・報酬・ヒーロー・一言・自己ベスト）から開始。 結果の「マップへ」はいたランドへ
+- **プロローグと台本** (`js/story.js` + `js/story-map.js` + `js/battle/stage-transition.js` + `js/mode-select.js` + `js/navi.js`): ストーリーに入るといきなり戦闘（1-0。 上の光る地点へ走るだけ）。 着くと次元の裂け目（画面がゆがんで暗転）→ マインちゃんのシーン（世界線・封印・クリプタイド・ファオ。 5 つ）→ ワールドマップ。 5-5 のあとにエンディングのシーン。 ランド名を英名に。 モード選択の案内を「まずはストーリーから」に（ストーリーの札が光る）。 ステージの説明の札は例外が出ても開く
+- **ラスボスを COVID-19 に・台詞・不具合 2 件** (`js/story.js` + `js/story-map.js` + `js/constants.js` + `js/battle/boss-moves.js` + `data/enemies.json` + `js/mode-select.js` + `css/story.css`): 5-5 のボスと塔の頂上を COVID-19（681。 ウイルスをバラまく = 放射が多い）に。 5-5 の前に COVID のシーン、 後のエンディングも COVID の一言から。 地図に戻ったときの一言（ランドを取り戻した・塔が立った）。 封印されたヒーローは「解放」。 ストーリーの入り口でワイプを二重に掛けて真っ暗のまま止まっていたのを直した。 スマホでヒーロー選択の × が共通基盤のチャットのボタンと重なっていたのを右に寄せた
+- **プロローグの手ざわり** (`js/story.js` + `js/battle/enemies.js` + `js/battle/player.js` + `js/battle/story-battle.js`): 1-0 に敵を左右と下から数体（追われてゴールへ）、 見えない壁（横と下に脱線しない）、 自分からゴールへの黄色い道筋。 目印の文に {now} / {goal} が残っていたのを直した
+- **1-1 の札が出ない不具合・光の道筋・固有名詞の色** (`css/story.css` + `js/battle/story-battle.js` + `js/rich-text.js` + `js/navi.js` + `js/story-map.js`): ステージの説明の札がワールド詳細の画面の裏に隠れていた（z-index）。 1-0 の道筋を光る帯・流れる破線・光の粒にし、 近づくほど濃く太く速く。 マインちゃんの台詞で固有名詞（ランド・人・COVID・クリプタイド）を橙で目立たせる
+- **1-4 のパンケーキ・1-5 のランクアップ・2-2 の取捨選択・旅の演出** (`js/story.js` + `js/battle/story-battle.js` + `js/battle/story-fx.js` + `js/battle/shadow.js` + `js/battle/shop.js` + `js/battle/stage-transition.js` + `js/story-map.js`): 1-4 は真ん中の上にパンケーキを確定で置いて光る道筋で誘導（取るまでクリアしない）。 1-5 は移動の練習のあと真ん中に呂布（小手調べ）、 3 回当てると店が開き、 ブレード → エリートブレードのランクアップの演出、 呂布を倒してクリア。 ランドの最後は「マップへ」だけ（新しいランドの札が弾む）。 2-2 は 4 品・値段 ×1.6。 結果の「次のステージへ」は詳細の画面に戻ってヒーローが次の札へ歩く旅（押すと飛ばせる）
+- **1-2 はりんご・越えた瞬間のポップアップ** (`js/story.js` + `js/battle/story-battle.js`): 1-2 の店はりんご（攻撃力）に（ランクアップは 1-5）。 シャドーの試練を越えた瞬間（5-3 の絆も）、 相手の大きな絵・名前・一言・絆の報酬を 1 枚のポップアップで出し、 時間を止めて押すまで待つ
+- **持ち物はストーリーのあいだ残る** (`js/story.js` + `js/battle/index.js` + `js/battle/stage-transition.js`): クリアの瞬間にヒーロー・装備・CE・固有スキルの段を `mcs.story.loadout` に覚え、 次のステージはレシピの開始装備を底にして重ねる（タイトルに戻っても消えない）。 2-2 の「全部は買えない」は開いた瞬間の CE に合わせる（`shop.fit`）。 木の「次のノードに挑む」はストーリーなら旅の演出へ（`js/skill-tree.js`）
+- **EASY の撤去・NORMAL のロックはストーリーのあと・絆の報酬は NORMAL でも・`survivor.story`** (`js/easy.js` + `js/bonds.js` + `js/mode-select.js` + `js/platform.js`): モード選択の EASY の札・`EASY_STAGES`・レッスン・根まで弱いヒーロー・根なしのゲートを撤去。 NORMAL の 🔒 は「ストーリーを最後までクリア」（遊んだことがある人・旧 EASY をクリアした人は開いたまま）。 絆の雷鼓 30% と出し手の優先は NORMAL でも（すでに遊べる人は最初から）。 25 のクリアで共通基盤の実績 `survivor.story`。 SPEC-147 / 154 / 164 は Superseded。 録音の台本 `docs/voice/script-story-*.csv`
+
+### Changed — SPEC-164 (= EASY Guidance Gates — No Ring on the CE Lesson, Skill-Tree-Only Revive Before the Root, Root-First Skill Tree, and a Gentle Stage 2 (Harmless Mobs, Long Boss, Thunder Drum for Half))
+- **EASY の導線のゲートと、 ステージ 2 のやさしさ** (`js/lesson.js` + `js/battle/gameover.js` + `js/skill-tree.js` + `js/easy.js` + `js/battle/field.js` + `css/result-ui.css` + `css/skill-tree.css`): CE のレッスンに黄色い輪を出さない。 根なしの REVIVE は「スキルツリーへ」を大きく出し、 ランキング送信・名前・タイトルに戻るは押せない。 木は根（サバイバーの覚醒）を取るまで 復活する・戻る・道・一括解放 を押せない。 EASY ステージ 2 は根があれば雑魚がほぼ痛くなく（攻撃 ×0.6）、 ボスは痛くないが長い（HP 4,050・攻撃 ×0.3）、 雷鼓が HP の半分を削る。 根なしは ×0.5。 雷鼓のレッスンがステージ番号のズレで出ていなかったのを直す
+
+### Changed — SPEC-163 (= Balance Pass Around the Expected DPS Curve — Gentler Spawn Flood and Density, HP-Based Stage Scaling for Carried-Over Gear, Bigger Bosses, Stronger Skill Tree Ranks, Repeat-Buy Shop Cards, a Desk Simulator and a Fast Autoplay Harness) — merged in #203
+- **DPS の期待値に合わせたバランス調整と、 sim・自動プレイ** (`js/constants.js` + `js/battle/boss-moves.js` + `js/easy.js` + `js/skill-data.js` + `js/perks.js` + `js/battle/shop.js` + `tools/sim/balance.mjs` + `tools/autoplay/run.mjs`): 始まりの湧きを初期武器 Lv.1 の DPS より下に（0.8 秒 × 1.4 / 1.1 / 0.9）、 洪水 ×4 / ×7 / ×9・群れを小さく遅く・密度の目標 0.3 / 0.7 / 0.95。 ステージ 2・3 は数ではなく HP（×2.2 / ×3.5）で強く。 ボスの HP は `BOSS_MOVES.hpMul` を 1 にして最終値 12,000 / 45,000 / 100,000 を `ENEMY_SPECS` に（60,000 / 90,000 / 90,000 から）。 木の段ごとの効き目を上げ（HP 6%・被ダメ −4%・攻撃 5%・CD −3%）、 得意武器は土台 50% ＋ 段 15%。 店は同じ札を続けて買え、 値段の表は 15 / 20 / 30 / … / 3,300。 EASY のステージ 2 は攻撃 ×1.7・ボス ×0.6（ボスの実体 HP は 180 / 1,440 のまま）。 机上 sim と Playwright の自動プレイを `tools/` に
+
+### Changed — SPEC-162 (= Extensions and CE Carry Over Between Stages, Extension Levels Go to 15 (Rank Up Every 3 Levels, the Old Max Is Level 10, Levels 11–15 Go Beyond, LL at 16), and the Shop Price Table Spans 15 Levels) — merged in #202
+- **装備と CE のステージ間の引き継ぎ・エクステンション 15 段階** (`js/ext-level.js` + `js/battle/index.js` + `js/battle/stage-transition.js` + `js/extensions.js` + `js/battle/extensions-as-weapons.js` + `js/battle/buffs.js` + `js/battle/shop-logic.js` + `js/constants.js`): 装備と CE はステージをまたいで残る（同じステージのやり直しは入ったときに戻す）。 レベルは 15 段（3 段ごとにランク。 Lv.10 が今までの Lv.5、 Lv.11〜15 はその先、 LL は 16）。 店の値段は 15 段の表、 ギフト券はランクで、 仕込みは 1 段 = 2 Lv
+
+### Changed — SPEC-161 (= The Skill Tree Opened From the Stage-Clear Screen Gets a "Next Node" Button in the Same Spot as "Revive", Going Straight to the Next Stage Without Returning to the Stage-Clear Screen) — merged in #201
+- **ステージクリアから開いた木に「次のノードに挑む」** (`js/skill-tree.js` + `js/battle/stage-transition.js`): REVIVE から開いたときの「復活する」と同じ場所に置き、 押すとステージクリアの画面に戻らずそのまま次のステージへ
+
+### Changed — SPEC-160 (= On the Second Death Onward the REVIVE Screen Opens Straight Away and Mine Encourages From the Bottom Dock (Icon and Bubble) Before the Advice, With No Extra Screen) — merged in #200
+- **2 回目からは REVIVE の画面の下でマインちゃんが励ます** (`js/battle/gameover.js`): 王妃の黄金時計の説明（全身）は初回だけのまま、 2 回目からは画面を増やさず、 REVIVE の画面の下の帯（アイコンと吹き出し）で「惜しかったね…」「頑張ったね！…」「まだまだこれから！…」を順に言ってから、 おすすめや入口の案内。 EASY もレッスンを見終えた 2 回目から同じ
+
+### Changed — SPEC-159 (= Fourth Batch of Mine's Recordings — 89 WAVs Matched to the Line Script, 32 New Voices Converted to MP3 (Existing Voices Kept for the 57 Duplicates), Wired to the Mission, Revive, Advice, Lessons, Telops, Boss Warning and EASY Stage Line, and the Originals Removed) — merged in #199
+- **マインちゃんの 4 回目の録音（89 本）を取り込み** (`assets/voice/mine/` + `js/voice-lines.js` + `tools/voice/build.mjs` + `js/navi.js` + `js/battle/missions.js` + `js/result-telop.js`): 既存のボイスと同じ 57 本は既存を優先して捨て、 新しい 32 本（ミッション・復活・木から戻ったとき・EASY のすすめ・レッスン 15・おすすめ 6・EASY のステージ・ボスの予告・テロップ 3）を MP3 にして登録。 録音で言い回しが変わった 8 行は字幕を合わせた。 元の WAV と TXT は消した
+
+### Changed — SPEC-158 (= Stage-Clear Screen Rebuilt Like REVIVE (Small Stats Line, Big GUM and Gold Dust, Breakdown Under "Details" or in the Left Column on PC), a Victory Jingle When the NODE CLEAR Band Appears, Two Columns Decided by the Card's Available Width So the Open Chat Dock Makes Three Clean Columns, and #ポチゲー in the X Post Body) — merged in #198
+- **ステージクリアの画面を REVIVE と同じ組み立てに・勝利の SE・ドックと 3 列・X の #ポチゲー** (`index.html` + `js/battle/stage-transition.js` + `css/result-ui.css` + `css/components.css` + `js/share-x.js`): 時間・撃破・レベルは 1 行の小さな字、 GUM とゴールドダストは大きく、 内訳と CE の振り先は「くわしく」（PC では左の列）。 NODE CLEAR の帯が出る瞬間に勝利のジングル。 2 列にするかは窓ではなく札の置き場の幅で決める（チャットのドックが開いていればデータ・結果・チャットの 3 列）。 X の投稿の本文に #ポチゲー
+
+### Changed — SPEC-157 (= Bulk Unlock of Every Claimable Skill Cheapest First With a Gold Dust Toggle, a Yellow Frame Around the Selected Node, the "Available Skills" Button Selecting the Node, and No Recommended Upgrade Until the Root Is Owned) — merged in #197
+- **木の一括解放・選んだ節の黄色い枠・「解放可能なスキル ▶」** (`js/skill-bulk.js` + `js/skill-tree.js` + `css/skill-tree.css` + `js/battle/revive-picks.js`): 何も選んでいないときの欄に「{n} 個を一括解放（GUM …）」と「ゴールドダストも使う」の切り替え（安い順に、 買えなくなるまで）。 選んだ節は黄色い枠（盤の clip-path の外に）。 「解放できます ▶」は「解放可能なスキル ▶」に（押すとその節を選ぶ）。 REVIVE の画面のおすすめは根を取ってから（初回は「スキルツリーへ」から）。 SPEC-156 の頭に出ていた "null" を直す
+
+### Changed — SPEC-156 (= The Skill Tree and the Result Screen Shrink by the Width of the Chat Dock, With a Button in the Tree Header to Collapse or Expand the Chat) — merged in #196
+- **チャットのドックのぶん、 木と結果の画面を狭める** (`js/chat-dock.js` + `js/platform.js` + `js/skill-tree.js` + `css/skill-tree.css` + `css/components.css`): PC で右に固定のチャット（SDK のドック・320 px）が木の右の列に重なっていた。 ドックが見えているあいだだけ `--chat-dock: 320px` を置き、 スキルツリーと結果・REVIVE の画面を `right` で避ける。 木の広い画面の判定もドックを引いた幅で。 木の頭に「チャットをたたむ／ひらく」のボタン
+
+### Changed — SPEC-155 (= Recommended Upgrades Bought in One Tap on the Revive Screen, a Two-Column Revive Screen on PC, the Revive Explanation Only Once, the Clock Icon Kept on One Line, Camera Centered Before the First Frame After Reviving, and the Line Script With Variables Expanded Into Real Words) — merged in #194
+- **復活の画面のおすすめの強化・PC の 2 列・説明は初回だけ** (`js/battle/revive-picks.js` + `js/battle/gameover.js` + `css/result-ui.css` + `tools/voice/lines-csv.mjs`): REVIVE の画面に「おすすめの強化」を 3 つまで（倒れた理由のおすすめ → 安い順。 根をまだなら根だけ）。 木へ行かずにその場で強化できる。 PC（980 px 以上）では GUM の内訳と分析を左の列に出す。 復活のしかたの説明（マインちゃんの全身と時計）は初回だけで、 2 回目からは REVIVE の画面へ直行。 「復活する」の時計の絵は木のボタンと同じ並べ方で 1 行に。 復活の直後にステージの外が映っていたのを直す（カメラを最初のコマから自分に）。 台本の CSV は `{stage}` などを実際の語に展開（89 行）
+
+### Changed — SPEC-154 (= Lessons as the Top Comm Bubble With a Cursor (No Cut-Ins, Game Keeps Running), EASY Cut to Two Stages, Shop Gauge Fixed on Stages 2/3, Skill Tree Reachable From the Stage-Clear Screen Once Awakened, and the Boss Chest Turning Into the Gold Dust Icon)
+- **レッスンは止めずに画面の上で・EASY は 2 ステージ** (`js/lesson.js` + `js/lesson-cursor.js` + `js/easy.js` + `js/battle/shop-logic.js`): EASY のレッスンは真ん中のカットインをやめ、 初めてのひとことと同じ画面の上の通信窓（止まっている画面では下の帯・木では木の上）で話す。 CE・店のゲージ・ボスの赤いエリア・レアにはカーソル（輪と指）。 EASY は 2 ステージ（ステージ 2 が負ける設計）。 ステージ 2・3 で 0 のままだった店のゲージを直す。 根を取ってあればステージ 1 のクリア画面から木へ。 ボスの宝箱は開くとゴールドダストの絵に
+
+### Changed — SPEC-153 (= EASY Stage Line in Seconds, Compact Revive Screen That Emphasizes GUM and Gold Dust, Shake Edge Fix, Mine's Boss Warning, Boss Chest Opening for Gold Dust, No Achievements in EASY, MCH Warrior Only in EASY With Billy the Kid as the Clear Reward, and the One-Column Line Script) — merged in #192
+- **EASY の仕上げ・復活の画面の圧縮・ボスの宝箱** (`js/battle/boss-chest.js` + `js/hero-unlock.js` + `js/navi.js` + `js/battle/render.js`): EASY のステージ 1 の告げ声は「15 秒でボスが来るよ」。 復活の画面は時間・撃破・レベルを 1 行にして GUM とゴールドダストを大きく、 内訳と分析は「くわしく」に畳む（スクロール無しで「復活する」まで）。 被弾の揺れで画面の縁に暗い層のずれが見えていたのを直す。 ボスの予告でマインちゃんが「中央の赤いエリアにボスが来るよ！」。 ボスを倒すと宝箱が落ちてきて、 開けるとゴールドダスト（ここで足す）。 EASY ではアチーブメントを送らない。 EASY は MCHウォーリアーだけで、 クリアするとビリー・ザ・キッドが仲間に（前から遊んでいた人はそのまま）。 マインちゃんの日本語のセリフを `docs/voice/script-mine.csv` に（`node tools/voice/lines-csv.mjs`）。 切り出した描画の関数が局所変数を参照していて自分より上の層が描けていなかったのを直す
+
+### Changed — SPEC-152 (= Revive Polish — Stay Dark Until the Pixels Rain In, Skill Tree Not Dimmed by the Vortex, No Opening Shop in EASY (Opening Shop Becomes the "Early Opening" Node), and the Frozen Screen-Shake Offset) — merged in #191
+- **復活の仕上げ・開幕の店は節に・揺れの残り** (`js/battle/revive-fx.js` + `js/battle/shop-logic.js` + `js/skill-data.js` + `js/battle/fx.js`): 「復活する」のあと粒子が吸い込まれ終わって降りこみ始めるまで黒画面のまま。 スキルツリーを開いているあいだ渦を隠す（木が半透明に見えていた）。 EASY のステージ 2・3 の開幕の店をやめ、 NORMAL の開幕の店は節「先行オープン」（強化の目利き・150 GUM）で開く（無ければ 0:10 から。 RTA は今までどおり）。 止まっているあいだは被弾の揺れを 0 に（暗い層がずれたまま残っていた）
+
+### Changed — SPEC-151 (= Revive v2 — Slow Damage SE Instead of the Lose Jingle, Pixels Gather Into a Spinning Spindle Vortex, Mine Appears Full-Body With the Golden Watch, Translucent Result Over the Vortex, Sink on Revive, Pixels Rain Down Into the Hero on the Stage; Lesson Voice No Longer Overlaps the Stage Call) — merged in #189
+- **復活の演出 v2** (`js/battle/revive-fx.js` + `js/battle/gameover.js`): 倒れたときは lose のジングルを鳴らさず、 ダメージの SE をゆっくり。 粒子は舞い上がったあと画面の真ん中の紡錘の渦に集まって回り続け、 マインちゃんが全身で王妃の黄金時計の絵とともに「復活させてあげる」。 言い終えたら半透明の結果の画面が渦の上に。 「復活する」で渦が下へ吸い込まれ、 ステージの真ん中に上から粒子が降りこんでヒーローの姿になる。 EASY のレッスンは、 ステージの告げ声が終わってから出る（声を重ねない）
+
+### Changed — SPEC-150 (= Revive Instead of Retry — Hero Dissolves Into Pixels on Defeat, Mine Offers the Golden Watch of the Queen, Strengthen in the Skill Tree, Then the Pixels Gather Back and the Hero Revives) — merged in #188
+- **「やり直し」ではなく「復活」** (`js/battle/revive-fx.js` + `js/battle/gameover.js` + `js/battle/render.js`): 倒れるとヒーローが 32×32 の粒子になって風に舞い上がり、 半透明の結果の画面（見出し「力尽きた……」/ REVIVE）の上を漂う。 マインちゃんが「王妃の黄金時計のチカラで復活させてあげる」→ スキルツリーで強化 → 「復活する」（王妃の黄金時計 5111 の絵つき）で粒子がフィールドの真ん中に集まり、 閃光と「REVIVE!」と復活の SE のあとステージ 1 から再開。 木の「もう一度挑む」も「復活する」に
+
+### Changed — SPEC-149 (= EASY Tuning (Enemies ×1/3, Stage 1 Survivable Without Moving, Stage 2 Not), Lesson Voice Cut on Boss Kill, and Confetti on Clear) — merged in #188
+- **EASY の釣り合い直し・レッスンのボイスの中断・クリアの紙吹雪** (`js/easy.js` + `js/confetti.js` + `js/battle/stage-transition.js` + `js/battle/activity-report.js`): EASY の敵を 1/3 にし、 ステージ 1 は動かなくても倒れず、 ステージ 2 は動かないと倒れる。 説明の途中でボスを倒したらボイスを切ってクリアの SE。 ステージクリアと全クリアで紙吹雪（マイクリの金宝箱の演出の値のまま: 120 粒・12 色）
+
+### Added — SPEC-148 (= Defeat Analysis — Damage Taken by Source, DPS and Damage Dealt per Weapon, Comparison With the Previous Defeat and Personal Best, and Mine's Skill Suggestions) — merged in #187
+- **負けた理由の分析** (`js/battle/run-stats.js` + `js/battle/analysis-ui.js` + `js/battle/damage.js` + `js/battle/hurt.js`): 倒れた画面と全クリアの画面に、 被ダメの内訳（接触 / 弾 / ボス / 仕掛け）・とどめ（敵の名前）・生存 / DPS / 撃破/分 / 被ダメ/分 / 回復の表（今回・前回の敗北（クリアなら前回のクリア）・自己ベストと ▲▼）・武器ごとの与ダメ（ボスへの与ダメも）を出す。 記録は `mcs.runlog.v1`（ヒーロー × モード）。 倒れたときは被ダメの内訳からマインちゃんが節を 1 つすすめ、 節のボタンでその節を選んだ状態でスキルツリーが開く
+
+### Added — SPEC-147 (= EASY Mode — A Guided 3-Stage Run for First-Timers (Short Stages, Mine's Voiced Lessons, Designed Loss on Stage 3, Skill Tree Awakening, Then NORMAL))
+- **EASY（初めての人のための短い 3 ステージ）** (`js/easy.js` + `js/lesson.js` + `js/mode-select.js` + `js/battle/*`): モード選択に EASY を足し、 初めての人にはマインちゃんがすすめる。 NORMAL は EASY をクリアするまでロック（遊んだことのある人はそのまま）。 ボスは 0:15 / 0:30 / 0:45、 店はステージ 1 から。 止めて読み上げるレッスン 16 本（1 回ずつ。 設定の「もう一度聞く」で戻る。 ボイスは `lesson.*`、 台本は `docs/voice/script-lessons.csv`）。 ヒーローはスキルツリーの根を取るまで ×0.6 で、 ステージ 3 で倒れたら木へ → 根で元の強さに戻って再挑戦。 ステージ 3 のボスが出た瞬間に雷鼓が落ちる。 EASY では実績・総合スコア・RTA・ステージの記録を送らない。 クリアしたら NORMAL へ誘う。 SPEC-146 の「初回はショップなし」は取り下げ（T0 と木からの再挑戦は残す）
+
+### Fixed — SPEC-146 (= First Run for New Players — Threat Stays at T0, Level-Ups Instead of the Shop, and "Try Again" Straight From the Skill Tree After a Defeat) — merged in #184
+- **初めての人の最初の挑戦** (`js/battle/index.js` + `js/battle/threat.js` + `js/battle/gameover.js` + `js/skill-tree.js`): 1 回目の挑戦（`meta.runs === 0`）は脅威の段階を上げず、 ショップを出さずにレベルアップで強くなる（ショップは 2 回目から）。 倒れたあと、 スキルツリーから「もう一度挑む」へすぐ行ける。 自動プレイでステージ 1 のクリアが 0% → 63%
+
+### Changed — SPEC-145 (= Per-Extension Bargain and Prep Nodes Extend Straight From Each Mastery — Weapons in Rows Above Attack, Buff Bargains in a U Beside Treasure) — merged in #183
+- **エクステ別の目利き・仕込みを極意の先にまっすぐ** (`js/skill-data.js`): 武器は「極意 → 目利き → 仕込み」、 強化は「目利き → 仕込み」と、 それぞれの節の先に一直線に並べ直す。 入口は攻撃の「長い腕」・財宝の「早い宝箱」へ
+
+### Changed — SPEC-144 (= Favored Weapon as an Explicit Chance (20/40/60%) and Colored Numbers and Terms in Skill Details and Mission Text) — merged in #182
+- **得意武器を確率で・説明の色分け** (`js/battle/levelup.js` + `js/rich-text.js`): 得意武器は札が並ぶたびに 20% / 40% / 60% の確率で初期武器が必ず並ぶ形にして、 説明に確率を書く。 スキルツリーの詳しい欄とミッションの説明で、 数字は金・用語は水色・「」の中は白の太字に
+
+### Added — SPEC-143 (= Mine Suggests Posting on X After Clearing Stage 1 — Post Button Opens X With #MyCryptoGames and the Game URL, 100 GUM Once) — merged in #181
+- **X での投稿のおすすめ** (`js/share-x.js`): ステージ 1 のクリアでマインちゃんが X での宣伝をすすめる。 投稿ボタンで X を開き（#MyCryptoGames とゲームの URL 入り）、 100 GUM（1 回だけ）
+
+### Changed — SPEC-142 (= Resume With "Ready → Go!" Instead of a 3-2-1 Countdown (0.8 s Pause, Go! Shown While Playing)) — merged in #180
+- **再開は Ready → Go!** (`js/battle/resume-countdown.js`): 3・2・1（3 秒）をやめ、 Ready で 0.8 秒止めて、 Go! が出た瞬間に動き出す（テンポが遅いという声に応えて）
+
+### Changed — SPEC-141 (= Helper Items On Top of the Horde and Off-Screen Item Pointers With Icons) — merged in #179
+- **お助けアイテムを最前面に・画面の外の矢印** (`js/battle/render.js`): アイテムとマジックカードを敵の大群より上に描く。 画面の外にあるものは、 その向きの縁に矢印と絵の丸を出す（近い順に 8 つ）
+
+### Added — SPEC-140 (= Combined Robot Helper Item — Unlocked in the Skill Tree, Drops From Pots and Chests, Invincibility With Rainbow Glow and Its Own BGM; Rank Raises Rarity and Duration) — merged in #178
+- **お助けアイテム「合体ロボ」** (`js/battle/field.js` + `js/perks.js` + `js/skill-data.js` + `js/battle/render.js`): スキルツリーで解放すると壺・宝箱から出る。 拾うと無敵（段で 3〜8 秒・絵が Common → Legendary）。 無敵のあいだは虹色に光り、 BGM が替わる
+
+### Added — SPEC-139 (= Skill Tree Extension Nodes — Favored Weapon (Starting Weapon Shows Up More), Per-Extension Start Level (Prep), Weapon Price Cuts) — merged in #177
+- **スキルツリー：得意武器・仕込み・武器の目利き** (`js/skill-data.js` + `js/perks.js` + `js/battle/levelup.js`): 初期武器が出やすくなる「得意武器」、 エクステ別に最初から Lv ＋1 になる「仕込み」（21 枚・値段は Lv.1 のまま）、 武器のショップの値引き「目利き」（10 枚）を足す（32 節）
+
+### Added — SPEC-138 (= Shadow Takeda Shingen Mission — Wind (Faster Enemies), Forest (Silence), Fire (More Enemies), Mountain (No Movement), Widening by Star) — merged in #176
+- **シャドー武田信玄のミッション「風林火山」** (`js/battle/missions.js` + `js/audio.js` + `js/battle/player.js`): 風（敵の足 ×1.4）・林（BGM と効果音が消える）・火（敵の湧き ×3）・山（動けない）。 ★1 風林・★2 風林火・★3 風林火山がすべて同時に効く
+
+### Changed — SPEC-137 (= Mission Difficulty Stars ★1–★3 — Stricter Rules and Richer Rewards, Gift Tickets From ★2, Star Colors, White Fog, Mine's First-Mission Guide) — merged in #175
+- **ミッションの難易度 ★1〜★3** (`js/battle/missions.js` + `css/missions.css`): 持ちかけで★を選ぶ。 ★で条件が厳しく、 ごほうびが豪華に（ギフト券は ★2 から、 ★1 は CE）。 ★で帯と幕の色が変わる。 ジャック・ザ・リッパーの霧を白く（★3 はほとんど見えない）。 初めてのミッションでマインちゃんが説明する
+
+### Changed — SPEC-136 (= GUM Breakdown With Formulas — Time, Kills, Stage Clear, Level, Leftover Gift Tickets Converted to GUM) — merged in #174
+- **GUM の内訳（遊んだぶんが GUM に）** (`js/meta.js` + `js/meta-ui.js` + 結果の 3 画面): GUM を「生存時間 1/秒・撃破 20 体で 1・ステージクリア 50 × 番号・到達レベル 5/Lv・残ったギフト券 30/枚」の式に。 結果の画面に式つきの内訳を出す。 挑戦の終わりに残ったギフト券は GUM に換わる
+
+### Changed — SPEC-135 (= Skill Tree Screen Split From MyCryptoWorkshop — 860px Breakpoint, 340px Side Panel on PC, Compact 46dvh Panel on Phones) — merged in #173
+- **スキルツリーの画面の分け方（Workshop の作り）** (`css/skill-tree.css` + `js/skill-tree.js`): 860px で分け、PC は右に 340px の欄、狭い画面は下に 46% までの欄（詳しい欄を小さく）。選ぶたびに欄の先頭へ
+
+### Changed — SPEC-134 (= Skill Tree Interaction From MyCryptoWorkshop — Pan on Window, Pinch/Wheel About a Point, Zoom Limits, Minimap, Branch Jump, Overview) — merged in #171
+- **スキルツリーの動かし方（Workshop の作り）** (`js/skill-tree.js` + `css/skill-tree.css`): ピンチは指の中点・ホイールはカーソルを軸に、ズームの下限は木全体が収まる倍率。ミニマップ（押す・なぞると移動）、道のタブでその道の真ん中へ、「全体」ボタン
+
+### Changed — SPEC-133 (= Skill Tree on an Integer Grid (Ported From MyCryptoWorkshop) — Branches by Direction, requires, Hero-Gated Weapon Mastery) — merged in #169
+- **スキルツリーをマス目に置く** (`js/skill-data.js` + `js/skill-logic.js` + `js/skill-tree.js`): MyCryptoWorkshop の仕組み。道を方向ごとに分け、線は親から子へまっすぐ。武器の極意は「そのヒーローを仲間にしていること」が条件で 1 段目は無料（本作のヒーローは数珠つなぎ・ほかのタイトルは分岐）。奥義はたどり着くまで見せない
+
+### Changed — SPEC-132 (= Stage Clear Grants GUM and Links to the Skill Tree; the Tree's Back Button Returns to Where You Came From (Bottom-Right)) — merged in #167
+- **ステージクリアのたびにスキルツリーへ** (`js/battle/stage-transition.js` + `js/skill-tree.js` + `js/meta.js`): ステージクリアで GUM（50 × ステージ ＋ 撃破 15 体ごとに 1）。クリアの画面に「スキルツリーへ」。木の「戻る」は右下に移し、開いた元の画面に戻る
+
+### Changed — SPEC-131 (= More GUM (Mission Clear Bonus, Kill Bonus) and 21 Extension-Specific Skill Tree Panels) — merged in #166
+- **GUM を稼ぎやすく・エクステ別のパネル 21 枚** (`js/skill-data.js` + `js/meta.js` + `js/battle/missions.js`): ミッション達成で確定 GUM（重さ × ステージ）、撃破 15 体ごとに GUM ＋1。武器 10 種の「極意」（威力 ＋5% / 段）と強化 11 種の「目利き」（ショップの値段 −6% / 段）
+
+### Changed — SPEC-130 (= Choose Gift Tickets or CE Per Purchase — "Pay With Gift Tickets First" Checkbox, Remembered) — merged in #165
+- **ギフト券か CE かを選べる** (`js/battle/shop.js`): 「ギフト券支払いを優先」のチェックボックス（既定オン・次も覚えておく）。オンなら券で買える品はどれも券で、オフなら CE で払って券を貯められる
+
+### Fixed — SPEC-129 (= Fix Stage 3 Freeze When the Trojan Horse Appears; Keep the Battle Loop Alive Through a Frame Error) — merged in #164
+- **ステージ 3 で止まる不具合を直した** (`js/battle/gimmicks.js` + `js/battle/index.js`): トロイの木馬が出ると例外で止まっていた（import 漏れ）。1 コマで例外が出ても戦闘のループが止まらないようにし、やり直しで真っ暗になるのも直した
+
+### Changed — SPEC-128 (= Signature Skill Goes to Lv.15; Leftover CE Flows Into It at Stage End Instead of Carrying Over (Gift Tickets Still Carry)) — merged in #163
+- **固有スキルを 15 段に・残った CE は固有スキルへ** (`js/battle/signature.js` + `js/battle/shop.js` + `js/battle/stage-transition.js`): Lv.11〜15 を足した（24,000〜120,000 CE）。ステージの終わりに財布の CE を固有スキルへ自動で振り、端数は次の段への積み立てに。CE は持ち越さず、ギフト券は持ち越す
+
+### Changed — SPEC-127 (= Gift Tickets Needed Scale With Rarity — Common/Uncommon 1, Rare 2, Epic 3, Legendary 5) — merged in #162
+- **ギフト券の枚数に傾斜** (`js/constants.js` + `js/battle/shop.js`): Common・Uncommon 1 枚、Rare 2 枚、Epic 3 枚、Legendary 5 枚（Legendary も券で買える）。値札に枚数を出す。5 枚並ぶ店で説明が 2 行で切れていたのも直した
+
+### Changed — SPEC-126 (= Wording — Replace "ただ" With "無料" (Shop Reroll, Gift Ticket, Merchant Line, Help)) — merged in #161
+- **「ただ」を「無料」に** (`data/i18n/ui.json`): ショップのリロール「リロール（無料）」、ギフト券の説明、ヴァスコ・ダ・ガマのひとこと、遊び方
+
+### Changed — SPEC-125 (= Mission Rewards Become a Choice of Three — Gift Ticket, a Giver-Themed Boon, or Healing — After a Line From the Giver) — merged in #160
+- **ミッションのごほうびを 3 つから選ぶ** (`js/battle/missions.js` + `css/missions.css`): 達成すると出し手がひとこと言い、ギフト券・力添え（出し手で変わる一時的な強化かお助けアイテム）・HP 回復から 1 つ選ぶ。大きさはミッションの重さで変わる
+
+### Fixed — SPEC-124 (= Closing Hero Select Without Picking Returns to Mode Select (Was Stuck on an Empty Battle Screen)) — merged in #159
+- **ヒーロー選択を ✕ で閉じると進めなくなる不具合を直した** (`js/main.js`): 選ばずに閉じたら（✕・背景・Esc）モード選択へ戻す
+
+### Changed — SPEC-123 (= Signature Skill Goes to Lv.10 With Steep Prices; Extensions Rare 500 / Epic 2,000 / Legendary 10,000) — merged in #158
+- **固有スキルを 10 段に、エクステの値段に傾斜を** (`js/battle/signature.js` + `js/constants.js`): 固有スキルは Lv.10 まで（Lv.2〜10 で 40〜16,000 CE）。エクステは Rare 500 / Epic 2,000 / Legendary 10,000 / LL 20,000 CE
+
+### Changed — SPEC-122 (= Shop Prices Tuned So a CE-Maxed, Efficient Run Just Maxes Everything by the 6th Shop — Lv.4 300 / Lv.5 1500 / LL 3000) — merged in #157
+- **値段を「CE のスキル最大・取りこぼしなしで 6 回目の店にぎりぎり全部最大」に** (`js/constants.js`): 行き先 Lv.4 / Lv.5 / LL を 300 / 1,500 / 3,000 CE に（SPEC-121 の 800 / 4,000 / 10,000 から）。ブラウザでステージ 1 を通して測った
+
+### Changed — SPEC-121 (= Shop Prices Jump at Epic — Lv.4 800 / Lv.5 4000 / LL 10000 CE) — merged in #156
+- **Epic から値段を一気に** (`js/constants.js`): 行き先 Lv.1〜5 を 15 / 30 / 80 / 800 / 4,000、LL を 10,000 CE に（前は 15 / 25 / 40 / 60 / 90 / 150）。4 回目の店で買い占めできていたため
+
+### Changed — SPEC-120 (= Shop Corner Icons — Lock (Top-Right) and Two-Tap Ban (Top-Left), Full Descriptions, Integer Heal, Reroll Refills Sold Slots) — merged in #154
+- **ショップの取り置き・お断りを札の角に** (`js/battle/shop.js` + `css/shop.css`): 右上の 🔓 で取り置き（🔒 と枠線）、左上の ✕ は 2 回押しでお断り。説明は削らず全文、来店の回復は整数、リロールは売れた枠も補充。お断りが効いていなかった不具合を直した
+
+### Changed — SPEC-119 (= Shop Fits One Screen on Phones — Equipped + Wallet on One Row, Boss Count Beside the Merchant, Compact Cards) — merged in #152
+- **スマホのショップを 1 画面に** (`css/shop.css` + `index.html`): 装備中と手持ちの CE を 1 行（8:2）に、「（あと◯回でボス）」を商人の名前の横に。札を低くし、5 枚は 3 列。スクロールなしで収まる
+
+### Fixed — SPEC-118 (= Skill Tree Wording for the Shop (XP → CE, Head Start / Pass Reward / Prodigy) and Unclipped Title Badge) — merged in #150
+- **スキルツリーの文を CE に** (`js/skill-data.js` + `js/perks.js`): 「経験値」→「拾う CE」、先手・見送りの礼・天才の説明をショップの言葉に。タイトルのスキルツリーの数の札と NEW が欠けていたのを直した
+
+### Changed — SPEC-117 (= Shop Goes Live — Header Countdown Bar with the Next Merchant Walking In, HP Heal on Each Shop Visit, Shop On by Default (RTA Keeps Level-Ups)) — merged in #149
+- **ショップを本番に** (`js/battle/shop.js` + `js/battle/shop-logic.js`): ショップが既定で ON（RTA は今までどおりレベルアップ）。ヘッダーに「次の店まで」の帯（次に来る商人が左から右へ歩き、残り 10 秒で金色に脈打つ）。来店で最大 HP の 1 割が戻る
+
+### Added — SPEC-116 (= Mine Guides to the Skill Tree After a Defeat — First-Time Lead-In, Three Rotating Lines, Tree Intro; Voice Script) — merged in #146
+- **倒れたらマインちゃんがスキルツリーへ誘う** (`js/battle/gameover.js` + `js/navi.js`): 初回は「スキルツリーへ」を押すよう誘い、木では強化のしかたと「ずっと引き継がれる＝遊ぶほど強くなる」ことを説明。2 回目からは 3 つのひとことを順に。ボイスの台本は `docs/voice/script-added2.csv`
+- **ボイス 13 本** (`assets/voice/mine/` + `js/voice-lines.js`): 倒れたときのひとことと、スキルツリーの案内をフルボイスに。スキルツリーの文の「節」は「スキル」に
+- **ボイスの録り直しと最初の店の説明のボイス** (`assets/voice/mine/`): 「緑に光っているのが強化できるスキルだよ」に差し替え、最初の店の説明（SPEC-115）にボイス。元の WAV・TXT は外した
+
+### Changed — SPEC-115 (= Shop Onboarding — First Shop Explains CE and Gives One Free Item; Countdown to the Next Shop) — merged in #145
+- **最初の店のサービスと次の店までの秒（`?shop=1` のときだけ）** (`js/battle/shop.js`): 最初の店でマインちゃんが「CE を集めて買う」ことを説明し、1 品ただ。2 回目からは戦場の右上に「ショップまで ◯ 秒」
+
+### Fixed — SPEC-114 (= Sound Effects on Web Audio — Fix SEs (Defeat Jingle, Shop Purchases) Going Silent After Long Fights) — merged in #144
+- **SE が鳴らなくなる不具合** (`js/audio.js`): 鳴らすたびに `<audio>` を作っていたため、長い戦闘のあとブラウザの上限に当たり、敗北のジングルやショップで買ったときの音が鳴らなくなっていた。SE を Web Audio で鳴らすようにした
+
+### Added — SPEC-112 (= Missions — Shadow Heroes Offer Mid-Wave Challenges (Accept / Decline), Hero-Themed Effects, Rewards That Feed the Shop) — merged in #151
+- **ミッション** (`js/battle/missions.js` + `css/missions.css`): ウェーブの途中にシャドーヒーロー 10 人がミッションを持ちかける（人中に呂布あり・霧の夜・三段撃ち・女王の威光・不老不死の探求・東方遠征・四面楚歌・白衣の誓い・不可能の文字はない・乱世の奸雄）。受けるか断るかを選び、生き残れば CE・ギフト券・固有スキル ＋1 段・お断り ＋1 回。失敗しても罰は無い
+
+### Changed — SPEC-111 (= RTA Uses the Shop Too (Same Regulation v4) — Shop and Missions in Every Mode) — merged in #153
+- **RTA でもショップ** (`js/battle/index.js`): RTA もレベルアップではなくショップで遊ぶ（ミッションも出る）。レギュレーションは v4 のまま
+
+### Added — SPEC-110 (= Signature Skill Upgrade — A Permanent Shop Card (Lv.1 → Lv.5) Kept Across Stages) — merged in #143
+- **固有スキルの強化（`?shop=1` のときだけ）** (`js/battle/signature.js` + `js/battle/shop.js`): ショップに常設の札。CE で Lv.1 → Lv.5 に上げると、10 人それぞれの固有スキルが伸びる（クリプトスラッシュの威力 ×3・テスラコイルの連鎖 7 体・幻の生存者は 2 度耐える など）。挑戦のあいだステージをまたいで残る
+
+### Added — SPEC-109 (= Shop — Buy Extensions with CE from Merchant Shadow Heroes (Hold, Ban, Reroll, Gift Tickets) behind ?shop=1) — merged in #142
+- **ショップ（`?shop=1` のときだけ）** (`js/battle/shop.js` + `js/battle/shop-logic.js` + `css/shop.css`): レベルアップの代わりに一定時間ごとに店が開き、拾った CE で品を買う。店主は商人のシャドーヒーロー 6 人（半額・5 枚・強化が多い・新しい品が多い・リロール 1 回ただ・海賊の値段）。取り置き・お断り（1 挑戦 3 回）・リロール（ただの回数のあとは CE）。マジックカードはギフト券に
+- **クリプトスラッシュ** (`js/battle/gems.js`): レベルアップのたびに出るはずの一撃が出ていなかったのを直した
+
+### Added — SPEC-108 (= Crown Series — A Buff Extension That Raises the CE You Pick Up) — merged in #141
+- **クラウンシリーズ** (`data/extensions.json` + `js/battle/buffs.js` + `js/battle/gems.js`): 強化の 11 種目。クラウン → エリートクラウン → ウィズダムクラウン → 宝冠 → 冕冠 で、拾う CE が ×1.15〜×2.0
+
+### Added — SPEC-107 (= Threat Tiers — Stronger Enemy Types Join as Stage Kills Rise; Stronger Enemies Drop More CE) — merged in #140
+- **敵の段階と新しい 5 つの型** (`js/battle/threat.js` + `js/battle/enemies.js` + `js/battle/render.js`): そのステージの撃破数（150・400・800・1,500）で、巨大・疾走・連射（5 方向）・横断（一直線に横切る列）・精鋭（金）が混じる。強い型ほど CE が多い（×2〜×10）。段階が上がると上部に「敵が強くなった」
+
+### Changed — SPEC-106 (= LL Unlock — The LL Rank-Up Appears Only After Clearing All Stages With That Hero) — merged in #139
+- **LL の解放条件** (`js/meta.js` + `js/battle/levelup.js` + `js/main.js` + `js/battle/activity-report.js`): LL ランクアップは、そのヒーローで全ステージをクリアしたことがあるときだけ（モードは問わない）。ヒーローの選択画面に条件、初めて全クリアしたら活動レポートで「LL 解放！」
+
+### Added — SPEC-105 (= Kill Milestones — A Big Banner at 100 / 250 / 500 / 1,000 Kills Without Stopping Play) — merged in #138
+- **撃破数の節目の演出** (`js/battle/milestones.js` + `index.html` + `css/battle-ui.css`): 通算 100・250・500・1,000…体で、画面の上に大きな「1,000 体撃破！」。遊びは止めない
+
+### Added — SPEC-104 (= Resume Countdown — 3 Seconds Before Play Resumes After Any Pausing Screen) — merged in #137
+- **再開の 3 秒カウントダウン** (`js/battle/resume-countdown.js` + `js/battle/index.js` + `index.html` + `css/battle-ui.css`): レベルアップ・メニュー・設定などを閉じたら「再開まで 3・2・1」を出し、数え終えてから動き出す（戦況が分からないまま倒されないように）
+
+### Changed — SPEC-103 (= v1.6 Shop & Missions — Buy Skills with CE, Merchant Shadow Heroes, Signature Upgrades, Missions, Enemy Tiers, Kill Milestones (Design & Roadmap))
+- **v1.6 の設計とロードマップ（下書き）** (`docs/specs/SPEC-103-shop-mission-roadmap.md`): ウェーブごとのショップ（CE で買う・商人のシャドーヒーロー・取り置きとお断り）、固有スキルの強化、LL の解放条件、クラウンシリーズ、ミッション、敵の段階と新しい型、撃破数の節目の演出。作者の確認待ち
+
+### Changed — SPEC-102 (= CE Suction — Crystals Fly Into the Hero Instead of Vanishing)
+- **CE がヒーローに吸い込まれるようにした** (`js/battle/absorb.js` + `js/battle/gems.js` + `js/battle/render.js` + `js/audio.js`): 拾える範囲に入った CE は、 その場で消えずにヒーローへ飛んでいき（最初はゆっくり、 だんだん速く。 小さくなりながら光の尾を引く）、 届いた瞬間に経験値が入る。 続けて届くと音が少しずつ高くなる。 棒磁石は画面の CE をまとめて吸い込む。 「演出を減らす」ではいままでどおりその場で拾う
+- **テスト** (`tests/absorb.test.mjs`): 届くまでの時間・加速・ヒーローが動いても届くこと・音の高さ、 tickGems の流れ（届いてから経験値・棒磁石・演出を減らす）
+
+### Added — SPEC-101 (= LL Rank-Up — The Hero's Own Weapon Can Go Beyond Legendary)
+- **初期武器の LL ランクアップ** (`data/extensions.json` の `ll` + `js/battle/levelup.js` + `js/battle/extensions-as-weapons.js` + `js/extensions.js`): ヒーローの初期武器が Lv.5 になると、 レベルアップの 1 枚目に虹色の「LL ランクアップ」の札。 10 系列すべてが自分の LL 版（真・MCHブレード・モデル２・真・赤目四十八滝・真・メギド・真・アゾット・レスター手稿・真・ミョルニル・真・ジュエルパロット・真・絶対零度ゴールデンスノーマン・真・自由のホーキ）を持つ
+- **壊れ性能** (`js/battle/ll.js` + `js/battle/archetypes.js`): 数・ダメージ・貫通・大きさを大きく上げ、 真・MCHブレードは周り一帯への一撃、 真・ミョルニルは雷、 真・絶対零度ゴールデンスノーマンは凍らせる
+- **見せ方**: 選んだ瞬間に LL の品の絵を大きく出す。 ヒーローの選択画面に「Lv.5 のあと LL：◯◯」。 装備中の帯は「LL」
+- **テスト** (`tests/ll-rank-up.test.mjs`): 10 系列の LL 版・Lv.5 より強いこと・札が出る条件・雷の的
+
+### Added — SPEC-100 (= Hero Signature Skills — Same Stage, a Different Game for Each Hero)
+- **ヒーローごとの固有スキル** (`js/battle/signature.js` ほか): 名前は MCH のパッシブスキル名。 クリプトスラッシュ（レベルアップで周りをなぎ払う）・ワンホールショット（同じ敵ほど痛い）・忍術・毒霧（走った跡に霧）・ランゲルライン（近いほど痛い）・テスラコイル（連鎖する雷）・テトラクテュス（4 回目ごとに 2 段）・虎痴（HP が減るほど強く速く）・女王直属海賊（拾うと速く広く）・幻の生存者（1 ステージに 1 度、 倒れない）・李氏朝鮮、宮廷医女（少しずつ回復・回復アイテム倍）
+- **ヒーローの選択画面に固有スキルの名前と説明** (`js/main.js` + `index.html` + `data/heroes.json` の `passive`)
+- **テスト** (`tests/signature.test.mjs`): 倍率の計算・テスラの的・10 人それぞれの効き目
+
+### Added — SPEC-099 (= Hero Select — Radar Chart of Each Hero's Strengths)
+- **ヒーローの選択画面にレーダーチャート** (`js/hero-radar.js` + `js/main.js` + `index.html` + `css/components.css` + `css/chars.css`): 体力・攻撃・連射・速さ・射程の 5 軸を、 10 人の中での位置（1〜5 の 5 段）で。 軸の横に生の値。 属性の色で塗り、 前の挑戦で使ったヒーローの形を点線で重ねる。 ロック中のヒーローも見られる。 戦闘と同じ式（`js/hero-stats.js`）から
+- **テスト** (`tests/hero-radar.test.mjs`): 5 段の計算・戦闘と同じ式・射程の取り方・SVG と読み上げの文
+
+### Added — SPEC-098 (= Hero Unlock by bearko.games Achievements — 2 Starters, 4 in Survivor, 4 in Other Titles)
+- **ヒーローをアチーブメントで解放するようにした** (`js/hero-unlock.js` + `js/platform.js`): 最初はブレード（MCHウォーリアー）とリボルバー（ビリー・ザ・キッド）の 2 人。 本作のアチーブメントで 4 人（霧隠才蔵・アナスタシア・ジャックザリッパー・ニコラ・テスラ）、 ほかのタイトルのアチーブメントで 4 人（Education でピタゴラス・Workshop で大長今・Fortress で許褚・Factory でフランシス・ドレーク）。 bearko.games から読み、 この端末にも覚える。 本作の 4 人は通信できなくても解放される
+- **ロック中のヒーローの見せ方** (`js/main.js` + `index.html` + `css/components.css`): 影絵と 🔒、 押すと「どのタイトルの、 どのアチーブメントで仲間になるか」と、 ほかのタイトルなら「このゲームを遊ぶ ↗」。 見出しの右に「解放 n / 10」
+- **タイトルに「次の仲間」**: いちばん近い 1 人と、 その条件
+- **解放の知らせ**: 「◯◯ が仲間になった！」をどの画面でも上に出し、 専用の短いファンファーレ（knight.mp3）を鳴らす
+- **テスト** (`tests/hero-unlock.test.mjs`): 2 ＋ 4 ＋ 4 の割り当て・解放の判定・次の仲間の順・覚える・SDK が無いとき
+
+### Changed — SPEC-097 (= Hero Roster v2 — 10 Heroes Matched to Their Weapons, 4 Weapon Series Replaced, PHY/INT Take Effect)
+- **ヒーローの顔ぶれを武器に合わせて組み直した** (`data/heroes.json` + `js/constants.js`): MCHウォーリアー＝ブレード、 ビリー・ザ・キッド＝リボルバー、 霧隠才蔵＝手裏剣、 アナスタシア＝雪だるま、 ジャックザリッパー＝ナイフ、 ニコラ・テスラ＝レーザーガン、 ピタゴラス＝ブック、 大長今＝ホーキ、 許褚＝マレット、 フランシス・ドレーク＝パロット
+- **武器の 4 系列を、 LL 版のある系列に差し替えた** (`data/extensions.json`): アックス → マレット、 モアイ → パロット、 ピエロ → 雪だるま、 パンジャンドラム → ホーキ。 攻撃の型と数値はそのまま。 雪だるまは氷の色で、 置いたときの範囲も系列の色で描く
+- **PHY と INT が効くようにした** (`js/hero-stats.js` + `js/battle/weapons.js`): PHY は武器のダメージ（×0.88〜×1.13）、 INT は武器の間隔（×1.09〜×0.90）
+- **ヒーローの札に初期武器** (`js/main.js` + `css/components.css`): 札の左上に武器のアイコンと系列の名前（狭い画面はアイコンだけ）
+- **マインちゃんのひとこと** (`data/i18n/ui.json` + `js/navi.js` + `assets/voice/mine/` + `tools/voice/build.mjs`): 10 人ぶん書き直し、 新しい 9 人のボイスを足した（許褚は録り直し）。 追加の録音は `--added` で変換する
+- **テスト** (`tests/hero-roster.test.mjs` ほか): 組み合わせ・差し替えた系列・PHY / INT の式
+
+### Added — SPEC-096 (= bearko.games Achievements — 14 IDs for the Hero Book and Extensions (Platform SPEC-008))
+- **bearko.games のアチーブメントを 12 個足した** (`js/platform.js` + `js/main.js` + `js/battle/stage-transition.js` + `js/battle/index.js` + `js/battle/field.js`): 共通基盤のトロフィーがアチーブメント（ヒーロー名鑑・エクステンション）に組み直されたのに合わせ、 ステージ 2 のクリア・ステージ 3 到達・ファオ撃破・ボス 3 体撃破の全クリア・RTA 完走・ABSOLUTE ×2.0 以上の全クリア・宝箱を初めて開ける（その場で）と、 スキルツリーの覚醒・節 5 つ・奥義・初めてのボス撃破・挑戦 10 回（セーブから。 起動時にも）を送る。 1 つずつ順に、 同じ起動で同じものは 1 度だけ
+- **テスト** (`tests/platform.test.mjs`): 条件 → ID の対応と、 送る列（順に送る・2 度送らない・SDK がなくても止まらない）
+
+### Security — SPEC-095 (= Ranking API URL Hardening — GAS Web App Only, No Hash Override) — merged in #125
+- **ランキングの送り先を固くした** (`js/ranking-client.js` + `js/ranking-ui.js`): `#api=` のリンクで送り先を書き換える機能をやめ、 送り先は Google Apps Script のウェブアプリの URL だけを受け付ける。 GAS のサンプルに、 名前の数式インジェクション対策
+
+### Changed — SPEC-094 (= Skill Tree Detail UI — Workshop-style Detail, 3D Gradient Buttons, Reset Moved Out of Reach, Zoom Tools) — merged in #124
+- **スキルツリーの詳しい欄** (`js/skill-tree.js` + `css/skill-tree.css`): Workshop の作りに寄せた。大きなアイコン・段の目盛り・条件の ✓／✗・「前 → 後」の変化の一覧。解放は金、強化は緑の立体のグラデーションのボタン。幅 900px 以上は右の列に詳しい欄といまの効果を並べる
+- **操作の置き場所**: 「中心へ」と −／＋ は木の左下。「作り直す」は押しやすい右下から外し、いまの効果の欄のいちばん下に小さなリンクで（押すと確かめる）
+
+### Changed — SPEC-093 (= Skill Tree UX — Tighter Layout, Current-Effect Panel, First-Time Guide by Mine, Per-Screen Lines) — merged in #123
+- **スキルツリーを詰めた** (`js/skill-data.js`): 節と節の距離をほぼ半分に（木の半径 832px → 約 470px）。 1 画面に見える節が増える。 節の大きさはそのまま
+- **いまの効果の欄** (`js/skill-tree.js` + `js/perks.js` + `css/skill-tree.css`): 木の右に、 スキルツリーで足されている数値（攻撃 ＋9%・CD −4% など）。 節を選ぶと買ったあとの値（＋9% → ＋12%）。 狭い画面は右上の札で開け閉め
+- **初回の案内** (`js/skill-logic.js` + `js/navi.js`): 根を取るまで、 タイトルと結果の画面の入口が脈打ち「NEW」。 マインちゃんがタイトルで入口を教え、 木の中では「ここを 2 回！」で根 → 最初の節を指し示す
+- **画面ごとのセリフ** (`js/battle/gameover.js`): 結果の画面から「スキルツリーへ」で移るとき、 タイトルのセリフ（ボイス）を流さず、 木のセリフを言う。 木を閉じたらタイトルのセリフ
+
+### Added — SPEC-092 (= Shared Player Avatar — Entry in Settings (Platform SPEC-005)) — merged in #122
+- **bearko.games 共通のアイコンへの入口** (`js/platform.js` + `js/settings-ui.js` + `index.html` + `data/i18n/ui.json`): 設定に「🙂 アイコン — 変える」。 押すと共通基盤の選ぶ窓（SDK 1.7.0）が開き、 すべてのゲームとチャットで同じ絵になる。 SDK が読めていないときは行を出さない
+
+### Added — SPEC-091 (= Global Chat Placement — Show on Title and Results, Hide During Battle (Platform SPEC-004)) — merged in #121
+- **全体チャットの置き場所** (`js/platform.js` + `js/main.js` + `js/menu.js` + `js/battle/index.js` + `js/battle/gameover.js` + `js/battle/activity-report.js`): 共通基盤の全体チャット（SPEC-004・SDK 1.6.0）の 💬 を右上に置き、 タイトル・難易度・ヒーロー選択・結果の画面で出して、 戦闘中と読み込みの画面では隠す。 SDK がない・古いときは何もしない
+
+### Added — SPEC-090 (= Skill Tree — Permanent Upgrades Bought with GUM (from Score) and Gold Dust (from Bosses)) — merged in #114
+- **GUM とゴールドダスト** (`js/meta.js` + `js/meta-ui.js` + `js/battle/stage-transition.js` + `js/battle/gameover.js` + `js/battle/activity-report.js`): 挑戦が終わるたび（全クリア・敗北）、 活動レポートと同じ式のスコアから GUM ＝ √スコア ÷ 2（最低 5）。 ボスを倒すとステージ 1/2/3 で 1/2/3 のゴールドダスト。 結果の画面（ステージクリア・ゲームオーバー・活動レポート）に数え上げで出す。 `localStorage["mcs.meta.v1"]` に貯まる（ツリーは SPEC-090b）
+- **スキルツリーの画面** (`js/skill-data.js` + `js/skill-logic.js` + `js/skill-tree.js` + `css/skill-tree.css`): 根から 6 本の道（生存・攻撃・機動・成長・財宝・ボス）が放射状に伸びる木。 36 節 ＋ 根。 つまんで動かす・2 本指で拡大縮小・ホイールで拡大、 押すと選ぶ・2 度押しで買う。 根（0 GUM）を取ると 1 段目が飛び出す。 奥義はその道の節を 4 つ取ると買える（GUM ＋ ゴールドダスト）。 「作り直す」で全額戻してやり直せる。 入口はタイトルの「スキルツリー」（1 回も遊んでいなければ出さない。 買える節があれば数の札）と、 ゲームオーバー・活動レポートの「スキルツリーへ」。 効果は SPEC-090c で
+- **スキルツリーの効果** (`js/perks.js` + `js/battle/hurt.js` + `js/battle/buffs.js` + 戦闘の各所): 取った節が挑戦に効く。 最大 HP・攻撃・CD・範囲・貫通・弾数・速さ・拾う範囲・無敵時間・経験値・リロール・開始レベル・枠・スキップの回復・GUM・壺・宝箱・レアの間隔・パンケーキ・不死鳥・雷鼓・ボス戦の宝箱・予告・対ボスのダメージ。 強化エクステンションはツリーの土台に掛かる。 自分が受けるダメージを `hurt.js` の 1 か所に集めた。 RTA では効かない。 ヒーロー選択に、 いま効いているものを 1 行。 「壁ぎわ」は「逃げ足」（無敵時間のあいだ速い）に差し替え
+- **釣り合いの実測**（SPEC-090d）: 自動プレイでツリーを空 / 半分 / 全部にして測った（§3.5）。 全部で bot の生存が 1.4 倍、 3 回に 1 回ステージ 1 を抜ける。 費用と効果は変えない
+
+### Fixed — SPEC-089 (= Stage Intro Band — PC Layout (Centered Content, 192px Hero)) — merged in #117
+- **PC でステージの始まりの帯のレイアウトを直す** (`css/chars.css`): 960px 以上では帯の中身を真ん中の 560px に寄せ、 ヒーローを 192px（64 の 3 倍）にした。 1280px で文字とヒーローがおよそ 740px 離れ、 ヒーローが端に小さく立っていた。 スマホの並びと動きは変えない
+
+### Changed — SPEC-088 (= First Play Is NORMAL Only — ABSOLUTE and RTA Locked Until One Run Ends) — merged in #116
+- **初プレイは NORMAL だけ** (`js/played.js` + `js/mode-select.js` + `js/battle/gameover.js` + `js/battle/activity-report.js` + `index.html` + `css/components.css`): この端末で 1 回も挑戦を終えていないあいだ、 ABSOLUTE と RTA の札を薄くして押せなくし、 「🔒 NORMAL を 1 回遊ぶと選べるようになる」 の 1 行を出す。 クリアかゲームオーバーで `mcs.played` に記録し、 次にモード選択を開いたときから選べる
+
+### Added — SPEC-087 (= Level-up Screen — Equipped Strip and "Rank Up" Highlight on Owned Candidates) — merged in #115
+- **強化画面に「装備中」の帯と「ランクアップ」の印** (`js/battle/levelup.js` + `index.html` + `css/components.css` + `css/battle-ui.css`): 3 枚の札の上に、 持っている武器と強化を絵と Lv（Lv.5 は MAX）で並べ、 上限までの空き枠を点線で見せる。 持っているものが上がる札は、 アイコンの上の金の帯「ランクアップ」（次で Lv.5 なら「ランクアップ MAX」）と金の縁で目立たせる。 NEW の札はいままでどおり
+
+### Changed — SPEC-086 (= Hero Select Preview — Fewer Enemies (1 / 2 / 3 Every 2 Seconds)) — merged in #110
+- **ヒーロー選択のプレビューの敵を減らす** (`js/hero-preview.js`): いちばん弱い雑魚を、 2 秒ごとに Common 1 体・Uncommon 2 体・Rare 3 体だけ出す（いままでは 9 体をいつも保っていた）
+
+### Added — SPEC-085 (= Mine Full Voice — Title Call, Every Line Voiced, Voice Volume) — merged in #111
+- **マインちゃんのフルボイス** (`js/voice.js` + `js/voice-lines.js` + `assets/voice/mine/` + `js/navi.js` + `js/main.js` + `js/settings.js`): 全セリフ（35 本）にボイス。 ロゴ画面を押すとタイトルコール「マイクリプト サバイバー！」。 設定に「ボイス」の音量。 ヒーローを選んだときのセリフを、 ヒーローごとの紹介に変えた
+
+### Fixed — SPEC-084 (= Gentler Early Swarm — the Spawn Ramp Starts Slow, Recycling Only Before the Boss) — merged in #106
+- **序盤の湧きを v1.2 並みに戻す** (`js/battle/horde.js` + `js/battle/enemies.js` + `js/constants.js`): SPEC-078 で、 湧きがはじめからまっすぐ速まり（ステージ 1 の 1:00 で 2.6 倍）、 置いていった敵もすぐ前に現れなおしていた。 速まりと密度の目標を、 はじめはゆるく、 ボスの前に急に上がる形にし、 寄せ直しはボスの前（2:50 ごろから）だけにした。 ボスの直前の濃さは変えない
+
+### Added — SPEC-083 (= Hero Select — Preview of the Starting Weapon (Common → Uncommon → Rare)) — merged in #104
+- **ヒーロー選択で武器のプレビュー** (`js/hero-preview.js` + `index.html` + `css/chars.css` + `js/main.js`): 選んで 1 秒たつと、 見せ場でヒーローが最初の武器で戦う。 Common → Uncommon → Rare を 3 秒ずつ（左上にレアリティと武器の名前）。 流し終えると大きな絵に戻り、 3 秒してまた流す。 本番の武器のコードを別の小さな戦場で動かす（撃破数・CE・効果音には触れない）
+
+### Changed — SPEC-082 (= Measure v1.3 on New Versions — Total Score balance 3 and RTA v4) — merged in #112
+- **v1.3 を新しい版で計る** (`js/platform.js` + `index.html`): 総合スコアに `balance: 3` を送る（共通基盤が 1/560 で割る。 ふつうの全クリア約 280 万点 → 5,000）。 RTA は `survivor-normal-v4`・`survivor-absolute-2x-v4` で計る（最短時間は v3 と同じ）。 古い記録は古い版のまま
+
+### Added — SPEC-081 (= Boss Chests — Golden Moai Chests in the Arena with Magic Cards and Helper Items) — merged in #109
+- **ボス戦の宝箱** (`js/battle/field.js` + `js/constants.js`): ボスが出て 6 秒たつと、 枠の中にゴールデンモアイの宝箱が出る（14 秒ごと・2 つまで）。 壊すとマジックカード（その場でレベルアップ）・パンケーキ・雷鼓・棒磁石のどれかと CE。 マジックカードが出るのはボス戦の宝箱だけ。 懐中時計は出ない
+
+### Changed — SPEC-080 (= Stronger Bosses — More HP, a Telegraphed Charge, Slam, Burst and Spiral) — merged in #108
+- **ボスを強く** (`js/battle/boss-moves.js` + `js/battle/boss-moves-render.js` + `js/battle/enemies.js`): HP を 20 / 20 / 15 倍にし、 予告つきの型を足した。 突進（自分のほうへ赤い通り道が伸び、 向きが固まってから枠の縁まで走る）・叩きつけ（赤い円が満ちたら衝撃）・放射・渦。 HP が半分を切ると型が速く来る
+
+### Changed — SPEC-079 (= Boss Arena — Swarm Vanishes, a 1/4 Ring Closes In, Boss Spawns at the Center) — merged in #107
+- **ボスはステージの真ん中に** (`js/battle/arena.js` + `js/battle/arena-render.js` + `js/battle/enemies.js`): 予告のあいだ、出る場所に赤い丸（と、これから閉じる枠の点線）。画面の外なら縁に赤い矢印
+- **ボスが出るとほかの敵が消える** (`js/battle/enemies.js`): 撃破に数えず CE も落とさない（落ちている CE は残る）。ボス戦のあいだは敵が湧かない
+- **ボス戦の枠** (`js/battle/arena.js` + `js/battle/player.js` + `js/battle/gimmicks.js`): ステージの真ん中に 1/4 の広さの枠が閉じてくる。外は暗く、縁は赤く光る。カメラも枠の中を映す
+
+### Changed — SPEC-078 (= Dense Swarm — the Screen Fills Before the Boss (50% / 75% / 90%)) — merged in #105
+- **敵の湧きを大幅に** (`js/battle/horde.js` + `js/battle/enemies.js` + `js/constants.js`): 大群をどのステージにも（湧きが 12〜20 倍まで速まり、 群れが押し寄せる）。 画面の敵の密度を、 時刻ごとの目標まで足し続ける（強い武器でまとめて倒しても、 すぐ埋め戻す）。 置いていかれた敵は画面のすぐ外へ寄せ直す。 出ていられる敵は 320 / 440 / 600。 ボスの直前に画面のおよそ 50% / 75% / 90% が敵で埋まる
+
+### Changed — SPEC-077 (= Bigger Characters and a Subtle Hit Disc) — merged in #103
+- **キャラを大きく** (`js/constants.js` + `js/battle/index.js` + `js/battle/enemies.js`): 自分・雑魚は 1.4 倍、ボスは 1.2 倍（絵も当たりも）。視界はそのまま
+- **当たりの円を薄く** (`js/battle/sprites.js` + `js/battle/render.js`): 円の切り抜きと黒い縁をやめ、絵を大きく描き、足もとに薄い円（自分はシアン、撃ってくる敵は赤い縁）。自分は動く向きへ少し傾いて弾む
+
+### Changed — SPEC-076 (= Treasure Chest Art — Golden Moai of Treasure) — merged in #102
+- **宝箱の絵をゴールデンモアイに** (`js/constants.js` + `js/battle/render.js`): 1165 オルゴール → 5106 財宝ゴールデンモアイ（作者の指定）
+
+### Changed — SPEC-075 (= Abacus Beads — Spheroidal Graphite Art and Rows in Any Direction) — merged in #101
+- **そろばんの珠の絵** (`js/battle/gimmicks.js` + `js/battle/gimmicks-render.js`): 5042 球状黒鉛（グラファイトの Legendary）にし、転がって回る
+- **珠の列の向き** (`js/battle/gimmicks.js` + `js/battle/gimmicks-render.js`): 横だけでなく縦にも、1:30 からは斜めにも走る（最初の列は横）。予告の帯と矢印も列の向きに
+
+### Changed — SPEC-074 (= Treasure Chest Uses an MCH Extension Art (Music Box)) — merged in #100
+- **宝箱の絵** (`js/constants.js` + `js/battle/render.js`): 手描きの金の宝箱の形をやめ、マイクリのエクステンション 1165 オルゴール（木の箱）にした。絵を読み込むまでは金の宝箱の形
+
+### Changed — SPEC-073 (= Panjandrum Spins While Rolling Toward Enemies) — merged in #99
+- **パンジャンドラムが回りながら進む** (`js/battle/archetypes.js` + `js/battle/projectiles.js` + `js/battle/render.js`): 転がるように回る（右へは時計回り、左へは反時計回り。1 秒に約 1.6 回転）。当たりや速さは変えない
+
+### Changed — SPEC-072 (= Level-up — Skip on the Left (Muted), Reroll on the Right (Prominent)) — merged in #98
+- **レベルアップのボタン** (`index.html` + `css/components.css`): 左にスキップ（灰色で控えめ）、右にリロール（金で目立つ）。スマホで右を押しがちなので、誤ってスキップしにくくする
+
+### Changed — SPEC-071 (= Boss Warning 10s Ahead and Countdown at the Right Edge in RTA) — merged in #97
+- **ボスの予告を 10 秒前に** (`js/constants.js`): 30 秒前 → 10 秒前（3:50 に予告、0:10 から数える）
+- **RTA ではカウントダウンを右端に** (`js/battle/fx.js` + `css/battle-ui.css`): たたんだ帯を右端に縦積みにし、上の真ん中の RTA の時計と重ねない
+
+### Changed — SPEC-070 (= Logo Remake — Transparent, Centered Stack) — merged in #96
+- **ロゴの作り直し** (`assets/logo.png` + `css/layout.css`): 暗い四角の帯をやめ、背景の透けたロゴを縦に積んで中央にそろえた（エンブレム・MYCRYPTO・SURVIVORS・点線）。縦の短い画面では小さく
+- **ロゴの元** (`tools/logo/logo.html` + `tools/logo/emblem.png`): HTML から書き出して作り直せる
+
+### Changed — SPEC-069 (= Screen BGM (Title craft.mp3), Tap-to-start Gate and Reliable Sound Start) — merged in #95
+- **画面ごとの BGM** (`js/constants.js` + `js/ui-sound.js` + `js/main.js` + `js/mode-select.js` + `js/menu.js` + `js/battle/gameover.js`): タイトルは craft.mp3、モード選択・ヒーロー選択は land.mp3。曲は押した操作の中で替える
+- **「タップしてはじめる」** (`index.html` + `js/main.js` + `css/layout.css`): ブラウザが音を止めたときだけ、読み込みのあとに 1 回タップを挟み、タイトルで最初から BGM を鳴らす
+- **音の鳴らし始めの見直し** (`js/audio.js` + `js/ui-sound.js`): BGM の要素を使い回し、止められたら次の操作（指を離した・クリック・キー）で鳴らし直す。iOS で BGM が始まらないおそれをなくす
+- **ボタンの音を大きく** (`js/ui-sound.js`): crash.mp3 の音量 0.45 → 1.0（元の音が小さく、BGM に埋もれていた）
+
+### Added — SPEC-068 (= Mine's First-time Tips) — merged in #94
+- **マインちゃんの「初めて」のひとこと** (`js/navi-tips.js` + `js/battle/field.js` + `js/battle/magic-cards.js` + `js/battle/gimmicks.js` + `js/battle/enemy-shots.js`): 初めて拾ったアイテム・初めて動いた仕掛け・初めて狙ってきた撃つ敵で、画面の上でひとこと補足する。端末に覚えて、次からは黙る
+- **設定「マインちゃんの補足」** (`index.html` + `js/settings-ui.js`): 「もう一度聞く」で、また初めてのときに話す
+
+### Changed — SPEC-067 (= Level-up Reroll Without Repeats and Skip) — merged in #93
+- **リロールで同じものを続けて出さない** (`js/battle/levelup.js`): そのレベルアップで出したものは、候補が足りるかぎり出さない
+- **スキップ（取得しない）** (`js/battle/levelup.js` + `index.html` + `css/components.css`): どれも要らなければ、取らずに閉じられる
+
+### Changed — SPEC-066 (= Measure v1.2 on New Versions — Total Score v4 (balance 2) and RTA v3) — merged in #92
+- **v1.2 を新しい版で計る** (`js/platform.js` + `index.html`): 総合スコアに `balance: 2` を送る（共通基盤の v4 が、ふつうの全クリアを 5,000 にそろえる係数 60 で割る）。RTA は `survivor-normal-v3`・`survivor-absolute-2x-v3` で計る
+
+### Changed — SPEC-065 (= Troy Horde and Faster Leveling — Flood, Packs, Separation, Sprite Cache) — merged in #91
+- **トロイの大群** (`js/battle/horde.js` 新規 + `js/battle/enemies.js` + `js/constants.js`): 1:30 から湧きが速まり（3:30 で 6 倍）、2:30 から 8 秒ごとに 24 体の群れが 1 方向から押し寄せる。出ていられる敵はトロイだけ 320 体に
+- **敵どうしを押し分ける** (`js/battle/horde.js`): 群れが 1 点に固まらず、まわりを取り囲んで画面を埋める
+- **レベルアップが約 2 倍速く** (`js/constants.js`): 次のレベルまでの経験値の伸びを 1.3 倍 → 1.2 倍に
+- **描画を軽く** (`js/battle/sprites.js`): 円で切り抜いた敵の絵を使い回す
+- **遊び方の誤りを直した** (`data/i18n/ui.json` + `index.html`): Lv と武器はステージごとに 1 から
+
+### Added — SPEC-064 (= Stage Gimmicks — Abacus Beads, Hollerith Punch Cards, Trojan Horse) — merged in #90
+- **ステージごとの仕掛け** (`js/battle/gimmicks.js`・`js/battle/gimmicks-render.js` 新規 + `js/battle/enemies.js` + `js/battle/damage.js` + `js/battle/render.js`): アバカスは予告のあと珠の列が横切る（敵もはじく）、ホレリスは床にパンチの穴（1 つは自分の足もと）、トロイは木馬が現れて 9 秒後に敵の群れを吐き出す（開く前に壊すと宝箱の中身）
+
+### Added — SPEC-063 (= Thunder Drum — Helper Item That Clears Every Enemy on Screen) — merged in #89
+- **雷鼓（画面の敵を一掃）** (`js/battle/field.js` + `js/battle/fx.js` + `js/constants.js` + `js/battle/render.js`): 壺・宝箱から出るお助けアイテム。拾うと画面に映っている敵すべてに雷が落ちて倒れ（経験値も落ちる）、ボスには最大 HP の 20%。画面の中の敵の弾も消える
+
+### Added — SPEC-062 (= Shooter Enemies — Keep Distance and Fire Telegraphed Shots) — merged in #88
+- **離れたところから撃ってくる敵** (`js/battle/enemy-shots.js` 新規 + `js/battle/enemies.js` + `js/constants.js` + `js/battle/render.js`): 赤い縁の敵が、画面の中で距離を保って横へ回り、赤い点線で狙ってから撃ってくる（狙って 1 発・3 方向の 2 種）。ステージが進むほど多く早く出る
+
+### Added — SPEC-061 (= Boss Countdown — From the Warning to the Boss Spawn) — merged in #87
+- **ボスが出るまでのカウントダウン** (`js/battle/fx.js` + `js/battle/enemies.js` + `index.html` + `css/battle-ui.css`): 「ボス接近」の帯に残りの秒（0:30 → 0:01）を出し、予告のあとは上の小さな帯で数え続ける。最後の 5 秒は真ん中に大きな数字
+
+### Added — SPEC-060 (= Menu Sound — Menu BGM and Button Click SE) — merged in #86
+- **ボタンの音** (`js/ui-sound.js` 新規 + `js/constants.js`): ボタンとスイッチを押すと `crash.mp3` が鳴る。レベルアップのカードと冒険を始めるは、いままでどおり自分の音だけ
+- **メニューの BGM** (`js/ui-sound.js` + `js/audio.js` + `js/menu.js` + `js/battle/gameover.js` + `js/battle/activity-report.js`): タイトル・モード選択・ヒーロー選択に `land.mp3`。タイトルでは最初に触ったときに始まる。ゲームオーバー・活動レポートはジングルが鳴り終わってから流れる
+
+### Changed — SPEC-059 (= Navi Dock — Dedicated Band for Mine on Mode Select and Hero Select) — merged in #85
+- **マインちゃんの通信の帯** (`js/navi.js` + `css/chars.css`): モード選択とヒーロー選択で、顔のアイコンとセリフを画面の下の専用の帯に出す。カード・ボタンと重ならず、ヒーロー選択の大きなヒーローの絵には重ねない
+- **ヒーロー選択のカード** (`css/chars.css`): 低い画面でもヒーローの絵が潰れない。はみ出すぶんはカードの中でスクロールし、「冒険を始める」は下に貼りつく。広い画面では帯をカードの左下に置く
+- **案内役の名前をマインちゃんに** (`data/i18n/ui.json` ほか): 自己紹介・コメント・ドキュメントの「アイン」を直した
+- **デザイン憲章 14.4** (`docs/charters/DESIGN_CHARTER.md`): 操作する画面では案内役を専用の帯に出す・ヒーローの見せ場に重ねない
+
+### Changed — SPEC-058 (= Result & Menu UI — Result Telop, Result Tiles, Activity Report, Menu, Settings, Ranking, Help) — merged in #83
+- **結果のテロップ** (`js/result-telop.js` 新規 + `css/result-ui.css` 新規): ステージクリア・全クリア・倒れたときに、斜めの帯（MCH の勝敗のカットインの写し）が飛びこみ、帯の上にヒーロー、下にナビのマインちゃんが重なって反応する。押すと飛ばせる
+- **パネルが光の線から開く** (`css/node.css`): 全モーダルが、端末の電源が入るように縦に開く
+- **結果の中身を端末に** (`css/result-ui.css`): 数字のタイルが 1 枚ずつ起き上がる。ステージの節はノードの鎖、次のステージは NEXT の札。活動レポートはヒーローの帯・番号の付いたステージのカード・光が走るスコア
+- **メニュー・設定・ランキング・遊び方** (`css/result-ui.css` + `js/settings-ui.js`): 行に番号が付き、1 行ずつ入ってくる。音量のつまみは金で埋まる 10 マスの帯と菱形の頭。ランキングの上位 3 つは金・銀・銅の札
+- **デザイン憲章を改訂** (`docs/charters/DESIGN_CHARTER.md`): 14.1（角丸の例外）・14.5（パネルの開き方・結果のテロップ・行の入り方）
+
+### Changed — SPEC-057 (= Battle UI — HUD, Card Deal, Boss Cut-in, Damage Numbers, Background Saturation) — merged in #82
+- **戦闘の HUD を端末の帯に** (`css/battle-ui.css` 新規 + `index.html` + `js/survival.js`): HP は 10 マスに区切り、減ったぶんを白い残像が遅れて追う。30% 以下で脈打つ。XP のバーに光が走る
+- **レベルアップのカードを配る** (`js/battle/levelup.js`): 1 枚ずつめくれて出て、選んだカードが光ってから閉じる（二度押しで 2 枚取らない）
+- **ボスのカットイン** (`js/battle/fx.js` + `index.html`): 予告は警告色の縞。出た瞬間に斜めの帯にボスの絵と名前、ナビのマインちゃんが一言
+- **数字と拾得の手ざわり** (`js/battle/damage.js` + `js/battle/render.js` + `js/battle/field.js`): 大きいダメージほど数字が大きく弾む。宝箱・壺・回復・磁石・懐中時計で粒と文字が出る
+- **戦場の背景の彩度を落とす** (`js/battle/render.js`): UI と敵がいちばん鮮やかに見えるように（憲章 14 章の色の優先度）
+
+### Added — SPEC-056 (= Navigator Mine and Hero Layering — Speaking Navi, Hero Showcase, Stage Telop) — merged in #81
+- **ナビのマインちゃん** (`js/navi.js` + `css/chars.css` 新規): タイトル・モード選択・ヒーロー選択・ステージの始まりで喋る案内役。吹き出し（通信窓）はセリフの量で伸び縮みし、1 文字ずつ出る。口が動き、言い終えるとポーズが変わり、瞬きする。吹き出しを押すとめくれて次のセリフへ、マインちゃんを押すと反応する。ヒーロー選択と戦闘では、ボタンや戦場を隠さない通信窓（顔の小窓）
+- **ヒーロー選択に大きなドット絵** (`js/main.js` + `index.html`): 選んだヒーローを 3〜4 倍で出し、名前の大きな文字をその裏に重ねる。選ぶたびに構図が変わる
+- **ステージの始まりの帯の手前にヒーロー** (`js/battle/index.js` + `index.html`)
+
+### Changed — SPEC-055 (= Node Terminal Design Language — Panels, Living Backgrounds, Wipe Transitions) — merged in #80
+- **デザイン言語「ノード端末」** (`css/node.css` 新規 + `index.html`): 全モーダルとモード選択のカードを、角を切った筐体（縁は金 → シアンの光・面は走査線）に。ボタンは角を切ったキーで、触れると光が横切る。見出しに英字の小見出し
+- **止まらない背景** (`css/node.css`): モーダルとタイトルの背景で、ブロックの格子が流れ、粒が漂い、パネルの縁を光が走る
+- **画面の切り替えのワイプ** (`js/transition.js` 新規 + `js/main.js` + `js/mode-select.js`): タイトル → モード選択 → ヒーロー選択 → 戦闘を、斜めの筐体が横切るワイプ（640ms）で
+- **「演出を減らす」を CSS にも** (`js/motion.js`): 常に動く演出とワイプを止める
+- **デザイン憲章を改訂** (`docs/charters/DESIGN_CHARTER.md`): 14 章「ノード端末」（質感・生きている・色の優先度・キャラとの重なり・動き）、9 章の動きの長さ
+
+### Added — SPEC-054 (= RTA Pocket Watch — 2x Game Speed for 10 Seconds (RTA only)) — merged in #79
+- **RTA の懐中時計** (`js/battle/field.js` + `js/battle/index.js` + `js/battle/render.js` + `js/constants.js`): RTA のときだけ宝箱から出て、拾うと 10 秒間ゲーム全体が 2 倍速（続けて拾うと延びる）。右上に残り時間
+- **RTA は懐中時計ありのレギュレーションで計る** (`js/platform.js` + `index.html`): `survivor-normal-v2`・`survivor-absolute-2x-v2`。懐中時計なしの記録は共通基盤に残る
+
+### Added — SPEC-053 (= Field — Buildings, Pots, Chests and Helper Items (Bar Magnet / Pancake)) — merged in #78
+- **建物** (`js/battle/field.js` + `js/battle/field-geom.js` + `js/constants.js`): 各ステージに 4 つ（持ち運びハウス・お城）。自分・敵は通れず、弾は消え、レーザーは手前で止まる
+- **壺と宝箱** (`js/battle/field.js` + `js/battle/damage.js` + `js/battle/enemies.js` + `js/battle/archetypes.js`): どの武器でも壊せる。壺はいつもあり、宝箱は 1 ステージ 4 つ（0:30・1:30・2:30・3:30）。撃破数には数えない。画面の外の宝箱は縁の矢印で分かる
+- **お助けアイテム** (`js/battle/field.js` + `js/battle/gems.js` + `js/battle/render.js`): 棒磁石（落ちているジェムを全部吸い寄せる）・パンケーキ（HP を 30% 回復）
+- **遊び方** (`index.html` + `data/i18n/ui.json`): 壺・宝箱・アイテム・建物の 2 行
+
+### Changed — SPEC-052 (= Result Screen — Toasts on Top, Back to Title / Portal, Player Name from bearko.games) — merged in #77
+- **共通基盤の通知を画面の上に** (`js/platform.js` + `js/battle/index.js`): トロフィー・RTA 記録・自己ベストの通知が、クリア画面のボタンに重ならない（SDK 1.5.0 の `setToastPosition`）
+- **活動レポートに「タイトルに戻る」** (`js/battle/activity-report.js` + `js/battle/gameover.js` + `index.html`)。RTA のときは活動レポートとゲームオーバーに「bearko.games に戻る」も
+- **ランキングの名前の既定** (`js/platform.js` + `js/ranking-client.js`): ログイン中の bearko.games の表示名 → 前に送った名前 → 空。"anonymous" は既定にしない
+
+### Changed — SPEC-051 (= bearko.games Platform score — send the difficulty name, not the multiplier) — merged in #76
+- **総合スコアに送る難易度を名前と設定に** (`js/platform.js` + `js/battle/activity-report.js`): ゲームが計算した倍率ではなく、難易度の名前（`normal` / `absolute`）と ABSOLUTE の 4 軸を送る。係数は bearko.games 共通基盤が決める（点は今と同じ）
+
+### Added — SPEC-050 (= bearko.games Platform — link to the overall ranking) — merged in #74
+- **bearko.games の総合ランキングへの導線** (`index.html` + `js/ranking-ui.js`): ランキングのモーダルに「bearko.games の総合ランキング ↗」を置く。新しいタブで共通基盤の Survivor のランキングが開く。前からのランキングはそのまま
+
+### Added — SPEC-048 (= bearko.games Platform RTA — ABSOLUTE ×2.0) — merged in #71
+- **RTA に ABSOLUTE ×2.0 を追加** (`js/mode-select.js` + `js/platform.js` + `js/battle/index.js` + `index.html`): RTA の card の「ABSOLUTE ×2.0 で RTA」で、4 軸すべて ×2.0 に固定したルールの全 3 ステージを計る（共通基盤のレギュレーション `survivor-absolute-2x`）。ランキングへのリンクも置く
+- **総合スコアの倍率の上限 2.0**（共通基盤の計算式 v2）: ABSOLUTE の倍率は総合スコアには 2.0 まで効く。ゲーム内の活動レポート・ランキングのスコアは今までどおり
 
 ## [1.0.0] — 2026-10-16
 

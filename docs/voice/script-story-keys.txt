@@ -1,0 +1,118 @@
+navi.mode.story	mine	初めてだね！ まずはストーリーから。 遊び方は旅の中で覚えられるよ！
+story.scene.prologue.1	mine	……つながった。 よかった、 こっちに来られたんだね。 ここは、 ヒーローが負けた世界線。
+story.scene.prologue.2	mine	生き残ったヒーローは、 あなたひとり。 ほかのみんなは、 ウイルスをバラまく敵 COVID に封印された。
+story.scene.prologue.3	mine	私はマイン。 封印を解く方法を探して、 各地を回ってる。 あなたの力が要る。
+story.scene.prologue.4	mine	COVID は、 ランドの守り神クリプタイドをウイルスで苦しめて、 大陸を支配しつつある。 クリプタイドを解放すれば、 ランドは戻る。
+story.scene.prologue.5	mine	やることはひとつ。 敵を倒して、 強くなって、 次のランドへ。 まずは一番近い Ocean から！
+story.1-1.intro	mine	ようこそ、 オーシャンへ！ 攻撃は自動だよ。敵が来たら、 ブレードが勝手に斬ってくれる。 8 体倒そう！
+story.1-1.mid	mine	ほら、 倒せた！ 近くに来た敵はこうやって倒していくよ。
+story.1-1.clear	mine	ステージクリア！ 倒せるってことが分かったね。 次は、 もっと強くなる方法！
+story.1-2.intro	mine	ちょっと硬い敵が来るよ。 途中で店が開くから、 「りんご」で攻撃力を上げよう！
+story.1-2.mid	mine	店だよ！ 「りんご」の札を押して。 攻撃力が上がる。 今日はサービスでただ！
+story.1-2.clear	mine	どう？ 攻撃力が上がったら、 ぐっと倒しやすくなったでしょ！ 店には武器のほかに、 こういう「強化」も並ぶよ。
+story.1-3.intro	mine	敵が落とす青い光が CE。 拾って集めると、 店で買えるよ。 新しい武器「本」を買おう！
+story.1-3.mid	mine	集めた CE で「本」を買おう！ 2 本目の武器だよ。
+story.1-3.clear	mine	クリア！ それと、 下に GUM って数字が出てるでしょ？ 使い道は、 もうちょっと先で教えるね。
+story.1-4.intro	mine	真ん中の上に、 パンケーキを置いたよ。 光る道の先。 取ると HP が戻る！ 30 秒耐えよう。
+story.1-4.mid	mine	おいしい！ HP が戻ったね。 減ったら、 落ちているハートを探すといいよ。
+story.1-4.clear	mine	食べて、 戻して、 また戦う。 それだけ覚えて！
+story.1-5.intro	mine	まず走る練習。 光る地点を 3 つ、 順にめぐって！
+story.1-5.mid	mine	次の地点へ！ 敵は、 走りながらでも倒せるよ。
+story.1-5.spar	mine	呂布……！ まだ本気じゃない。 小手調べだ。 ブレードを 3 回、 当ててみて！
+story.1-5.hits	mine	いまの手ごたえ、 覚えておいて。 店を開くよ。 ブレードを「エリートブレード」にランクアップしよう！
+story.1-5.rankup	mine	見て、 この輝き！ 同じ呂布が、 もう別物だよ。 倒して！
+story.1-5.clear	mine	ランクアップは、 いちばん大きく強くなる道。 Ocean を取り戻した！ マップへ戻ろう。
+shadow.lubu.appear	lubu	ほう。 その剣、 どこまで届く？ 見せてみろ。
+shadow.lubu.win	lubu	ほう、 逃げ切ったか。
+shadow.lubu.lose	lubu	「他愛もない」
+story.map.freed.ocean	mine	Ocean のクリプタイドを解放した！ 靄が晴れて、 次のランドへの道が見える。
+story.2-1.intro	mine	ストロベリーに着いたよ！ ここの店は 2 品。 リボルバーか、 ほうきか。 どっちでも OK、 好きなほうを！
+story.2-1.mid	mine	どっちにする？ 遠くを撃つリボルバー、 追いかけるほうき。 1 つ選んで買おう！
+story.2-1.clear	mine	自分で選んだ武器、 どうだった？ 店に来るたび、 こうやって選んでいくんだよ。
+story.2-2.intro	mine	店には武器のランクアップと、 「強化」の品もあるよ。 CE は足りないから、 どれを買うか考えてね。
+story.2-2.mid	mine	ブレードのランクアップ、 りんご（攻撃力）、 馬（クールダウン）。 全部は買えない。 どれか 1 つ！
+story.2-2.clear	mine	選んで、 強くなって、 また選ぶ。 それが店の楽しさだよ。
+story.2-3.intro	mine	壊せるものがあるよ。 壺からは CE、 宝箱からはお助けアイテム！ CE を 40 集めよう。
+story.2-3.mid	mine	棒磁石！ 散らばった CE が ぜんぶ吸い寄せられるよ。
+story.2-3.clear	mine	壊す・拾う・集める。 慣れてきたね！
+story.2-4.intro	mine	強い気配……。 今回は倒さなくていい。 15 秒、 生き延びて！ HP はたっぷりあるから大丈夫。
+story.2-4.mid	mine	シャドーアレキサンダー！ 赤い帯が出たら突進が来る。 横にずれて！
+story.2-4.clear	mine	耐えきった！ アレキサンダーが認めてくれたみたい。 絆ができると、 あとで助けてくれるよ。
+shadow.alexander.appear	alexander	「疾さについて来られるか？」 ── シャドーアレキサンダーが現れた！
+shadow.alexander.win	alexander	見事だ。 その足、 覚えておこう。
+shadow.alexander.lose	alexander	「まだ遅い」
+story.2-5.intro	mine	……来た。 シャドー呂布。 倒せる相手じゃない。 20 秒、 とにかく生き延びて！
+story.2-5.mid	mine	叩きつけは赤い円の外へ！ 雑魚もどんどん湧くよ、 逃げながら斬って！
+story.2-5.clear	mine	生き延びた……！ 呂布からギフト券をもらったよ。 GUM も貯まってきたね。 使い道は次のランドで！
+story.map.freed.strawberry	mine	Strawberry も戻った。 西の Tangerine の靄が、 薄くなってる。
+story.3-1.intro	mine	タンジェリンだよ！ 貯まった GUM の使い道、 見せたね。 覚醒したヒーローで、 30 体倒そう！
+story.3-1.mid	mine	どう？ 前より手ごたえが軽いでしょ。 スキルツリーは、 挑戦のたびに少しずつ伸ばせるよ。
+story.3-1.clear	mine	クリア！ それと……封印がひとつ解けた！ ビリー・ザ・キッドを解放したよ。 次は、 ヒーローを選んでみよう。
+story.3-2.intro	mine	ビリー・ザ・キッドを解放した！ ヒーローごとに初期武器と固有スキルが違うよ。 好きなほうで 40 体！
+story.3-2.mid	mine	固有スキルは勝手に発動するよ。 どんな動きか、 見ていてね。
+story.3-2.clear	mine	ヒーローが変わると、 戦い方も変わる。 次はちょっと得する敵の話！
+story.3-3.intro	mine	光っている敵がいたら追いかけて！ 倒すと落とすカードが、 店で使えるギフト券になるよ。
+story.3-3.mid	mine	ギフト券ゲット！ 次の店で、 1 品ただで買えるよ。
+story.3-3.shop	mine	ギフト券を使ってみよう。 好きな品を 1 つ、 ただで！
+story.3-3.clear	mine	レアを見つけたら、 まず追う。 覚えておいてね！
+story.3-4.intro	mine	撃ってくる敵が出るよ。 撃つ前に赤い線が見えるから、 線の上から外れて！ 60 秒耐えよう。
+story.3-4.mid	mine	あれが撃つ敵！ 線が出たら横へ。 近づいて斬るのもアリ。
+story.3-4.clear	mine	弾を見てから避ける。 これができれば、 だいたいの敵は怖くないよ。
+story.3-5.intro	mine	この先に大きいのがいる……。 予告が出たら、 場の真ん中に出るよ。 店で備えて！
+story.3-5.mid	mine	来る！ 赤い丸の場所に出るよ。 雑魚は消えて、 枠が閉じる。 落ち着いて！
+story.3-5.thunder	mine	雷鼓！ 拾うとボスの HP が半分飛ぶよ。 取って！
+story.3-5.clear	mine	ボス撃破！ タンジェリンを抜けたよ。 次のライムでは、 敵の種類が増える！
+story.map.freed.tangerine	mine	Tangerine 解放！ 残るは東の Lime。
+story.4-1.intro	mine	ライムだよ！ ここからは敵に『型』が混じる。 大きいのと、 速いの。 見分けながら 60 体！
+story.4-1.giant	mine	巨人！ HP が 4 倍だけど、 落とす CE も 4 倍。 ゆっくりだから、 周りから片づけて。
+story.4-1.runner	mine	走ってくる！ あれは速いけど、 やわらかい。 来る前に撃ち落とそう。
+story.4-1.clear	mine	型を見たら、 倒す順番を決める。 それだけで、 ずいぶん楽になるよ。
+story.4-2.intro	mine	この土地には仕掛けがあるよ。 線が出たら、 珠がそこを転がってくる。 線の上から外れて 60 秒！
+story.4-2.mid	mine	来た！ 珠は敵も潰すから、 線の向こうに敵を置くと得だよ。
+story.4-2.clear	mine	仕掛けは敵にも効く。 使えるものは、 全部使おう。
+story.4-3.intro	mine	試練を越えた相手は、 依頼を持ってくるよ。 受けると敵が強くなるかわりに、 ごほうびがある。
+story.4-3.offer	mine	アレキサンダーだ！ 『速い敵のまま 30 秒』。 受けよう。 ★は後で選べるようになるよ。
+story.4-3.cleared	mine	達成！ ごほうびを 1 つ選んで。 これがミッションの流れだよ。
+story.4-3.clear	mine	ミッションは『難しいほど得』。 無理そうなら、 断ってもいいからね。
+story.4-4.intro	mine	群れが来る！ 宝箱からお助けアイテムが落ちるよ。 拾えば時間が止まるか、 無敵になる。 60 秒！
+story.4-4.watch	mine	懐中時計！ 敵が止まっているあいだに、 まとめて倒そう。
+story.4-4.robot	mine	合体ロボ！ しばらく無敵だよ。 群れの真ん中へ突っこんで！
+story.4-4.clear	mine	お助けアイテムは『困ったときの一手』。 拾う場所とタイミングを覚えてね。
+story.4-5.intro	mine	……来る。 織田信長。 鉄砲隊を呼ぶから、 赤い線に気をつけて。 今度は耐えるんじゃない、 倒すんだ！
+story.4-5.mid	mine	信長だ！ 放射と突進を見せたら、 その後がすき。 HP を削り切って！
+story.4-5.shooter	mine	鉄砲隊！ 線の上から外れて、 本体を狙い続けて。
+story.4-5.clear	mine	信長を倒した！ 絆の証に、 雷鼓がボスの 30% を削るようになったよ。 次はグレープ、 本番の形！
+shadow.nobunaga.appear	nobunaga	天下布武。 是非に及ばず——撃て！
+shadow.nobunaga.win	nobunaga	……見事。 その剣、 覚えておこう。
+shadow.nobunaga.lose	nobunaga	鉄砲の前に、 剣は無力よ。
+story.map.freed.lime	mine	四方のランドが戻った……！ 中央で、 何かが動いてる。
+story.5-1.intro	mine	グレープだよ。 ここからは本番の形！ 店の全部を見せるね。 まずは 80 体！
+story.5-1.shop	mine	店の全部！ 『リロール』で品を引き直せる。 ✕ を 2 回押すと、 その品は今後出てこない。 どっちも 1 回ずつやってみて。
+story.5-1.reroll	mine	引き直し！ 無料は 1 回、 それからは CE。 欲しい武器が無いときに。
+story.5-1.ban	mine	お断り！ 要らない品を消すと、 欲しい品が出やすくなるよ。
+story.5-1.clear	mine	店は『待つ』ものじゃなくて『作る』もの。 覚えておいてね。
+story.5-2.intro	mine	ヒーローの固有スキルは、 店で段を上げられるよ。 それと、 拾うと一撃のカードも。 100 体！
+story.5-2.shop	mine	右の枠が固有スキル。 CE を積み立てて 1 段上げてみて。 足りなければ、 手持ちぶんで上がるよ。
+story.5-2.sig	mine	段が上がった！ 固有スキルは店ごとに積み立てられるから、 余った CE はここへ。
+story.5-2.card	mine	マジックカード！ 拾った瞬間にレベルが上がるよ。
+story.5-2.clear	mine	武器・固有スキル・カード。 強くなる道は 3 本あるよ。
+story.5-3.intro	mine	武田信玄が来る。 ★3 の『風林火山』——速くて、 静かで、 多くて、 動けない。 受けても、 断ってもいい。 90 秒耐えよう。
+story.5-3.offer	mine	★3 だよ。 達成すれば合体ロボが手に入る。 無理そうなら『断る』で大丈夫。 難しいほど得、 でも無理はしない。
+story.5-3.bond	mine	風林火山を越えた！ 信玄との絆で、 合体ロボが宝箱から出るようになるよ。
+story.5-3.clear	mine	ミッションは選ぶもの。 受けるのも、 断るのも、 あなたの判断だよ。
+story.5-4.intro	mine	ここからは本番の湧きだよ。 30 秒で項羽が来る。 一撃が重いから、 赤い円から出て。 倒そう！
+story.5-4.mid	mine	項羽！ 叩きつけの円が見えたら外へ。 群れは武器に任せて、 本体を削って！
+story.5-4.clear	mine	項羽を倒した！ 絆でギフト券が 3 枚。 次が最後、 覚醒魔王ファオだよ。
+shadow.xiangyu.appear	xiangyu	力は山を抜き、 気は世を蓋う。 来い！
+shadow.xiangyu.win	xiangyu	……天が我を滅ぼすのだ。 見事。
+shadow.xiangyu.lose	xiangyu	烏江の水は、 まだ流れている。
+story.scene.final.1	covid	……来たか、 最後のひとり。 この塔の天候装置で、 ウイルスは全大陸に降る。
+story.scene.final.2	covid	クリプタイドは苦しみ、 ランドは枯れる。 お前も、 ここで終わりだ。
+story.scene.final.3	mine	塔を止めれば、 ウイルスは止まる。 4 分、 耐えて、 倒して！
+story.5-5.intro	mine	塔の頂上に COVID がいる。 本番の 4 分、 店も仕掛けも鉄砲隊も全部来る。 ここまで覚えたこと、 全部使って！
+story.5-5.mid	mine	来る……COVID だ！ 雷鼓を見つけたら拾って。 落ち着いて、 型を見て、 削り切ろう。
+story.5-5.clear	mine	COVID 撃破！ ストーリー全クリア！
+story.scene.ending.1	covid	……装置が、 止まる。 ウイルスが……消えて、 いく……
+story.scene.ending.2	mine	塔が静かになった。 クリプタイドが戻って、 ランドに色が戻る。
+story.scene.ending.3	mine	でも、 封印されたみんなは、 まだ。 ここからが本番だよ。 NORMAL が開いた。 いっしょに、 世界を取り戻そう！
+story.lose	mine	惜しい！ もう一度やってみよう。 さっきより、 きっとうまくいくよ。

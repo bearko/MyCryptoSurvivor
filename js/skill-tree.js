@@ -9,7 +9,6 @@
 
 import { richNode } from "./rich-text.js";   // SPEC-144
 import { isEasy } from "./easy.js";   // SPEC-147
-import { showLesson } from "./lesson.js";   // SPEC-147
 import { chatDockWidth, onChatDockChange } from "./chat-dock.js";   // SPEC-156
 import { bulkPlan } from "./skill-bulk.js";   // SPEC-157: 一括解放
 import { chatLayout, chatShown, setChatCollapsed } from "./platform.js";   // SPEC-156
@@ -836,7 +835,6 @@ function unlock(n) {
   if (!spend(r.cost)) return;
   setNodeRank(n.id, r.rank);
   _bought += 1;   // SPEC-146
-  if (n.kind === "root" && isEasy()) showLesson("s2.root");   // SPEC-147: 覚醒
   const burst = n.kind === "root";
   playSe(SFX.LEVEL_UP, 0, 0.6);
   notice(r.rank > 1 ? tpl(t("tree.upgraded", "「{name}」Lv {lv}！"), { name: nameOf(n), lv: r.rank }) : tpl(t("tree.bought", "「{name}」を解放！"), { name: nameOf(n) }), "good");
@@ -877,7 +875,6 @@ function bulkUnlock() {
   if (!n) return;
   _bought += plan.steps.length;   // SPEC-146 (= 実際に買えた数で数え直す)
   _bought -= plan.steps.length - n;
-  if (root && isEasy()) showLesson("s2.root");   // SPEC-147: 覚醒
   playSe(SFX.LEVEL_UP, 0, 0.6);
   notice(tpl(t("tree.bulkDone", "{n} 個を解放！"), { n }), "good");
   const after = treeMeta();

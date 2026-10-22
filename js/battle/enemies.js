@@ -39,7 +39,6 @@ import { isEasy, easyStage, bossSpawnAtMs, bossWarnLeadMs } from "../easy.js";  
 import { storyAllows } from "../story.js";   // SPEC-165
 import { storyHoldsSpawn } from "./story-battle.js";   // SPEC-165
 import { shadowMods } from "./shadow.js";   // SPEC-165: シャドーのオーラ
-import { showLesson } from "../lesson.js";   // SPEC-147
 import {
   floodMul, packAngles, separateEnemies, stageMaxEnemies, spawnBudget,
   densityTarget, screenDensity, densityShortfall, DENSITY_CHECK_MS, DENSITY_GAIN, DENSITY_MAX_PER_CHECK,
@@ -177,7 +176,6 @@ export function tickEnemies(dt, nowMs) {
     b.easyRareDone = true;
     spawnEnemyAtRing(RARE_ENEMY_IDS[0]);
     b.lastRareSpawnMs = nowMs;
-    showLesson("s2.rare");
   }
   // SPEC-033: レアエネミーを 1 分に 1 回スポーン (= 全ステージ共通。 SPEC-079 でボス戦のあいだは出さない)
   if (!ez && !b.bossSpawned && b.enemies.length < cap &&

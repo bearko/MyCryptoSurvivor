@@ -10,6 +10,7 @@ import { installMenu, openMenu } from "./menu.js";
 import { installSettingsUI } from "./settings-ui.js";
 import { installRankingUI } from "./ranking-ui.js";
 import { installModeSelect, showModeSelect } from "./mode-select.js";
+import { isStory } from "./story.js";   // SPEC-165
 import { installStoryMap } from "./story-map.js";   // SPEC-165
 import {
   TICK_INTERVAL_MS,
@@ -170,12 +171,6 @@ function setupTitleScreen() {
   // SPEC-043: タイトルの背景にステージ 1 の背景を敷く (= 画像は ASSET_BASE 経由)
   const bg = $("#titleBg");
   if (bg) bg.style.backgroundImage = `url("${img("Image/Backgrounds/1001.png")}")`;
-}
-
-/** SPEC-147: EASY をクリアした画面から、 モード選択へ (= タイトルを通さない) */
-export function openModeSelectFromTitle() {
-  document.getElementById("titleScreen")?.classList.add("hidden");
-  dismissTitle();
 }
 
 function dismissTitle() {
@@ -351,8 +346,7 @@ function renderHeroSelectModal() {
   }
 
   // SPEC-098: 解放した人が先 (= 並びはそのまま)。 札の上に「解放 n / 10」
-  // SPEC-153: EASY (= チュートリアル) は MCHウォーリアーだけ
-  const unlocked = state.easyMode ? new Set(STARTER_HEROES) : getUnlockedHeroes();
+  const unlocked = getUnlockedHeroes();
   const roster = [...HERO_ROSTER].sort((a, b) => Number(!unlocked.has(a.heroId)) - Number(!unlocked.has(b.heroId)));
   const countEl = $("#heroSelectCount");
   if (countEl) countEl.textContent = tpl(t("hero.select.count", "Unlocked {n} / {total}"), {
@@ -404,7 +398,6 @@ function renderHeroSelectModal() {
 
 function pickHero(heroId) {
   if (!getHero(heroId)) return;
-  if (state.easyMode && !STARTER_HEROES.includes(Number(heroId))) { renderHeroDetail(heroId); return; }   // SPEC-153: EASY は MCHウォーリアーだけ (= 説明は見せる)
   const changed = state.pendingHeroPick !== heroId;
   state.pendingHeroPick = heroId;
   renderHeroSelectModal();
@@ -595,12 +588,11 @@ function renderHeroLock(hero) {
   if (!box) return;
   const u = hero ? unlockOf(hero.heroId) : null;
   play?.classList.add("hidden");
-  // SPEC-153: EASY では MCHウォーリアーだけ。 ビリー・ザ・キッドは EASY クリアで
-  const easyOnly = state.easyMode && hero && !STARTER_HEROES.includes(hero.heroId);
+  // SPEC-165: ビリー・ザ・キッドはストーリー 3-1 で
   const easyReward = hero && hero.heroId === EASY_REWARD_HERO && !isHeroUnlocked(hero.heroId);
-  box.classList.toggle("hidden", !u && !easyOnly && !easyReward);
-  if (easyOnly || (easyReward && !u)) {
-    $("#heroDetailLockText").textContent = t(easyOnly ? "hero.lock.easyOnly" : "hero.lock.easyReward", "");
+  box.classList.toggle("hidden", !u && !easyReward);
+  if (easyReward && !u) {
+    $("#heroDetailLockText").textContent = t("hero.lock.easyReward", "");
     return;
   }
   if (!u) return;
@@ -786,7 +778,7 @@ window.addEventListener("DOMContentLoaded", () => {
   // SPEC-096: セーブ (= mcs.meta.v1) から判定できるアチーブメントは、 起動時と、 セーブが変わるたび
   // (= スキルツリーの解放・ボスのゴールドダスト・挑戦の終わり) に、 いま満たしているものを送る
   reportMetaAchievements(getMeta());
-  onMetaChange((m) => { if (!state.easyMode) reportMetaAchievements(m); });   // SPEC-153: EASY (= チュートリアル) では送らない。 NORMAL で木を触ったときに届く
+  onMetaChange((m) => { if (!isStory()) reportMetaAchievements(m); });   // チュートリアル (= ストーリー) では送らない。 NORMAL で木を触ったときに届く
   init().catch((e) => console.error("init failed", e));
 });
 

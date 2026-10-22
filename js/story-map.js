@@ -60,7 +60,7 @@ export function enterStory() {
 
 // ---------------- S-A ワールドマップ ----------------
 export function showStoryMap() {
-  naviHide();   // モード選択の帯 (= 「まずは EASY から」) を消す
+  naviHide();   // モード選択の帯 (= 「まずはストーリーから」) を消す
   _$("gameModeSelectScreen")?.classList.add("hidden");
   _$("titleScreen")?.classList.add("hidden");
   _$("storyWorldScreen")?.classList.add("hidden");
@@ -374,7 +374,6 @@ export async function startStoryStage(id) {
   if (r.hero !== "select" && !hero) return;
   state.regulation = REGULATION_NORMAL;
   state.rtaMode = false;
-  state.easyMode = false;
   state.storyId = id;
   state.absolute = { spawnMul: 1, hpMul: 1, dmgMul: 1, speedMul: 1 };
   if (!hero) {

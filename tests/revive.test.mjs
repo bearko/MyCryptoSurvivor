@@ -128,15 +128,6 @@ test("ボスの予告の警告は 1 度だけ (= 毎コマ呼ぶと吹き出し�
   assert.match(read("../js/battle/fx.js"), /if \(fx\.bossWarned\) return false;[\s\S]*?_showBossBanner\(\);\n\s+return true;/);
 });
 
-test("レッスンは告げ声が終わるのを待ち、 出すときは前のボイスを切る (= 「ここは node ホレリス」と「新しいステージ！」を重ねない)", () => {
-  assert.match(read("../js/voice.js"), /export function isVoicePlaying\(\)/);
-  const lesson = read("../js/lesson.js");
-  assert.match(lesson, /if \(isVoicePlaying\(\)\) return;\s*\/\/ SPEC-151/);
-  // SPEC-154: 通信窓で話す (= naviSay がそのセリフのボイスを鳴らし、 前のボイスは止まる)。 止めない
-  assert.match(lesson, /naviSay\(\[\{ key: vid, pose: POSE\[key\] \?\? "pointer", voice: hasVoice\(vid\) \? vid : null \}\], opt\);/);
-  assert.doesNotMatch(lesson, /pauseTime\(/, "レッスンはゲームを止めない");
-});
-
 test("文言: 見出し・復活する・マインちゃんの「王妃の黄金時計」。 RTA/ABSOLUTE も「復活する」", () => {
   assert.equal(ui["gameover.title"].ja, "REVIVE");
   assert.doesNotMatch(ui["result.fellAt"].ja, /力尽きた/);

@@ -18,6 +18,7 @@ import { state, pauseTime, resumeTime } from "../state.js";
 import { img, SFX, BOSS_SPAWN_AT_MS, BOSS_WARNING_LEAD_MS } from "../constants.js";
 import { shopTimesMs } from "./shop-logic.js";
 import { shopAtStart } from "../perks.js";   // SPEC-152
+import { bondedGivers } from "../bonds.js";   // SPEC-165
 import { t, tpl, onLangChange } from "../i18n.js";
 import { playSe, setMissionSilence } from "../audio.js";
 import { applyItem, healBy } from "./field.js";
@@ -29,7 +30,6 @@ import { naviTipModal } from "../navi-tips.js";   // SPEC-137: 初めてのミ�
 import { naviHide } from "../navi.js";
 import { setRichText } from "../rich-text.js";   // SPEC-144
 import { easyStage, isEasy } from "../easy.js";   // SPEC-147
-import { showLesson } from "../lesson.js";   // SPEC-147
 
 // ============================================================
 // 純関数 (= tests/missions.test.mjs)
@@ -98,10 +98,16 @@ export function modsOf(mission, star = 1) {
 }
 
 /** 持ちかける人を選ぶ (= 同じ人が続けて来ない・プレイ中のヒーローと同じ人は出さない) */
-export function pickMission({ prevId = null, heroId = null, rnd = Math.random } = {}) {
+export function pickMission({ prevId = null, heroId = null, rnd = Math.random, bonded = null } = {}) {
   const pool = MISSIONS.filter((m) => m.id !== prevId && (m.heroId == null || m.heroId !== heroId));
-  return pool[Math.floor(rnd() * pool.length) % pool.length];
+  // SPEC-165 §6.3: 絆のある出し手を優先 (= 3 倍の重み。 「試練を越えた相手が、 のちに依頼をくれる」が遊びの中で分かる)
+  const w = pool.map((m) => (bonded?.has(m.id) ? BONDED_GIVER_WEIGHT : 1));
+  let r = rnd() * w.reduce((a, b) => a + b, 0);
+  for (let i = 0; i < pool.length; i++) { r -= w[i]; if (r < 0) return pool[i]; }
+  return pool[pool.length - 1];
 }
+/** 絆のある出し手の重み (= 無い人の何倍出やすいか) */
+export const BONDED_GIVER_WEIGHT = 3;
 
 /**
  * そのウェーブで持ちかける時刻 (= ステージの経過 ms)。 持ちかけないなら null
@@ -256,7 +262,7 @@ export function tickMissions() {
   // 新しいウェーブ (= 店を出た) になったら、 このウェーブで持ちかけるかを決める
   if (m.wave !== s.nextIdx) {
     m.wave = s.nextIdx;
-    const pick = pickMission({ prevId: m.prevId, heroId: state.ownedHero?.heroId });
+    const pick = pickMission({ prevId: m.prevId, heroId: state.ownedHero?.heroId, bonded: bondedGivers() });   // SPEC-165: 絆のある人を優先
     m.planId = pick?.id ?? null;
     m.planAt = pick ? planOffer({ stageIdx, waveIdx: s.nextIdx, durS: maxDurS(pick), count: m.count }) : null;
   }
@@ -286,7 +292,6 @@ function _openOffer(mission, forced = null) {
     { key: "navi.mission.1", pose: "pointer", voice: "mission.1" },   // SPEC-159: ボイス
     { key: "navi.mission.2", pose: "wink", voice: "mission.2" },
   ]);
-  if (isEasy()) showLesson("s2.mission");   // SPEC-147: 説明はレッスンで (= 上に重なる)
 }
 let _naviShown = false;
 
@@ -353,7 +358,6 @@ function _openReward(mission, star = 1) {
   if (!mission || _reward) return;
   _reward = mission;
   _rewardStar = clampStar(star);
-  if (isEasy()) showLesson("s2.reward");   // SPEC-147
   _wireOnce();
   pauseTime();
   _renderReward();

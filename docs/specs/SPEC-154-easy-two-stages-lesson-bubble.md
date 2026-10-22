@@ -1,11 +1,13 @@
 ---
 id: SPEC-154
 title: Lessons as the Top Comm Bubble With a Cursor (No Cut-Ins, Game Keeps Running), EASY Cut to Two Stages, Shop Gauge Fixed on Stages 2/3, Skill Tree Reachable From the Stage-Clear Screen Once Awakened, and the Boss Chest Turning Into the Gold Dust Icon
-status: Done
+status: Superseded
 pr: 193
 phase: v1.7 Onboarding
 kind: Changed
 ---
+
+> **Superseded**（2026-10-22）: SPEC-165 が置き換えた。 「負ける設計」は撤去（倒れて学ぶ → やって学ぶ）。
 
 # SPEC-154 — レッスンは画面の上の通信窓で（止めない・カーソル）、 EASY は 2 ステージ、 店のゲージ、 クリア画面の木、 宝箱の絵
 

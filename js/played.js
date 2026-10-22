@@ -34,15 +34,15 @@ export function markPlayed(storage = globalThis.localStorage) {
 
 /**
  * いまロックされているモード (= 純関数)。
- * SPEC-147: NORMAL は EASY をクリアするまで (= 前から NORMAL を遊んでいる人 (= played) は開いている)
+ * SPEC-165: NORMAL はチュートリアル (= ストーリー 5-5) を終えるまで (= 前から NORMAL を遊んでいる人 (= played)・旧 EASY をクリアした人は開いている)
  */
-export function lockedModes(played, easyCleared = true) {
+export function lockedModes(played, tutorialDone = true) {
   const out = played ? [] : [...LOCKED_UNTIL_PLAYED];
-  if (!played && !easyCleared) out.unshift("NORMAL");
+  if (!played && !tutorialDone) out.unshift("NORMAL");
   return out;
 }
 
 /** そのモードがロックされているか (= 純関数) */
-export function isModeLocked(mode, played, easyCleared = true) {
-  return lockedModes(played, easyCleared).includes(mode);
+export function isModeLocked(mode, played, tutorialDone = true) {
+  return lockedModes(played, tutorialDone).includes(mode);
 }

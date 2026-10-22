@@ -1,68 +1,31 @@
 // ============================================================
-// easy.js — EASY (= 初めての人のための短い 3 ステージ。 SPEC-147)。 設定と純関数
+// easy.js — チュートリアル (= ストーリー) の上書きの入口。 SPEC-165 (= SPEC-147 の EASY は撤去)
 // ============================================================
 //
-// NORMAL の STAGE_TABLE はそのままに、 時間・湧き・ボスの HP だけを上書きする (= EASY_STAGES)。
-// ヒーローは根 (= サバイバーの覚醒) を取るまで弱い (= ステージ 3 で負けて、 スキルツリーへ)。
-// 共通基盤にはステージ・スコア・RTA を送らない。 ABSOLUTE・RTA のロックも開かない (= NORMAL を 1 回終えてから)。
-// 「いま EASY か」は state.easyMode。 ここでは state を読むだけ (= 書くのは mode-select)。
+// 名前は EASY のころのまま (= 戦闘の各所が isEasy() / easyStage() で読む。 保存のキー mcs.easyCleared も変えない)。
+// 中身はストーリーのレシピ (= storyOverride) だけで、 EASY のステージ・レッスン・根まで弱いヒーローは SPEC-165 で外した。
+// isEasy() = チュートリアルか (= 共通基盤に送らない・操作ガイドを出さない・段階は T0 のまま)。
 
-import { state } from "./state.js";
-import { BOSS_SPAWN_AT_MS, BOSS_WARNING_LEAD_MS, LS_PREFIX, STAGE_TABLE } from "./constants.js";
-import { owns } from "./skill-logic.js";
-import { ROOT_ID } from "./skill-data.js";
+import { BOSS_SPAWN_AT_MS, BOSS_WARNING_LEAD_MS, LS_PREFIX } from "./constants.js";
+import { STAGE_TABLE } from "./constants.js";
 import { isStory, storyStage, storyOverride } from "./story.js";   // SPEC-165
 
+/** 「チュートリアルを終えた」の印 (= 5-5 のクリア。 旧 EASY のクリアもこの印で、 NORMAL を開く。 SPEC-165 行 W) */
 export const LS_EASY_CLEARED = `${LS_PREFIX}.easyCleared`;
-export const LS_LESSONS = `${LS_PREFIX}.lessons`;
 
-/** 根を取るまでのヒーローの弱さ (= HP と攻撃。 EASY だけ) */
-export const EASY_HERO_MUL = 0.5;   // SPEC-164: 0.6 → 0.5 (= 根を取ったときの跳ね上がりを大きく)
-
-/**
- * ステージごとの上書き (= ms)。 NORMAL の表に無いものだけ
- *   bossAtMs / warnMs : ボスが出る時刻と、 その前の予告
- *   shopTimesMs       : 店が開く時刻 (= SPEC-152: 開幕の店は出さない。 CE は持ち越さないので選べるものが無い)
- *   spawnIntervalMs   : 雑魚の湧きの間隔 (= flood・density・寄せ直しは使わない)
- *   enemyHpMul / enemyDmgMul / bossHpMul / bossDmgMul (= NORMAL のボスは育った装備向けなので、 EASY では HP を大きく下げる。 SPEC-163: ステージ 1 は 12,000 × 0.015 = 180、 ステージ 2 は 45,000 × 0.032 = 1,440 で、 SPEC-154 のときと同じ)
- *   chestTimesMs      : 宝箱
- *   rareAtMs          : レアエネミーを必ず出す時刻 (= null なら出さない)
- *   missionAtMs       : ミッションを必ず持ちかける時刻 (= ★1・durS)
- *   thunderAtBoss     : ボスが出た瞬間に雷鼓を足もとに落とす (= 雑魚に使ってしまわないよう、 予告ではなくボスが出てから)
- *   thunderBossRatio  : 雷鼓がボスの HP の何割を削るか (= SPEC-164: EASY だけ上書き。 無ければ perks の値)
- */
-export const EASY_STAGES = Object.freeze([
-  // SPEC-149: 敵の数は 1/3 (= 湧きの間隔 ×3)。 ステージ 1 は動かなくても倒れない
-  { bossAtMs: 15000, warnMs: 4000,  shopTimesMs: [10000],  spawnIntervalMs: 960, enemyHpMul: 0.5, enemyDmgMul: 0.25, bossHpMul: 0.015, bossDmgMul: 0.25, chestTimesMs: [5000],  rareAtMs: null, missionAtMs: null, thunderAtBoss: false },
-  // SPEC-154: EASY は 2 ステージ。 ステージ 2 は負ける設計 (= 根を取ってから復活して勝つ)。 レアとミッションもここで必ず体験する
-  //   SPEC-163: 攻撃 ×2.2 → ×1.7・ボスの攻撃 ×0.7 → ×0.6 (= 不慣れな人 (K 0.5) が根を取っても倒れていた。 根なしはそれでも倒れる)
-  //   SPEC-164 (作者の決定): 根を取れば雑魚はほぼ動かなくても倒れない (攻撃 ×0.6)。 ボスは痛くない (×0.3) が長い (HP 4,050 = 45,000 × 0.09)。
-  //   雷鼓はボスの HP の半分 (thunderBossRatio 0.5) を一気に削る体験。 根なし (HP ×0.5) はそれでも押し切られる
-  { bossAtMs: 30000, warnMs: 5000,  shopTimesMs: [15000],  spawnIntervalMs: 570, enemyHpMul: 1.6, enemyDmgMul: 0.6,  bossHpMul: 0.09, bossDmgMul: 0.3,  chestTimesMs: [10000], rareAtMs: 5000, missionAtMs: 8000, missionDurS: 15, thunderAtBoss: true, thunderBossRatio: 0.5 },
-]);
-
-/** レッスンの番号 (= 出す順。 文は data/i18n/ui.json の lesson.<番号>、 ボイスは lesson.<番号>) */
-export const LESSON_KEYS = Object.freeze([
-  "s1.move", "s1.ce", "s1.shop", "s1.boss", "s1.clear",
-  "s2.start", "s2.rare", "s2.gift", "s2.mission", "s2.reward", "s2.boss",
-  "s2.lose", "s2.root", "s2.thunder", "s2.clear",
-]);
-
-/** SPEC-154: ステージの数 (= EASY は 2、 ほかは STAGE_TABLE) */
+/** ステージの数 (= ストーリーは 1 ステージ完結、 ほかは STAGE_TABLE) */
 export function stageCount() {
-  if (isStory()) return 1;   // SPEC-165: ストーリーは 1 ステージ完結
-  return state.easyMode ? EASY_STAGES.length : STAGE_TABLE.length;
+  return isStory() ? 1 : STAGE_TABLE.length;
 }
 
-/** チュートリアルか (= EASY かストーリー。 共通基盤に送らない・操作ガイドを出さない・段階は T0 のまま) */
+/** チュートリアルか (= ストーリー。 共通基盤に送らない・操作ガイドを出さない・段階は T0 のまま) */
 export function isEasy() {
-  return !!state.easyMode || isStory();
+  return isStory();
 }
 
-/** いまのステージの上書き (= EASY でなければ null) */
-export function easyStage(idx = state.currentStageIdx ?? 0) {
-  if (isStory()) return storyOverride(storyStage());   // SPEC-165: レシピを EASY の上書きと同じ形で
-  return state.easyMode ? (EASY_STAGES[Math.max(0, Math.min(EASY_STAGES.length - 1, idx | 0))] ?? null) : null;
+/** いまのステージの上書き (= ストーリーのレシピを EASY の上書きと同じ形で。 ほかは null) */
+export function easyStage() {
+  return isStory() ? storyOverride(storyStage()) : null;
 }
 
 /** ボスが出る時刻・予告の長さ (= 戦闘の各所が定数の代わりに呼ぶ) */
@@ -73,26 +36,10 @@ export function bossWarnLeadMs() {
   return easyStage()?.warnMs ?? BOSS_WARNING_LEAD_MS;
 }
 
-/** ヒーローの倍率 (= EASY で根を取るまで 0.6。 ほかは 1。 純関数) */
-export function easyHeroMul(meta, easy = !!state.easyMode) {
-  return easy && !owns(meta, ROOT_ID) ? EASY_HERO_MUL : 1;   // SPEC-165: ストーリーには効かない (= レシピの heroMul で)
-}
-
-/** EASY をクリアしたか (= 純関数。 storage は getItem を持つもの) */
+/** チュートリアルを終えたか (= 純関数。 storage は getItem を持つもの) */
 export function hasClearedEasy(storage = globalThis.localStorage) {
   try { return storage?.getItem(LS_EASY_CLEARED) === "1"; } catch { return false; }
 }
 export function markEasyCleared(storage = globalThis.localStorage) {
   try { storage?.setItem(LS_EASY_CLEARED, "1"); return true; } catch { return false; }
-}
-
-/** 見たレッスン (= 純関数。 壊れていたら空) */
-export function loadLessons(storage = globalThis.localStorage) {
-  try {
-    const arr = JSON.parse(storage?.getItem(LS_LESSONS) ?? "[]");
-    return new Set(Array.isArray(arr) ? arr.filter((k) => LESSON_KEYS.includes(k)) : []);
-  } catch { return new Set(); }
-}
-export function saveLessons(seen, storage = globalThis.localStorage) {
-  try { storage?.setItem(LS_LESSONS, JSON.stringify([...seen])); } catch { /* 覚えられなくても動く */ }
 }

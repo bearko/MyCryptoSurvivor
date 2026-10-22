@@ -1,9 +1,9 @@
 // ============================================================
-// tools/autoplay/run.mjs — NORMAL / EASY を自動で遊んで、 生存時間・撃破・CE・装備の伸びを測る (= SPEC-163 のバランス調整)
+// tools/autoplay/run.mjs — NORMAL / ストーリーを自動で遊んで、 生存時間・撃破・CE・装備の伸びを測る (= SPEC-163 のバランス調整)
 // ============================================================
 // 使い方: python3 -m http.server 8790 をリポジトリのルートで立てて
 //   node tools/autoplay/run.mjs http://localhost:8790 --mode normal --k 0.3 --gum 0 --runs 3 --out out.json
-//   --mode normal|easy   --hero 10001   --k 0.3 (= 受けるダメージの倍率。 人の上手さの代わり)   --gum N (= 最初の GUM。 木は安い順に自動で取る)
+//   --mode normal|story   --hero 10001   --k 0.3 (= 受けるダメージの倍率。 人の上手さの代わり)   --gum N (= 最初の GUM。 木は安い順に自動で取る)
 //   --runs N (= 倒れたら木で強化して復活。 周回の伸びを見る)   --maxsec 330 (= 1 ステージの上限)   --real (= 実時間。 既定は Playwright の clock で速く回す)
 //   --buy all|weapons (= 店の買い方)   --label 名前
 // Playwright は npm の依存にしない (= PLAYWRIGHT にパスを渡す。 無ければ "playwright" を探す)。
@@ -56,7 +56,7 @@ async function buyTree() {
     return { bought, gumLeft: m.getMeta().gum, nodes: Object.keys(m.getMeta().nodes).length };
   });
 }
-const TREE = opt("tree", "auto");   // auto: 根 → 安い順に GUM が尽きるまで / none: 木を触らない (= EASY の 1 回目)
+const TREE = opt("tree", "auto");   // auto: 根 → 安い順に GUM が尽きるまで / none: 木を触らない (= ストーリーの 3-1 より前)
 const tree0 = TREE === "none" ? { bought: [], gumLeft: GUM, nodes: 0 } : await buyTree();
 if (MODE === "story") {
   // SPEC-165: ストーリーの札 → ランドマップ → その行の丸 (= ヒーロー選択は開かない)
@@ -67,7 +67,7 @@ if (MODE === "story") {
   await p.evaluate(() => document.getElementById("storyStageStart")?.click()); await tick(1500);
   for (let k = 0; k < 12 && (await p.evaluate(() => !document.getElementById("storySceneScreen")?.classList.contains("hidden"))); k++) { await p.evaluate(() => document.getElementById("storySceneNext")?.click()); await tick(600); }   // 5-5 の前のシーン
 } else {
-await p.click(MODE === "easy" ? "#btnModeEasy" : "#btnModeNormal", { force: true }); await tick(1500);
+await p.click("#btnModeNormal", { force: true }); await tick(1500);
 await p.evaluate((hero) => { const tiles = [...document.querySelectorAll("#heroSelectGrid .hero-tile")]; (tiles.find((t) => t.dataset.heroId === String(hero) && !t.disabled && !t.classList.contains("locked")) ?? tiles.find((t) => !t.disabled && !t.classList.contains("locked")))?.click(); }, HERO); await tick(400);
 await p.click("#heroSelectCta", { force: true });
 }

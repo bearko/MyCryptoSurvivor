@@ -46,6 +46,11 @@ export function trophyIdsForStageEnd(stageIdx, stageCount, ctx = {}) {
   return ids;
 }
 
+/** SPEC-165: ストーリーを全クリアした (= 25 ステージ) ときに送るアチーブメント ID。純関数 (progress = story.js の loadStory の形) */
+export function achievementIdsForStory(progress, allCleared) {
+  return progress && allCleared(progress) ? ["survivor.story"] : [];
+}
+
 /** 始めたステージ（0 始まり）で送るアチーブメント ID (= ステージ 3 にたどり着く)。純関数 */
 export function achievementIdsForStageStart(stageIdx, stageCount = 3) {
   return stageIdx === 2 && stageCount >= 3 ? ["survivor.stage3"] : [];
@@ -154,6 +159,11 @@ export function reportStageStart(stageIdx, stageCount) {
 /** セーブ (= mcs.meta.v1) が変わったとき・起動時 (= SPEC-096: 前から遊んでいる人にも付く) */
 export function reportMetaAchievements(meta) {
   unlockAchievements(achievementIdsForMeta(meta));
+}
+
+/** SPEC-165: ストーリーの全クリア (= 5-5 のクリアで。 同じ起動で 1 度だけ送られる) */
+export function reportStoryAllClear(progress, allCleared) {
+  unlockAchievements(achievementIdsForStory(progress, allCleared));
 }
 
 /** 宝箱を開けたとき (= SPEC-096: その場で) */

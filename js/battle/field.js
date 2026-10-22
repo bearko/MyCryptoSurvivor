@@ -33,7 +33,6 @@ import { playSe } from "../audio.js";
 import { reportChestOpened } from "../platform.js";   // SPEC-096
 import { easyStage } from "../easy.js";   // SPEC-147
 import { storyAllows, storyStage } from "../story.js";   // SPEC-165
-import { showLesson } from "../lesson.js";   // SPEC-147
 
 function _stage() {
   return STAGE_TABLE[state.currentStageIdx ?? 0] ?? STAGE_TABLE[0];
@@ -236,7 +235,6 @@ export function applyItem(kind) {
     robotOn(robotSec());   // SPEC-140
   } else if (kind === "thunder") {
     thunderStrike();   // SPEC-063
-    if (easyStage() && (state.currentStageIdx ?? 0) === 1) showLesson("s2.thunder");   // SPEC-147。 SPEC-164: EASY は 2 ステージなので 1 (= SPEC-154 の直し漏れで出ていなかった)
   } else if (kind === "magnet") {
     // 落ちている CE を全部吸い寄せる (= gems.js が毎フレーム近づける)
     for (const g of b.gems) g.magnet = true;

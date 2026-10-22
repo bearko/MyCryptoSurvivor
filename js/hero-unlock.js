@@ -7,12 +7,12 @@
 // 解放した人はこの端末にも覚える (= 通信できないときも選べる)。
 // 上半分は純関数 (= テストする)。 下半分が SDK と localStorage。
 
-import { hasClearedEasy } from "./easy.js";   // SPEC-153
+import { hasClearedEasy } from "./easy.js";   // SPEC-153 / SPEC-165
 import { hasPlayed } from "./played.js";   // SPEC-153
 
-/** 最初から使える人 (= ブレード)。 SPEC-153: リボルバー (= ビリー・ザ・キッド) は EASY クリアの報酬になった */
+/** 最初から使える人 (= ブレード)。 SPEC-165: リボルバー (= ビリー・ザ・キッド) はストーリー 3-1 の解放 */
 export const STARTER_HEROES = [10001];
-/** SPEC-153: EASY クリアで仲間になる人 (= ビリー・ザ・キッド)。 EASY ができる前から遊んでいた人はそのまま使える */
+/** SPEC-165: ストーリー 3-1 で仲間になる人 (= ビリー・ザ・キッド)。 旧 EASY のクリア・それより前から遊んでいた人はそのまま使える */
 export const EASY_REWARD_HERO = 4006;
 
 /**
@@ -92,11 +92,11 @@ function _save() {
 
 /** いま使えるヒーロー (= Set<heroId>) */
 export function getUnlockedHeroes() {
-  if (!_unlocked) _unlocked = unlockedHeroes([], _loadRemembered(), { easyCleared: hasClearedEasy() || hasPlayed() });   // SPEC-153: EASY ができる前から遊んでいた人もビリーを使える
+  if (!_unlocked) _unlocked = unlockedHeroes([], _loadRemembered(), { easyCleared: hasClearedEasy() || hasPlayed() });   // チュートリアルを終えた人・前から遊んでいた人はビリーを使える
   return _unlocked;
 }
 
-/** SPEC-153: EASY をクリアした (= ビリー・ザ・キッドが仲間になる)。 新しく解放されたら heroId の配列、 もう使えたなら [] */
+/** SPEC-165: ストーリー 3-1 をクリアした (= ビリー・ザ・キッドが仲間になる)。 新しく解放されたら heroId の配列、 もう使えたなら [] */
 export function unlockEasyReward() {
   const before = getUnlockedHeroes();
   if (before.has(EASY_REWARD_HERO)) return [];
