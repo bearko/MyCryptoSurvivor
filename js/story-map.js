@@ -15,7 +15,10 @@ import { naviHide } from "./navi.js";
 import { startMenuBgm } from "./ui-sound.js";
 import { getHero, localizedHeroName } from "./heroes.js";
 import { img, REGULATION_NORMAL } from "./constants.js";
-import { LANDS, STORY_PLAN, STORY_MAP, loadStory, storyUnlocked, currentStoryId, stageArt, stageRole, TOWER, MAP_TERRITORY, stagePos, landOf, bondBurst } from "./story.js";
+import { LANDS, STORY_PLAN, STORY_MAP, loadStory, storyUnlocked, currentStoryId, stageArt, stageRole, TOWER, MAP_TERRITORY, stagePos, landOf, bondBurst, PROLOGUE, prologueDone, allStoryIds } from "./story.js";
+import { naviFrameUrl, NAVI_POSES } from "./navi.js";
+import { playSe } from "./audio.js";
+import { SFX } from "./constants.js";
 import { owns } from "./skill-logic.js";
 import { ROOT_ID } from "./skill-data.js";
 import { getMeta } from "./meta.js";
@@ -40,11 +43,18 @@ export function installStoryMap({ onBack } = {}) {
   _$("storyMapBack")?.addEventListener("click", () => { hideStoryMap(); _onBack?.(); });
   _$("storyWorldBack")?.addEventListener("click", () => { hideStoryWorld(); showStoryMap(); });
   _$("storyStageDim")?.addEventListener("click", hideStageInfo);
+  wireScene();
   onLangChange(() => {
     if (!_$("storyMapScreen")?.classList.contains("hidden")) renderStoryMap();
     if (!_$("storyWorldScreen")?.classList.contains("hidden") && _worldLand) renderStoryWorld(_worldLand);
     if (_infoId) renderStageInfo(_infoId);
   });
+}
+
+// ---------------- 入り口 (= プロローグをまだ通っていなければ、 説明なしでいきなり 1-0) ----------------
+export function enterStory() {
+  if (!prologueDone(loadStory())) { startStoryStage(PROLOGUE.id); return; }
+  showStoryMap();
 }
 
 // ---------------- S-A ワールドマップ ----------------
@@ -67,6 +77,8 @@ export function renderStoryMap() {
   if (!lands || !plates) return;
   const p = loadStory();
   const total = Object.values(STORY_PLAN).reduce((a, v) => a + v, 0);
+  const ids = allStoryIds();
+  p.cleared = p.cleared.filter((id) => ids.includes(id));   // プロローグ (1-0) は 25 に数えない
   const ti = _$("storyMapTitle"); if (ti) ti.textContent = t("story.map.title", "ワールドマップ");
   const sb = _$("storyMapSub"); if (sb) sb.textContent = tpl(t("story.map.sub", "クリア {n} / {total}"), { n: String(p.cleared.length), total: String(total) });
   const bk = _$("storyMapBack"); if (bk) bk.textContent = t("story.map.back", "◀ モード選択へ");
@@ -231,7 +243,7 @@ export function renderStoryWorld(landId) {
 export function showStageInfo(id) {
   if (!STORY_MAP[id]) return;
   _infoId = id;
-  renderStageInfo(id);
+  try { renderStageInfo(id); } catch (e) { console.warn("[story] stage info", e); const c = _$("storyStageCard"); if (c) c.innerHTML = `<div class="ssm-body"><div class="ssm-goal">${esc(t(`story.${id}.name`, id))}</div><div class="ssm-btns"><button type="button" class="btn btn--ghost" id="storyStageClose">${esc(t("story.info.close", "とじる"))}</button><button type="button" class="btn ssm-go" id="storyStageStart">${esc(t("story.info.start", "開始 ▶"))}</button></div></div>`; _$("storyStageClose")?.addEventListener("click", hideStageInfo); _$("storyStageStart")?.addEventListener("click", () => { hideStageInfo(); startStoryStage(id); }); }
   const m = _$("storyStageModal");
   m?.classList.remove("hidden");
   if (m && !reduceFx()) { m.classList.add("is-in"); requestAnimationFrame(() => requestAnimationFrame(() => m.classList.remove("is-in"))); }
@@ -245,7 +257,7 @@ function _condText(r) {
 }
 function _heroText(r) {
   const lang = getLang();
-  const base = r.hero === "select" ? t("story.info.heroSelect", "ヒーローを選ぶ") : (r.hero === "keep" ? t("story.info.heroKeep", "前に選んだヒーロー") : (localizedHeroName(getHero(r.hero), lang) || String(r.hero)));
+  const base = r.hero === "select" ? t("story.info.heroSelect", "ヒーローを選ぶ") : (r.hero === "keep" ? t("story.info.heroKeep", "前に選んだヒーロー") : (localizedHeroName(getHero(r.hero) ?? null, lang) || t("hero.mchWarrior", "MCH ウォーリアー")));
   const hp = r.heroMul?.hp ? ` ・ HP ×${r.heroMul.hp}` : "";
   return base + hp;
 }
@@ -340,10 +352,79 @@ export async function startStoryStage(id) {
   }, { label: `STORY // ${id}` });
 }
 
-/** ストーリーをやめる (= 結果の画面の「マップへ」。 いたランドの詳細へ戻る) */
+/** ストーリーをやめる (= 結果の画面の「マップへ」。 いたランドの詳細へ戻る。 プロローグの後は地図へ) */
 export function backToStoryMap() {
   const id = state.storyId;
+  const r = id ? STORY_MAP[id] : null;
   state.storyId = null;
-  const land = id ? landOf(id) : null;
-  if (land) showStoryWorld(land.id); else showStoryMap();
+  const land = id && id !== PROLOGUE.id ? landOf(id) : null;
+  const go = () => { if (land) showStoryWorld(land.id); else showStoryMap(); };
+  if (r?.scene && !_sceneShown.has(r.scene)) { showScene(r.scene, go); return; }   // プロローグ (= 裂け目のあと)
+  if (r?.sceneAfter && loadStory().cleared.includes(id)) { showScene(r.sceneAfter, go, { once: true }); return; }   // エンディング
+  go();
+}
+
+// ---------------- シーン (= マインちゃんの台詞を 1 つずつ。 押すと次。 最後は「ワールドマップへ」) ----------------
+const _sceneShown = new Set();
+let _scene = null;
+export function showScene(sceneId, onDone, { once = false } = {}) {
+  if (once && _sceneShown.has(sceneId)) { onDone?.(); return; }
+  _sceneShown.add(sceneId);
+  const lines = [];
+  for (let i = 1; i <= 12; i++) { const k = `story.scene.${sceneId}.${i}`; const s = t(k, ""); if (!s || s === k) break; lines.push({ key: k, text: s, pose: SCENE_POSES[sceneId]?.[i - 1] ?? "normal" }); }
+  if (!lines.length) { onDone?.(); return; }
+  _scene = { id: sceneId, lines, i: 0, onDone };
+  _$("gameModeSelectScreen")?.classList.add("hidden"); _$("titleScreen")?.classList.add("hidden");
+  _$("storyMapScreen")?.classList.add("hidden"); _$("storyWorldScreen")?.classList.add("hidden");
+  const scr = _$("storySceneScreen");
+  if (!scr) { onDone?.(); return; }
+  scr.classList.remove("hidden");
+  _renderScene();
+}
+const SCENE_POSES = { prologue: ["shy", "smile", "pointer", "cross", "wave"], ending: ["hooray", "smile", "wave"] };   // NAVI_POSES の名前
+function _renderScene() {
+  const sc = _scene, scr = _$("storySceneScreen");
+  if (!sc || !scr) return;
+  const ln = sc.lines[sc.i], last = sc.i >= sc.lines.length - 1;
+  const face = _$("storySceneFace"); if (face) face.src = _poseUrl(ln.pose);
+  const txt = _$("storySceneText"); if (txt) { txt.textContent = ""; _typeInto(txt, ln.text); }
+  const pg = _$("storySceneNo"); if (pg) pg.textContent = `${sc.i + 1} / ${sc.lines.length}`;
+  const next = _$("storySceneNext"); if (next) next.textContent = last ? t("story.scene.toMap", "ワールドマップへ ▶") : t("story.scene.next", "▶");
+}
+function _poseUrl(pose) {
+  // navi の frames: NAVI_POSES の名前 → フレーム名。 無ければそのまま
+  const name = NAVI_POSES?.[pose] ?? NAVI_POSES.smile;
+  try { return naviFrameUrl(name); } catch { return ""; }
+}
+let _typeTimer = 0;
+function _typeInto(el, text) {
+  clearInterval(_typeTimer);
+  if (reduceFx()) { el.textContent = text; return; }
+  let i = 0;
+  _typeTimer = setInterval(() => { i += 1; el.textContent = text.slice(0, i); if (i >= text.length) clearInterval(_typeTimer); }, 28);
+}
+function _sceneAdvance() {
+  const sc = _scene; if (!sc) return;
+  const txt = _$("storySceneText");
+  if (txt && txt.textContent.length < sc.lines[sc.i].text.length) { clearInterval(_typeTimer); txt.textContent = sc.lines[sc.i].text; return; }   // 途中なら全部出す
+  if (sc.i < sc.lines.length - 1) { sc.i += 1; _renderScene(); return; }
+  _scene = null;
+  _$("storySceneScreen")?.classList.add("hidden");
+  sc.onDone?.();
+}
+export function wireScene() {
+  _$("storySceneNext")?.addEventListener("click", _sceneAdvance);
+  _$("storySceneTap")?.addEventListener("click", _sceneAdvance);
+}
+
+// ---------------- 次元の裂け目 (= プロローグのゴール。 SE → 画面がゆがんで暗転 → シーン) ----------------
+export function playRift(then) {
+  const el = document.createElement("div");
+  el.className = "story-rift";
+  el.innerHTML = '<i class="story-rift__ring"></i><i class="story-rift__ring story-rift__ring--2"></i><i class="story-rift__dark"></i>';
+  document.body.appendChild(el);
+  document.body.classList.add("is-rift");
+  try { playSe(SFX.GIMMICK_WARN, 0, 0.8); setTimeout(() => playSe(SFX.PICK_BUFF, 0, 0.7), 500); } catch {}
+  const ms = reduceFx() ? 600 : 2600;
+  setTimeout(() => { document.body.classList.remove("is-rift"); then?.(); setTimeout(() => el.remove(), 600); }, ms);
 }

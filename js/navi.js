@@ -24,6 +24,7 @@ import { HERO_STARTING_WEAPON } from "./constants.js";
  */
 export const RETIRED_VOICES = new Set([
   "hero.1001", "hero.1002", "hero.1004", "hero.2001", "hero.2002", "hero.2005", "hero.2011", "hero.2012",
+  "mode.easy",   // SPEC-165: 初めての案内はストーリーへ (= 文だけ。 録音は J で)
 ]);
 
 /** コマ (= ファイル名の navi_ain_ のあと) */
@@ -70,7 +71,7 @@ export function naviLines(scene, ctx = {}) {
     }
     case "mode":
       // SPEC-147: 初めての人 (= EASY をまだクリアしていない・NORMAL も遊んでいない) には EASY をすすめる
-      if (ctx.first) return [{ key: "navi.mode.easy", pose: "sparkle", voice: "mode.easy" }];   // SPEC-159: ボイス
+      if (ctx.first) return [{ key: "navi.mode.story", pose: "sparkle" }];   // SPEC-165: 初めてはストーリーへ (= navi.mode.easy は EASY と一緒に外す)
       return [
         { key: "navi.mode.1", pose: "cross", mood: "cross", voice: "mode.1" },
         { key: "navi.mode.2", pose: "pointer", voice: "mode.2" },

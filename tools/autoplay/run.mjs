@@ -32,7 +32,7 @@ await p.addInitScript(({ gum, story, decline }) => { try { window.__autoDecline 
   localStorage.setItem("mcs.lessons", JSON.stringify(["s1.move", "s1.ce", "s1.shop", "s1.boss", "s1.clear", "s2.start", "s2.rare", "s2.gift", "s2.mission", "s2.reward", "s2.boss", "s2.lose", "s2.root", "s2.thunder", "s2.clear"]));
   localStorage.setItem("mcs.shareX", JSON.stringify({ claimed: true, skips: 0 }));
   localStorage.setItem("mcs.meta.v1", JSON.stringify({ gum, dust: 0, runs: 1, nodes: {} }));
-  if (story) localStorage.setItem("mcs.story", JSON.stringify({ cleared: story.cleared, best: {}, bonds: story.cleared.includes("2-5") ? ["alexander", "lubu"] : story.cleared.includes("2-4") ? ["alexander"] : [] }));   // SPEC-165: その行まで開けておく
+  if (story) localStorage.setItem("mcs.story", JSON.stringify({ cleared: ["1-0", ...story.cleared], best: {}, bonds: story.cleared.includes("2-5") ? ["alexander", "lubu"] : story.cleared.includes("2-4") ? ["alexander"] : [] }));   // SPEC-165: その行まで開けておく
   if (story?.cleared.includes("3-1")) localStorage.setItem("mcs.heroes.unlocked", JSON.stringify([4006]));   // 3-1 でビリーが仲間に
 } catch {} }, { gum: GUM, story: MODE === "story" ? { cleared: STORY_IDS.slice(0, STORY_IDS.indexOf(STAGE)) } : null, decline: !!process.env.AUTO_DECLINE });
 if (!REAL) await p.clock.install({ time: new Date("2026-10-21T00:00:00Z") });

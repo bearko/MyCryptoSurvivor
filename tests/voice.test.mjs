@@ -55,6 +55,7 @@ test("マインちゃんのどのセリフにもボイスがある", () => {
     ...Object.values(TELOP_KINDS).map((k) => ({ key: k.line, voice: k.voice })),   // js/result-telop.js
   ];
   for (const l of all) {
+    if (l.key === "navi.mode.story" && !l.voice) { assert.ok(ui[l.key]?.ja && ui[l.key]?.en, `${l.key} の文`); continue; }   // SPEC-165: 録音は J で (= いまは文だけ)
     // SPEC-097: ボイスをまだ録っていないヒーローの紹介だけは、 文だけ
     if (l.key.startsWith("navi.hero.pick.") && !l.voice) assert.ok(!VOICE_LINES[`hero.${l.key.split(".").pop()}`] || RETIRED_VOICES.has(`hero.${l.key.split(".").pop()}`), l.key);
     else assert.ok(l.voice && VOICE_LINES[l.voice], `${l.key} のボイス (${l.voice})`);
