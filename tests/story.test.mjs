@@ -20,12 +20,19 @@ test("5 ランド × 5 = 25 の id。 ランドは MCH の名前と背景 (= Oce
   for (const l of LANDS) assert.ok(ui[`story.land.${l.id}`]?.ja && ui[`story.land.${l.id}`]?.en, l.id);
 });
 
-test("W1〜W4 の 20 行: 1 行 1 要素 (= 新しい feature は 1 つずつ)、 15〜60 秒、 クリア条件が 1 つ、 文が ja / en にある、 装備が実在する", () => {
+test("W1〜W5 の 25 行: 1 行 1 要素 (= 新しい feature は 1 つずつ)、 15〜60 秒、 クリア条件が 1 つ、 文が ja / en にある、 装備が実在する", () => {
   const w1 = STORY_STAGES.filter((s) => s.world === 1);
   assert.deepEqual(w1.map((s) => s.id), ["1-1", "1-2", "1-3", "1-4", "1-5"]);
   assert.deepEqual(STORY_STAGES.filter((s) => s.world === 2).map((s) => s.id), ["2-1", "2-2", "2-3", "2-4", "2-5"]);
   assert.deepEqual(STORY_STAGES.filter((s) => s.world === 3).map((s) => s.id), ["3-1", "3-2", "3-3", "3-4", "3-5"]);
   assert.deepEqual(STORY_STAGES.filter((s) => s.world === 4).map((s) => s.id), ["4-1", "4-2", "4-3", "4-4", "4-5"]);
+  assert.deepEqual(STORY_STAGES.filter((s) => s.world === 5).map((s) => s.id), ["5-1", "5-2", "5-3", "5-4", "5-5"]);
+  assert.equal(STORY_STAGES.length, 25, "25 行そろった");
+  assert.deepEqual(STORY_MAP["5-1"].shop.must, ["reroll", "ban"]); assert.deepEqual(STORY_MAP["5-2"].shop.must, ["sig"]);
+  assert.equal(STORY_MAP["5-3"].bondOn, "missionClear"); assert.equal(STORY_MAP["5-3"].mission.must, false);
+  assert.equal(storyOverride(STORY_MAP["5-4"]).spawnIntervalMs, null); assert.equal(storyOverride(STORY_MAP["5-4"]).shopTimesMs, null); assert.equal(storyOverride(STORY_MAP["5-4"]).maxEnemies, null);
+  assert.equal(storyOverride(STORY_MAP["5-5"]).bossId, 373); assert.equal(storyOverride(STORY_MAP["5-5"]).bossAtMs, 240000); assert.equal(storyOverride(STORY_MAP["5-5"]).missionFree, true); assert.equal(storyOverride(STORY_MAP["5-5"]).chestTimesMs, null);
+  assert.equal(STORY_MAP["5-5"].unlock, "mode:NORMAL");
   assert.deepEqual(storyOverride(STORY_MAP["4-1"]).variants, { giant: 0.2, runner: 0.2 }); assert.equal(storyOverride(STORY_MAP["4-2"]).gimmick, "beads");
   assert.equal(storyOverride(STORY_MAP["4-3"]).missionAtMs, 8000); assert.equal(storyOverride(STORY_MAP["4-3"]).missionMust, true); assert.equal(storyOverride(STORY_MAP["4-4"]).missionAtMs, null);
   assert.equal(STORY_MAP["4-5"].shadow.mode, "defeat"); assert.deepEqual(STORY_MAP["4-5"].bond.unlock, ["passive:thunder30"]);
@@ -36,7 +43,7 @@ test("W1〜W4 の 20 行: 1 行 1 要素 (= 新しい feature は 1 つずつ)�
     assert.ok(s.targetSec >= 15 && (s.world > 1 || s.targetSec <= 60), `${s.id}: ${s.targetSec}s`);
     assert.ok(["kills", "survive", "reach", "collect", "boss", "shadowSurvive", "shadowDefeat"].includes(s.clear.kind), s.id);
     if (s.shadow) { assert.ok(ui[`shadow.${s.shadow.id}.appear`]?.ja && ui[`shadow.${s.shadow.id}.win`]?.ja, s.id); assert.ok(["survive", "defeat"].includes(s.shadow.mode)); assert.equal(s.bond?.who, s.shadow.id, "試練は絆を結ぶ"); }
-    if (s.chestDrop) for (const k of (Array.isArray(s.chestDrop) ? s.chestDrop : [s.chestDrop])) assert.ok(s.features.chests && s.features.items?.includes(k), `${s.id}: chestDrop は features にも`);
+    if (s.chestDrop) for (const k of (Array.isArray(s.chestDrop) ? s.chestDrop : [s.chestDrop])) assert.ok(s.features.chests && (k === "card" ? s.features.magicCards : s.features.items?.includes(k)), `${s.id}: chestDrop は features にも`);
     // 壊せるもの (= 宝箱・壺と、 そこから出る棒磁石) は 1 つの要素として数える (= 2-3)
     const group = (k) => (k === "chests" || k === "pots" || k === "items:magnet" ? "breakables" : (k === "rare" || k === "magicCards" ? "rare" : (k === "items:thunder" || k === "items:heal" || k === "bossChest" ? "boss" : (k === "items:watch" || k === "items:robot" ? "helpers" : k))));
     const f = Object.keys(s.features ?? {}).filter((k) => s.features[k] && k !== "items").concat((s.features?.items ?? []).map((k) => `items:${k}`)).map(group);
@@ -114,7 +121,7 @@ test("つなぎ: easy.js はストーリーをチュートリアルとして扱�
   assert.match(read("js/battle/enemies.js"), /ez\?\.maxEnemies \?\? stageMaxEnemies\(stage\)/);
   assert.match(read("js/battle/damage.js"), /if \(storyAllows\("ce"\)\) spawnGem/);
   assert.match(read("js/battle/field.js"), /storyAllows\(`items:\$\{kind\}`\)/);
-  assert.match(read("js/battle/shop.js"), /const gate = !!sr\?\.mustBuy && _boughtHere === 0;/);
+  assert.match(read("js/battle/shop.js"), /const gate = \(!!sr\?\.mustBuy && _boughtHere === 0\) \|\| left\.length > 0;/);
   assert.match(read("js/battle/shop.js"), /if \(_storyShop\(\)\?\.price === 0\) return 0;/);
   assert.match(read("js/battle/stage-transition.js"), /if \(isStory\(\)\) \{ _storyClear\(\); return; \}/);
   assert.match(read("js/battle/gameover.js"), /tree\?\.classList\.toggle\("hidden", !storyAllows\("tree"\)\)/);

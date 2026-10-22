@@ -25,7 +25,7 @@ const p = await ctx.newPage();
 const errs = [];
 p.on("pageerror", (e) => errs.push(e.message));
 await ctx.route((u) => !u.href.startsWith(BASE) && !u.href.includes("raw.githubusercontent.com"), (r) => r.abort());
-await p.addInitScript(({ gum, story }) => { try {
+await p.addInitScript(({ gum, story, decline }) => { try { window.__autoDecline = !!decline;
   localStorage.setItem("mcs.settings", JSON.stringify({ bgm: 0, se: 0, voice: 0, reduceFx: true }));
   localStorage.setItem("mcs.played", "1"); localStorage.setItem("mcs.easyCleared", "1"); localStorage.setItem("mcs.coachSeen", "1"); localStorage.setItem("mcs.reviveSeen", "1");
   localStorage.setItem("mcs.naviTips", JSON.stringify(["item.heal", "item.magnet", "item.watch", "item.thunder", "item.card", "item.bossChest", "gimmick.beads", "gimmick.punch", "gimmick.trojan", "enemy.shooter", "mission.offer"]));
@@ -34,7 +34,7 @@ await p.addInitScript(({ gum, story }) => { try {
   localStorage.setItem("mcs.meta.v1", JSON.stringify({ gum, dust: 0, runs: 1, nodes: {} }));
   if (story) localStorage.setItem("mcs.story", JSON.stringify({ cleared: story.cleared, best: {}, bonds: story.cleared.includes("2-5") ? ["alexander", "lubu"] : story.cleared.includes("2-4") ? ["alexander"] : [] }));   // SPEC-165: その行まで開けておく
   if (story?.cleared.includes("3-1")) localStorage.setItem("mcs.heroes.unlocked", JSON.stringify([4006]));   // 3-1 でビリーが仲間に
-} catch {} }, { gum: GUM, story: MODE === "story" ? { cleared: STORY_IDS.slice(0, STORY_IDS.indexOf(STAGE)) } : null });
+} catch {} }, { gum: GUM, story: MODE === "story" ? { cleared: STORY_IDS.slice(0, STORY_IDS.indexOf(STAGE)) } : null, decline: !!process.env.AUTO_DECLINE });
 if (!REAL) await p.clock.install({ time: new Date("2026-10-21T00:00:00Z") });
 const tick = async (ms) => { if (REAL) await p.waitForTimeout(ms); else await p.clock.runFor(ms); };
 await p.goto(`${BASE}/index.html`);
@@ -106,9 +106,16 @@ await p.evaluate(({ K, BUY }) => {
       }
       // 固有スキルも安ければ (= 残りの CE の 4 割以下)
       const sig = document.querySelector("#shopSig button"); if (sig && !sig.disabled) { const pr = Number((sig.textContent.match(/◆\s*(\d+)/) ?? [])[1] ?? 1e9); if (pr <= s.shop.ce * 0.4) sig.click(); }
+      // SPEC-165: 5-1・5-2 の「するまで出られない」 (= 出られないならリロール → お断り (2 回押す) → 固有スキル)
+      if (document.getElementById("shopLeave")?.disabled) {
+        const rr = document.getElementById("shopReroll"); if (rr && !rr.disabled && !rr.closest(".hidden")) rr.click();
+        const ban = [...document.querySelectorAll(".shop-offer:not(.shop-offer--sold) .shop-corner--ban")].find((x) => !x.disabled && !x.closest(".shop-offer")?.classList.contains("shop-offer--starter"));
+        if (ban) { ban.click(); document.querySelector(".shop-offer--banArm .shop-corner--ban")?.click(); }
+        const sg = document.querySelector("#shopSig button"); if (sg && !sg.disabled) sg.click();
+      }
       document.getElementById("shopLeave")?.click(); return { st: "shop" };
     }
-    if (vis("missionOffer")) { document.getElementById("missionAccept")?.click(); return { st: "mission" }; }
+    if (vis("missionOffer")) { const dec = document.getElementById("missionDecline"); if (window.__autoDecline && dec && !dec.classList.contains("hidden")) dec.click(); else document.getElementById("missionAccept")?.click(); return { st: "mission" }; }   // AUTO_DECLINE=1 で断る (= 慎重な人)
     if (vis("missionReward")) { document.querySelector("#missionRewardChoices button")?.click(); return { st: "reward" }; }
     if (vis("levelUpModal")) { document.querySelector("#levelUpModal .levelup-card")?.click(); return { st: "levelup" }; }
     if (vis("bossChestModal")) { document.querySelector("#bossChestModal button, #bossChestModal .boss-chest__next")?.click(); document.getElementById("bossChestModal")?.click(); return { st: "chest" }; }

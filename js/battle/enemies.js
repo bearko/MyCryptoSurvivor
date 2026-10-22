@@ -106,7 +106,7 @@ export function tickEnemies(dt, nowMs) {
   const ez = easyStage();
   const cap = ez?.maxEnemies ?? stageMaxEnemies(stage);   // SPEC-065 / SPEC-078: ステージごと (= 320 / 440 / 600)。 SPEC-165: ストーリーはレシピの同時の上限   // SPEC-147: EASY は決まった間隔 (= flood・density・寄せ直し・群れは使わない)
   const sm = shadowMods();   // SPEC-165: シャドーのオーラ (= 湧き ×n)
-  const spawnInterval = ez
+  const spawnInterval = ez && ez.spawnIntervalMs != null   // SPEC-165: レシピが null なら本番の式 (= W5)
     ? ez.spawnIntervalMs / mods.spawnMul / sm.spawnMul
     : ENEMY_SPAWN_INTERVAL_MS * (stage.spawnIntervalMul ?? 1) / Math.max(0.1, absSpawnMul) / floodMul(stage.flood, b.stageElapsedMs) / mods.spawnMul;
   // SPEC-078: 経った時間ぶん湧かせる (= 1 コマに何体でも。 湧きを大きく速めても上限で止まる)

@@ -161,6 +161,7 @@ function _storyClear() {
   const snap = state.run.stages.find((s) => s.idx === (state.currentStageIdx ?? 0));
   markStoryCleared(r.id, { sec: Math.round((snap?.elapsedMs ?? state.battle.stageElapsedMs ?? 0) / 1000), kills: snap?.kills ?? state.killCount });
   if (r.unlock === "hero:4006") import("../hero-unlock.js").then((H) => H.unlockEasyReward()).catch(() => {});   // SPEC-165: 3-1 でビリー・ザ・キッドが仲間に
+  if (r.unlock === "mode:NORMAL") import("../easy.js").then((E) => E.markEasyCleared()).catch(() => {});   // SPEC-165: 5-5 で NORMAL が開く (= いまのスイッチを立てる。 最後の PR でロックを差し替える)
   state.battle.gameOver = true;
   pauseTime();
   _wireOnce();
