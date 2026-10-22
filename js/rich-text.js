@@ -20,14 +20,22 @@ const TERMS_EN = [
   "bosses", "boss", "invincibility", "invincible", "Pierce", "Projectiles", "Max HP", "HP", "CE", "GUM", "Lv",
 ];
 const EXT_NAMES = EXT_MASTERY.flatMap((e) => [e[3], e[4]]);
+/** 固有名詞 (= 橙。 ストーリーの人・地・物。 SPEC-165: マインちゃんの台詞で目立たせる) */
+const NAMES = [
+  "Ocean", "Strawberry", "Tangerine", "Lime", "Grape", "COVID-19", "COVID", "クリプタイド", "Cryptid", "Cryptids",
+  "天候操作装置ゼウス", "ゼウス", "Zeus", "マイン", "Mine", "NORMAL", "ABSOLUTE", "RTA", "EASY",
+  "ビリー・ザ・キッド", "Billy the Kid", "霧隠才蔵", "織田信長", "Nobunaga", "武田信玄", "Shingen", "項羽", "Xiang Yu", "アレキサンダー", "Alexander", "呂布", "Lü Bu",
+  "ディープ・ヨシュカ", "Deep Yoshka", "風林火山", "Fūrinkazan", "鉄砲隊", "riflemen", "ランド", "ヒーロー", "絆",
+];
 
 const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const TERMS = [...new Set([...TERMS_JA, ...TERMS_EN, ...EXT_NAMES])].sort((a, b) => b.length - a.length);
+const NAME_LIST = [...new Set(NAMES)].sort((a, b) => b.length - a.length);
 // 数字: 符号 (＋ − + - ×) ・ 小数 ・ 単位 (% 秒 体 枚 倍 段 回 マス s)。 「Lv ＋1」 の ＋1 も
 const NUM = String.raw`(?:[＋+−\-×]\s?)?\d+(?:[.,]\d+)?(?:\s?(?:%|％|秒|体|枚|倍|段|回|マス|s\b))?`;
 // 英字だけの用語は語の切れ目で (= 「pot」 が 「spot」 に当たらないように)
 const termRe = (w) => (/^[\x00-\x7f]+$/.test(w) ? `\\b${esc(w)}\\b` : esc(w));
-const RE = new RegExp(`(「[^」]*」)|(${NUM})|(${TERMS.map(termRe).join("|")})`, "g");
+const RE = new RegExp(`(「[^」]*」)|(${NAME_LIST.map(termRe).join("|")})|(${NUM})|(${TERMS.map(termRe).join("|")})`, "g");
 
 /** 文を切り分ける (= 純関数)。 [{ kind: "text" | "num" | "term" | "quote", s }] */
 export function richParts(text) {
@@ -36,7 +44,7 @@ export function richParts(text) {
   let last = 0;
   for (const m of s.matchAll(RE)) {
     if (m.index > last) out.push({ kind: "text", s: s.slice(last, m.index) });
-    out.push({ kind: m[1] ? "quote" : (m[2] ? "num" : "term"), s: m[0] });
+    out.push({ kind: m[1] ? "quote" : (m[2] ? "name" : (m[3] ? "num" : "term")), s: m[0] });
     last = m.index + m[0].length;
   }
   if (last < s.length) out.push({ kind: "text", s: s.slice(last) });
@@ -52,6 +60,24 @@ export function setRichText(el, text) {
     const span = el.ownerDocument.createElement("span");
     span.className = `rt-${p.kind}`;
     span.textContent = p.s;
+    el.append(span);
+  }
+  return el;
+}
+
+/** 先頭 n 文字まで色分けして出す (= タイプ表示。 n を省けば全部) */
+export function setRichTextN(el, text, n = Infinity) {
+  if (!el) return el;
+  el.textContent = "";
+  let left = n;
+  for (const p of richParts(text)) {
+    if (left <= 0) break;
+    const s = p.s.length > left ? p.s.slice(0, left) : p.s;
+    left -= s.length;
+    if (p.kind === "text") { el.append(s); continue; }
+    const span = el.ownerDocument.createElement("span");
+    span.className = `rt-${p.kind}`;
+    span.textContent = s;
     el.append(span);
   }
   return el;

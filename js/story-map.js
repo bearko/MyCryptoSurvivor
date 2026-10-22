@@ -18,6 +18,7 @@ import { img, REGULATION_NORMAL } from "./constants.js";
 import { LANDS, STORY_PLAN, STORY_MAP, loadStory, storyUnlocked, currentStoryId, stageArt, stageRole, TOWER, FINAL_BOSS_ID, MAP_TERRITORY, stagePos, landOf, bondBurst, PROLOGUE, prologueDone, allStoryIds } from "./story.js";
 import { naviFrameUrl, NAVI_POSES } from "./navi.js";
 import { playSe } from "./audio.js";
+import { setRichTextN } from "./rich-text.js";   // 固有名詞と用語に色
 import { SFX } from "./constants.js";
 import { owns } from "./skill-logic.js";
 import { ROOT_ID } from "./skill-data.js";
@@ -421,14 +422,14 @@ function _poseUrl(pose) {
 let _typeTimer = 0;
 function _typeInto(el, text) {
   clearInterval(_typeTimer);
-  if (reduceFx()) { el.textContent = text; return; }
+  if (reduceFx()) { setRichTextN(el, text); return; }
   let i = 0;
-  _typeTimer = setInterval(() => { i += 1; el.textContent = text.slice(0, i); if (i >= text.length) clearInterval(_typeTimer); }, 28);
+  _typeTimer = setInterval(() => { i += 1; setRichTextN(el, text, i); if (i >= text.length) clearInterval(_typeTimer); }, 28);
 }
 function _sceneAdvance() {
   const sc = _scene; if (!sc) return;
   const txt = _$("storySceneText");
-  if (txt && txt.textContent.length < sc.lines[sc.i].text.length) { clearInterval(_typeTimer); txt.textContent = sc.lines[sc.i].text; return; }   // 途中なら全部出す
+  if (txt && txt.textContent.length < sc.lines[sc.i].text.length) { clearInterval(_typeTimer); setRichTextN(txt, sc.lines[sc.i].text); return; }   // 途中なら全部出す
   if (sc.i < sc.lines.length - 1) { sc.i += 1; _renderScene(); return; }
   _scene = null;
   _$("storySceneScreen")?.classList.add("hidden");

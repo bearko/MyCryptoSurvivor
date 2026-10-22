@@ -2025,6 +2025,7 @@ a.title-screen__next[href]:hover { border-color: var(--accent); }
    ============================================================ */
 .rt-num { color: #ffd36b; font-weight: 800; font-variant-numeric: tabular-nums; }
 .rt-term { color: #7fdcff; font-weight: 700; }
+.rt-name { color: #ffb070; font-weight: 800; }   /* SPEC-165: 固有名詞 (= ランド・人・COVID) */
 .rt-quote { color: #fff; font-weight: 800; }
 
 /* SPEC-146: 結果の画面の「もう一度挑む」 (= スキルツリーのすぐ下。 木から戻ったら脈打つ) */

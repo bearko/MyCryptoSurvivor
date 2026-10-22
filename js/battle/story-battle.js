@@ -184,15 +184,40 @@ export function drawStoryWorld(ctx, camera, w, h, nowMs) {
   if (!r || !st || r.clear?.kind !== "reach" || st.reached || !st.goal) return;
   const sx = st.goal.x - camera.x, sy = st.goal.y - camera.y;
   const pulse = 0.75 + 0.25 * Math.sin(nowMs / 220);
-  // 黄色い道筋 (= 自分からゴールへ。 仕掛けの赤い線と同じ形で、 点が流れる)
+  // 黄色い道筋 (= 自分からゴールへ。 仕掛けの赤い線と同じ作り: 光る帯・流れる破線・点滅。 近づくほど濃く太く、 光の粒が速く流れる)
   const b = state.battle, px = b.player.x - camera.x, py = b.player.y - camera.y;
+  const dist = Math.hypot(sx - px, sy - py);
+  const near = Math.max(0.2, Math.min(1, 1 - (dist - 120) / 900));   // 0.2 (遠い) → 1 (目の前)
+  const blink = 0.8 + 0.2 * Math.sin(nowMs / 140);
+  const ux = (sx - px) / (dist || 1), uy = (sy - py) / (dist || 1);
   ctx.save();
-  ctx.setLineDash([14, 12]); ctx.lineDashOffset = -(nowMs / 18) % 26;
   ctx.lineCap = "round";
-  ctx.strokeStyle = "rgba(255, 225, 122, 0.25)"; ctx.lineWidth = 10;
+  // 光る帯 (= にじみ)
+  ctx.shadowColor = "rgba(255, 225, 122, 0.9)"; ctx.shadowBlur = 12 + 24 * near;
+  ctx.globalAlpha = (0.12 + 0.28 * near) * blink; ctx.strokeStyle = "#ffe17a"; ctx.lineWidth = 12 + 16 * near;
   ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(sx, sy); ctx.stroke();
-  ctx.strokeStyle = "rgba(255, 233, 166, 0.9)"; ctx.lineWidth = 4;
+  ctx.shadowBlur = 0;
+  // 流れる破線 (= 2 本。 近いほど速い)
+  ctx.setLineDash([16, 14]); ctx.lineDashOffset = -((nowMs / (26 - 14 * near)) % 30);
+  ctx.globalAlpha = (0.55 + 0.45 * near) * blink; ctx.strokeStyle = "#fff3c4"; ctx.lineWidth = 3 + 3 * near;
   ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(sx, sy); ctx.stroke();
+  ctx.setLineDash([4, 26]); ctx.lineDashOffset = -((nowMs / (14 - 8 * near)) % 30);
+  ctx.globalAlpha = 0.9 * blink; ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 2 + 2 * near;
+  ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(sx, sy); ctx.stroke();
+  ctx.setLineDash([]);
+  // 光の粒 (= 道の上を流れる。 数も大きさも近いほど増える)
+  const n = Math.round(4 + 10 * near), speed = 90 + 160 * near;
+  ctx.fillStyle = "#fff8d6";
+  for (let i = 0; i < n; i++) {
+    const s = ((nowMs * speed / 1000) + i * (dist / n) + i * 37) % (dist || 1);
+    const wob = Math.sin(nowMs / 170 + i * 1.7) * (3 + 5 * near);
+    ctx.globalAlpha = (0.5 + 0.5 * near) * (0.6 + 0.4 * Math.sin(nowMs / 90 + i));
+    ctx.beginPath(); ctx.arc(px + ux * s - uy * wob, py + uy * s + ux * wob, 1.5 + 2.5 * near, 0, Math.PI * 2); ctx.fill();
+  }
+  // ゴールの輪 (= 近いほど大きく明るい。 外へ広がる輪も)
+  ctx.globalAlpha = 0.25 + 0.5 * near; ctx.strokeStyle = "#ffe17a"; ctx.lineWidth = 2;
+  const ring = ((nowMs / 9) % 90);
+  ctx.beginPath(); ctx.arc(sx, sy, REACH_RADIUS + ring * (0.6 + near), 0, Math.PI * 2); ctx.stroke();
   ctx.restore();
   if (sx > -80 && sx < w + 80 && sy > -80 && sy < h + 80) {
     ctx.save();

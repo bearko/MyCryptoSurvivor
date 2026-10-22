@@ -12,6 +12,7 @@
 // 絵は mycryptoheroes の Image/Characters/navi_ain_*.png (= 96x128)。 2 倍 (= 整数倍) で出す。
 // pauseTime には触らない。
 
+import { setRichTextN } from "./rich-text.js";   // SPEC-165: 固有名詞と用語に色
 import { img } from "./constants.js";
 import { t, tpl } from "./i18n.js";
 import { prefersReducedMotion } from "./motion.js";
@@ -274,7 +275,7 @@ function _showLine(i, { turn = false } = {}) {
   _fitBubble(text);
   const finish = () => {
     clearInterval(_typing); _typing = null;
-    _text.textContent = text;
+    setRichTextN(_text, text);
     _bubble.classList.add("navi__bubble--done");
     _idle(line.pose);
     _scheduleQuiet();
@@ -287,7 +288,7 @@ function _showLine(i, { turn = false } = {}) {
     _text.textContent = "";
     _typing = setInterval(() => {
       n += 1;
-      _text.textContent = text.slice(0, n);
+      setRichTextN(_text, text, n);
       if (n >= text.length) finish();
     }, NAVI_TYPE_MS);
   };
@@ -300,7 +301,7 @@ function _onBubble() {
     // 途中で押したら、 その行を最後まで出す
     const line = _lines[_idx];
     clearInterval(_typing); _typing = null;
-    _text.textContent = tpl(t(line.key, line.key), line.vars ?? {});
+    setRichTextN(_text, tpl(t(line.key, line.key), line.vars ?? {}));
     _bubble.classList.add("navi__bubble--done");
     _idle(line.pose);
     _scheduleQuiet();
