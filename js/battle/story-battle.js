@@ -6,7 +6,7 @@
 // 到達の目印を描き、 1-4 のハートを落とし、 ★が出た瞬間にマインちゃんが一言 (= レシピの lines.mid)。
 // 文は data/i18n/ui.json の story.<id>.<…> (= 録音は後から。 無ければ文の長さで待つ)。 ゲームは止めない。
 
-import { state } from "../state.js";
+import { state, pauseTime, resumeTime } from "../state.js";
 import { t } from "../i18n.js";
 import { naviSay, naviLines, NAVI_TYPE_MS } from "../navi.js";
 import { hasVoice, voiceMs } from "../voice.js";
@@ -17,6 +17,7 @@ import { addShopGift, openShop } from "./shop.js";
 import { tpl } from "../i18n.js";
 import { spawnShadow, dismissShadow, findShadow } from "./shadow.js";
 import { spawnItem } from "./field.js";
+import { MISSION_MAP } from "./missions.js";   // 絆の相手の絵 (= 5-3)
 import { triggerStageEndOrTransition } from "./stage-transition.js";
 import { img } from "../constants.js";
 import { fxBurst } from "./fx.js";
@@ -81,7 +82,7 @@ export function tickStoryBattle() {
     if (ev.startsWith("item:")) { st.picked.add(ev.slice(5)); if (r.pickup && ev === `item:${r.pickup.kind}`) st.goal = null; }
     if (ev === "shadowHit") { st.shadowHits += 1; if (r.spar && !st.sparShopOpened && st.shadowHits >= r.spar.hits) { st.sparShopOpened = true; storySay("sparHits"); setTimeout(() => { if (state.battle === b && !b.gameOver && !st.shadowWon && !st.shadowDefeated && findShadow()) openShop({ opening: false }); }, 1200); } }   // 呂布がもういなければ開かない
     if (ev === "rankup") { st.rankedUp = true; const sh = findShadow(); if (sh && r.spar) { sh.hp = Math.min(sh.hp, r.spar.hpAfter); sh.hpMax = r.spar.hpAfter; } storySay("rankup"); }
-    if (r.bondOn && ev === r.bondOn && r.bond?.who && !st.bondDone) { st.bondDone = true; markStoryBond(r.bond.who); _bondBurst(r, st); storySay("bond"); }   // SPEC-165: 5-3 (= ミッション達成で絆)
+    if (r.bondOn && ev === r.bondOn && r.bond?.who && !st.bondDone) { st.bondDone = true; markStoryBond(r.bond.who); _bondBurst(r, st); _showBondModal(r, st, { giver: MISSION_MAP[r.bond.who]?.giver, name: t(`mission.${r.bond.who}.giver`, r.bond.who), line: t(r.lines?.mid?.find((m) => m.on === "bond")?.key ?? "", ""), onAck: null }); }   // SPEC-165: 5-3 (= ミッション達成で絆)
   }
   _tickShadow(r, st, b);
   // 1-4: HP が減ったらハートを足もとに (= 拾うまで湧きを止める)
@@ -118,14 +119,15 @@ export function tickStoryBattle() {
   }
   if (st.cameoAt && performance.now() < st.cameoAt) return;
   if (r.shadow && !st.shadowWon) {
-    // 試練を越えた: survive なら消える。 どちらも絆を結び、 一言のあいだ待つ
+    // 試練を越えた: survive なら消える。 絆を結び、 大きなポップアップ (= 相手の絵・一言・報酬) を押すまで止める (= 作者 2026-10-22: 読めないうちにクリアの演出が始まっていた)
     st.shadowWon = true;
-    if (r.shadow.mode !== "defeat") dismissShadow();
+    if (r.shadow.mode !== "defeat" && r.shadow.mode !== "spar") dismissShadow();
     if (r.bond?.who) { markStoryBond(r.bond.who); _bondBurst(r, st); }
-    const ms = _sayShadow(r, "win") || 0;
-    st.cameoAt = performance.now() + Math.max(1800, ms);
+    hideCameo();
+    _showBondModal(r, st, { giver: r.shadow.giver, name: t(`mission.${r.shadow.id}.giver`, r.shadow.id), line: t(`shadow.${r.shadow.id}.win`, ""), onAck: () => { st.bondAck = true; } });
     return;
   }
+  if (r.shadow && st.shadowWon && !st.bondAck) return;   // ポップアップを押すまで待つ
   st.done = true;
   hideCameo();
   triggerStageEndOrTransition();
@@ -166,27 +168,41 @@ function _bondBurst(r, st) {
   st.bondGum = bu.gum | 0;
   fxBurst(P.x, P.y, "#ffe17a", 40, 360);
   playSe(SFX.LEVEL_UP, 0, 0.6);
-  _showBurstCard(r, bu);
 }
 
-/** 報酬ラッシュの札 (= body に置く。 render() で消えない。 2.6 秒で消える) */
-function _showBurstCard(r, bu) {
-  document.querySelector(".story-burst")?.remove();
-  const el = document.createElement("div");
-  el.className = "story-burst";
-  el.setAttribute("role", "status");
+/**
+ * 越えた瞬間のポップアップ (= 相手の大きな絵・名前・一言・報酬。 時間を止めて、 押すまで出す)。 body に置く (= render() で消えない)
+ * onAck: 押したときに呼ぶ (= シャドーの試練はここでクリアの演出へ)
+ */
+function _showBondModal(r, st, { giver, name, line, onAck }) {
+  document.querySelector(".story-bond")?.remove();
+  const bu = bondBurst(r);
   const rows = [];
-  if (bu.ce) rows.push(`<li><b>CE</b> +${bu.ce}</li>`);
-  if (bu.cards) rows.push(`<li><b>${t("story.burst.cards", "マジックカード")}</b> ×${bu.cards}</li>`);
+  if (bu?.ce) rows.push(`<li><b>CE</b> +${bu.ce}</li>`);
+  if (bu?.cards) rows.push(`<li><b>${t("story.burst.cards", "マジックカード")}</b> ×${bu.cards}</li>`);
   if (r.bond?.gifts) rows.push(`<li><b>${t("story.burst.gifts", "ギフト券")}</b> ×${r.bond.gifts}</li>`);
-  if (bu.heal) rows.push(`<li><b>${t("story.burst.heal", "ハート")}</b> ×1</li>`);
-  if (bu.gum) rows.push(`<li><b>GUM</b> +${bu.gum}</li>`);
-  for (const u of r.bond?.unlock ?? []) rows.push(`<li class="story-burst__unlock">${t(`story.unlock.${u.replace(":", ".")}`, u)}</li>`);
-  el.innerHTML = `<div class="story-burst__head">${tpl(t("story.burst.title", "絆の報酬 ── {who}"), { who: t(`mission.${r.bond?.who}.giver`, r.bond?.who ?? "") })}</div><ul>${rows.join("")}</ul>`;
+  if (bu?.heal) rows.push(`<li><b>${t("story.burst.heal", "ハート")}</b> ×1</li>`);
+  if (bu?.gum) rows.push(`<li><b>GUM</b> +${bu.gum}</li>`);
+  for (const u of r.bond?.unlock ?? []) rows.push(`<li class="story-bond__unlock">${t(`story.unlock.${u.replace(":", ".")}`, u)}</li>`);
+  const el = document.createElement("div");
+  el.className = "story-bond";
+  el.setAttribute("role", "dialog");
+  el.innerHTML = `
+    <div class="story-bond__card">
+      <div class="story-bond__kicker">${r.bond ? t("story.bond.kicker", "絆を結んだ") : t("story.bond.kickerWin", "試練を越えた")}</div>
+      ${giver ? `<img class="story-bond__face" src="${img(`Image/Enemies/${giver}.png`)}" alt="" draggable="false" onerror="this.remove()" />` : ""}
+      <div class="story-bond__name">${esc(name ?? "")}</div>
+      ${line ? `<p class="story-bond__line">「${esc(line)}」</p>` : ""}
+      ${rows.length ? `<div class="story-bond__rw"><small>${t("story.bond.rewards", "絆の報酬")}</small><ul>${rows.join("")}</ul></div>` : ""}
+      <span class="story-bond__tap">${t("story.bond.tap", "タップで続ける ▶")}</span>
+    </div>`;
   document.body.appendChild(el);
-  requestAnimationFrame(() => el.classList.add("story-burst--in"));
-  setTimeout(() => { el.classList.add("story-burst--out"); setTimeout(() => el.remove(), 500); }, 2600);
+  requestAnimationFrame(() => el.classList.add("is-in"));
+  pauseTime();
+  const close = () => { el.removeEventListener("click", close); el.classList.add("is-out"); setTimeout(() => el.remove(), 300); resumeTime(); onAck?.(); };
+  setTimeout(() => el.addEventListener("click", close), 500);   // 開いた直後の連打で消えないように
 }
+function esc(s) { return String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
 
 function _sayShadow(r, kind) {
   const key = `shadow.${r.shadow.id}.${kind}`;

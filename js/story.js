@@ -124,20 +124,20 @@ export const STORY_STAGES = Object.freeze([
     clear: { kind: "kills", n: 20 }, targetSec: 40,
     spawn: { everyMs: 1200, pool: [101], max: 6 }, enemyMul: { hp: 1.5, dmg: 0.3 },
     features: { shop: true },
-    shop: { atMs: [12000], offers: [10], only: true, price: 0, mustBuy: true },
+    shop: { atMs: [12000], offers: [16], only: true, price: 0, mustBuy: true },   // りんご (= 攻撃力。 作者 2026-10-22: ランクアップは 1-5 で見せる)
     lines: { intro: "story.1-2.intro", mid: [{ on: "shopOpen", key: "story.1-2.mid" }], clear: "story.1-2.clear" },
   },
   {
-    id: "1-3", world: 1, hero: 10001, startExt: [{ extId: 10, level: 2 }],
+    id: "1-3", world: 1, hero: 10001, startExt: [{ extId: 10, level: 1 }, { extId: 16, level: 1 }],
     clear: { kind: "kills", n: 25 }, targetSec: 45,
-    spawn: { everyMs: 1100, pool: [101, 124], max: 6 }, enemyMul: { hp: 1.2, dmg: 0.4 },
+    spawn: { everyMs: 1100, pool: [101, 124], max: 6 }, enemyMul: { hp: 0.9, dmg: 0.4 },   // ブレード Lv.1 ＋ りんごで 45 秒くらい
     features: { ce: true, shop: true },
     shop: { atMs: [20000], offers: [2], only: true, price: null, mustBuy: true },
     showGum: true,
     lines: { intro: "story.1-3.intro", mid: [{ on: "shopOpen", key: "story.1-3.mid" }], clear: "story.1-3.clear" },
   },
   {
-    id: "1-4", world: 1, hero: 10001, startExt: [{ extId: 10, level: 2 }, { extId: 2, level: 1 }],
+    id: "1-4", world: 1, hero: 10001, startExt: [{ extId: 10, level: 1 }, { extId: 16, level: 1 }, { extId: 2, level: 1 }],
     clear: { kind: "survive", sec: 30 }, targetSec: 30,
     spawn: { everyMs: 1000, pool: [101, 124], max: 8 }, enemyMul: { hp: 1, dmg: 0.8 },
     features: { ce: true, items: ["heal"] },
@@ -147,7 +147,7 @@ export const STORY_STAGES = Object.freeze([
     lines: { intro: "story.1-4.intro", mid: [{ on: "item:heal", key: "story.1-4.mid" }], clear: "story.1-4.clear" },
   },
   {
-    id: "1-5", world: 1, hero: 10001, startExt: [{ extId: 10, level: 1 }, { extId: 2, level: 1 }],
+    id: "1-5", world: 1, hero: 10001, startExt: [{ extId: 10, level: 1 }, { extId: 16, level: 1 }, { extId: 2, level: 1 }],
     // 移動の練習 (pre) → 真ん中に呂布 (= 小手調べ。 削れるが HP が大きい) → 3 回当てる → マインが促す → 店 (エリートブレードだけ・ただ) →
     // ランクアップの演出 → 呂布の HP が小さくなる → 倒す → クリア (= 作者の依頼 2026-10-22)
     clear: { kind: "shadowDefeat" }, targetSec: 60,

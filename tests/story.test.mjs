@@ -28,6 +28,8 @@ test("W1〜W5 の 25 行: 1 行 1 要素 (= 新しい feature は 1 つずつ)�
   assert.deepEqual(STORY_STAGES.filter((s) => s.world === 4).map((s) => s.id), ["4-1", "4-2", "4-3", "4-4", "4-5"]);
   assert.deepEqual(STORY_STAGES.filter((s) => s.world === 5).map((s) => s.id), ["5-1", "5-2", "5-3", "5-4", "5-5"]);
   assert.equal(STORY_STAGES.length, 25, "25 行そろった");
+  assert.deepEqual(STORY_MAP["1-2"].shop.offers, [16], "1-2 はりんご (= 作者 2026-10-22)"); assert.equal(STORY_MAP["1-3"].startExt[0].level, 1, "1-3 はブレード Lv.1 で始まる (= ランクアップは 1-5)");
+  assert.match(read("js/battle/story-battle.js"), /if \(r\.shadow && st\.shadowWon && !st\.bondAck\) return;/, "越えた瞬間のポップアップを押すまでクリアしない");
   assert.equal(STORY_MAP["1-5"].shadow.mode, "spar"); assert.equal(STORY_MAP["1-5"].spar.hits, 3); assert.equal(STORY_MAP["1-5"].shop.rankupFx, true); assert.deepEqual(STORY_MAP["1-4"].pickup, { kind: "heal", x: 0, y: -340 });
   assert.equal(S.storyCleared(STORY_MAP["1-4"], { elapsedMs: 31000, picked: new Set() }), false, "パンケーキを取るまでクリアしない"); assert.equal(S.storyCleared(STORY_MAP["1-4"], { elapsedMs: 31000, picked: new Set(["heal"]) }), true);
   assert.equal(S.nextInSameLand("1-4"), true); assert.equal(S.nextInSameLand("1-5"), false); assert.equal(S.nextInSameLand("5-5"), false);
