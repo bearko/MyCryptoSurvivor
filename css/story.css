@@ -10,7 +10,7 @@
 .story-map__back { align-self: flex-start; margin-top: 4px; }
 
 /* 盤: 幅いっぱい (520px まで)・高さは幅の 1.5 倍。 ランドは % で置く (北・西・東・南・中央) */
-.story-map__board { position: relative; width: 100%; max-width: 520px; aspect-ratio: 10 / 17; flex: none; }
+.story-map__board { position: relative; width: 100%; max-width: 520px; aspect-ratio: 10 / 18; flex: none; }
 .story-map__paths { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; overflow: visible; }
 .story-map__paths--back { z-index: 0; }
 .story-map__lands { position: absolute; inset: 0; }
@@ -26,22 +26,22 @@
 .story-land { position: absolute; display: flex; flex-direction: column; gap: 4px; padding: 6px 8px 8px; border-radius: 14px; overflow: hidden; border: 1.5px solid var(--land, #888); box-shadow: 0 0 18px rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(255, 255, 255, 0.06); z-index: 1; }
 .story-land__bg { position: absolute; inset: 0; z-index: -1; background-size: cover; background-position: center; }
 .story-land__bg::after { content: ""; position: absolute; inset: 0; background: rgba(0, 0, 0, var(--story-panel-alpha)); }
-.story-land--n { left: 14%; top: 0; width: 72%; height: 24%; }
-.story-land--w { left: 0; top: 27%; width: 31%; height: 46%; }
-.story-land--e { right: 0; top: 27%; width: 31%; height: 46%; }
-.story-land--c { left: 33%; top: 27%; width: 34%; height: 46%; }
-.story-land--s { left: 14%; bottom: 0; width: 72%; height: 24%; }
+.story-land--n { left: 12%; top: 0; width: 76%; height: 28%; }
+.story-land--w { left: 0; top: 30%; width: 31%; height: 40%; }
+.story-land--e { right: 0; top: 30%; width: 31%; height: 40%; }
+.story-land--c { left: 33%; top: 30%; width: 34%; height: 40%; }
+.story-land--s { left: 12%; bottom: 0; width: 76%; height: 28%; }
 .story-land.is-sealed { border-color: color-mix(in srgb, var(--land) 40%, #222); }
 .story-land.is-done { box-shadow: 0 0 22px color-mix(in srgb, var(--land) 55%, transparent), inset 0 0 0 1px rgba(255, 255, 255, 0.08); }
-.story-land__name { margin: 0; display: flex; align-items: center; gap: 6px; min-height: 30px; color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9); }
+.story-land__name { margin: 0; display: flex; align-items: center; gap: 6px; min-height: 36px; flex: none; color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9); }
 .story-land__cryptid { width: 36px; height: 36px; flex: none; image-rendering: pixelated; filter: drop-shadow(0 0 6px color-mix(in srgb, var(--land) 70%, transparent)); }
-.story-land--n .story-land__cryptid, .story-land--s .story-land__cryptid { width: 44px; height: 44px; }
+.story-land--n .story-land__cryptid, .story-land--s .story-land__cryptid { width: 40px; height: 40px; }
 .story-land__name--c { min-height: 0; } .story-land.has-tower .story-land__name--c { display: none; }   /* 塔が立ったら見出しは塔の札に譲る (= ファオと重なる) */ .story-land__name--c .story-land__cryptid { width: 26px; height: 26px; } .story-land__name--c .story-land__txt b { font-size: 12px; } .story-land__name--c .story-land__txt small { display: none; }
 .story-land__txt { display: flex; flex-direction: column; line-height: 1.1; min-width: 0; }
 .story-land__txt small { font-size: 9px; letter-spacing: 1.5px; color: var(--land, #ccc); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .story-land__txt b { font-size: 15px; font-weight: 900; }
-.story-land--w .story-land__name, .story-land--e .story-land__name { flex-direction: column; align-items: flex-start; gap: 2px; }
-.story-land--w .story-land__txt b, .story-land--e .story-land__txt b { font-size: 13px; }
+.story-land--w .story-land__name, .story-land--e .story-land__name { flex-direction: row; align-items: center; gap: 4px; }
+.story-land--w .story-land__txt b, .story-land--e .story-land__txt b { font-size: 12px; line-height: 1.05; }
 
 /* 札 (= ランドセクタのアイコンを飾りに。 道でつなぐ: 北・南は横の折れ線、 西・東は縦の折れ線、 中央は塔の下に横 2 列) */
 .story-land__stages { position: relative; flex: 1; display: grid; gap: 4px; align-content: stretch; z-index: 3; }
@@ -61,15 +61,16 @@
 .story-land--c .story-stage:nth-child(1) { grid-area: 1 / 1; } .story-land--c .story-stage:nth-child(2) { grid-area: 1 / 2; } .story-land--c .story-stage:nth-child(3) { grid-area: 1 / 3; } .story-land--c .story-stage:nth-child(4) { grid-area: 2 / 3; } .story-land--c .story-stage:nth-child(5) { grid-area: 2 / 2; }
 .story-stage {
   position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0;
-  min-width: 0; min-height: 50px; padding: 2px; border-radius: 10px; cursor: pointer; font: inherit; color: #fff;
+  min-width: 0; min-height: 62px; padding: 2px; overflow: hidden; border-radius: 10px; cursor: pointer; font: inherit; color: #fff;
   border: 1.5px solid rgba(255, 255, 255, 0.3); background: rgba(0, 0, 0, 0.55);
 }
-.story-stage__art { width: 28px; height: 28px; background-size: contain; background-repeat: no-repeat; background-position: center; image-rendering: pixelated; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.8)); }
-.story-stage b { font-size: 11px; line-height: 1; }
-.story-stage__lbl { font-size: 9px; line-height: 1; opacity: 0.85; }
+.story-stage__art { width: 36px; height: 40px; background-size: contain; background-repeat: no-repeat; background-position: center bottom; image-rendering: pixelated; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.8)); }   /* アチーブメントのアート 194×217 */
+.story-stage b { font-size: 11px; line-height: 1; margin-top: 1px; }
+.story-stage__lbl { font-size: 8px; line-height: 1; opacity: 0.85; }
 .story-stage--shadow { border-color: rgba(187, 134, 252, 0.6); }
 .story-stage--boss { border-color: rgba(255, 120, 90, 0.7); }
-.story-stage--boss .story-stage__art, .story-stage--shadow .story-stage__art { width: 34px; height: 34px; }
+.story-stage--boss .story-stage__art, .story-stage--shadow .story-stage__art { width: 40px; height: 45px; }
+.story-land--c .story-stage__art { width: 28px; height: 31px; } .story-land--c .story-stage { min-height: 50px; }
 .story-stage.is-cleared { border-color: var(--land, #8c8); background: color-mix(in srgb, var(--land) 22%, rgba(0, 0, 0, 0.55)); }
 .story-stage.is-cleared .story-stage__lbl { color: #9ef0b0; }
 .story-stage.is-current { border-color: #ffe17a; box-shadow: 0 0 14px rgba(255, 215, 120, 0.7); animation: story-pulse 1.4s ease-in-out infinite; }
@@ -95,8 +96,8 @@
 
 /* 中央の塔 (= ゼウスの上にファオ。 黒い霧が足もとを漂う。 立つ前は封印の円) */
 .story-tower { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; z-index: 2; }
-.story-tower__zeus { width: 112px; height: 112px; image-rendering: pixelated; filter: drop-shadow(0 0 14px rgba(155, 93, 229, 0.8)); z-index: 1; }
-.story-tower__fao { width: 56px; height: 56px; image-rendering: pixelated; margin-bottom: -18px; z-index: 2; filter: drop-shadow(0 0 10px rgba(255, 80, 120, 0.9)); animation: story-fao-hover 3.2s ease-in-out infinite; }
+.story-tower__zeus { width: 88px; height: 88px; image-rendering: pixelated; filter: drop-shadow(0 0 14px rgba(155, 93, 229, 0.8)); z-index: 1; }
+.story-tower__fao { width: 44px; height: 44px; image-rendering: pixelated; margin-bottom: -12px; z-index: 2; filter: drop-shadow(0 0 10px rgba(255, 80, 120, 0.9)); animation: story-fao-hover 3.2s ease-in-out infinite; }
 .story-tower__fog { position: absolute; left: -20%; right: -20%; bottom: -10%; height: 55%; display: block; pointer-events: none; z-index: 3; filter: url(#storyMistFilter); background: radial-gradient(ellipse 60% 60% at 50% 70%, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.7) 50%, rgba(0, 0, 0, 0) 80%); animation: story-mist-drift 16s ease-in-out infinite alternate; }
 .story-tower__fog--2 { bottom: 10%; height: 40%; opacity: 0.7; animation-duration: 22s; animation-direction: alternate-reverse; }
 .story-tower__name { font-size: 9px; letter-spacing: 0.5px; color: #d9c6ff; text-shadow: 0 1px 2px #000; z-index: 4; margin: 2px 0 4px; text-align: center; line-height: 1.2; }
@@ -105,7 +106,7 @@
 .story-tower__seal { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; font-size: 26px; font-weight: 900; color: rgba(255, 255, 255, 0.35); border: 2px dashed rgba(255, 255, 255, 0.25); background: rgba(0, 0, 0, 0.6); z-index: 2; }
 @keyframes story-tower-rise { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 @keyframes story-fao-hover { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
-@media (max-width: 360px) { .story-tower__zeus { width: 96px; height: 96px; } .story-stage__art { width: 24px; height: 24px; } }
+@media (max-width: 360px) { .story-tower__zeus { width: 80px; height: 80px; } .story-stage__art { width: 32px; height: 36px; } .story-stage { min-height: 58px; } }
 :root[data-reduce-fx] .story-stage.is-current, :root[data-reduce-fx] .story-mist > i, :root[data-reduce-fx] .story-tower__fog, :root[data-reduce-fx] .story-tower__fao, :root[data-reduce-fx] .story-path--now { animation: none; }
 @media (prefers-reduced-motion: reduce) { .story-mist > i, .story-tower__fog, .story-tower__fao, .story-path--now, .story-stage.is-current { animation: none; } }
 

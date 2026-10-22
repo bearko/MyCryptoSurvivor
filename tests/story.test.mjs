@@ -33,6 +33,8 @@ test("W1〜W5 の 25 行: 1 行 1 要素 (= 新しい feature は 1 つずつ)�
   assert.equal(storyOverride(STORY_MAP["5-4"]).spawnIntervalMs, null); assert.equal(storyOverride(STORY_MAP["5-4"]).shopTimesMs, null); assert.equal(storyOverride(STORY_MAP["5-4"]).maxEnemies, null);
   assert.equal(storyOverride(STORY_MAP["5-5"]).bossId, 373); assert.equal(storyOverride(STORY_MAP["5-5"]).bossAtMs, 240000); assert.equal(storyOverride(STORY_MAP["5-5"]).missionFree, true); assert.equal(storyOverride(STORY_MAP["5-5"]).chestTimesMs, null);
   assert.equal(STORY_MAP["5-5"].unlock, "mode:NORMAL");
+  for (const l of S.LANDS) { assert.ok(l.ach?.plain && l.ach?.shadow && l.ach?.boss, `${l.id}: ach`); assert.equal(String(l.ach.boss).slice(0, 2), "20", "金は King 就任 (200nn)"); assert.equal(String(l.ach.plain).slice(-1), "1"); assert.equal(String(l.ach.shadow).slice(-1), "2"); }
+  assert.equal(S.stageArt(S.LANDS[0], "boss"), "Image/Achievements/piece_20011.png"); assert.equal(S.stageArt(S.LANDS[2], "shadow"), "Image/Achievements/piece_10092.png"); assert.equal(S.stageArt(S.LANDS[2], "plain"), "Image/Achievements/piece_10091.png");
   assert.deepEqual(S.bondBurst(STORY_MAP["2-4"]), { ce: 120, cards: 2, heal: true, gum: 30 }); assert.equal(S.bondBurst(STORY_MAP["5-4"]).ce, 200); assert.equal(S.bondBurst(STORY_MAP["1-1"]), null);
   const sb = read("js/battle/story-battle.js");
   assert.match(sb, /markStoryBond\(r\.bond\.who\); _bondBurst\(r, st\);/, "シャドーを越えた瞬間にラッシュ");
