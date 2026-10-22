@@ -61,7 +61,7 @@ export const MISSIONS = [
   { id: "napoleon",    giver: 445, boon: "thunder", tiers: [T(30, {}, { goal: { kills: 100 }, n: 100 }), T(30, {}, { goal: { kills: 200 }, n: 200 }), T(30, {}, { goal: { kills: 350 }, n: 350 })] },
   // SPEC-138: 風林火山 (= 風: 敵の足が速い・林: 音が消える・火: 敵が増える・山: 動けない)。 ★で対象が広がり、 すべて同時に効く
   { id: "shingen",     giver: 519, boon: "guard",
-    tiers: [T(30, { speedMul: 1.4, silent: true }), T(30, { speedMul: 1.4, silent: true, spawnMul: 3 }), T(20, { speedMul: 1.4, silent: true, spawnMul: 3, noMove: true })] },
+    tiers: [T(30, { speedMul: 1.4, silent: true }), T(30, { speedMul: 1.4, silent: true, spawnMul: 3 }), T(20, { speedMul: 1.4, silent: true, spawnMul: 3, playerSpeedMul: 0.1 })] },
   { id: "caocao",      giver: 467, boon: "magnet",  tiers: [T(30, { sizeMul: 0.8, speedMul: 1.1 }), T(30, { sizeMul: 0.6, speedMul: 1.2 }), T(30, { sizeMul: 0.45, speedMul: 1.4 })] },
 ];
 export const MISSION_MAP = Object.fromEntries(MISSIONS.map((m) => [m.id, m]));
@@ -90,7 +90,7 @@ export function saveStar(star, storage = globalThis.localStorage) {
 }
 
 /** 効かない値 (= ミッションが無いとき) */
-export const NO_MODS = Object.freeze({ spawnMul: 1, speedMul: 1, dmgMul: 1, sizeMul: 1, fogR: null, fogA: null, shooterOnly: false, shotMul: 1, hiddenShots: false, noHeal: false, silent: false, noMove: false });
+export const NO_MODS = Object.freeze({ spawnMul: 1, speedMul: 1, playerSpeedMul: 1, dmgMul: 1, sizeMul: 1, fogR: null, fogA: null, shooterOnly: false, shotMul: 1, hiddenShots: false, noHeal: false, silent: false, noMove: false });
 
 /** そのミッションの効き目 (= 足りない項目は効かない値) */
 export function modsOf(mission, star = 1) {
@@ -184,6 +184,10 @@ export function missionMods() {
 /** SPEC-138: 動けるか (= 信玄の「山」のあいだは動けない。 player.js が読む) */
 export function canMove() {
   return !missionMods().noMove;
+}
+/** 作者 2026-10-22: 信玄の「山」は動けないのではなく足が 1/10 (= 仕掛け次第で即死していた) */
+export function missionPlayerSpeedMul() {
+  return missionMods().playerSpeedMul ?? 1;
 }
 
 /** SPEC-138: 信玄の「林」のあいだは BGM と効果音を消す (= 終われば戻す) */

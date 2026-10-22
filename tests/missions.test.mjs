@@ -48,15 +48,15 @@ test("効き目: 無いときは効かない値。 ミッションごとの中�
 
 test("SPEC-138: 風林火山 (= ★1 風林・★2 風林火・★3 風林火山。 すべて同時に効く)", () => {
   const s = MISSION_MAP.shingen;
-  const has = (star) => { const m = modsOf(s, star); return [m.speedMul > 1, m.silent, m.spawnMul > 1, m.noMove]; };
+  const has = (star) => { const m = modsOf(s, star); return [m.speedMul > 1, m.silent, m.spawnMul > 1, (m.playerSpeedMul ?? 1) < 1]; };   // 2026-10-22: 「山」は足が 1/10
   assert.deepEqual(has(1), [true, true, false, false]);
   assert.deepEqual(has(2), [true, true, true, false]);
   assert.deepEqual(has(3), [true, true, true, true]);
   assert.equal(s.giver, 519);
   for (const k of ["x1", "x2", "x3", "thanks"]) assert.ok(ui[`mission.shingen.${k}`]?.ja && ui[`mission.shingen.${k}`]?.en, k);
-  assert.equal(NO_MODS.silent, false); assert.equal(NO_MODS.noMove, false);
+  assert.equal(NO_MODS.silent, false); assert.equal(NO_MODS.noMove, false); assert.equal(NO_MODS.playerSpeedMul, 1);
   const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), "utf8");
-  assert.match(read("js/battle/player.js"), /if \(!canMove\(\)\) input = \{ x: 0, y: 0 \}/);
+  assert.match(read("js/battle/player.js"), /\* missionPlayerSpeedMul\(\)/, "足が 1/10 (= 動けないではなく)");
   assert.match(read("js/audio.js"), /if \(_seMuted \|\| _silent\) return;/);
   assert.match(read("js/battle/missions.js"), /setMissionSilence\(!!missionMods\(\)\.silent\)/);
 });
