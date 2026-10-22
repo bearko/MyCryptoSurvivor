@@ -595,7 +595,7 @@ export function renderShop() {
       const short = price > s.ce;
       const chip = document.createElement("span");
       chip.className = "shop-price" + (short ? " shop-price--short" : "") + (price === 0 ? " shop-price--gift" : "") + (o.sale ? " shop-price--sale" : "");
-      chip.textContent = price === 0 ? (sr?.price === 0 ? t("story.shop.free", "🎁 ただ") : s.welcome ? t("shop.welcomeFree", "🎁 サービス") : tpl(t("shop.free", "🎟 ギフト券 ×{n}"), { n: String(giftCost(offer) ?? 1) })) : `◆ ${price}`;
+      chip.textContent = price === 0 ? (sr?.price === 0 ? t("story.shop.free", "🎁 無料") : s.welcome ? t("shop.welcomeFree", "🎁 サービス") : tpl(t("shop.free", "🎟 ギフト券 ×{n}"), { n: String(giftCost(offer) ?? 1) })) : `◆ ${price}`;
       if (o.sale && price > 0) chip.dataset.tag = t("shop.saleTag", "半額");
       card.appendChild(chip);
       card.classList.add("shop-card");
