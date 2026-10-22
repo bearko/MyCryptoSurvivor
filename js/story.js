@@ -16,12 +16,14 @@ export const LS_STORY = `${LS_PREFIX}.story`;
 /** ランド (= ワールド)。 名前・背景・色は MCH のランドそのもの (= Image/Backgrounds の 2x05 系) */
 export const LANDS = Object.freeze([
   // dir: ワールドマップの方角 (= 四神。 北=玄武 オーシャン / 南=朱雀 ストロベリー / 西=白虎 タンジェリン / 東=青龍 ライム / 中央=グレープ)
-  // cryptid: ランドの守護神「クリプタイド」(128px) / sector: ランドセクタのアイコン (64px・5 段のレアリティ) = ステージの札の飾り
-  { w: 1, id: "ocean",      bg: "Image/Backgrounds/2105.png", color: "#3aa0e8", dir: "n", guardian: "genbu",   cryptid: "Image/Cryptids/01_Ocean.png",      sector: "Image/LandSectors/01_Ocean_" },
-  { w: 2, id: "strawberry", bg: "Image/Backgrounds/2205.png", color: "#ef5f8a", dir: "s", guardian: "suzaku",  cryptid: "Image/Cryptids/02_Strawberry.png", sector: "Image/LandSectors/02_Strawberry_" },
-  { w: 3, id: "tangerine",  bg: "Image/Backgrounds/2301.png", color: "#f59a2a", dir: "w", guardian: "byakko",  cryptid: "Image/Cryptids/03_Tangerine.png",  sector: "Image/LandSectors/03_Tangerine_" },
-  { w: 4, id: "lime",       bg: "Image/Backgrounds/2405.png", color: "#9ad33a", dir: "e", guardian: "seiryu",  cryptid: "Image/Cryptids/04_Lime.png",       sector: "Image/LandSectors/04_Lime_" },
-  { w: 5, id: "grape",      bg: "Image/Backgrounds/2605.png", color: "#9b5de5", dir: "c", guardian: "zeus",    cryptid: "Image/Cryptids/06_Grape.png",      sector: "Image/LandSectors/06_Grape_" },
+  // cryptid: ランドの守護神「クリプタイド」(128px)
+  // ach: ステージの札の飾り = MCH のアチーブメントのアート (Image/Achievements/piece_<id>.png。 194×217。 ランドのクリプタイドの像)
+  //      大型ボス = 金 (King 就任 200nn) / 中ボス (シャドー) = 銀 (G5 10 回 10nn2) / それ以外 = 銅 (G5 3 回 10nn1)。 作者の指定 2026-10-22
+  { w: 1, id: "ocean",      bg: "Image/Backgrounds/2105.png", color: "#3aa0e8", dir: "n", guardian: "genbu",   cryptid: "Image/Cryptids/01_Ocean.png",      ach: { plain: 10071, shadow: 10072, boss: 20011 } },
+  { w: 2, id: "strawberry", bg: "Image/Backgrounds/2205.png", color: "#ef5f8a", dir: "s", guardian: "suzaku",  cryptid: "Image/Cryptids/02_Strawberry.png", ach: { plain: 10081, shadow: 10082, boss: 20012 } },
+  { w: 3, id: "tangerine",  bg: "Image/Backgrounds/2301.png", color: "#f59a2a", dir: "w", guardian: "byakko",  cryptid: "Image/Cryptids/03_Tangerine.png",  ach: { plain: 10091, shadow: 10092, boss: 20013 } },
+  { w: 4, id: "lime",       bg: "Image/Backgrounds/2405.png", color: "#9ad33a", dir: "e", guardian: "seiryu",  cryptid: "Image/Cryptids/04_Lime.png",       ach: { plain: 10101, shadow: 10102, boss: 20014 } },
+  { w: 5, id: "grape",      bg: "Image/Backgrounds/2605.png", color: "#9b5de5", dir: "c", guardian: "zeus",    cryptid: "Image/Cryptids/06_Grape.png",      ach: { plain: 10121, shadow: 10122, boss: 20016 } },
 ]);
 /**
  * 絆の報酬ラッシュ (= 作者の方針 2026-10-22: 報酬は早めに・一気に。 シャドーを越えた瞬間に足もとへ降る)
@@ -32,10 +34,13 @@ export const BOND_BURST = Object.freeze({ ce: 120, cards: 2, heal: true, gum: 30
 export function bondBurst(recipe) {
   return recipe?.bond ? { ...BOND_BURST, ...(recipe.bond.burst ?? {}) } : null;
 }
-/** ステージの札の飾り (= ランドセクタのレアリティ)。 大型ボス = Legendary / 中ボス (シャドー) = Rare / それ以外 = Common */
-export const SECTOR_RARITY = Object.freeze({ boss: "5_Legendary", shadow: "3_Rare", plain: "1_Common" });
+/** 札の役 (= 飾りの段)。 大型ボス / 中ボス (シャドー) / それ以外 */
 export function stageRole(recipe) {
   return recipe?.boss ? "boss" : (recipe?.shadow ? "shadow" : "plain");
+}
+/** 札の飾りの絵 (= アチーブメントのアート。 純関数) */
+export function stageArt(land, role) {
+  return `Image/Achievements/piece_${land.ach[role] ?? land.ach.plain}.png`;
 }
 /** 中央にそびえる 天候操作装置ゼウス (= 傘シリーズのレジェンダリー) と 頂上の 覚醒魔王ファオ */
 export const TOWER = Object.freeze({ zeus: "Image/Extensions/5190.png", fao: "Image/Enemies/373.png" });

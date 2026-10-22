@@ -12,7 +12,7 @@ import { naviHide } from "./navi.js";
 import { startMenuBgm } from "./ui-sound.js";
 import { getHero } from "./heroes.js";
 import { img, REGULATION_NORMAL } from "./constants.js";
-import { LANDS, STORY_PLAN, STORY_MAP, loadStory, storyUnlocked, currentStoryId, SECTOR_RARITY, stageRole, TOWER } from "./story.js";
+import { LANDS, STORY_PLAN, STORY_MAP, loadStory, storyUnlocked, currentStoryId, stageArt, stageRole, TOWER } from "./story.js";
 import { owns } from "./skill-logic.js";
 import { ROOT_ID } from "./skill-data.js";
 import { getMeta } from "./meta.js";
@@ -49,7 +49,7 @@ export function hideStoryMap() {
 /**
  * 描く (= 進みを読み直す)。 ワールドマップ: 四方にランド (北=玄武 オーシャン / 西=白虎 タンジェリン / 東=青龍 ライム / 南=朱雀 ストロベリー)、
  * 中央に W1〜W4 を越えるとそびえる 天候操作装置ゼウス (頂上にファオ)。 開いていないランドは黒い靄 (= 晴れると道がつながる)。
- * ランドの中は道でつないだ札 (= ランドセクタのアイコンを飾りに。 大型ボス Legendary / 中ボス Rare / それ以外 Common)。
+ * ランドの中は道でつないだ札 (= アチーブメントのアートを飾りに。 大型ボス 金 / 中ボス 銀 / それ以外 銅)。
  */
 export function renderStoryMap() {
   const root = _$("storyMapLands");
@@ -98,7 +98,7 @@ export function renderStoryMap() {
       btn.dataset.story = id;
       btn.disabled = !openStage;
       const label = !has ? t("story.map.todo", "準備中") : (cleared ? t("story.map.cleared", "クリア") : (openStage ? t("story.map.play", "挑む") : "🔒"));
-      btn.innerHTML = `<span class="story-stage__art" style="background-image:url('${img(land.sector + SECTOR_RARITY[role] + ".png")}')"></span><b class="num">${id}</b><span class="story-stage__lbl">${label}</span>`;
+      btn.innerHTML = `<span class="story-stage__art" style="background-image:url('${img(stageArt(land, role))}')"></span><b class="num">${id}</b><span class="story-stage__lbl">${label}</span>`;
       if (has) btn.title = t(`story.${id}.name`, id);
       if (openStage) btn.addEventListener("click", () => startStoryStage(id));
       dots.appendChild(btn);
