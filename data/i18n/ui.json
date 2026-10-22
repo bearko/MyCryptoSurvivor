@@ -929,5 +929,6 @@
   "story.map.freed.strawberry": {"ja": "Strawberry も戻った。 西の Tangerine の靄が、 薄くなってる。", "en": "Strawberry is back too. The mist over Tangerine, to the west, is thinning."},
   "story.map.freed.tangerine": {"ja": "Tangerine 解放！ 残るは東の Lime。", "en": "Tangerine freed! Lime, to the east, is the last."},
   "story.map.freed.lime": {"ja": "四方のランドが戻った……！ 中央で、 何かが動いてる。", "en": "All four lands are back...! Something is moving at the center."},
-  "story.map.towerUp": {"ja": "塔が……！ あれが天候操作装置ゼウス。 頂上に COVID がいる。 行こう。", "en": "The tower...! That's the Weather Control Apparatus Zeus. COVID is at the top. Let's go."}
+  "story.map.towerUp": {"ja": "塔が……！ あれが天候操作装置ゼウス。 頂上に COVID がいる。 行こう。", "en": "The tower...! That's the Weather Control Apparatus Zeus. COVID is at the top. Let's go."},
+  "story.goal.reachHere": {"ja": "ここまで来て！", "en": "Come here!"}
 }

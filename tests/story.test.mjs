@@ -29,7 +29,8 @@ test("W1〜W5 の 25 行: 1 行 1 要素 (= 新しい feature は 1 つずつ)�
   assert.deepEqual(STORY_STAGES.filter((s) => s.world === 5).map((s) => s.id), ["5-1", "5-2", "5-3", "5-4", "5-5"]);
   assert.equal(STORY_STAGES.length, 25, "25 行そろった");
   assert.equal(S.PROLOGUE.id, "1-0"); assert.equal(STORY_MAP["1-0"].scene, "prologue"); assert.ok(!S.allStoryIds().includes("1-0"), "プロローグは 25 に数えない"); assert.equal(S.prologueDone({ cleared: ["1-0"] }), true); assert.equal(S.prologueDone({ cleared: [] }), false);
-  assert.equal(storyOverride(STORY_MAP["1-0"]).maxEnemies, 0, "プロローグは敵が出ない"); assert.equal(STORY_MAP["5-5"].sceneAfter, "ending");
+  assert.equal(storyOverride(STORY_MAP["1-0"]).maxEnemies, 3, "プロローグは敵が数体だけ"); assert.equal(storyOverride(STORY_MAP["1-0"]).spawnFrom, "sides"); assert.deepEqual(storyOverride(STORY_MAP["1-0"]).bounds, { x: 240, yMax: 260 }); assert.equal(storyOverride(STORY_MAP["1-1"]).bounds, null); assert.equal(S.reachedPoint({ x: 0, y: -640 }, -240, -650, 260), true); assert.equal(S.reachedPoint({ x: 0, y: -640 }, -240, -650), false);
+  assert.match(read("js/battle/story-battle.js"), /story\.goal\.reachHere/, "目印の文は帯の文と別"); assert.equal(STORY_MAP["5-5"].sceneAfter, "ending");
   assert.match(read("js/battle/stage-transition.js"), /if \(r\.scene\) \{/, "プロローグはクリアの画面を出さない");
   assert.match(read("js/mode-select.js"), /enterStory\(\)/, "入り口はプロローグ経由");
   assert.deepEqual(STORY_MAP["5-1"].shop.must, ["reroll", "ban"]); assert.deepEqual(STORY_MAP["5-2"].shop.must, ["sig"]);

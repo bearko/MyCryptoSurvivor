@@ -86,7 +86,7 @@ export function tickStoryBattle() {
   if (st.healWaiting && !(b.items ?? []).some((it) => it.kind === "heal")) st.healWaiting = false;
   // 到達: いまの地点に触れたら次の地点へ (= 最後の地点で顔見せがあれば、 一言のあいだ少し待つ)
   const pts = reachPoints(r.clear);
-  if (pts.length && st.reachIdx < pts.length && reachedPoint(pts[st.reachIdx], b.player.x, b.player.y)) {
+  if (pts.length && st.reachIdx < pts.length && reachedPoint(pts[st.reachIdx], b.player.x, b.player.y, r.clear.radius ?? REACH_RADIUS)) {
     const pt = pts[st.reachIdx];
     st.reachIdx += 1;
     st.goal = pts[st.reachIdx] ?? null;
@@ -184,6 +184,16 @@ export function drawStoryWorld(ctx, camera, w, h, nowMs) {
   if (!r || !st || r.clear?.kind !== "reach" || st.reached || !st.goal) return;
   const sx = st.goal.x - camera.x, sy = st.goal.y - camera.y;
   const pulse = 0.75 + 0.25 * Math.sin(nowMs / 220);
+  // 黄色い道筋 (= 自分からゴールへ。 仕掛けの赤い線と同じ形で、 点が流れる)
+  const b = state.battle, px = b.player.x - camera.x, py = b.player.y - camera.y;
+  ctx.save();
+  ctx.setLineDash([14, 12]); ctx.lineDashOffset = -(nowMs / 18) % 26;
+  ctx.lineCap = "round";
+  ctx.strokeStyle = "rgba(255, 225, 122, 0.25)"; ctx.lineWidth = 10;
+  ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(sx, sy); ctx.stroke();
+  ctx.strokeStyle = "rgba(255, 233, 166, 0.9)"; ctx.lineWidth = 4;
+  ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(sx, sy); ctx.stroke();
+  ctx.restore();
   if (sx > -80 && sx < w + 80 && sy > -80 && sy < h + 80) {
     ctx.save();
     ctx.globalAlpha = 0.9;
@@ -193,7 +203,7 @@ export function drawStoryWorld(ctx, camera, w, h, nowMs) {
     ctx.beginPath(); ctx.arc(sx, sy, REACH_RADIUS * pulse, 0, Math.PI * 2); ctx.fill();
     ctx.globalAlpha = 1; ctx.fillStyle = "#fff6cc";
     ctx.font = "bold 14px sans-serif"; ctx.textAlign = "center";
-    ctx.fillText(t("story.goal.reach", "ここまで来て！"), sx, sy - REACH_RADIUS - 10);
+    ctx.fillText(t("story.goal.reachHere", "ここまで来て！"), sx, sy - REACH_RADIUS - 10);   // story.goal.reach は帯の文 (= {now} / {goal} が残っていた)
     ctx.restore();
     return;
   }

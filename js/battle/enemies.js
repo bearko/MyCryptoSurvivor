@@ -361,7 +361,9 @@ export function spawnEnemyAtRing(enemyId = 101, at = null, { variant = undefined
     x = BOSS_SPAWN_POS.x;
     y = BOSS_SPAWN_POS.y;
   } else {
-    const angle = Math.random() * Math.PI * 2;
+    // SPEC-165: ストーリーの 1-0 は左右と下からだけ (= 追われてゴールへ走る)
+    const from = easyStage()?.spawnFrom;
+    const angle = from === "sides" ? [Math.PI, 0, Math.PI / 2][Math.floor(Math.random() * 3)] + (Math.random() - 0.5) * 0.8 : Math.random() * Math.PI * 2;
     x = b.player.x + Math.cos(angle) * halfW;
     y = b.player.y + Math.sin(angle) * halfH;
   }

@@ -10,6 +10,7 @@ import { currentBounds } from "./arena.js";
 import { dashMul } from "../perks.js";   // SPEC-090c
 import { sigSpeedMul } from "./signature.js";   // SPEC-100
 import { boostSpeedMul, canMove } from "./missions.js";   // SPEC-125 / SPEC-138: 信玄の「山」
+import { easyStage } from "../easy.js";   // SPEC-165: 1-0 の見えない壁
 
 const HALF_W = WORLD_W / 2;
 const HALF_H = WORLD_H / 2;
@@ -38,6 +39,8 @@ export function tickPlayer(dt, input) {
   if (p.x >  HALF_W - r) p.x =  HALF_W - r;
   if (p.y < -HALF_H + r) p.y = -HALF_H + r;
   if (p.y >  HALF_H - r) p.y =  HALF_H - r;
+  const sb = easyStage()?.bounds;   // SPEC-165: ストーリーの見えない壁 (= 1-0。 横と下に脱線しない)
+  if (sb) { if (p.x < -sb.x) p.x = -sb.x; if (p.x > sb.x) p.x = sb.x; if (p.y > sb.yMax) p.y = sb.yMax; }
   // SPEC-053: 建物は通れない
   const rects = getObstacleRects();
   if (rects.length) {
