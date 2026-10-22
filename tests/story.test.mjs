@@ -133,7 +133,10 @@ test("つなぎ: easy.js はストーリーをチュートリアルとして扱�
   assert.match(read("js/battle/stage-transition.js"), /if \(isStory\(\)\) \{ _storyClear\(\); return; \}/);
   assert.match(read("js/battle/gameover.js"), /tree\?\.classList\.toggle\("hidden", !storyAllows\("tree"\)\)/);
   const html = read("index.html");
-  for (const id of ["modeCardStory", "btnModeStory", "storyMapScreen", "storyMapLands", "stageTransitionMap", "storyGoal"]) assert.ok(html.includes(`id="${id}"`), id);
+  for (const id of ["modeCardStory", "btnModeStory", "storyMapScreen", "storyMapLands", "storyMapPlates", "storyWorldScreen", "storyWorldNodes", "storyStageModal", "stageTransitionMap", "storyGoal"]) assert.ok(html.includes(`id="${id}"`), id);
+  assert.match(read("js/story-map.js"), /showStageInfo\(id\)/, "S-B の札は S-C を開く");
+  assert.match(read("js/story-map.js"), /_zoomTo\(pl, \(\) => showStoryWorld\(land\.id\)\)/, "S-A の札はズームして S-B へ");
+  assert.deepEqual(S.stagePos({ map: { x: 1, y: 2 } }, 0), { x: 1, y: 2 }); assert.deepEqual(S.stagePos({}, 0), S.MAP_PATH[0]); assert.equal(Object.keys(S.MAP_TERRITORY).length, 5);
   assert.match(html, /css\/story\.css/);
   // EASY の解放は触らない (= mcs.played / mcs.easyCleared を書く場所はストーリーに無い)
   assert.doesNotMatch(read("js/story.js") + read("js/story-map.js") + read("js/battle/story-battle.js"), /markPlayed|markEasyCleared|LS_PLAYED/);

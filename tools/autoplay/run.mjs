@@ -61,7 +61,10 @@ const tree0 = TREE === "none" ? { bought: [], gumLeft: GUM, nodes: 0 } : await b
 if (MODE === "story") {
   // SPEC-165: ストーリーの札 → ランドマップ → その行の丸 (= ヒーロー選択は開かない)
   await p.click("#btnModeStory", { force: true }); await tick(1500);
-  await p.evaluate((id) => document.querySelector(`[data-story="${id}"]`)?.click(), STAGE); await tick(1500);   // Playwright の click は見える位置まで待つことがあるので、 ページの中で押す
+  // SPEC-165 §3.y: ワールドマップ → ランドの札 → ステージの札 → 説明の「開始」 (= Playwright の click は見える位置まで待つことがあるので、 ページの中で押す)
+  await p.evaluate((id) => document.querySelector(`[data-land="${["", "ocean", "strawberry", "tangerine", "lime", "grape"][Number(id.split("-")[0])]}"]`)?.click(), STAGE); await tick(1200);
+  await p.evaluate((id) => document.querySelector(`[data-story="${id}"]`)?.click(), STAGE); await tick(600);
+  await p.evaluate(() => document.getElementById("storyStageStart")?.click()); await tick(1500);
 } else {
 await p.click(MODE === "easy" ? "#btnModeEasy" : "#btnModeNormal", { force: true }); await tick(1500);
 await p.evaluate((hero) => { const tiles = [...document.querySelectorAll("#heroSelectGrid .hero-tile")]; (tiles.find((t) => t.dataset.heroId === String(hero) && !t.disabled && !t.classList.contains("locked")) ?? tiles.find((t) => !t.disabled && !t.classList.contains("locked")))?.click(); }, HERO); await tick(400);
