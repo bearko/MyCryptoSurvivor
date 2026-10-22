@@ -9,6 +9,7 @@
 // 時間は一時停止中に進まない (= _loop が tickFx を呼ばない)。
 
 import { state } from "../state.js";
+import { easyStage } from "../easy.js";   // SPEC-165
 import { playSe } from "../audio.js";
 import { prefersReducedMotion } from "../motion.js";
 import { renderHud } from "../survival.js";
@@ -361,10 +362,11 @@ function _showBossCutin() {
   const el = doc?.getElementById("bossCutin");
   const stage = STAGE_TABLE[state.currentStageIdx ?? 0];
   if (!el || !stage) return;
-  const boss = getEnemy(stage.bossEnemyId);
+  const bossId = easyStage()?.bossId ?? stage.bossEnemyId;   // SPEC-165: ストーリーはレシピのボス (= 5-5 のカットインがヨシュカになっていた)
+  const boss = getEnemy(bossId);
   const sprite = doc.getElementById("bossCutinSprite");
   const name = doc.getElementById("bossCutinName");
-  if (sprite) sprite.src = enemyImg(stage.bossEnemyId);
+  if (sprite) sprite.src = enemyImg(bossId);
   if (name) name.textContent = localizedEnemyName(boss, getLang()) || "BOSS";
   // マインちゃんが通信窓で知らせる (= 言い終えると引っこむ)
   const hud = doc.getElementById("hud");

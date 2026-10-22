@@ -7,7 +7,7 @@
 
 import { state } from "../state.js";
 import { ENEMY_SPECS, STAGE_TABLE, BOSS_CHAR_SCALE } from "../constants.js";
-import { bossSpawnAtMs, bossWarnLeadMs } from "../easy.js";   // SPEC-147: EASY は短い
+import { bossSpawnAtMs, bossWarnLeadMs, easyStage } from "../easy.js";   // SPEC-147: EASY は短い。 SPEC-165: レシピのボス
 import { ARENA, BOSS_SPAWN_POS, currentBounds } from "./arena.js";
 
 /** 予告のあいだか (= 純関数) */
@@ -17,7 +17,7 @@ export function bossMarkerActive(elapsedMs, bossSpawned, bossAt = bossSpawnAtMs(
 
 function _bossRadius() {
   const stage = STAGE_TABLE[state.currentStageIdx ?? 0];
-  const spec = ENEMY_SPECS[stage?.bossEnemyId];
+  const spec = ENEMY_SPECS[easyStage()?.bossId ?? stage?.bossEnemyId];   // SPEC-165: ストーリーはレシピのボス
   return Math.round((spec?.radius ?? 48) * BOSS_CHAR_SCALE);
 }
 
