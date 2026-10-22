@@ -34,6 +34,22 @@ export const BOND_BURST = Object.freeze({ ce: 120, cards: 2, heal: true, gum: 30
 export function bondBurst(recipe) {
   return recipe?.bond ? { ...BOND_BURST, ...(recipe.bond.burst ?? {}) } : null;
 }
+/**
+ * ワールドマップ v2 (= SPEC-165 §3.y)。 S-A の領土と札の位置 (= 画面の %)。 北 / 西 / 東 / 南 / 中央
+ *   terr: 背景を領土の形に切り抜く箱 / plate: ランドの札の中心
+ */
+export const MAP_TERRITORY = Object.freeze({
+  n: { terr: { l: 2, t: 5, w: 96, h: 31 }, plate: { x: 50, y: 20 } },
+  w: { terr: { l: -14, t: 30, w: 62, h: 40 }, plate: { x: 24, y: 50 } },
+  e: { terr: { l: 52, t: 30, w: 62, h: 40 }, plate: { x: 76, y: 50 } },
+  s: { terr: { l: 2, t: 65, w: 96, h: 31 }, plate: { x: 50, y: 80 } },
+  c: { terr: { l: 24, t: 35, w: 52, h: 30 }, plate: { x: 50, y: 50 } },
+});
+/** S-B (ワールド詳細) のステージの位置 (= 画面の %。 レシピの map で上書き)。 上から下へ蛇行 */
+export const MAP_PATH = Object.freeze([{ x: 24, y: 30 }, { x: 64, y: 39 }, { x: 34, y: 52 }, { x: 70, y: 63 }, { x: 42, y: 78 }]);
+export function stagePos(recipe, i) {
+  return recipe?.map ?? MAP_PATH[Math.min(i, MAP_PATH.length - 1)];
+}
 /** 札の役 (= 飾りの段)。 大型ボス / 中ボス (シャドー) / それ以外 */
 export function stageRole(recipe) {
   return recipe?.boss ? "boss" : (recipe?.shadow ? "shadow" : "plain");
@@ -67,6 +83,7 @@ export const HEAL_DROP_BELOW = 0.5;
  *   mission: null         : features.mission のまま、 ふつうの持ちかけ (= 本番)
  *   bondOn                : この出来事で絆を結ぶ (= "missionClear"。 シャドーの無い絆)
  *   bond.burst            : 越えた瞬間の報酬ラッシュの上書き (= 既定は BOND_BURST。 { ce, cards, heal, gum })
+ *   map                   : { x, y } ワールド詳細 (S-B) での札の位置 (= 画面の %。 無ければ MAP_PATH)
  *   clear                 : { kind: "kills", n } | { kind: "survive", sec } | { kind: "reach", points: [{ x, y }] } | { kind: "collect", n } | { kind: "boss" }
  *                           | { kind: "shadowSurvive", sec } | { kind: "shadowDefeat" } (= シャドーの試練。 §6)
  *   shadow                : { id, giver, mode: "survive" | "defeat", atMs, hp, dmg, speed, moves, aura: { spawnMul, speedMul } } (= battle/shadow.js)

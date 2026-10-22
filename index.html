@@ -191,15 +191,17 @@
   <!-- SPEC-165: ストーリーのランドマップ                               -->
   <!-- ============================================================ -->
   <section id="storyMapScreen" class="title-screen story-map hidden">
+    <div class="story-map__board" id="storyMapBoard">
+      <div class="story-map__sea" aria-hidden="true"></div>
+      <div class="story-map__lands" id="storyMapLands"></div>
+      <svg class="story-map__paths" id="storyMapPaths" aria-hidden="true" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
+      <div class="story-map__plates" id="storyMapPlates"></div>
+      <div class="story-map__clouds" aria-hidden="true"><i></i><i></i></div>
+    </div>
     <header class="story-map__head">
-      <h2 class="story-map__title" id="storyMapTitle" data-kicker="STORY">ストーリー</h2>
+      <h2 class="story-map__title" id="storyMapTitle" data-kicker="STORY">ワールドマップ</h2>
       <p class="story-map__sub" id="storyMapSub"></p>
     </header>
-    <div class="story-map__board" id="storyMapBoard">
-      <svg class="story-map__paths story-map__paths--back" id="storyMapPathsBack" aria-hidden="true"></svg>
-      <div class="story-map__lands" id="storyMapLands"></div>
-      <svg class="story-map__paths" id="storyMapPaths" aria-hidden="true"></svg>
-    </div>
     <svg class="story-map__defs" aria-hidden="true" width="0" height="0" style="position:absolute">
       <filter id="storyMistFilter" x="-20%" y="-20%" width="140%" height="140%">
         <feTurbulence type="fractalNoise" baseFrequency="0.012 0.02" numOctaves="3" seed="7" result="n">
@@ -208,9 +210,29 @@
         <feDisplacementMap in="SourceGraphic" in2="n" scale="26" xChannelSelector="R" yChannelSelector="G" />
         <feGaussianBlur stdDeviation="1.2" />
       </filter>
+      <filter id="storyEdgeFilter" x="-10%" y="-10%" width="120%" height="120%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" seed="3" />
+        <feDisplacementMap in="SourceGraphic" scale="22" />
+      </filter>
     </svg>
     <button class="btn btn--ghost story-map__back" id="storyMapBack">◀ モード選択へ</button>
+    <p class="story-map__hint" id="storyMapHint"></p>
   </section>
+
+  <section id="storyWorldScreen" class="title-screen story-world hidden">
+    <div class="story-world__bg" id="storyWorldBg" aria-hidden="true"></div>
+    <div class="story-world__shade" aria-hidden="true"></div>
+    <header class="story-world__head" id="storyWorldHead"></header>
+    <svg class="story-world__trail" id="storyWorldTrail" aria-hidden="true" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
+    <div class="story-world__nodes" id="storyWorldNodes"></div>
+    <button class="btn btn--ghost story-world__back" id="storyWorldBack">◀ マップへ</button>
+    <p class="story-world__hint" id="storyWorldHint"></p>
+  </section>
+
+  <div id="storyStageModal" class="story-stage-modal hidden" role="dialog" aria-modal="true">
+    <div class="story-stage-modal__dim" id="storyStageDim"></div>
+    <div class="story-stage-modal__card" id="storyStageCard"></div>
+  </div>
 
   <!-- ============================================================ -->
   <!-- 3. Main app                                                    -->
