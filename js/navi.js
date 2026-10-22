@@ -54,7 +54,9 @@ export function naviFrameUrl(name) {
  * 2026-10-22: 目線がこちらを向くコマに差し替える (= 言い終えたあとの止まり絵。 「左上を向いて白目のよう」という声)。
  * pointer・smile は目が左上や下を向く絵なので正面の idle に、 sparkle は目が上に飛ぶので両手を上げた絵に。 泣き顔はそのまま
  */
-export const EYES_FRONT = { pointer: "11_idle", smile: "11_idle", sparkle: "02_both_arms_up" };
+export const EYES_FRONT = { pointer: "11_idle", sparkle: "02_both_arms_up" };
+/** 言い終えたポーズのまま保つ画面 (= 待機の顔に戻さない。 作者 2026-10-22: モード選択は wink / smile) */
+export const HOLD_POSE_PLACES = ["mode"];   // smile (06) は作者が選んだ顔なのでそのまま
 export function poseFrame(pose) {
   return EYES_FRONT[pose] ?? NAVI_POSES[pose] ?? NAVI_FRAMES.idle[0];
 }
@@ -82,10 +84,11 @@ export function naviLines(scene, ctx = {}) {
     }
     case "mode":
       // SPEC-147: 初めての人 (= EASY をまだクリアしていない・NORMAL も遊んでいない) には EASY をすすめる
-      if (ctx.first) return [{ key: "navi.mode.story", pose: "sparkle", voice: hasVoice("navi.mode.story") ? "navi.mode.story" : null }];   // SPEC-165: 初めてはストーリーへ
+      // 作者 2026-10-22: モード選択の顔は wink (05) か smile (06) (= 目がこちらを向く絵)
+      if (ctx.first) return [{ key: "navi.mode.story", pose: "wink", voice: hasVoice("navi.mode.story") ? "navi.mode.story" : null }];   // SPEC-165: 初めてはストーリーへ
       return [
-        { key: "navi.mode.1", pose: "cross", mood: "cross", voice: "mode.1" },
-        { key: "navi.mode.2", pose: "pointer", voice: "mode.2" },
+        { key: "navi.mode.1", pose: "smile", voice: "mode.1" },
+        { key: "navi.mode.2", pose: "wink", voice: "mode.2" },
       ];
     case "hero":
       return [{ key: "navi.hero.open", pose: "hooray", voice: "hero.open" }];
@@ -220,6 +223,7 @@ function _idle(pose) {
   _stopAnim();
   const base = pose ? poseFrame(pose) : (_mood === "cross" ? NAVI_FRAMES.cross[0] : NAVI_FRAMES.idle[0]);
   _setFrame(base);
+  if (pose && HOLD_POSE_PLACES.includes(_el?.dataset.place)) return;   // 作者 2026-10-22: モード選択は wink / smile のまま (= 待機の顔に戻さない)
   if (prefersReducedMotion()) return;
   const blinks = pose ? null : (_mood === "cross" ? NAVI_FRAMES.cross.slice(1) : NAVI_FRAMES.idle.slice(1));
   const loop = () => {
