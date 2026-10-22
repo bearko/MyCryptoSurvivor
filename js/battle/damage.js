@@ -13,7 +13,7 @@
 // 呼出側は逆順走査して splice 不整合を回避すること。
 
 import { state } from "../state.js";
-import { storyAllows } from "../story.js";   // SPEC-165
+import { storyAllows, isStory, storyStage } from "../story.js";   // SPEC-165
 import { spawnGem } from "./gems.js";
 import { spawnMagicCard } from "./magic-cards.js";
 import { fxEnemyHit, fxEnemyKilled } from "./fx.js";
@@ -84,8 +84,11 @@ export function hitEnemy(idx, dmg, src = "other") {
     // 新: e.isBoss を見るので Fao / yamap / 任意ボスで発火
     if (e.isBoss) {
       state.battle.bossDefeated = true;
-      state.battle.bossChestOpen = true;   // SPEC-153: 宝箱を開けるまでステージの終わりを待たせる (= 落ちてくるのは 0.5 秒後)
-      setTimeout(dropBossChest, BOSS_CHEST.dropMs);   // SPEC-153: 倒した瞬間に宝箱 (= 撃破の粒と音のあとに)
+      // 作者 2026-10-22: ストーリーの「ボスを倒す」の行 (= 3-5 / 5-5) は倒した瞬間にクリア。 宝箱を重ねると、 閉じるまでクリアの画面が出なかった
+      if (!(isStory() && storyStage()?.clear?.kind === "boss")) {
+        state.battle.bossChestOpen = true;   // SPEC-153: 宝箱を開けるまでステージの終わりを待たせる (= 落ちてくるのは 0.5 秒後)
+        setTimeout(dropBossChest, BOSS_CHEST.dropMs);   // SPEC-153: 倒した瞬間に宝箱 (= 撃破の粒と音のあとに)
+      }
     }
     return true;
   }

@@ -27,7 +27,7 @@ test("軸の値は戦闘と同じ式から出ている (= js/hero-stats.js)", ()
 });
 
 test("射程: 飛ぶ武器は range、 回る・置く武器は半径 (= ブレードがいちばん近い)", () => {
-  assert.equal(weaponReach(EXT.find((e) => e.series === "Blade")), 32);
+  assert.equal(weaponReach(EXT.find((e) => e.series === "Blade")), 40);   // 2026-10-22: 32 → 40 (= ブレードを大きく)
   assert.equal(weaponReach(EXT.find((e) => e.series === "Snowman")), 60);
   assert.equal(weaponReach(EXT.find((e) => e.series === "LaserGun")), 600);
 });

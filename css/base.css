@@ -150,3 +150,7 @@ a:hover { text-decoration: underline; }
     scroll-behavior: auto !important;
   }
 }
+
+/* 2026-10-22: スマホで長押しすると選択モードやコピーの吹き出し、 2 本指で拡大縮小になっていた (= 遊びの最中に起きる)。 入力欄だけは選べる */
+html, body { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; touch-action: manipulation; overscroll-behavior: none; }
+input, textarea { -webkit-user-select: text; user-select: text; }

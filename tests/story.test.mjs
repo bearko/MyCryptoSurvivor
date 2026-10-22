@@ -30,7 +30,7 @@ test("W1〜W5 の 25 行: 1 行 1 要素 (= 新しい feature は 1 つずつ)�
   assert.equal(STORY_STAGES.length, 25, "25 行そろった");
   assert.deepEqual(STORY_MAP["1-2"].shop.offers, [16], "1-2 はりんご (= 作者 2026-10-22)"); assert.equal(STORY_MAP["1-3"].startExt[0].level, 1, "1-3 はブレード Lv.1 で始まる (= ランクアップは 1-5)");
   assert.match(read("js/battle/story-battle.js"), /if \(r\.shadow && st\.shadowWon && !st\.bondAck\) return;/, "越えた瞬間のポップアップを押すまでクリアしない");
-  assert.equal(STORY_MAP["1-5"].shadow.mode, "spar"); assert.equal(STORY_MAP["1-5"].spar.hits, 3); assert.equal(STORY_MAP["1-5"].shop.rankupFx, true); assert.deepEqual(STORY_MAP["1-4"].pickup, { kind: "heal", x: 0, y: -340 });
+  assert.equal(STORY_MAP["1-5"].shadow.mode, "spar"); assert.equal(STORY_MAP["1-5"].spar.hits, 3); assert.equal(STORY_MAP["1-5"].shop.rankupFx, true); assert.deepEqual(STORY_MAP["1-4"].pickup, { kind: "heal", x: 0, y: -340, heal: "full" });
   assert.equal(S.storyCleared(STORY_MAP["1-4"], { elapsedMs: 31000, picked: new Set() }), false, "パンケーキを取るまでクリアしない"); assert.equal(S.storyCleared(STORY_MAP["1-4"], { elapsedMs: 31000, picked: new Set(["heal"]) }), true);
   assert.equal(S.nextInSameLand("1-4"), true); assert.equal(S.nextInSameLand("1-5"), false); assert.equal(S.nextInSameLand("5-5"), false);
   assert.equal(STORY_MAP["2-2"].shop.offers.length, 4); assert.equal(STORY_MAP["2-2"].shop.priceMul, 1.6);
@@ -39,7 +39,7 @@ test("W1〜W5 の 25 行: 1 行 1 要素 (= 新しい feature は 1 つずつ)�
   assert.match(read("js/battle/story-battle.js"), /story\.goal\.reachHere/, "目印の文は帯の文と別"); assert.equal(STORY_MAP["5-5"].sceneAfter, "ending");
   assert.match(read("js/battle/stage-transition.js"), /if \(r\.scene\) \{/, "プロローグはクリアの画面を出さない");
   assert.match(read("js/mode-select.js"), /enterStory\(\)/, "入り口はプロローグ経由");
-  assert.deepEqual(STORY_MAP["5-1"].shop.must, ["reroll", "ban"]); assert.deepEqual(STORY_MAP["5-2"].shop.must, ["sig"]);
+  assert.deepEqual(STORY_MAP["5-1"].shop.must, ["reroll"]); assert.deepEqual(STORY_MAP["3-2"].shop.must, ["ban"]); assert.deepEqual(STORY_MAP["5-2"].shop.must, ["sig"]);   // お断りは 3-2 (= 作者 2026-10-22)
   assert.equal(STORY_MAP["5-3"].bondOn, "missionClear"); assert.equal(STORY_MAP["5-3"].mission.must, false);
   assert.equal(storyOverride(STORY_MAP["5-4"]).spawnIntervalMs, null); assert.equal(storyOverride(STORY_MAP["5-4"]).shopTimesMs, null); assert.equal(storyOverride(STORY_MAP["5-4"]).maxEnemies, null);
   assert.equal(storyOverride(STORY_MAP["5-5"]).bossId, S.FINAL_BOSS_ID); assert.equal(S.FINAL_BOSS_ID, 681, "ラスボスは COVID-19 (= 作者 2026-10-22)"); assert.equal(storyOverride(STORY_MAP["5-5"]).bossAtMs, 240000); assert.equal(storyOverride(STORY_MAP["5-5"]).missionFree, true); assert.equal(storyOverride(STORY_MAP["5-5"]).chestTimesMs, null);

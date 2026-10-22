@@ -1569,7 +1569,7 @@ a.title-screen__next[href]:hover { border-color: var(--accent); }
 }
 .abs-slider {
   display: grid;
-  grid-template-columns: minmax(7em, auto) 1fr 3.5em;
+  grid-template-columns: 9em 1fr 3.5em;   /* 2026-10-22: 行ごとに札の幅が変わって、 つまみの左がそろっていなかった (PC) */
   gap: 0.5rem;
   align-items: center;
   font-size: 0.78rem;
@@ -1587,6 +1587,7 @@ a.title-screen__next[href]:hover { border-color: var(--accent); }
   font-weight: 700;
   color: var(--text);
 }
+.mode-select__foot { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
 .mode-select__back {
   align-self: center;
   margin-top: 0.4rem;

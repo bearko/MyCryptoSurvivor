@@ -156,6 +156,9 @@ export async function proceedToNextStage() {
 }
 const _onProceedClick = () => (isStory() ? proceedStory() : proceedToNextStage());
 
+/** 作者 2026-10-22: この GUM が貯まっていたら、 クリアの画面でスキルツリーを促す */
+export const TREE_NUDGE_GUM = 500;
+
 /** SPEC-165: ストーリーのクリア (= 進みを覚え、 クリアの画面。 GUM はいままでどおり足す) */
 function _storyClear() {
   const r = storyStage();
@@ -176,6 +179,8 @@ function _storyClear() {
   _wireOnce();
   _renderTransitionModal();
   const modal = document.getElementById("stageTransitionModal");
+  const treeBtn = document.getElementById("stageTransitionSkillTree");
+  treeBtn?.classList.remove("gameover-modal__again--pulse");
   modal?.classList.remove("hidden");
   playSe(SFX.STAGE_CLEAR, 0, 0.7);
   presentResult(modal, "clear", {
@@ -192,7 +197,11 @@ function _storyClear() {
         renderGumBreakdown(document.getElementById("stageTransitionGum"), { rows: snap?.gumRows ?? [], bonus: snap?.gumBonus ?? 0, mul: snap?.gumMul ?? 0 });
       }
       startConfetti();
-      if (r.lines?.clear) { modal?.classList.add("gameover-modal--navi"); naviSay(naviLines("story", { key: r.lines.clear, pose: "hooray" }), { place: "result" }); }
+      // 作者 2026-10-22: GUM が貯まってきたら (= 500)、 クリアの一言のあとにスキルツリーを促し、 ボタンを光らせる
+      const nudge = storyAllows("tree") && (getMeta().gum | 0) >= TREE_NUDGE_GUM;
+      const lines = [...(r.lines?.clear ? naviLines("story", { key: r.lines.clear, pose: "hooray" }) : []), ...(nudge ? naviLines("story", { key: "story.treeNudge", pose: "pointer", vars: { gum: String(getMeta().gum | 0) } }) : [])];
+      if (lines.length) { modal?.classList.add("gameover-modal--navi"); naviSay(lines, { place: "result" }); }
+      treeBtn?.classList.toggle("gameover-modal__again--pulse", nudge);
     },
   });
 }
@@ -269,9 +278,9 @@ function _renderTransitionModal() {
     const curEl = document.getElementById("stageTransitionCurrent");
     if (curEl) curEl.textContent = `${story.id}  ${t(`story.land.${land.id}`, land.id)} — ${t(`story.${story.id}.name`, "")}`;
     const sameLand = !!(nextId && storyRecipe(nextId)) && nextInSameLand(story.id);
-    if (subEl) subEl.textContent = sameLand ? tpl(t("stage.proceedNext", "次は {next}"), { next: nextId }) : (nextId && storyRecipe(nextId) ? t("story.clear.landDone", "ランドを取り戻した！ マップへ戻ろう") : t("story.clear.done", "ここまで！ つづきは準備中"));
+    if (subEl) subEl.textContent = sameLand ? tpl(t("stage.proceedNext", "次は {next}"), { next: nextId }) : (nextId && storyRecipe(nextId) ? t("story.clear.landDone", "ランドを取り戻した！ マップへ戻ろう") : (story.unlock === "mode:NORMAL" ? t("story.clear.allDone", "ストーリー全クリア！ NORMAL が開いた") : t("story.clear.done", "ここまで！ つづきは準備中")));
     if (proceedEl) { proceedEl.textContent = t("story.map.next", "次のステージへ ▶"); proceedEl.classList.toggle("hidden", !sameLand); }   // ランドの最後は「マップへ」だけ
-    const mapBtn = document.getElementById("stageTransitionMap"); if (mapBtn) mapBtn.textContent = t("story.map.toMap", "マップへ");
+    const mapBtn = document.getElementById("stageTransitionMap"); if (mapBtn) mapBtn.textContent = story.unlock === "mode:NORMAL" ? t("story.clear.toModes", "モード選択へ ▶") : t("story.map.toMap", "マップへ");
     const snapS = state.run.stages.find((s) => s.idx === idx);
     const setS = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
     setS("stageTransitionElapsed", formatElapsed(Math.round((snapS?.elapsedMs ?? 0) / 1000)));

@@ -771,6 +771,10 @@ function renderHeader() {
 // ============================================================
 // Boot
 // ============================================================
+// 2026-10-22: スマホの長押しのメニューと 2 本指の拡大縮小を止める (= iOS Safari は viewport の user-scalable を見ない)
+document.addEventListener("contextmenu", (e) => { if (!e.target.closest("input, textarea")) e.preventDefault(); });
+document.addEventListener("gesturestart", (e) => e.preventDefault(), { passive: false });
+document.addEventListener("touchmove", (e) => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
 window.addEventListener("DOMContentLoaded", () => {
   // SPEC-039: bearko.games 共通基盤（アチーブメント）。SDK がなければ何もしない
   initPlatform(APP_VERSION);

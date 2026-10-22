@@ -27,7 +27,8 @@ export function shadowMods() {
 
 /**
  * 出す (= 自分から少し離れた位置。 枠の中)。 def: レシピの shadow
- *   { giver, mode: "survive" | "defeat", hp, dmg, speed, r, moves: { charge, slam, burst }, first, aura, slam: { radius, dmg }, burst: { n, speed, dmg } }
+ *   { giver, mode: "survive" | "defeat" | "spar" | "strike", hp, dmg, speed, r, moves: { charge, slam, burst }, first, aura, slam: { radius, dmg }, burst: { n, speed, dmg } }
+ *   strike (= 1-4): 始まりの一撃。 削れない・動かない。 story-battle.js が当たったら去らせる
  */
 export function spawnShadow(def) {
   const b = state.battle;

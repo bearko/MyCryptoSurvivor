@@ -50,6 +50,14 @@ export const NAVI_TALK_FRAME_MS = 130;
 export function naviFrameUrl(name) {
   return img(`Image/Characters/navi_ain_${name}.png`);
 }
+/**
+ * 2026-10-22: 目線がこちらを向くコマに差し替える (= 言い終えたあとの止まり絵。 「左上を向いて白目のよう」という声)。
+ * pointer・smile は目が左上や下を向く絵なので正面の idle に、 sparkle は目が上に飛ぶので両手を上げた絵に。 泣き顔はそのまま
+ */
+export const EYES_FRONT = { pointer: "11_idle", smile: "11_idle", sparkle: "02_both_arms_up" };
+export function poseFrame(pose) {
+  return EYES_FRONT[pose] ?? NAVI_POSES[pose] ?? NAVI_FRAMES.idle[0];
+}
 
 /**
  * 場面ごとのセリフ (= 純関数。 tests/navi.test.mjs)。 { key, vars, pose, mood, voice } の配列
@@ -210,7 +218,7 @@ function _stopAnim() { clearTimeout(_anim); _anim = null; }
 /** 待っているあいだ: 瞬き (= ときどき 2 コマ) */
 function _idle(pose) {
   _stopAnim();
-  const base = pose ? NAVI_POSES[pose] : (_mood === "cross" ? NAVI_FRAMES.cross[0] : NAVI_FRAMES.idle[0]);
+  const base = pose ? poseFrame(pose) : (_mood === "cross" ? NAVI_FRAMES.cross[0] : NAVI_FRAMES.idle[0]);
   _setFrame(base);
   if (prefersReducedMotion()) return;
   const blinks = pose ? null : (_mood === "cross" ? NAVI_FRAMES.cross.slice(1) : NAVI_FRAMES.idle.slice(1));

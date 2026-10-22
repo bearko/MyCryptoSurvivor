@@ -20,7 +20,8 @@ import { spawnItem } from "./field.js";
 import { MISSION_MAP } from "./missions.js";   // 絆の相手の絵 (= 5-3)
 import { triggerStageEndOrTransition } from "./stage-transition.js";
 import { img } from "../constants.js";
-import { fxBurst } from "./fx.js";
+import { fxBurst, fxPlayerHurt } from "./fx.js";
+import { pushDamageNumber } from "./damage.js";
 import { playSe } from "../audio.js";
 import { SFX } from "../constants.js";
 
@@ -32,14 +33,16 @@ export function resetStoryBattle() {
   const r = storyStage();
   const pts = reachPoints(r?.clear);
   b.story = r ? { id: r.id, ce: 0, said: new Set(), healDropped: false, healWaiting: false, reached: false, done: false, cameoAt: 0, reachIdx: 0, goal: pts[0] ?? null, events: [], shadow: null, shadowMs: 0, shadowDefeated: false, shadowWon: false,
-    picked: new Set(), pickupSpawned: false, preIdx: 0, preDone: !r.pre, shadowHits: 0, sparShopOpened: false, rankedUp: false } : null;
+    picked: new Set(), pickupSpawned: false, preIdx: 0, preDone: !r.pre, shadowHits: 0, sparShopOpened: false, rankedUp: false, strike: null, struck: false } : null;
   if (r?.pre?.points?.length) b.story.goal = r.pre.points[0];   // 1-5: まず移動の練習の地点へ
 }
 
 /** CE を拾った (= gems.js から。 collect の条件) */
 export function storyOnCe(n) {
   const st = state.battle?.story;
-  if (st) st.ce += n | 0;
+  if (!st) return;
+  if (st.ce === 0 && (n | 0) > 0) st.events.push("firstCe");   // 2026-10-22: 初めて拾った瞬間の一言 (= 「貯めておくといいことあるよ」)
+  st.ce += n | 0;
 }
 
 /** ★が出た瞬間の一言 (= 1 回だけ。 on: firstKill / shopOpen / healDrop / reach) */
@@ -75,6 +78,7 @@ export function tickStoryBattle() {
   if ((state.killCount | 0) >= 1) storySay("firstKill");
   // 1-4: 始まりにパンケーキを確定で置く (= 取るまで光る道筋で誘導)
   if (r.pickup && !st.pickupSpawned) { st.pickupSpawned = true; spawnItem(r.pickup.kind, r.pickup.x, r.pickup.y); st.goal = { x: r.pickup.x, y: r.pickup.y }; }
+  _tickStrike(r, st, b);
   // 拾った・開けた などの出来事 (= field.js が積む。 その瞬間の一言)
   while (st.events.length) {
     const ev = st.events.shift();
@@ -131,6 +135,36 @@ export function tickStoryBattle() {
   st.done = true;
   hideCameo();
   triggerStageEndOrTransition();
+}
+
+/**
+ * 始まりの一撃 (= 1-4: 呂布が横に現れて叩きつけ。 当たったら、 または 3 秒たったら HP を hpRatio に揃えて去る)。
+ * 作者 2026-10-22: 減っていないとパンケーキのありがたみが薄い。 減らす量は決まった値 (= パンケーキで満タンまで戻る)
+ */
+const STRIKE_TIMEOUT_MS = 3000;
+function _tickStrike(r, st, b) {
+  const d = r.strike;
+  if (!d || st.struck) return;
+  const t0 = b.stageElapsedMs ?? 0;
+  if (!st.strike) {
+    if (t0 < (d.atMs ?? 1200)) return;
+    const p = b.player;
+    st.strike = { at: t0, hp0: state.stats.hp };
+    spawnShadow({ id: d.id, giver: d.giver, mode: "strike", at: { x: p.x + 120, y: p.y }, speed: 0, dmg: 1, moves: { slam: 1e9 }, first: { slam: 350 }, slam: { radius: 260, dmg: 1 } });
+    showCameo(d.giver);
+    return;
+  }
+  const landed = state.stats.hp < st.strike.hp0 || t0 - st.strike.at >= STRIKE_TIMEOUT_MS;
+  if (!landed) return;
+  st.struck = true;
+  const max = state.statsMax.hp, after = Math.max(1, Math.round(max * (d.hpRatio ?? 0.2)));
+  const cut = Math.max(0, Math.round(state.stats.hp - after));
+  state.stats.hp = after;
+  if (cut > 0) pushDamageNumber(b.player.x, b.player.y - b.player.r - 4, cut, "#ff7676", "xl");
+  fxPlayerHurt(true);
+  dismissShadow();
+  hideCameo();
+  st.events.push("strike");
 }
 
 /** シャドーの試練 (= 時刻になったら出す。 survive は時間を数え、 defeat は倒れたかを見る) */
@@ -281,12 +315,45 @@ export function drawStoryWorld(ctx, camera, w, h, nowMs) {
 }
 
 let _goalLast = "";
+let _goalNow = -1;
+/**
+ * 目標の帯 (= 作者 2026-10-22: 小さく地味だった)。 数字を大きく出し、 増えた瞬間に跳ね、 下の線が満ちていく。 達成したら金色に光って「達成！」
+ * 中身: <label> <now>/<goal> <bar>。 文は story.goal.* の「{now} / {goal}」を数字の部分とそれ以外に分ける
+ */
 function _goalBand(on) {
   const el = globalThis.document?.getElementById("storyGoal");
   if (!el) return;
-  if (!on) { if (!el.classList.contains("hidden")) { el.classList.add("hidden"); _goalLast = ""; } return; }
-  const txt = storyGoalText() ?? "";
-  if (txt !== _goalLast) { _goalLast = txt; el.textContent = txt; el.style.top = `${_commTop()}px`; el.classList.toggle("hidden", !txt); }
+  if (!on) { if (!el.classList.contains("hidden")) { el.classList.add("hidden"); _goalLast = ""; _goalNow = -1; el.classList.remove("is-done"); } return; }
+  const g = storyGoalParts();
+  const txt = g ? `${g.kind}|${g.now}|${g.goal}` : "";
+  if (txt === _goalLast) return;
+  const prevNow = _goalNow;
+  _goalLast = txt; _goalNow = g?.now ?? -1;
+  el.style.top = `${_commTop()}px`;
+  el.classList.toggle("hidden", !g);
+  if (!g) return;
+  const pct = g.goal > 0 ? Math.min(100, Math.round(100 * g.now / g.goal)) : 0;
+  const done = g.goal > 0 && g.now >= g.goal;
+  el.innerHTML = `<span class="story-goal__lbl">${_esc(g.label)}</span>` +
+    (g.goal > 1 ? `<span class="story-goal__num"><b class="story-goal__now">${g.now}</b><i>/</i><span class="story-goal__goal">${g.goal}</span>${_esc(g.unit)}</span>` : "") +
+    `<span class="story-goal__bar"><span class="story-goal__fill" style="width:${pct}%"></span></span>` +
+    (done ? `<span class="story-goal__done">${_esc(t("story.goal.done", "達成！"))}</span>` : "");
+  if (g.now > prevNow && prevNow >= 0) { const n = el.querySelector(".story-goal__now"); if (n) { n.classList.remove("is-tick"); void n.offsetWidth; n.classList.add("is-tick"); } }
+  el.classList.toggle("is-done", done);
+  if (done && prevNow >= 0 && prevNow < g.goal) { el.classList.remove("is-burst"); void el.offsetWidth; el.classList.add("is-burst"); playSe(SFX.LEVEL_UP, 0, 0.5); }
+}
+const _esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+/** 目標の部品 (= 文の「{now} / {goal}」の前を label、 後ろを unit に分ける。 純関数に近い: state を読む) */
+export function storyGoalParts() {
+  const r = storyStage(), b = state.battle;
+  if (!r || !b?.story) return null;
+  const g = storyGoal(r, { kills: state.killCount | 0, elapsedMs: b.stageElapsedMs ?? 0, ce: b.story.ce, bossDefeated: !!b.bossDefeated, reachIdx: b.story.reachIdx, shadowMs: b.story.shadowMs, shadowDefeated: b.story.shadowDefeated });
+  if (!g) return null;
+  const key = `story.goal.${g.kind}`;
+  const tpl0 = t(key, key);
+  const m = tpl0.match(/^(.*?)\s*\{now\}\s*\/\s*\{goal\}\s*(.*)$/);
+  return { kind: g.kind, now: g.now, goal: g.goal, label: (m ? m[1] : tpl0).trim(), unit: m ? m[2].trim() : "" };
 }
 
 /** 進み具合の 1 行 (= HUD の下の帯に出す文。 null なら出さない) */
