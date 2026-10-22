@@ -122,3 +122,4 @@ story.scene.ending.3	mine	でも、 封印されたみんなは、 まだ。 こ
 story.lose	mine	惜しい！ もう一度やってみよう。 さっきより、 きっとうまくいくよ。
 story.1-0.intro	mine	聞こえる？ 上に光る地点があるよ。 そこまで走って！
 story.1-0.reach	mine	そこ！ ……つながる！
+story.treeNudge	mine	GUM が貯まってる！ スキルツリーで強化しておこう。
