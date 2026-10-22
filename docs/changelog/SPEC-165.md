@@ -20,4 +20,4 @@
 - **5-5 のボスは 2 分・PC で通信窓のセリフが見切れる** (`js/story.js` + `css/chars.css`): ボスは 120 秒に（文の 4 分も 2 分に。 録音 2 本は録り直し待ち）。 PC の通信窓は測る幅と吹き出しの幅をそろえた
 - **5-5 の COVID がボス扱いでなかった** (`js/battle/enemies.js`): レシピの `bossId` を `isBoss` に見ていなかった（倒しても終わらず 5 分の時計で終わっていた）。 「ボスを倒す」の行は倒すまで終わらない。 風林火山の「山」は足が 1/10。 モード選択の下のボタンの高さ
 - **5-5 のカットインがヨシュカだった** (`js/battle/fx.js` + `arena-render.js`): レシピの `bossId` を見る。 振り返りの手引き `docs/process/ONBOARDING_MODE_PLAYBOOK.md`
-- **録音の無い 7 行の台本** `docs/voice/script-story-add.csv` と `build.mjs --story-add`。 共通基盤に `survivor.story`（MyCryptoPortfolio #85）
+- **録音の無い 7 行の台本** `docs/voice/script-story-add.csv` と `build.mjs --story-add`。 共通基盤に `survivor.story`（MyCryptoPortfolio #85・#86。 名鑑の達磨「二入四行論」）
