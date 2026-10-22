@@ -15,7 +15,7 @@ import { naviHide } from "./navi.js";
 import { startMenuBgm } from "./ui-sound.js";
 import { getHero, localizedHeroName } from "./heroes.js";
 import { img, REGULATION_NORMAL } from "./constants.js";
-import { LANDS, STORY_PLAN, STORY_MAP, loadStory, storyUnlocked, currentStoryId, stageArt, stageRole, TOWER, MAP_TERRITORY, stagePos, landOf, bondBurst, PROLOGUE, prologueDone, allStoryIds } from "./story.js";
+import { LANDS, STORY_PLAN, STORY_MAP, loadStory, storyUnlocked, currentStoryId, stageArt, stageRole, TOWER, FINAL_BOSS_ID, MAP_TERRITORY, stagePos, landOf, bondBurst, PROLOGUE, prologueDone, allStoryIds } from "./story.js";
 import { naviFrameUrl, NAVI_POSES } from "./navi.js";
 import { playSe } from "./audio.js";
 import { SFX } from "./constants.js";
@@ -53,8 +53,8 @@ export function installStoryMap({ onBack } = {}) {
 
 // ---------------- 入り口 (= プロローグをまだ通っていなければ、 説明なしでいきなり 1-0) ----------------
 export function enterStory() {
-  if (!prologueDone(loadStory())) { startStoryStage(PROLOGUE.id); return; }
-  showStoryMap();
+  if (!prologueDone(loadStory())) { startStoryStage(PROLOGUE.id); return; }   // 自分でワイプを掛ける (= 二重に掛けると内側が捨てられて真っ暗のまま止まる)
+  playWipe(() => showStoryMap(), { label: "STORY // MAP" });
 }
 
 // ---------------- S-A ワールドマップ ----------------
@@ -110,6 +110,8 @@ export function renderStoryMap() {
       lands.appendChild(_tower(towerUp, _seenTower !== null && !_seenTower && towerUp));
       continue;
     }
+    // 新しく晴れたランド (= 前のランドを取り戻した) の一言
+    if (open && fresh && !_seenOpen.has(land.id)) { const prev = LANDS.find((l) => l.w === land.w - 1); if (prev) _say(`story.map.freed.${prev.id}`); }
     // 札 (= 押すと S-B)
     const pl = document.createElement("button");
     pl.type = "button";
@@ -138,6 +140,7 @@ export function renderStoryMap() {
     plates.appendChild(pl);
   }
   _drawRoads(p, towerUp);
+  if (towerUp && _seenTower === false) _say("story.map.towerUp");
   _seenOpen = openLands; _seenTower = towerUp;
 }
 
@@ -147,7 +150,7 @@ function _tower(up, rise) {
   el.className = "story-tower" + (up ? " is-up" : " is-sealed") + (rise && !reduceFx() ? " is-rise" : "");
   el.setAttribute("aria-hidden", "true");
   el.innerHTML = up
-    ? `<i class="story-tower__fog"></i><i class="story-tower__fog story-tower__fog--2"></i><i class="story-tower__bolt"></i><img class="story-tower__fao" src="${img(TOWER.fao)}" alt="" draggable="false" onerror="this.remove()" /><img class="story-tower__zeus" src="${img(TOWER.zeus)}" alt="" draggable="false" onerror="this.remove()" />`
+    ? `<i class="story-tower__fog"></i><i class="story-tower__fog story-tower__fog--2"></i><i class="story-tower__bolt"></i><img class="story-tower__fao" src="${img(TOWER.top)}" alt="" draggable="false" onerror="this.remove()" /><img class="story-tower__zeus" src="${img(TOWER.zeus)}" alt="" draggable="false" onerror="this.remove()" />`
     : `<i class="story-tower__fog"></i><span class="story-tower__seal"></span>`;
   return el;
 }
@@ -165,6 +168,18 @@ function _drawRoads(p, towerUp) {
   ];
   const st = (land) => { const l = LANDS.find((x) => x.id === land); const first = `${l.w}-1`, last = `${l.w}-${STORY_PLAN[l.w]}`; return p.cleared.includes(last) ? "done" : (storyUnlocked(first, p) ? "now" : "far"); };
   svg.innerHTML = segs.map((s) => `<path class="story-road story-road--${st(s.to)}" d="${s.d}" vector-effect="non-scaling-stroke" />`).join("");
+}
+
+/** 地図の上の一言 (= マインちゃん。 ランドを取り戻したとき・塔が立ったとき。 6 秒で消える) */
+let _sayTimer = 0;
+function _say(key) {
+  const el = _$("storyMapSay"), txt = _$("storyMapSayText");
+  if (!el || !txt) return;
+  const s = t(key, ""); if (!s || s === key) return;
+  txt.textContent = s;
+  el.classList.remove("hidden");
+  clearTimeout(_sayTimer);
+  _sayTimer = setTimeout(() => el.classList.add("hidden"), 6500);
 }
 
 /** ランドへズーム (= 0.55 秒) してから次の画面へ */
@@ -314,6 +329,8 @@ export function renderStageInfo(id) {
 export async function startStoryStage(id) {
   const r = STORY_MAP[id];
   if (!r) return;
+  // 始める前のシーン (= 5-5: COVID の口上。 1 回だけ)
+  if (r.sceneBefore && !_sceneShown.has(r.sceneBefore)) { showScene(r.sceneBefore, () => startStoryStage(id)); return; }
   // SPEC-165 3-1: 木を先に (= 根を取るまでほかを押せない。 「ステージへ ▶」で始める)
   if (r.treeFirst && !owns(getMeta(), ROOT_ID) && !_treeDone) {
     const T = await import("./skill-tree.js");
@@ -381,12 +398,17 @@ export function showScene(sceneId, onDone, { once = false } = {}) {
   scr.classList.remove("hidden");
   _renderScene();
 }
-const SCENE_POSES = { prologue: ["shy", "smile", "pointer", "cross", "wave"], ending: ["hooray", "smile", "wave"] };   // NAVI_POSES の名前
+const SCENE_POSES = { prologue: ["shy", "smile", "pointer", "cross", "wave"], final: [null, null, "pointer"], ending: [null, "smile", "wave"] };   // NAVI_POSES の名前 (= null は相手が話す)
+/** 相手が話す行 (= COVID-19。 顔は Image/Enemies/681.png、 名前は図鑑のまま) */
+const SCENE_SPEAKER = { final: ["covid", "covid", "mine"], ending: ["covid", "mine", "mine"] };
 function _renderScene() {
   const sc = _scene, scr = _$("storySceneScreen");
   if (!sc || !scr) return;
   const ln = sc.lines[sc.i], last = sc.i >= sc.lines.length - 1;
-  const face = _$("storySceneFace"); if (face) face.src = _poseUrl(ln.pose);
+  const who = SCENE_SPEAKER[sc.id]?.[sc.i] ?? "mine";
+  const face = _$("storySceneFace"); if (face) { face.src = who === "covid" ? img(`Image/Enemies/${FINAL_BOSS_ID}.png`) : _poseUrl(ln.pose); face.classList.toggle("is-foe", who === "covid"); }
+  const nm = _$("storySceneName"); if (nm) nm.textContent = who === "covid" ? "COVID-19" : "NAVI // MINE";
+  scr.classList.toggle("is-foe", who === "covid");
   const txt = _$("storySceneText"); if (txt) { txt.textContent = ""; _typeInto(txt, ln.text); }
   const pg = _$("storySceneNo"); if (pg) pg.textContent = `${sc.i + 1} / ${sc.lines.length}`;
   const next = _$("storySceneNext"); if (next) next.textContent = last ? t("story.scene.toMap", "ワールドマップへ ▶") : t("story.scene.next", "▶");

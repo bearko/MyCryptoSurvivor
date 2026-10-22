@@ -58,8 +58,9 @@ export function stageRole(recipe) {
 export function stageArt(land, role) {
   return `Image/Achievements/piece_${land.ach[role] ?? land.ach.plain}.png`;
 }
-/** 中央にそびえる 天候操作装置ゼウス (= 傘シリーズのレジェンダリー) と 頂上の 覚醒魔王ファオ */
-export const TOWER = Object.freeze({ zeus: "Image/Extensions/5190.png", fao: "Image/Enemies/373.png" });
+/** 中央にそびえる 天候操作装置ゼウス (= 傘シリーズのレジェンダリー) と 頂上の ラスボス COVID-19 (= 681。 作者 2026-10-22) */
+export const FINAL_BOSS_ID = 681;
+export const TOWER = Object.freeze({ zeus: "Image/Extensions/5190.png", top: `Image/Enemies/${FINAL_BOSS_ID}.png` });
 /** ランドごとのステージ数 (= 全 25。 行がまだ無いランドは「準備中」として並ぶ) */
 export const STORY_PLAN = Object.freeze({ 1: 5, 2: 5, 3: 5, 4: 5, 5: 5 });
 
@@ -347,8 +348,9 @@ export const STORY_STAGES = Object.freeze([
     features: { ce: true, tree: true, shop: true, reroll: true, sig: true, chests: true, pots: true, magicCards: true, rare: true, shooters: true, gimmick: true, variants: true, mission: true, items: ["heal", "magnet", "thunder", "watch", "robot"], bossChest: true },
     shop: { atMs: null, offers: [], only: false, price: null, mustBuy: false },
     chestTimesMs: null, rareAtMs: 20000, gimmick: "beads", variants: { giant: 0.1, runner: 0.1 }, mission: null,
-    boss: { id: 373, atMs: 240000, warnMs: 10000, hpMul: 0.3, dmgMul: 0.6, thunder: false },   // 覚醒魔王ファオ 13,500 HP (= 1 ステージぶんの装備の DPS 400〜600 で 25〜35 秒)
+    boss: { id: 681, atMs: 240000, warnMs: 10000, hpMul: 0.25, dmgMul: 0.6, thunder: false },   // COVID-19 15,000 HP (= 1 ステージぶんの装備の DPS 400〜600 で 25〜40 秒)。 作者 2026-10-22: ラスボスはファオではなく COVID
     unlock: "mode:NORMAL",
+    sceneBefore: "final",   // 始める前に COVID のシーン
     sceneAfter: "ending",   // クリアの画面のあとにエンディングのシーン → マップ
     showGum: true,
     lines: { intro: "story.5-5.intro", mid: [{ on: "bossWarn", key: "story.5-5.mid" }], clear: "story.5-5.clear" },

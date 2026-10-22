@@ -35,7 +35,7 @@ test("W1〜W5 の 25 行: 1 行 1 要素 (= 新しい feature は 1 つずつ)�
   assert.deepEqual(STORY_MAP["5-1"].shop.must, ["reroll", "ban"]); assert.deepEqual(STORY_MAP["5-2"].shop.must, ["sig"]);
   assert.equal(STORY_MAP["5-3"].bondOn, "missionClear"); assert.equal(STORY_MAP["5-3"].mission.must, false);
   assert.equal(storyOverride(STORY_MAP["5-4"]).spawnIntervalMs, null); assert.equal(storyOverride(STORY_MAP["5-4"]).shopTimesMs, null); assert.equal(storyOverride(STORY_MAP["5-4"]).maxEnemies, null);
-  assert.equal(storyOverride(STORY_MAP["5-5"]).bossId, 373); assert.equal(storyOverride(STORY_MAP["5-5"]).bossAtMs, 240000); assert.equal(storyOverride(STORY_MAP["5-5"]).missionFree, true); assert.equal(storyOverride(STORY_MAP["5-5"]).chestTimesMs, null);
+  assert.equal(storyOverride(STORY_MAP["5-5"]).bossId, S.FINAL_BOSS_ID); assert.equal(S.FINAL_BOSS_ID, 681, "ラスボスは COVID-19 (= 作者 2026-10-22)"); assert.equal(storyOverride(STORY_MAP["5-5"]).bossAtMs, 240000); assert.equal(storyOverride(STORY_MAP["5-5"]).missionFree, true); assert.equal(storyOverride(STORY_MAP["5-5"]).chestTimesMs, null);
   assert.equal(STORY_MAP["5-5"].unlock, "mode:NORMAL");
   for (const l of S.LANDS) { assert.ok(l.ach?.plain && l.ach?.shadow && l.ach?.boss, `${l.id}: ach`); assert.equal(String(l.ach.boss).slice(0, 2), "20", "金は King 就任 (200nn)"); assert.equal(String(l.ach.plain).slice(-1), "1"); assert.equal(String(l.ach.shadow).slice(-1), "2"); }
   assert.equal(S.stageArt(S.LANDS[0], "boss"), "Image/Achievements/piece_20011.png"); assert.equal(S.stageArt(S.LANDS[2], "shadow"), "Image/Achievements/piece_10092.png"); assert.equal(S.stageArt(S.LANDS[2], "plain"), "Image/Achievements/piece_10091.png");
@@ -47,7 +47,7 @@ test("W1〜W5 の 25 行: 1 行 1 要素 (= 新しい feature は 1 つずつ)�
   assert.deepEqual(storyOverride(STORY_MAP["4-1"]).variants, { giant: 0.2, runner: 0.2 }); assert.equal(storyOverride(STORY_MAP["4-2"]).gimmick, "beads");
   assert.equal(storyOverride(STORY_MAP["4-3"]).missionAtMs, 8000); assert.equal(storyOverride(STORY_MAP["4-3"]).missionMust, true); assert.equal(storyOverride(STORY_MAP["4-4"]).missionAtMs, null);
   assert.equal(STORY_MAP["4-5"].shadow.mode, "defeat"); assert.deepEqual(STORY_MAP["4-5"].bond.unlock, ["passive:thunder30"]);
-  assert.equal(STORY_MAP["3-1"].treeFirst, true); assert.equal(STORY_MAP["3-2"].hero, "select"); assert.equal(STORY_MAP["3-5"].boss.id, 171);
+  assert.equal(STORY_MAP["3-1"].treeFirst, true); assert.equal(STORY_MAP["3-2"].hero, "select"); assert.equal(STORY_MAP["3-5"].boss.id, 171); assert.equal(STORY_MAP["5-5"].sceneBefore, "final");
   assert.equal(storyOverride(STORY_MAP["3-5"]).bossId, 171); assert.equal(storyOverride(STORY_MAP["3-5"]).bossAtMs, 45000); assert.equal(storyOverride(STORY_MAP["3-4"]).shooters.ids[0], 166); assert.equal(storyOverride(STORY_MAP["3-3"]).shooters, null);
   let seen = new Set();
   for (const s of STORY_STAGES) {
