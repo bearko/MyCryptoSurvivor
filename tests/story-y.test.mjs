@@ -77,4 +77,6 @@ test("ブレードは大きく速く、 重なった敵にも当たる。 雑魚
   assert.match(en, /const isBoss = enemyId === \(easyStage\(\)\?\.bossId \?\? stage\.bossEnemyId\);/);
   assert.match(en, /const timeUp = b\.stageElapsedMs >= STAGE_DURATION_MS && !\(isStory\(\) && storyStage\(\)\?\.clear\?\.kind === "boss"\);/);
   assert.equal(STORY_MAP["5-5"].boss.atMs, 120000);
+  assert.match(read("../js/battle/fx.js"), /const bossId = easyStage\(\)\?\.bossId \?\? stage\.bossEnemyId;/, "カットインもレシピのボス");
+  assert.match(read("../js/battle/arena-render.js"), /ENEMY_SPECS\[easyStage\(\)\?\.bossId \?\? stage\?\.bossEnemyId\]/);
 });
