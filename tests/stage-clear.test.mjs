@@ -46,7 +46,7 @@ test("SPEC-161: ステージクリアから開いた木には「復活する」�
   assert.match(tree, /\["stageTransitionSkillTree", "stageTransitionModal", true, false, true\]/);
   assert.match(tree, /_next = !!next && !retry;/);
   assert.match(tree, /h\("button", \{ class: "tree-tool tree-retry tree-next", type: "button", onclick: nextFromTree \}/, "同じ場所 (= .tree-retry)");
-  assert.match(tree, /function nextFromTree\(\) \{\n\s+_returnTo = null;[\s\S]*?closeSkillTree\(\);\n\s+import\("\.\/battle\/stage-transition\.js"\)\.then\(\(m\) => m\.proceedToNextStage\(\)\)/);
+  assert.match(tree, /function nextFromTree\(\) \{\n\s+_returnTo = null;[\s\S]*?closeSkillTree\(\);\n[\s\S]*?\(S\.isStory\(\) \? m\.proceedStory\(\) : m\.proceedToNextStage\(\)\)/);   // SPEC-165: ストーリーは旅の演出へ
   const st = read("../js/battle/stage-transition.js");
   assert.match(st, /export async function proceedToNextStage\(\)/);
   assert.match(st, /const _onProceedClick = \(\) => \(isStory\(\) \? proceedStory\(\) : proceedToNextStage\(\)\);/);   // SPEC-165: ストーリーは次の行へ

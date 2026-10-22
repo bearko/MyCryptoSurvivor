@@ -60,7 +60,7 @@ import { isEasy, easyStage, easyHeroMul, stageCount } from "../easy.js";   // SP
 import { newRunStats, tickRunStats } from "./run-stats.js";   // SPEC-148
 import { tickLessons, clearLessons, showLesson } from "../lesson.js";   // SPEC-147
 import { clearBossChest } from "./boss-chest.js";   // SPEC-153
-import { isStory, storyStage, landOf } from "../story.js";   // SPEC-165
+import { isStory, storyStage, landOf, loadStory, mergeStartExt } from "../story.js";   // SPEC-165
 import { resetStoryBattle, tickStoryBattle } from "./story-battle.js";   // SPEC-165
 
 let _canvas = null;
@@ -188,7 +188,7 @@ export function startBattle(hero) {
   b.lastRareSpawnMs    = performance.now();
   // SPEC-162: 装備はステージをまたいで残る (= ステージ 1 だけ空から。 同じステージのやり直しは入ったときの装備に戻す)
   carryOwnedExtensions(state.currentStageIdx ?? 0);
-  if (isStory() && storyStage()?.startExt?.length) state.ownedExtensions = storyStage().startExt.map((o) => ({ ...o }));   // SPEC-165: 開始装備はレシピが決める (= 空ならヒーローの初期武器)
+  if (isStory()) state.ownedExtensions = mergeStartExt(loadStory().loadout?.owned ?? [], storyStage()?.startExt ?? []);   // SPEC-165: 覚えている持ち物 ＋ レシピの開始装備 (= 作者 2026-10-22: 装備はストーリーのあいだ残る。 空ならヒーローの初期武器)
   state.killCount       = 0;                    // SPEC-009: 撃破カウンタ
   state.lastRunStats    = null;                 // SPEC-009: snapshot
   resetBuffs();                                 // SPEC-011: 強化系列の効果リセット (= 引き継いだ強化は下で掛け直す)
@@ -245,7 +245,9 @@ export function startBattle(hero) {
   // SPEC-111: RTA でもショップ (= 作者の決定 2026-10-20。 RTA の記録は作者のものだけなので、 レギュレーションの版は分けない)
   // SPEC-147: 初めての人は EASY で遊び方を覚えるので、 ショップはステージ 1 から (= SPEC-146 の「初回はショップなし」は外した)
   if (isShopMode()) {
-    resetShopForStage(state.currentStageIdx ?? 0);
+    const s = resetShopForStage(state.currentStageIdx ?? 0);
+    const lo = isStory() ? loadStory().loadout : null;   // SPEC-165: 財布と固有スキルの段もストーリーのあいだ残る (= タイトルに戻っても)
+    if (lo) { s.ce = lo.ce; s.sigLevel = lo.sigLevel; s.sigCe = lo.sigCe; }
   } else {
     state.shop = null;
     hideShopBar();

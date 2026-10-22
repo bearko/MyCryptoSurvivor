@@ -96,7 +96,7 @@ test("EASY の上書きと同じ形 (= storyOverride): ボスが無ければ Inf
 test("進み: 一本道・遊び直し・自己ベスト・全クリア", () => {
   const st = store();
   let p = loadStory(st);
-  assert.deepEqual(p, { cleared: [], best: {}, bonds: [] });
+  assert.deepEqual(p, { cleared: [], best: {}, bonds: [], loadout: null });
   assert.equal(storyUnlocked("1-1", p), true); assert.equal(storyUnlocked("1-2", p), false); assert.equal(currentStoryId(p), "1-1");
   p = withCleared(p, "1-1", { sec: 14, kills: 8 }); saveStory(p, st);
   assert.equal(storyUnlocked("1-2", loadStory(st)), true); assert.equal(currentStoryId(p), "1-2");
@@ -107,7 +107,29 @@ test("進み: 一本道・遊び直し・自己ベスト・全クリア", () => 
   assert.equal(storyAllCleared(p), false);
   const all = allStoryIds().reduce((q, id) => withCleared(q, id), p);
   assert.equal(storyAllCleared(all), true); assert.equal(currentStoryId(all), null);
-  st.setItem("mcs.story", "{broken"); assert.deepEqual(loadStory(st), { cleared: [], best: {}, bonds: [] });
+  st.setItem("mcs.story", "{broken"); assert.deepEqual(loadStory(st), { cleared: [], best: {}, bonds: [], loadout: null });
+});
+
+test("SPEC-165: 持ち物 (= 装備・CE・ヒーロー) はストーリーのあいだ残り、 開始装備はレシピと重ねる", () => {
+  // 覚える → 読む (= 壊れた値は整える)
+  const st = new Map(); st.getItem = (k) => st.get(k) ?? null; st.setItem = (k, v) => st.set(k, v);
+  let p = loadStory(st);
+  p = S.withLoadout(p, { hero: 4006, owned: [{ extId: 10, level: 3 }, { extId: "2", level: "2" }, { bad: 1 }], ce: 48.5, sigLevel: 2, sigCe: 10 }); saveStory(p, st);
+  assert.deepEqual(loadStory(st).loadout, { hero: 4006, owned: [{ extId: 10, level: 3 }, { extId: 2, level: 2 }], ce: 48.5, sigLevel: 2, sigCe: 10 });
+  assert.equal(S.normalizeLoadout("x"), null);
+  assert.deepEqual(S.normalizeLoadout({}), { hero: S.STORY_HERO, owned: [], ce: 0, sigLevel: 1, sigCe: 0 });
+  // レシピの開始装備は底 (= 同じ品は高いほう。 持っていない品は足す。 持ち物にしか無い品も残る)
+  assert.deepEqual(S.mergeStartExt([{ extId: 10, level: 3 }, { extId: 1, level: 1 }], [{ extId: 10, level: 1 }, { extId: 16, level: 1 }]),
+    [{ extId: 10, level: 3 }, { extId: 16, level: 1 }, { extId: 1, level: 1 }]);
+  assert.deepEqual(S.mergeStartExt([], [{ extId: 10, level: 1 }]), [{ extId: 10, level: 1 }]);
+  assert.deepEqual(S.mergeStartExt(undefined, undefined), []);
+  // 戦闘の始まりは持ち物を重ね、 クリアの瞬間に覚える。 木の「次のノードに挑む」はストーリーなら旅の演出へ
+  const bi = read("js/battle/index.js"), stt = read("js/battle/stage-transition.js"), tree = read("js/skill-tree.js"), sm = read("js/story-map.js");
+  assert.match(bi, /mergeStartExt\(loadStory\(\)\.loadout\?\.owned \?\? \[\], storyStage\(\)\?\.startExt \?\? \[\]\)/);
+  assert.match(bi, /if \(lo\) \{ s\.ce = lo\.ce; s\.sigLevel = lo\.sigLevel; s\.sigCe = lo\.sigCe; \}/);
+  assert.match(stt, /markStoryLoadout\(\{ hero: state\.ownedHero\?\.heroId \?\? STORY_HERO/);
+  assert.match(tree, /S\.isStory\(\) \? m\.proceedStory\(\) : m\.proceedToNextStage\(\)/);
+  assert.match(sm, /loadStory\(\)\.loadout\?\.hero \?\? state\.ownedHero\?\.heroId \?\? STORY_HERO/);
 });
 
 test("クリア条件 (= 純関数): 倒す・耐える・到達・集める・ボス", () => {
