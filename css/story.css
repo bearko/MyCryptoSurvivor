@@ -132,3 +132,12 @@
 
 /* 結果の画面の「マップへ」 */
 .result-story-map { margin-top: 0.3rem; }
+
+/* 絆の報酬ラッシュの札 (= 越えた瞬間に真ん中へ。 body に置く) */
+.story-burst { position: fixed; left: 50%; top: 38%; z-index: 70; transform: translate(-50%, -50%) scale(0.8); opacity: 0; min-width: 210px; padding: 10px 16px 12px; border-radius: 14px; border: 2px solid #ffe17a; background: rgba(12, 8, 24, 0.92); color: #fff; box-shadow: 0 0 28px rgba(255, 225, 122, 0.6); pointer-events: none; transition: opacity 0.3s ease, transform 0.35s cubic-bezier(0.2, 0.9, 0.2, 1.2); }
+.story-burst--in { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+.story-burst--out { opacity: 0; transform: translate(-50%, -60%) scale(1.05); }
+.story-burst__head { font-size: 12px; letter-spacing: 1px; color: #ffe17a; font-weight: 900; margin-bottom: 6px; text-align: center; }
+.story-burst ul { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 3px 12px; font-size: 13px; }
+.story-burst li b { color: #9ef0b0; margin-right: 4px; }
+.story-burst__unlock { grid-column: 1 / -1; color: #d9c6ff; font-size: 12px; text-align: center; }

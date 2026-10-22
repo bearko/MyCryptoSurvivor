@@ -23,6 +23,15 @@ export const LANDS = Object.freeze([
   { w: 4, id: "lime",       bg: "Image/Backgrounds/2405.png", color: "#9ad33a", dir: "e", guardian: "seiryu",  cryptid: "Image/Cryptids/04_Lime.png",       sector: "Image/LandSectors/04_Lime_" },
   { w: 5, id: "grape",      bg: "Image/Backgrounds/2605.png", color: "#9b5de5", dir: "c", guardian: "zeus",    cryptid: "Image/Cryptids/06_Grape.png",      sector: "Image/LandSectors/06_Grape_" },
 ]);
+/**
+ * 絆の報酬ラッシュ (= 作者の方針 2026-10-22: 報酬は早めに・一気に。 シャドーを越えた瞬間に足もとへ降る)
+ *   ce: CE の宝石の総量 / cards: マジックカード (= その場でレベルアップ) / heal: ハート / gum: クリアの GUM に上乗せ
+ *   レシピの bond.burst で上書き。 gifts はこれまでどおり bond.gifts (= その場で財布へ)
+ */
+export const BOND_BURST = Object.freeze({ ce: 120, cards: 2, heal: true, gum: 30 });
+export function bondBurst(recipe) {
+  return recipe?.bond ? { ...BOND_BURST, ...(recipe.bond.burst ?? {}) } : null;
+}
 /** ステージの札の飾り (= ランドセクタのレアリティ)。 大型ボス = Legendary / 中ボス (シャドー) = Rare / それ以外 = Common */
 export const SECTOR_RARITY = Object.freeze({ boss: "5_Legendary", shadow: "3_Rare", plain: "1_Common" });
 export function stageRole(recipe) {
@@ -52,6 +61,7 @@ export const HEAL_DROP_BELOW = 0.5;
  *   shop.atMs: null / spawn: null / chestTimesMs: null : 本番と同じ (= NORMAL のステージ 1 の表。 W5)
  *   mission: null         : features.mission のまま、 ふつうの持ちかけ (= 本番)
  *   bondOn                : この出来事で絆を結ぶ (= "missionClear"。 シャドーの無い絆)
+ *   bond.burst            : 越えた瞬間の報酬ラッシュの上書き (= 既定は BOND_BURST。 { ce, cards, heal, gum })
  *   clear                 : { kind: "kills", n } | { kind: "survive", sec } | { kind: "reach", points: [{ x, y }] } | { kind: "collect", n } | { kind: "boss" }
  *                           | { kind: "shadowSurvive", sec } | { kind: "shadowDefeat" } (= シャドーの試練。 §6)
  *   shadow                : { id, giver, mode: "survive" | "defeat", atMs, hp, dmg, speed, moves, aura: { spawnMul, speedMul } } (= battle/shadow.js)
@@ -304,7 +314,7 @@ export const STORY_STAGES = Object.freeze([
     shop: { atMs: null, offers: [], only: false, price: null, mustBuy: false },
     heal: { below: 0.5 },
     shadow: { id: "xiangyu", giver: 893, mode: "defeat", atMs: 30000, hp: 2800, dmg: 16, speed: 55, moves: { slam: 4000, charge: 7000 }, first: { slam: 2500, charge: 5000 }, slam: { radius: 150, dmg: 18 } },   // 2,800 HP (= 本番の店 2 回ぶんの DPS 80〜120 で 25〜35 秒)
-    bond: { who: "xiangyu", gifts: 3 },
+    bond: { who: "xiangyu", gifts: 3, burst: { ce: 200, cards: 3, heal: true, gum: 50 } },   // 本番の湧きの中なので厚め
     showGum: true,
     lines: { intro: "story.5-4.intro", mid: [{ on: "shadow", key: "story.5-4.mid" }], clear: "story.5-4.clear" },
   },

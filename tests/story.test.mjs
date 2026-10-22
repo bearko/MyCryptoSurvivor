@@ -33,6 +33,11 @@ test("W1〜W5 の 25 行: 1 行 1 要素 (= 新しい feature は 1 つずつ)�
   assert.equal(storyOverride(STORY_MAP["5-4"]).spawnIntervalMs, null); assert.equal(storyOverride(STORY_MAP["5-4"]).shopTimesMs, null); assert.equal(storyOverride(STORY_MAP["5-4"]).maxEnemies, null);
   assert.equal(storyOverride(STORY_MAP["5-5"]).bossId, 373); assert.equal(storyOverride(STORY_MAP["5-5"]).bossAtMs, 240000); assert.equal(storyOverride(STORY_MAP["5-5"]).missionFree, true); assert.equal(storyOverride(STORY_MAP["5-5"]).chestTimesMs, null);
   assert.equal(STORY_MAP["5-5"].unlock, "mode:NORMAL");
+  assert.deepEqual(S.bondBurst(STORY_MAP["2-4"]), { ce: 120, cards: 2, heal: true, gum: 30 }); assert.equal(S.bondBurst(STORY_MAP["5-4"]).ce, 200); assert.equal(S.bondBurst(STORY_MAP["1-1"]), null);
+  const sb = read("js/battle/story-battle.js");
+  assert.match(sb, /markStoryBond\(r\.bond\.who\); _bondBurst\(r, st\);/, "シャドーを越えた瞬間にラッシュ");
+  assert.match(sb, /if \(r\.bond\?\.gifts\) addShopGift\(r\.bond\.gifts\);/, "ギフト券はその場で財布へ");
+  assert.match(read("js/battle/stage-transition.js"), /key: "bond", n: 1, rate: bg, gum: bg/, "GUM は内訳の行");
   assert.deepEqual(storyOverride(STORY_MAP["4-1"]).variants, { giant: 0.2, runner: 0.2 }); assert.equal(storyOverride(STORY_MAP["4-2"]).gimmick, "beads");
   assert.equal(storyOverride(STORY_MAP["4-3"]).missionAtMs, 8000); assert.equal(storyOverride(STORY_MAP["4-3"]).missionMust, true); assert.equal(storyOverride(STORY_MAP["4-4"]).missionAtMs, null);
   assert.equal(STORY_MAP["4-5"].shadow.mode, "defeat"); assert.deepEqual(STORY_MAP["4-5"].bond.unlock, ["passive:thunder30"]);

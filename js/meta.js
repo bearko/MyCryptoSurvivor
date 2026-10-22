@@ -42,7 +42,7 @@ export function gumRows({ sec = 0, kills = 0, stageNos = [], level = 0, gifts = 
 
 /** 行をまとめる (= ステージごとの行を、 この挑戦の行に。 純関数) */
 export function mergeGumRows(...lists) {
-  const order = ["sec", "kills", "stage", "level", "gifts"];
+  const order = ["sec", "kills", "stage", "level", "gifts", "bond"];   // SPEC-165: 絆の報酬
   const by = new Map();
   for (const r of lists.flat()) {
     const o = by.get(r.key) ?? { key: r.key, n: 0, rate: r.rate, gum: 0, ...(r.key === "kills" ? { kills: 0 } : {}), ...(r.key === "stage" ? { stageNos: [] } : {}) };
