@@ -259,6 +259,7 @@ export const ENEMY_SPECS = {
   171:  { hp: 12000, dmg: 30, speed: 45, radius: 48, xpValue:  60 },    // SPEC-163: ボスの HP はここが最終値 (= BOSS_MOVES.hpMul は 1)。 4:00 の装備の単体 DPS 400〜600 で 20〜30 秒
   373:  { hp: 45000, dmg: 30, speed: 50, radius: 52, xpValue: 100 },   // 覚醒魔王ファオ (= SPEC-163: 引き継いだ装備の単体 DPS 1,500〜2,500 で 20〜30 秒)
   1189: { hp: 100000, dmg: 30, speed: 55, radius: 50, xpValue: 150 },  // yamap (= SPEC-163: 単体 DPS 3,000〜4,500 で 25〜30 秒)
+  681:  { hp: 60000, dmg: 30, speed: 50, radius: 52, xpValue: 150 },   // COVID-19 (= SPEC-165: ストーリーのラスボス。 5-5 では hpMul 0.25 = 15,000)
   // SPEC-033: rare enemies (= ~2× normal hp、 +20-30 xp)
   // SPEC-034: radius × 1.5 (= 視認性向上、 当たり判定もそのまま大きく)
   147:  { hp:  160, dmg: 16, speed: 78, radius: 21, xpValue:  20, isRare: true },   // クリーパー フラペチーノ ドッピオ (= 14 → 21)

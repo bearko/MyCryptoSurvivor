@@ -216,3 +216,15 @@ body.is-rift #app { animation: story-warp 2.6s ease-in forwards; }
 @keyframes story-dark { 0%, 55% { opacity: 0; } 100% { opacity: 1; } }
 :root[data-reduce-fx] .story-scene__face { animation: none; }
 @media (prefers-reduced-motion: reduce) { body.is-rift #app { animation: story-dark 0.6s forwards; } .story-rift__ring { animation: none; opacity: 0; } .story-rift__dark { animation-duration: 0.6s; } }
+
+/* 地図の上の一言 (= ランドを取り戻した・塔が立った) */
+.story-map__say { position: absolute; left: 12px; right: 12px; bottom: calc(max(16px, var(--safe-b)) + 52px); z-index: 7; display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 12px; background: rgba(8, 6, 18, 0.9); border: 1.5px solid rgba(58, 160, 232, 0.6); box-shadow: 0 0 18px rgba(58, 160, 232, 0.35); font-size: 12px; line-height: 1.5; animation: story-say-in 0.4s ease both; }
+.story-map__say.hidden { display: none; }
+.story-map__say i { flex: none; width: 40px; height: 40px; border-radius: 8px; background: url("https://raw.githubusercontent.com/bearko/mycryptoheroes/main/Image/Characters/navi_ain_06_smile.png") center top / cover no-repeat #234; image-rendering: pixelated; }
+@keyframes story-say-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+/* シーンで相手 (= COVID-19) が話すとき */
+.story-scene.is-foe .story-scene__box { border-color: rgba(239, 95, 138, 0.7); box-shadow: 0 0 24px rgba(239, 95, 138, 0.35); }
+.story-scene.is-foe .story-scene__name { color: #ef5f8a; }
+.story-scene__face.is-foe { width: 256px; height: 256px; filter: drop-shadow(0 0 28px rgba(239, 95, 138, 0.7)); }
+/* スマホでヒーロー選択の × が共通基盤のチャットのボタンと重なる (= 作者の報告 2026-10-22) */
+@media (max-width: 640px) { .hero-modal__close-x { margin-right: 56px; } }

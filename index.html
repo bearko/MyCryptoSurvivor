@@ -215,6 +215,7 @@
         <feDisplacementMap in="SourceGraphic" scale="22" />
       </filter>
     </svg>
+    <div class="story-map__say hidden" id="storyMapSay" role="status"><i></i><span id="storyMapSayText"></span></div>
     <button class="btn btn--ghost story-map__back" id="storyMapBack">◀ モード選択へ</button>
     <p class="story-map__hint" id="storyMapHint"></p>
   </section>
@@ -234,7 +235,7 @@
     <button type="button" class="story-scene__tap" id="storySceneTap" aria-label="next"></button>
     <img class="story-scene__face" id="storySceneFace" alt="" draggable="false" />
     <div class="story-scene__box">
-      <span class="story-scene__name">NAVI // MINE</span>
+      <span class="story-scene__name" id="storySceneName">NAVI // MINE</span>
       <p class="story-scene__text" id="storySceneText"></p>
       <div class="story-scene__foot"><span class="story-scene__no num" id="storySceneNo"></span><button type="button" class="btn story-scene__next" id="storySceneNext">▶</button></div>
     </div>

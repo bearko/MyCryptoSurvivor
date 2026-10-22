@@ -85,7 +85,7 @@ function _wireOnce() {
   _wired = true;
 
   _$("btnModeEasy")?.addEventListener("click", () => _pick(REGULATION_NORMAL, { easy: true }));   // SPEC-147
-  _$("btnModeStory")?.addEventListener("click", () => { state.storyId = null; state.easyMode = false; state.rtaMode = false; playWipe(() => { hideModeSelect(); enterStory(); }, { label: "STORY" }); });   // SPEC-165: プロローグをまだ通っていなければ、 説明なしでいきなり 1-0
+  _$("btnModeStory")?.addEventListener("click", () => { state.storyId = null; state.easyMode = false; state.rtaMode = false; hideModeSelect(); enterStory(); });   // SPEC-165: プロローグをまだ通っていなければ、 説明なしでいきなり 1-0 (= ワイプは enterStory の側で 1 回だけ。 二重に掛けると内側が捨てられて真っ暗のまま止まった)
   _$("btnModeNormal")?.addEventListener("click", () => _pick(REGULATION_NORMAL));
   _$("btnModeAbsolute")?.addEventListener("click", () => _pick(REGULATION_ABSOLUTE));
   // SPEC-040: RTA は NORMAL のルール + rtaMode

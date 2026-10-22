@@ -71,6 +71,12 @@
       "isBoss":  true
     },
     {
+      "enemyId": 681,
+      "name":    { "ja": "COVID-19", "en": "COVID-19" },
+      "stats":   { "hp": 6000, "phy": 40, "int": 40, "agi": 1 },
+      "isBoss":  true
+    },
+    {
       "enemyId": 147,
       "name":    { "ja": "クリーパー フラペチーノ ドッピオ", "en": "Creeper-frappuccino doppio" },
       "stats":   { "hp": 160, "phy": 16, "int": 12, "agi": 12 },

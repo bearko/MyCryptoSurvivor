@@ -33,6 +33,13 @@ export const BOSS_MOVES = {
     first: { charge: 2500, spiral: 5000 },
     spiral: { durMs: 2400, everyMs: 110, arms: 3, turn: 0.32, speed: 210, dmg: 14, iconId: 5055 },
   },
+  681: {   // COVID-19 (= SPEC-165: ストーリーのラスボス。 ウイルスをバラまく = 放射が多くて速い)
+    hpMul: 1,
+    moves: { burst: 3800, charge: 6500, slam: 9000 },
+    first: { burst: 2500, charge: 5000, slam: 7000 },
+    burst: { n: 14, speed: 190, dmg: 14, iconId: 5055 },
+    slam: { radius: 160, dmg: 30 },
+  },
   1189: {  // yamap (= ステージ 3。 周回はいままでどおり重なる)
     hpMul: 1,
     moves: { charge: 4600, slam: 8000, burst: 5000 },
