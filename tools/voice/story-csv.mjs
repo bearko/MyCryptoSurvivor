@@ -31,6 +31,8 @@ for (const id of allStoryIds()) {
   if (r?.sceneAfter) sceneRows(r.sceneAfter);
 }
 push("story.lose");
+// 1 回目の録音 (= 1〜49 本目) のあとに足した分 (= 番号を変えないよう末尾に。 プロローグ 1-0 の 2 本)
+for (const k of ["story.1-0.intro", "story.1-0.reach"]) push(k);
 
 const csv = (list) => "\ufeff" + list.map(([, , l]) => `"${l.replace(/"/g, '""')}"`).join("\n") + "\n";
 const mine = rows.filter((r) => r[1] === "mine"), others = rows.filter((r) => r[1] !== "mine");
