@@ -86,6 +86,11 @@ export const HEAL_DROP_BELOW = 0.5;
  *   bond.burst            : 越えた瞬間の報酬ラッシュの上書き (= 既定は BOND_BURST。 { ce, cards, heal, gum })
  *   map                   : { x, y } ワールド詳細 (S-B) での札の位置 (= 画面の %。 無ければ MAP_PATH)
  *   spawn.from            : "sides" = 左右と下からだけ湧く (= 1-0。 上のゴールの側からは来ない)
+ *   pickup                : { kind, x, y } 始まりに置くアイテム (= 1-4 のパンケーキ。 取るまで光る道筋)
+ *   require               : "item:<kind>" クリアに要る拾い物 (= 1-4)
+ *   pre                   : { points } クリアの前の移動の練習 (= 1-5。 全部めぐると shadow.trigger "afterPre" が出る)
+ *   shadow.mode "spar"    : 小手調べ (= 削れるが HP が大きい)。 spar.hits 回当てたら店が開き、 ランクアップのあと HP が spar.hpAfter に
+ *   shop.rankupFx         : 買った瞬間にランクアップの演出 (= 1-5)。 shop.priceMul: 値段の倍率 (= 2-2)
  *   bounds                : { x, yMax } 見えない壁 (= 1-0。 |x| ≤ x・y ≤ yMax。 上は自由)
  *   clear                 : { kind: "kills", n } | { kind: "survive", sec } | { kind: "reach", points: [{ x, y }] } | { kind: "collect", n } | { kind: "boss" }
  *                           | { kind: "shadowSurvive", sec } | { kind: "shadowDefeat" } (= シャドーの試練。 §6)
@@ -136,18 +141,24 @@ export const STORY_STAGES = Object.freeze([
     clear: { kind: "survive", sec: 30 }, targetSec: 30,
     spawn: { everyMs: 1000, pool: [101, 124], max: 8 }, enemyMul: { hp: 1, dmg: 0.8 },
     features: { ce: true, items: ["heal"] },
-    heal: { below: HEAL_DROP_BELOW },
+    pickup: { kind: "heal", x: 0, y: -340 },   // パンケーキを確定で置く (= 光る道筋で誘導。 取るまでクリアしない)
+    require: "item:heal",
     showGum: true,
-    lines: { intro: "story.1-4.intro", mid: [{ on: "healDrop", key: "story.1-4.mid" }], clear: "story.1-4.clear" },
+    lines: { intro: "story.1-4.intro", mid: [{ on: "item:heal", key: "story.1-4.mid" }], clear: "story.1-4.clear" },
   },
   {
-    id: "1-5", world: 1, hero: 10001, startExt: [{ extId: 10, level: 2 }, { extId: 2, level: 1 }],
-    clear: { kind: "reach", points: [{ x: 0, y: 600 }, { x: 380, y: -200 }, { x: -380, y: -700 }] }, targetSec: 45,   // 3 つの地点を順に (= 約 2,400 px の道)
-    spawn: { everyMs: 1100, pool: [101, 124], max: 8 }, enemyMul: { hp: 1, dmg: 0.5 },
-    features: { ce: true },
+    id: "1-5", world: 1, hero: 10001, startExt: [{ extId: 10, level: 1 }, { extId: 2, level: 1 }],
+    // 移動の練習 (pre) → 真ん中に呂布 (= 小手調べ。 削れるが HP が大きい) → 3 回当てる → マインが促す → 店 (エリートブレードだけ・ただ) →
+    // ランクアップの演出 → 呂布の HP が小さくなる → 倒す → クリア (= 作者の依頼 2026-10-22)
+    clear: { kind: "shadowDefeat" }, targetSec: 60,
+    pre: { points: [{ x: 0, y: 600 }, { x: 380, y: -200 }, { x: -380, y: -700 }] },   // 3 つの地点を順に (= 約 2,400 px の道)
+    spawn: { everyMs: 1300, pool: [101, 124], max: 6 }, enemyMul: { hp: 1, dmg: 0.4 }, heroMul: { hp: 2 },
+    features: { ce: true, shop: true },
+    shop: { atMs: [], offers: [10], only: true, price: 0, mustBuy: true, rankupFx: true },   // 自動では開かない (= 3 回当てたら開く)
+    shadow: { id: "lubu", giver: 481, mode: "spar", trigger: "afterPre", at: { x: 0, y: 0 }, hp: 3000, dmg: 8, speed: 55, moves: { charge: 5200 }, first: { charge: 3000 } },
+    spar: { hits: 3, hpAfter: 320 },   // 3 回当てたら店。 ランクアップのあとは HP 320 (= エリートブレードで数発)
     showGum: true,
-    cameo: { giver: 481 },   // ゴースト・呂布 (= 「試練はまだ先だ」)
-    lines: { intro: "story.1-5.intro", mid: [{ on: "reach", key: "story.1-5.mid" }], clear: "story.1-5.clear" },
+    lines: { intro: "story.1-5.intro", mid: [{ on: "reach", key: "story.1-5.mid" }, { on: "shadow", key: "story.1-5.spar" }, { on: "sparHits", key: "story.1-5.hits" }, { on: "rankup", key: "story.1-5.rankup" }], clear: "story.1-5.clear" },
   },
   // ---- W2 ストロベリー: 選ぶ・集める・初めての試練 (= 30〜60 秒) ----
   {
@@ -164,7 +175,7 @@ export const STORY_STAGES = Object.freeze([
     clear: { kind: "kills", n: 40 }, targetSec: 50,
     spawn: { everyMs: 900, pool: [101, 124], max: 9 }, enemyMul: { hp: 1.3, dmg: 0.5 },
     features: { ce: true, shop: true },
-    shop: { atMs: [20000], offers: [10, 16, 14], only: true, price: null, mustBuy: true },   // ランクアップ / 攻撃力 (りんご) / クールダウン (馬): 全部は買えない
+    shop: { atMs: [20000], offers: [10, 16, 14, 2], only: true, price: null, mustBuy: true, priceMul: 1.6 },   // ランクアップ / 攻撃力 (りんご) / クールダウン (馬) / 棍棒: 4 品・値段 ×1.6 で全部は買えない (= 作者 2026-10-22)
     showGum: true,
     lines: { intro: "story.2-2.intro", mid: [{ on: "shopOpen", key: "story.2-2.mid" }], clear: "story.2-2.clear" },
   },
@@ -466,6 +477,11 @@ export function storyUnlocked(id, progress) {
   if (i === 0) return true;
   return progress.cleared.includes(ids[i - 1]);
 }
+/** 次のステージが同じランドか (= 違えば結果の画面は「マップへ」だけ。 純関数) */
+export function nextInSameLand(id) {
+  const n = nextStoryId(id);
+  return !!n && n.split("-")[0] === String(id).split("-")[0];
+}
 /** 次の id (= 無ければ null。 純関数) */
 export function nextStoryId(id) {
   const ids = allStoryIds();
@@ -528,6 +544,7 @@ export function reachedPoint(pt, px, py, radius = REACH_RADIUS) {
 export function storyCleared(recipe, ctx) {
   const c = recipe?.clear;
   if (!c) return false;
+  if (recipe.require && !(ctx.picked?.has?.(recipe.require.replace(/^item:/, "")))) return false;   // 1-4: パンケーキを取るまで
   switch (c.kind) {
     case "kills":   return (ctx.kills | 0) >= c.n;
     case "survive": return (ctx.elapsedMs ?? 0) >= c.sec * 1000;

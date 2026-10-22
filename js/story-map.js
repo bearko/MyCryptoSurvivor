@@ -13,9 +13,9 @@ import { t, tpl, onLangChange, getLang } from "./i18n.js";
 import { playWipe } from "./transition.js";
 import { naviHide } from "./navi.js";
 import { startMenuBgm } from "./ui-sound.js";
-import { getHero, localizedHeroName } from "./heroes.js";
+import { getHero, localizedHeroName, heroImg } from "./heroes.js";
 import { img, REGULATION_NORMAL } from "./constants.js";
-import { LANDS, STORY_PLAN, STORY_MAP, loadStory, storyUnlocked, currentStoryId, stageArt, stageRole, TOWER, FINAL_BOSS_ID, MAP_TERRITORY, stagePos, landOf, bondBurst, PROLOGUE, prologueDone, allStoryIds } from "./story.js";
+import { LANDS, STORY_PLAN, STORY_MAP, loadStory, storyUnlocked, currentStoryId, stageArt, stageRole, TOWER, FINAL_BOSS_ID, MAP_TERRITORY, stagePos, landOf, bondBurst, PROLOGUE, prologueDone, allStoryIds, nextInSameLand } from "./story.js";
 import { naviFrameUrl, NAVI_POSES } from "./navi.js";
 import { playSe } from "./audio.js";
 import { setRichTextN } from "./rich-text.js";   // 固有名詞と用語に色
@@ -116,7 +116,7 @@ export function renderStoryMap() {
     // 札 (= 押すと S-B)
     const pl = document.createElement("button");
     pl.type = "button";
-    pl.className = "story-plate" + (open ? " is-open" : " is-sealed") + (done ? " is-done" : "") + (open && !done ? " is-current" : "");
+    pl.className = "story-plate" + (open ? " is-open" : " is-sealed") + (done ? " is-done" : "") + (open && !done ? " is-current" : "") + (open && fresh && !_seenOpen.has(land.id) ? " is-new" : "");
     pl.dataset.land = land.id;
     pl.disabled = !open;
     pl.style.cssText = `left:${m.plate.x}%;top:${m.plate.y}%`;
@@ -205,7 +205,7 @@ export function showStoryWorld(landId) {
   renderStoryWorld(landId);
   const scr = _$("storyWorldScreen");
   scr?.classList.remove("hidden");
-  if (scr && !reduceFx()) { scr.classList.add("is-in"); requestAnimationFrame(() => requestAnimationFrame(() => scr.classList.remove("is-in"))); }
+  if (scr && !reduceFx()) { scr.classList.add("is-in"); requestAnimationFrame(() => requestAnimationFrame(() => scr.classList.remove("is-in"))); setTimeout(() => scr.classList.remove("is-in"), 80); }
 }
 export function hideStoryWorld() { _$("storyWorldScreen")?.classList.add("hidden"); }
 
@@ -243,7 +243,7 @@ export function renderStoryWorld(landId) {
     btn.innerHTML = (foe ? `<img class="story-stage__foe" src="${img(foe)}" alt="" draggable="false" onerror="this.remove()" />` : "")
       + `<span class="story-stage__art" style="background-image:url('${img(stageArt(land, role))}')"></span><b class="story-stage__id num">${id}</b>` + (label ? `<span class="story-stage__lbl">${esc(label)}</span>` : "");
     if (has) btn.title = t(`story.${id}.name`, id);
-    if (open) btn.addEventListener("click", () => showStageInfo(id));
+    if (open) btn.addEventListener("click", (e) => { if (_travel) return; e.stopPropagation(); showStageInfo(id); });
     nodes.appendChild(btn);
   }
   // 道 (= 札の中心をつなぐ。 札は % で置いているので、 線も % で引ける)
@@ -253,6 +253,35 @@ export function renderStoryWorld(landId) {
     const mx = (a.pos.x + b.pos.x) / 2;
     return `<path class="story-road story-road--${st}" d="M${a.pos.x},${a.pos.y} C ${mx},${a.pos.y} ${mx},${b.pos.y} ${b.pos.x},${b.pos.y}" vector-effect="non-scaling-stroke" />`;
   }).join("");
+}
+
+/**
+ * 次のステージへの旅 (= 結果の「次のステージへ」。 詳細の画面に戻り、 次の札が開き、 ヒーローがいまの札から歩いていき、 着いたら暗転して次へ)。
+ * 押すと飛ばせる
+ */
+let _travel = null;
+export function travelToNext(fromId, toId) {
+  const land = landOf(toId);
+  if (!land) { startStoryStage(toId); return; }
+  state.storyId = null;
+  showStoryWorld(land.id);
+  const scr = _$("storyWorldScreen"), nodes = _$("storyWorldNodes");
+  const a = nodes?.querySelector(`.story-stage[data-story="${fromId}"]`), b = nodes?.querySelector(`.story-stage[data-story="${toId}"]`);
+  if (!scr || !a || !b) { startStoryStage(toId); return; }
+  b.classList.add("is-reveal");
+  setTimeout(naviHide, 50);   // 結果の画面の吹き出しが残らないように
+  const hero = document.createElement("img");
+  hero.className = "story-world__hero";
+  hero.src = heroImg(state.ownedHero?.heroId ?? 10001); hero.alt = ""; hero.draggable = false;
+  hero.style.left = a.style.left; hero.style.top = a.style.top;
+  nodes.appendChild(hero);
+  let done = false;
+  const go = () => { if (done) return; done = true; scr.removeEventListener("click", go); hero.remove(); _travel = null; startStoryStage(toId); };
+  _travel = { go };
+  scr.addEventListener("click", go);
+  const slow = reduceFx();
+  setTimeout(() => { hero.classList.add("is-walk"); hero.style.left = b.style.left; hero.style.top = b.style.top; }, slow ? 50 : 700);
+  setTimeout(go, slow ? 400 : 3000);
 }
 
 // ---------------- S-C ステージの説明 ----------------
@@ -375,7 +404,8 @@ export function backToStoryMap() {
   const id = state.storyId;
   const r = id ? STORY_MAP[id] : null;
   state.storyId = null;
-  const land = id && id !== PROLOGUE.id ? landOf(id) : null;
+  // ランドの最後 (= 次が別のランド) は地図へ (= 靄が晴れて次のランドが現れるのを見る)。 途中なら詳細へ
+  const land = id && id !== PROLOGUE.id && nextInSameLand(id) ? landOf(id) : null;
   const go = () => { if (land) showStoryWorld(land.id); else showStoryMap(); };
   if (r?.scene && !_sceneShown.has(r.scene)) { showScene(r.scene, go); return; }   // プロローグ (= 裂け目のあと)
   if (r?.sceneAfter && loadStory().cleared.includes(id)) { showScene(r.sceneAfter, go, { once: true }); return; }   // エンディング

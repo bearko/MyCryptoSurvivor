@@ -123,7 +123,9 @@ await p.evaluate(({ K, BUY }) => {
     if (vis("missionReward")) { document.querySelector("#missionRewardChoices button")?.click(); return { st: "reward" }; }
     if (vis("levelUpModal")) { document.querySelector("#levelUpModal .levelup-card")?.click(); return { st: "levelup" }; }
     if (vis("bossChestModal")) { document.querySelector("#bossChestModal button, #bossChestModal .boss-chest__next")?.click(); document.getElementById("bossChestModal")?.click(); return { st: "chest" }; }
-    if (vis("storySceneScreen")) { document.getElementById("storySceneNext")?.click(); return { st: "scene" }; }   // SPEC-165: シーン (= 5-5 の前の COVID・エンディング) は押して進める
+    if (vis("storySceneScreen")) { document.getElementById("storySceneNext")?.click(); return { st: "scene" }; }
+    { const ru = document.querySelector(".story-rankup"); if (ru) { ru.click(); return { st: "rankup" }; } }   // 1-5 のランクアップの演出は飛ばす
+    if (vis("storyWorldScreen") && document.querySelector(".story-world__hero")) { document.getElementById("storyWorldScreen")?.click(); return { st: "travel" }; }   // 旅の演出は飛ばす   // SPEC-165: シーン (= 5-5 の前の COVID・エンディング) は押して進める
     if (vis("heroSelectModal")) { const tiles = [...document.querySelectorAll("#heroSelectGrid .hero-tile")].filter((t) => !t.classList.contains("hero-tile--locked")); (tiles[tiles.length - 1] ?? tiles[0])?.click(); document.getElementById("heroSelectCta")?.click(); return { st: "hero" }; }   // SPEC-165: 3-2 (= 新しく仲間になった人を選ぶ)
     if (vis("skillTreeScreen")) { const root = document.querySelector('.tnode[data-id="root"]'); if (root && !root.classList.contains("has")) { root.click(); root.click(); } document.querySelector("#skillTreeScreen .tree-go:not([disabled])")?.click(); return { st: "tree" }; }   // SPEC-165: 3-1 (= 根を取って「ステージへ」)
     if (vis("stageTransitionModal")) return { st: "clear", idx, el };

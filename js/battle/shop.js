@@ -242,7 +242,8 @@ function _priceOf(o, offer) {
   if (state.shop.welcome && !offer.isLL) return 0;   // 最初の店のサービス (= どれでも 1 品)
   // SPEC-130: 優先がオンなら、 持っている券で買える品はどれも券で (= 買うたびに残りの枚数で見直す)。 オフなら CE で払う
   if (_giftFirst && giftable(offer, state.shop.gifts)) return 0;
-  const price = shopPrice(offer, state.currentStageIdx ?? 0, _merchant.quirk, o.sale, buffPriceCut(o.extId));   // SPEC-131: 強化の目利き
+  let price = shopPrice(offer, state.currentStageIdx ?? 0, _merchant.quirk, o.sale, buffPriceCut(o.extId));   // SPEC-131: 強化の目利き
+  if (_storyShop()?.priceMul) price = Math.round(price * _storyShop().priceMul);   // SPEC-165: 2-2 は全部は買えない値段
   // SPEC-165: 「買うまで閉じられない」店では、 手持ちが足りなければ手持ちの額に (= 拾った CE で買う体験は残し、 詰ませない)
   const sr = _storyShop();
   if (sr?.mustBuy && price > state.shop.ce) return Math.max(1, state.shop.ce);
@@ -269,7 +270,12 @@ export function buyOffer(extId) {
   else if (price === 0 && s.welcome) s.welcome = false;
   else if (price === 0) s.gifts -= giftCost(offer) ?? 1;   // SPEC-127: 段で枚数が変わる
   else s.ce -= price;
+  const lvBefore = (state.ownedExtensions ?? []).find((x) => String(x.extId) === String(extId))?.level ?? 0;
   grantPick(extId);
+  if (_storyShop()?.rankupFx) {   // SPEC-165: 1-5 のランクアップの演出 (= 終わったら店を閉じる)
+    const lvAfter = (state.ownedExtensions ?? []).find((x) => String(x.extId) === String(extId))?.level ?? lvBefore + 1;
+    import("./story-fx.js").then((m) => m.playRankup(extId, lvBefore, lvAfter, () => { closeShop(); state.battle?.story?.events?.push("rankup"); }));
+  }
   // SPEC-163: 同じ札を続けて買える (= 買っても札は残り、 次の段の値段になる)。 15 段を 1 回の店で何段も登れる。
   //   もう上がらない (= 最大・LL のあと) なら売り切れ。 セールは 1 回だけ
   o.sale = false;

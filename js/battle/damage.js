@@ -49,6 +49,7 @@ export function hitEnemy(idx, dmg, src = "other") {
   if (dmgInt <= 0) return false;
   if (e.invuln) { e.hitFreezeMs = HIT_FREEZE_MS; fxEnemyHit(e); return false; }   // SPEC-165: 耐える試練のシャドーは削れない (= 光るだけ)
   e.hp -= dmgInt;
+  if (e.isShadow) state.battle.story?.events?.push("shadowHit");   // SPEC-165: 1-5 の小手調べ (= 3 回当てたら店)
   if (!e.isProp && src !== "gimmick") recordDealt(state.run?.stats, src, dmgInt, !!e.isBoss);   // SPEC-148: 壺・宝箱と、 仕掛け (= 自分の火力ではない) は数えない
   e.hitFreezeMs = HIT_FREEZE_MS;
   fxEnemyHit(e);   // SPEC-045: 一瞬白く光る

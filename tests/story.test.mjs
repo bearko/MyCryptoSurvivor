@@ -28,6 +28,10 @@ test("W1〜W5 の 25 行: 1 行 1 要素 (= 新しい feature は 1 つずつ)�
   assert.deepEqual(STORY_STAGES.filter((s) => s.world === 4).map((s) => s.id), ["4-1", "4-2", "4-3", "4-4", "4-5"]);
   assert.deepEqual(STORY_STAGES.filter((s) => s.world === 5).map((s) => s.id), ["5-1", "5-2", "5-3", "5-4", "5-5"]);
   assert.equal(STORY_STAGES.length, 25, "25 行そろった");
+  assert.equal(STORY_MAP["1-5"].shadow.mode, "spar"); assert.equal(STORY_MAP["1-5"].spar.hits, 3); assert.equal(STORY_MAP["1-5"].shop.rankupFx, true); assert.deepEqual(STORY_MAP["1-4"].pickup, { kind: "heal", x: 0, y: -340 });
+  assert.equal(S.storyCleared(STORY_MAP["1-4"], { elapsedMs: 31000, picked: new Set() }), false, "パンケーキを取るまでクリアしない"); assert.equal(S.storyCleared(STORY_MAP["1-4"], { elapsedMs: 31000, picked: new Set(["heal"]) }), true);
+  assert.equal(S.nextInSameLand("1-4"), true); assert.equal(S.nextInSameLand("1-5"), false); assert.equal(S.nextInSameLand("5-5"), false);
+  assert.equal(STORY_MAP["2-2"].shop.offers.length, 4); assert.equal(STORY_MAP["2-2"].shop.priceMul, 1.6);
   assert.equal(S.PROLOGUE.id, "1-0"); assert.equal(STORY_MAP["1-0"].scene, "prologue"); assert.ok(!S.allStoryIds().includes("1-0"), "プロローグは 25 に数えない"); assert.equal(S.prologueDone({ cleared: ["1-0"] }), true); assert.equal(S.prologueDone({ cleared: [] }), false);
   assert.equal(storyOverride(STORY_MAP["1-0"]).maxEnemies, 3, "プロローグは敵が数体だけ"); assert.equal(storyOverride(STORY_MAP["1-0"]).spawnFrom, "sides"); assert.deepEqual(storyOverride(STORY_MAP["1-0"]).bounds, { x: 240, yMax: 260 }); assert.equal(storyOverride(STORY_MAP["1-1"]).bounds, null); assert.equal(S.reachedPoint({ x: 0, y: -640 }, -240, -650, 260), true); assert.equal(S.reachedPoint({ x: 0, y: -640 }, -240, -650), false);
   assert.match(read("js/battle/story-battle.js"), /story\.goal\.reachHere/, "目印の文は帯の文と別"); assert.equal(STORY_MAP["5-5"].sceneAfter, "ending");
@@ -54,7 +58,8 @@ test("W1〜W5 の 25 行: 1 行 1 要素 (= 新しい feature は 1 つずつ)�
   for (const s of STORY_STAGES) {
     assert.ok(s.targetSec >= 15 && (s.world > 1 || s.targetSec <= 60), `${s.id}: ${s.targetSec}s`);
     assert.ok(["kills", "survive", "reach", "collect", "boss", "shadowSurvive", "shadowDefeat"].includes(s.clear.kind), s.id);
-    if (s.shadow) { assert.ok(ui[`shadow.${s.shadow.id}.appear`]?.ja && ui[`shadow.${s.shadow.id}.win`]?.ja, s.id); assert.ok(["survive", "defeat"].includes(s.shadow.mode)); assert.equal(s.bond?.who, s.shadow.id, "試練は絆を結ぶ"); }
+    if (s.shadow) { assert.ok(ui[`shadow.${s.shadow.id}.appear`]?.ja && ui[`shadow.${s.shadow.id}.win`]?.ja, s.id); assert.ok(["survive", "defeat", "spar"].includes(s.shadow.mode)); if (s.shadow.mode !== "spar") assert.equal(s.bond?.who, s.shadow.id, "試練は絆を結ぶ"); }
+    if (s.require) assert.ok(s.pickup && `item:${s.pickup.kind}` === s.require, `${s.id}: require は pickup と対`);
     if (s.chestDrop) for (const k of (Array.isArray(s.chestDrop) ? s.chestDrop : [s.chestDrop])) assert.ok(s.features.chests && (k === "card" ? s.features.magicCards : s.features.items?.includes(k)), `${s.id}: chestDrop は features にも`);
     // 壊せるもの (= 宝箱・壺と、 そこから出る棒磁石) は 1 つの要素として数える (= 2-3)
     const group = (k) => (k === "chests" || k === "pots" || k === "items:magnet" ? "breakables" : (k === "rare" || k === "magicCards" ? "rare" : (k === "items:thunder" || k === "items:heal" || k === "bossChest" ? "boss" : (k === "items:watch" || k === "items:robot" ? "helpers" : k))));
@@ -73,7 +78,7 @@ test("W1〜W5 の 25 行: 1 行 1 要素 (= 新しい feature は 1 つずつ)�
   assert.equal(storyAllows("ce", STORY_MAP["1-1"]), false); assert.equal(storyAllows("shop", STORY_MAP["1-1"]), false);
   assert.deepEqual([STORY_MAP["1-2"].shop.price, STORY_MAP["1-2"].shop.mustBuy, STORY_MAP["1-2"].shop.only], [0, true, true]);
   assert.equal(storyAllows("items:heal", STORY_MAP["1-4"]), true); assert.equal(storyAllows("items:magnet", STORY_MAP["1-4"]), false);
-  assert.equal(STORY_MAP["1-5"].clear.kind, "reach");
+  assert.equal(STORY_MAP["1-5"].clear.kind, "shadowDefeat"); assert.equal(STORY_MAP["1-5"].pre.points.length, 3, "移動の練習は 3 地点");
   assert.equal(storyAllows("tree", STORY_MAP["1-5"]), false, "木は W3 まで出さない");
   assert.equal(storyAllows("anything", null), true, "ストーリーの外では何でも出る");
 });
@@ -109,7 +114,7 @@ test("クリア条件 (= 純関数): 倒す・耐える・到達・集める・�
   assert.equal(storyCleared(r({ kind: "survive", sec: 30 }), { elapsedMs: 29999 }), false); assert.equal(storyCleared(r({ kind: "survive", sec: 30 }), { elapsedMs: 30000 }), true);
   assert.equal(S.reachedPoint({ x: 0, y: -600 }, 0, -600 + REACH_RADIUS + 1), false); assert.equal(S.reachedPoint({ x: 0, y: -600 }, 10, -590), true);
   assert.equal(storyCleared(r({ kind: "reach", points: [{ x: 0, y: 1 }, { x: 2, y: 3 }] }), { reachIdx: 1 }), false); assert.equal(storyCleared(r({ kind: "reach", points: [{ x: 0, y: 1 }, { x: 2, y: 3 }] }), { reachIdx: 2 }), true);
-  assert.equal(S.reachPoints({ kind: "reach", x: 5, y: 6 }).length, 1); assert.equal(S.reachPoints(STORY_MAP["1-5"].clear).length, 3);
+  assert.equal(S.reachPoints({ kind: "reach", x: 5, y: 6 }).length, 1); assert.equal(S.reachPoints({ kind: "reach", points: STORY_MAP["1-5"].pre.points }).length, 3);
   assert.equal(storyCleared(r({ kind: "collect", n: 40 }), { ce: 40 }), true);
   assert.equal(storyCleared(r({ kind: "boss" }), { bossDefeated: true }), true);
   assert.deepEqual(storyGoal(r({ kind: "survive", sec: 30 }), { elapsedMs: 12400 }), { kind: "survive", now: 12, goal: 30 });
