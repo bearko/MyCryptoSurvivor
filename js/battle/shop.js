@@ -165,6 +165,7 @@ let _offers = [];        // [{extId, sale, sold}]
 let _paidRerolls = 0;
 let _gamaFree = 0;
 let _boughtHere = 0;
+let _rerolledHere = 0, _bannedHere = 0, _sigHere = 0;   // SPEC-165: 5-1・5-2 の「するまで出られない」
 let _healed = 0;   // この店に来たときに戻った HP (= 店の上に出す)
 
 export function isShopOpen() { return _open; }
@@ -185,6 +186,7 @@ export function openShop({ opening = false } = {}) {
   if (sr) { _merchant = MERCHANTS.find((m) => m.id === "marco") ?? _merchant; s.nextMerchant = _merchant.id; }
   _paidRerolls = 0;
   _boughtHere = 0;
+  _rerolledHere = 0; _bannedHere = 0; _sigHere = 0;
   // ウェーブの節目のひと息: 来店で HP が少し戻る (= 作者の依頼 2026-10-20)
   _healed = canHeal() ? shopHealAmount(state.stats.hp, state.statsMax.hp) : 0;   // SPEC-112: 不老不死の探求のあいだは戻らない
   if (_healed > 0) {
@@ -289,7 +291,9 @@ export function sigUpPrice(lv = sigLevel()) {
 /** SPEC-128: 次の段まであといくら (= 値段 − 積み立て。 もう上がらなければ null) */
 export function sigUpRest(s = state.shop) {
   const price = sigUpPrice(s?.sigLevel ?? 1);
-  return price == null ? null : Math.max(0, price - (s?.sigCe ?? 0));
+  const rest = price == null ? null : Math.max(0, price - (s?.sigCe ?? 0));
+  if (rest != null && _storyShop()?.must?.includes("sig") && _sigHere === 0 && rest > (s?.ce ?? 0)) return Math.max(1, s?.ce ?? 0);   // SPEC-165: 5-2 は手持ちで上げられる
+  return rest;
 }
 
 /** SPEC-110: 固有スキルを 1 段上げる (= 常設の札) */
@@ -302,6 +306,7 @@ export function buySigUp() {
   s.sigCe = 0;
   s.sigLevel += 1;
   _boughtHere += 1;
+  _sigHere += 1; state.battle?.story?.events?.push("sigUp");   // SPEC-165
   playSe(SFX.PICK_BUFF, 100, 0.55);
   renderShop();
   return true;
@@ -447,6 +452,7 @@ export function banOffer(extId) {
   if (!canBan(offerFor(extId), state.battle?.starterExtId, s.bansLeft)) return;
   s.bans.push(_offers[i].extId);
   s.bansLeft -= 1;
+  _bannedHere += 1; state.battle?.story?.events?.push("ban");   // SPEC-165
   s.locked = s.locked.filter((x) => String(x) !== String(extId));
   _offers.splice(i, 1);
   renderShop();
@@ -469,6 +475,7 @@ export function rerollShop() {
   _offers = _offers.filter((o) => !o.sold && s.locked.includes(o.extId));
   _offers.forEach((o) => { o.banArm = false; });
   _fillOffers(last);
+  _rerolledHere += 1; state.battle?.story?.events?.push("reroll");   // SPEC-165
   renderShop();
   playSe(SFX.LEVEL_UP, 100, 0.4);
 }
@@ -507,7 +514,8 @@ export function renderShop() {
   const m = _merchant;
   const sr = _storyShop();   // SPEC-165
   modal.classList.toggle("shop-modal--story", !!sr?.only);
-  modal.classList.toggle("shop-modal--story-basic", isStory() && !storyAllows("reroll"));   // SPEC-165: リロール・お断り・固有スキルは W5 で開く
+  modal.classList.toggle("shop-modal--story-basic", isStory() && !storyAllows("reroll"));   // SPEC-165: リロール・お断りは 5-1 で開く
+  modal.classList.toggle("shop-modal--nosig", isStory() && !storyAllows("sig"));   // 固有スキルは 5-2 で開く
   const face = document.getElementById("shopMerchantImg");
   if (face) { face.src = img(`Image/Enemies/${m.enemyId}.png`); face.alt = t(`shop.m.${m.id}.name`, m.id); }
   _text("shopMerchantName", t(`shop.m.${m.id}.name`, m.id));
@@ -653,9 +661,11 @@ export function renderShop() {
   const leave = document.getElementById("shopLeave");
   if (leave) {
     // SPEC-165: ストーリーで「買うまで閉じられない」 (= mustBuy)
-    const gate = !!sr?.mustBuy && _boughtHere === 0;
+    const done = { reroll: _rerolledHere, ban: _bannedHere, sig: _sigHere, buy: _boughtHere };
+    const left = (sr?.must ?? []).filter((k) => !done[k]);   // SPEC-165: 5-1 リロールとお断り / 5-2 固有スキル
+    const gate = (!!sr?.mustBuy && _boughtHere === 0) || left.length > 0;
     leave.disabled = gate;
-    leave.textContent = gate ? t("story.shop.buy", "買おう！")
+    leave.textContent = left.length > 0 ? t(`story.shop.must.${left[0]}`, "やってみよう！") : gate ? t("story.shop.buy", "買おう！")
       : (_boughtHere === 0 && perk("skipHeal") > 0
         ? t("shop.leaveHeal", "何も買わずに出る（HP 回復）")
         : t("shop.leave", "次のウェーブへ ▶"));

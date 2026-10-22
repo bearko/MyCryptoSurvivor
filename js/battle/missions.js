@@ -245,7 +245,7 @@ export function tickMissions() {
 
   // SPEC-147: EASY は決まった時刻に 1 回だけ (= ステージ 2。 ★1・短め)。 ほかのステージでは出さない
   const ez = easyStage();
-  if (ez) {
+  if (ez && !ez.missionFree) {   // SPEC-165: missionFree なら本番と同じ持ちかけ
     if (ez.missionAtMs != null && !m.easyDone && now >= ez.missionAtMs && !b.bossSpawned) {
       m.easyDone = true;
       _openOffer(MISSION_MAP[ez.missionId ?? "alexander"] ?? MISSION_MAP.alexander, { star: ez.missionStar ?? 1, durS: ez.missionDurS ?? 20, must: !!ez.missionMust });   // SPEC-165: ストーリーは相手も★も決め打ち

@@ -67,7 +67,11 @@ export function tickStoryBattle() {
   if (!st || !r || b.gameOver || st.done) return;
   if ((state.killCount | 0) >= 1) storySay("firstKill");
   // 拾った・開けた などの出来事 (= field.js が積む。 その瞬間の一言)
-  while (st.events.length) storySay(st.events.shift());
+  while (st.events.length) {
+    const ev = st.events.shift();
+    storySay(ev);
+    if (r.bondOn && ev === r.bondOn && r.bond?.who && !st.bondDone) { st.bondDone = true; markStoryBond(r.bond.who); storySay("bond"); }   // SPEC-165: 5-3 (= ミッション達成で絆)
+  }
   _tickShadow(r, st, b);
   // 1-4: HP が減ったらハートを足もとに (= 拾うまで湧きを止める)
   if (r.heal && !st.healDropped && state.stats.hp <= state.statsMax.hp * r.heal.below) {

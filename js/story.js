@@ -39,6 +39,10 @@ export const HEAL_DROP_BELOW = 0.5;
  *   gimmick               : "beads" | "punch" | "trojan" 土地の仕掛け (= features.gimmick のとき)
  *   mission               : { id, atMs, star, durS, must } 決まった時刻に持ちかける (= must なら断れない)
  *   chestDrop             : 宝箱の中身 (= 1 つなら文字列、 列なら n 個目の宝箱の中身)
+ *   shop.must             : 店で「するまで出られない」こと (= ["reroll", "ban"] / ["sig"]。 5-1・5-2)
+ *   shop.atMs: null / spawn: null / chestTimesMs: null : 本番と同じ (= NORMAL のステージ 1 の表。 W5)
+ *   mission: null         : features.mission のまま、 ふつうの持ちかけ (= 本番)
+ *   bondOn                : この出来事で絆を結ぶ (= "missionClear"。 シャドーの無い絆)
  *   clear                 : { kind: "kills", n } | { kind: "survive", sec } | { kind: "reach", points: [{ x, y }] } | { kind: "collect", n } | { kind: "boss" }
  *                           | { kind: "shadowSurvive", sec } | { kind: "shadowDefeat" } (= シャドーの試練。 §6)
  *   shadow                : { id, giver, mode: "survive" | "defeat", atMs, hp, dmg, speed, moves, aura: { spawnMul, speedMul } } (= battle/shadow.js)
@@ -251,6 +255,62 @@ export const STORY_STAGES = Object.freeze([
     showGum: true,
     lines: { intro: "story.4-5.intro", mid: [{ on: "shadow", key: "story.4-5.mid" }, { on: "shooter", key: "story.4-5.shooter" }], clear: "story.4-5.clear" },
   },
+  // ---- W5 グレープ: 本番の形 (= 90〜300 秒) ----
+  {
+    id: "5-1", world: 5, hero: "keep", startExt: [],
+    clear: { kind: "kills", n: 80 }, targetSec: 90,
+    spawn: { everyMs: 800, pool: [101, 124, 134], max: 12 }, enemyMul: { hp: 1.3, dmg: 0.5 },
+    features: { ce: true, tree: true, shop: true, reroll: true, items: ["heal"] },
+    shop: { atMs: [15000, 50000], offers: [], only: false, price: null, mustBuy: false, must: ["reroll", "ban"] },   // リロールとお断りを 1 回ずつ使うまで出られない
+    heal: { below: 0.5 },
+    showGum: true,
+    lines: { intro: "story.5-1.intro", mid: [{ on: "shopOpen", key: "story.5-1.shop" }, { on: "reroll", key: "story.5-1.reroll" }, { on: "ban", key: "story.5-1.ban" }], clear: "story.5-1.clear" },
+  },
+  {
+    id: "5-2", world: 5, hero: "keep", startExt: [],
+    clear: { kind: "kills", n: 100 }, targetSec: 100,
+    spawn: { everyMs: 750, pool: [101, 124, 134], max: 12 }, enemyMul: { hp: 1.3, dmg: 0.5 },
+    features: { ce: true, tree: true, shop: true, reroll: true, sig: true, chests: true, magicCards: true },
+    shop: { atMs: [15000, 55000], offers: [], only: false, price: null, mustBuy: false, must: ["sig"] },   // 固有スキルを 1 段上げるまで出られない (= 足りなければ手持ちの CE で)
+    chestTimesMs: [30000], chestDrop: "card",
+    showGum: true,
+    lines: { intro: "story.5-2.intro", mid: [{ on: "shopOpen", key: "story.5-2.shop" }, { on: "sigUp", key: "story.5-2.sig" }, { on: "card", key: "story.5-2.card" }], clear: "story.5-2.clear" },
+  },
+  {
+    id: "5-3", world: 5, hero: "keep", startExt: [],
+    clear: { kind: "survive", sec: 90 }, targetSec: 90,
+    spawn: { everyMs: 900, pool: [101, 124, 134], max: 12 }, enemyMul: { hp: 1.3, dmg: 0.5 },
+    features: { ce: true, tree: true, shop: true, reroll: true, sig: true, mission: true },
+    shop: { atMs: [35000], offers: [], only: false, price: null, mustBuy: false },
+    mission: { id: "shingen", atMs: 8000, star: 3, durS: null, must: false },   // 受けても断ってもよい (= ここだけ強制しない)
+    bond: { who: "shingen", unlock: ["item:robot"] }, bondOn: "missionClear",
+    showGum: true,
+    lines: { intro: "story.5-3.intro", mid: [{ on: "missionOffer", key: "story.5-3.offer" }, { on: "bond", key: "story.5-3.bond" }], clear: "story.5-3.clear" },
+  },
+  {
+    id: "5-4", world: 5, hero: "keep", startExt: [],
+    clear: { kind: "shadowDefeat" }, targetSec: 150,
+    spawn: null, enemyMul: { hp: 0.8, dmg: 0.6 }, heroMul: { hp: 1.5 },   // 本番の湧き (= NORMAL のステージ 1 の表)。 痛さは W4 と同じくらい
+    features: { ce: true, tree: true, shop: true, reroll: true, sig: true, items: ["heal"] },
+    shop: { atMs: null, offers: [], only: false, price: null, mustBuy: false },
+    heal: { below: 0.5 },
+    shadow: { id: "xiangyu", giver: 893, mode: "defeat", atMs: 30000, hp: 2800, dmg: 16, speed: 55, moves: { slam: 4000, charge: 7000 }, first: { slam: 2500, charge: 5000 }, slam: { radius: 150, dmg: 18 } },   // 2,800 HP (= 本番の店 2 回ぶんの DPS 80〜120 で 25〜35 秒)
+    bond: { who: "xiangyu", gifts: 3 },
+    showGum: true,
+    lines: { intro: "story.5-4.intro", mid: [{ on: "shadow", key: "story.5-4.mid" }], clear: "story.5-4.clear" },
+  },
+  {
+    id: "5-5", world: 5, hero: "keep", startExt: [],
+    clear: { kind: "boss" }, targetSec: 300,
+    spawn: null, enemyMul: { hp: 1, dmg: 0.9 }, heroMul: { hp: 1.2 },
+    features: { ce: true, tree: true, shop: true, reroll: true, sig: true, chests: true, pots: true, magicCards: true, rare: true, shooters: true, gimmick: true, variants: true, mission: true, items: ["heal", "magnet", "thunder", "watch", "robot"], bossChest: true },
+    shop: { atMs: null, offers: [], only: false, price: null, mustBuy: false },
+    chestTimesMs: null, rareAtMs: 20000, gimmick: "beads", variants: { giant: 0.1, runner: 0.1 }, mission: null,
+    boss: { id: 373, atMs: 240000, warnMs: 10000, hpMul: 0.3, dmgMul: 0.6, thunder: false },   // 覚醒魔王ファオ 13,500 HP (= 1 ステージぶんの装備の DPS 400〜600 で 25〜35 秒)
+    unlock: "mode:NORMAL",
+    showGum: true,
+    lines: { intro: "story.5-5.intro", mid: [{ on: "bossWarn", key: "story.5-5.mid" }], clear: "story.5-5.clear" },
+  },
 ]);
 
 export const STORY_MAP = Object.freeze(Object.fromEntries(STORY_STAGES.map((s) => [s.id, s])));
@@ -292,15 +352,16 @@ export function storyOverride(recipe) {
     story: true,
     bossAtMs: boss ? boss.atMs : Infinity,
     warnMs: boss?.warnMs ?? 5000,
-    shopTimesMs: f.shop && recipe.shop ? [...recipe.shop.atMs] : [],
-    spawnIntervalMs: recipe.spawn?.everyMs ?? 1200,
+    shopTimesMs: f.shop && recipe.shop ? (recipe.shop.atMs === null ? null : [...recipe.shop.atMs]) : [],   // null = 本番の表
+    spawnIntervalMs: recipe.spawn === null ? null : (recipe.spawn?.everyMs ?? 1200),   // null = 本番の式
     enemyHpMul: recipe.enemyMul?.hp ?? 1,
     enemyDmgMul: recipe.enemyMul?.dmg ?? 1,
     bossHpMul: boss?.hpMul ?? 1,
     bossDmgMul: boss?.dmgMul ?? 1,
-    chestTimesMs: f.chests ? (recipe.chestTimesMs ?? [15000]) : [],
+    chestTimesMs: f.chests ? (recipe.chestTimesMs === null ? null : (recipe.chestTimesMs ?? [15000])) : [],   // null = 本番の表
     rareAtMs: f.rare ? (recipe.rareAtMs ?? 5000) : null,
     missionAtMs: f.mission ? (recipe.mission?.atMs ?? null) : null,
+    missionFree: !!f.mission && recipe.mission === null,   // 本番の持ちかけ (= 5-5)
     missionId: recipe.mission?.id ?? null, missionStar: recipe.mission?.star ?? 1, missionDurS: recipe.mission?.durS ?? null, missionMust: !!recipe.mission?.must,
     variants: f.variants ? (recipe.variants ?? null) : null,
     gimmick: f.gimmick ? (recipe.gimmick ?? null) : null,
