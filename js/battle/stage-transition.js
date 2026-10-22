@@ -30,7 +30,7 @@ import { isEasy, stageCount } from "../easy.js";   // SPEC-147 / SPEC-154
 import { showLesson } from "../lesson.js";   // SPEC-147
 import { stopVoice } from "../voice.js";   // SPEC-149: 説明の途中でボスを倒したら、 ボイスを切ってクリアの SE
 import { startConfetti, removeConfetti } from "../confetti.js";   // SPEC-149
-import { isStory, storyStage, landOf, markStoryCleared, nextStoryId, storyRecipe, storyAllows, nextInSameLand } from "../story.js";   // SPEC-165
+import { isStory, storyStage, landOf, markStoryCleared, markStoryLoadout, STORY_HERO, nextStoryId, storyRecipe, storyAllows, nextInSameLand } from "../story.js";   // SPEC-165
 import { naviSay, naviLines } from "../navi.js";   // SPEC-165
 
 let _wired = false;
@@ -163,6 +163,8 @@ function _storyClear() {
   const r = storyStage();
   const snap = state.run.stages.find((s) => s.idx === (state.currentStageIdx ?? 0));
   markStoryCleared(r.id, { sec: Math.round((snap?.elapsedMs ?? state.battle.stageElapsedMs ?? 0) / 1000), kills: snap?.kills ?? state.killCount });
+  // 作者 2026-10-22: 持ち物 (= ヒーロー・装備・CE・固有スキルの段) はストーリーのあいだ残る。 タイトルに戻っても、 次のステージはここから
+  markStoryLoadout({ hero: state.ownedHero?.heroId ?? STORY_HERO, owned: (state.ownedExtensions ?? []).map((o) => ({ extId: o.extId, level: o.level })), ce: state.shop?.ce ?? 0, sigLevel: state.shop?.sigLevel ?? 1, sigCe: state.shop?.sigCe ?? 0 });
   if (r.unlock === "hero:4006") import("../hero-unlock.js").then((H) => H.unlockEasyReward()).catch(() => {});   // SPEC-165: 3-1 でビリー・ザ・キッドが仲間に
   if (r.unlock === "mode:NORMAL") import("../easy.js").then((E) => E.markEasyCleared()).catch(() => {});   // SPEC-165: 5-5 で NORMAL が開く (= いまのスイッチを立てる。 最後の PR でロックを差し替える)
   state.battle.gameOver = true;

@@ -12,6 +12,8 @@ import { state } from "./state.js";
 import { LS_PREFIX } from "./constants.js";
 
 export const LS_STORY = `${LS_PREFIX}.story`;
+/** ストーリーのヒーロー (= MCH ウォーリアー固定。 3-2 だけ選べて、 選んだ人は持ち物に残る。 作者 2026-10-22) */
+export const STORY_HERO = 10001;
 
 /** ランド (= ワールド)。 名前・背景・色は MCH のランドそのもの (= Image/Backgrounds の 2x05 系) */
 export const LANDS = Object.freeze([
@@ -90,7 +92,7 @@ export const HEAL_DROP_BELOW = 0.5;
  *   require               : "item:<kind>" クリアに要る拾い物 (= 1-4)
  *   pre                   : { points } クリアの前の移動の練習 (= 1-5。 全部めぐると shadow.trigger "afterPre" が出る)
  *   shadow.mode "spar"    : 小手調べ (= 削れるが HP が大きい)。 spar.hits 回当てたら店が開き、 ランクアップのあと HP が spar.hpAfter に
- *   shop.rankupFx         : 買った瞬間にランクアップの演出 (= 1-5)。 shop.priceMul: 値段の倍率 (= 2-2)
+ *   shop.rankupFx         : 買った瞬間にランクアップの演出 (= 1-5)。 shop.priceMul: 値段の倍率 (= 2-2)。 shop.fit: 開いた瞬間の CE で買える割合の上限 (= 2-2 の「全部は買えない」。 CE はステージをまたいで残るため)
  *   bounds                : { x, yMax } 見えない壁 (= 1-0。 |x| ≤ x・y ≤ yMax。 上は自由)
  *   clear                 : { kind: "kills", n } | { kind: "survive", sec } | { kind: "reach", points: [{ x, y }] } | { kind: "collect", n } | { kind: "boss" }
  *                           | { kind: "shadowSurvive", sec } | { kind: "shadowDefeat" } (= シャドーの試練。 §6)
@@ -175,7 +177,7 @@ export const STORY_STAGES = Object.freeze([
     clear: { kind: "kills", n: 40 }, targetSec: 50,
     spawn: { everyMs: 900, pool: [101, 124], max: 9 }, enemyMul: { hp: 1.3, dmg: 0.5 },
     features: { ce: true, shop: true },
-    shop: { atMs: [20000], offers: [10, 16, 14, 2], only: true, price: null, mustBuy: true, priceMul: 1.6 },   // ランクアップ / 攻撃力 (りんご) / クールダウン (馬) / 棍棒: 4 品・値段 ×1.6 で全部は買えない (= 作者 2026-10-22)
+    shop: { atMs: [20000], offers: [10, 16, 14, 2], only: true, price: null, mustBuy: true, priceMul: 1.6, fit: 0.65 },   // ランクアップ / 攻撃力 (りんご) / クールダウン (馬) / 棍棒: 4 品・値段 ×1.6、 開いた瞬間の CE で 65% ぶんまでしか買えない値段に (= 全部は買えない。 作者 2026-10-22)
     showGum: true,
     lines: { intro: "story.2-2.intro", mid: [{ on: "shopOpen", key: "story.2-2.mid" }], clear: "story.2-2.clear" },
   },
@@ -454,6 +456,19 @@ export function storyOverride(recipe) {
 // ---- 進み (= localStorage) ----
 function _storage() { try { return globalThis.localStorage ?? null; } catch { return null; } }
 
+/** 持ち物を整える (= 壊れていたら null。 純関数) */
+export function normalizeLoadout(o) {
+  if (!o || typeof o !== "object") return null;
+  const owned = Array.isArray(o.owned) ? o.owned.filter((x) => x && Number.isFinite(Number(x.extId))).map((x) => ({ extId: Number(x.extId), level: Math.max(1, Number(x.level) | 0) })) : [];
+  return {
+    hero: Number.isFinite(Number(o.hero)) ? Number(o.hero) : STORY_HERO,
+    owned,
+    ce: Math.max(0, Number(o.ce) || 0),
+    sigLevel: Math.max(1, Number(o.sigLevel) | 0 || 1),
+    sigCe: Math.max(0, Number(o.sigCe) || 0),
+  };
+}
+
 /** 進みを読む (= 壊れていたら空。 純関数: storage を渡せる) */
 export function loadStory(storage = _storage()) {
   try {
@@ -462,8 +477,9 @@ export function loadStory(storage = _storage()) {
       cleared: Array.isArray(o.cleared) ? o.cleared.filter((x) => typeof x === "string") : [],
       best: o.best && typeof o.best === "object" ? o.best : {},
       bonds: Array.isArray(o.bonds) ? o.bonds.filter((x) => typeof x === "string") : [],
+      loadout: normalizeLoadout(o.loadout),   // 作者 2026-10-22: 装備と CE はストーリーのあいだ残る (= タイトルに戻っても)
     };
-  } catch { return { cleared: [], best: {}, bonds: [] }; }
+  } catch { return { cleared: [], best: {}, bonds: [], loadout: null }; }
 }
 export function saveStory(p, storage = _storage()) {
   try { storage?.setItem(LS_STORY, JSON.stringify(p)); return true; } catch { return false; }
@@ -507,10 +523,35 @@ export function withCleared(progress, id, { sec = 0, kills = 0 } = {}) {
 export function withBond(progress, who) {
   return progress.bonds.includes(who) ? progress : { ...progress, bonds: [...progress.bonds, who] };
 }
+/** 持ち物を覚える (= クリアした瞬間の装備・CE・固有スキルの段。 純関数) */
+export function withLoadout(progress, loadout) {
+  return { ...progress, loadout: normalizeLoadout(loadout) };
+}
+/**
+ * ステージの開始装備 (= 覚えている持ち物に、 レシピの開始装備を重ねる。 同じ品は高い段のほう。 純関数)
+ *   W1〜W2 のレシピは「このステージはこれを持って始める」の底 (= 店で買った人はそのまま、 買わずに来た人にも渡す)
+ */
+export function mergeStartExt(saved = [], startExt = []) {
+  const out = [];
+  const put = (o) => {
+    const id = Number(o.extId), lv = Math.max(1, Number(o.level) | 0);
+    const hit = out.find((x) => x.extId === id);
+    if (hit) hit.level = Math.max(hit.level, lv); else out.push({ extId: id, level: lv });
+  };
+  for (const o of startExt ?? []) put(o);
+  for (const o of saved ?? []) put(o);
+  return out;
+}
 
 /** クリアを保存する (= battle 側から。 返す: 新しい進み) */
 export function markStoryCleared(id, best = {}) {
   const p = withCleared(loadStory(), id, best);
+  saveStory(p);
+  return p;
+}
+/** 持ち物を保存する (= クリアの瞬間に battle 側から) */
+export function markStoryLoadout(loadout) {
+  const p = withLoadout(loadStory(), loadout);
   saveStory(p);
   return p;
 }

@@ -262,7 +262,8 @@ function goFromTree() {
 function nextFromTree() {
   _returnTo = null;   // ステージクリアの画面には戻さない (= 隠れたまま。 次のステージが始まる)
   closeSkillTree();
-  import("./battle/stage-transition.js").then((m) => m.proceedToNextStage()).catch(() => {});
+  // SPEC-165: ストーリーは結果の画面の「次のステージへ」と同じ道 (= 詳細の画面に戻って旅の演出。 直接始めるとランドの演出が飛ぶ)
+  Promise.all([import("./battle/stage-transition.js"), import("./story.js")]).then(([m, S]) => (S.isStory() ? m.proceedStory() : m.proceedToNextStage())).catch(() => {});
 }
 
 export function closeSkillTree() {

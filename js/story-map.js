@@ -15,7 +15,7 @@ import { naviHide } from "./navi.js";
 import { startMenuBgm } from "./ui-sound.js";
 import { getHero, localizedHeroName, heroImg } from "./heroes.js";
 import { img, REGULATION_NORMAL } from "./constants.js";
-import { LANDS, STORY_PLAN, STORY_MAP, loadStory, storyUnlocked, currentStoryId, stageArt, stageRole, TOWER, FINAL_BOSS_ID, MAP_TERRITORY, stagePos, landOf, bondBurst, PROLOGUE, prologueDone, allStoryIds, nextInSameLand } from "./story.js";
+import { LANDS, STORY_PLAN, STORY_MAP, STORY_HERO, loadStory, storyUnlocked, currentStoryId, stageArt, stageRole, TOWER, FINAL_BOSS_ID, MAP_TERRITORY, stagePos, landOf, bondBurst, PROLOGUE, prologueDone, allStoryIds, nextInSameLand } from "./story.js";
 import { naviFrameUrl, NAVI_POSES } from "./navi.js";
 import { playSe } from "./audio.js";
 import { setRichTextN } from "./rich-text.js";   // 固有名詞と用語に色
@@ -370,7 +370,7 @@ export async function startStoryStage(id) {
   }
   _treeDone = false;
   // ヒーロー: "select" = ヒーロー選択を開く (= 3-2 から) / "keep" = 前に選んだ人 / 数字 = 固定
-  const hero = r.hero === "select" ? null : getHero(r.hero === "keep" ? (state.ownedHero?.heroId ?? 10001) : r.hero);
+  const hero = r.hero === "select" ? null : getHero(r.hero === "keep" ? (loadStory().loadout?.hero ?? state.ownedHero?.heroId ?? STORY_HERO) : r.hero);   // "keep" = 持ち物に残した人 (= タイトルに戻っても同じ人)
   if (r.hero !== "select" && !hero) return;
   state.regulation = REGULATION_NORMAL;
   state.rtaMode = false;

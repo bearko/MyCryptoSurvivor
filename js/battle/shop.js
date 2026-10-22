@@ -210,6 +210,12 @@ export function openShop({ opening = false } = {}) {
   _offers = kept.map((id) => ({ extId: id, sale: false, sold: false }));
   if (sr?.only) { _offers = sr.offers.map((id) => ({ extId: id, sale: false, sold: !offerFor(id, banned) })); s.welcome = false; }
   else _fillOffers();
+  // SPEC-165: 2-2 「全部は買えない」 (= 持ち物の CE はステージをまたいで残るので、 開いた瞬間の手持ちに合わせて値段を上げる。 fit = 手持ちで買える割合)
+  _fitMul = 1;
+  if (sr?.fit > 0 && s.ce > 0) {
+    const base = _offers.filter((o) => !o.sold).reduce((a, o) => { const of = offerFor(o.extId, banned); return a + (of ? shopPrice(of, state.currentStageIdx ?? 0, _merchant.quirk, false, buffPriceCut(o.extId)) * (sr.priceMul ?? 1) : 0); }, 0);
+    if (base > 0) _fitMul = Math.max(1, s.ce / (sr.fit * base));
+  }
   pauseTime();
   if (sr) storySay("shopOpen");
   document.getElementById("shopModal")?.classList.remove("hidden");
@@ -235,6 +241,7 @@ function _fillOffers(last = new Set(_offers.map((o) => String(o.extId)))) {
 }
 
 let _giftFirst = true;   // SPEC-130: 「ギフト券支払いを優先」 (= 店を開くたびに保存から読む)
+let _fitMul = 1;         // SPEC-165: 2-2 の「全部は買えない」の倍率 (= 開いた瞬間の CE から。 1 = そのまま)
 
 function _storyShop() { return storyAllows("shop") ? (storyStage()?.shop ?? null) : null; }   // SPEC-165
 function _priceOf(o, offer) {
@@ -244,9 +251,11 @@ function _priceOf(o, offer) {
   if (_giftFirst && giftable(offer, state.shop.gifts)) return 0;
   let price = shopPrice(offer, state.currentStageIdx ?? 0, _merchant.quirk, o.sale, buffPriceCut(o.extId));   // SPEC-131: 強化の目利き
   if (_storyShop()?.priceMul) price = Math.round(price * _storyShop().priceMul);   // SPEC-165: 2-2 は全部は買えない値段
-  // SPEC-165: 「買うまで閉じられない」店では、 手持ちが足りなければ手持ちの額に (= 拾った CE で買う体験は残し、 詰ませない)
+  if (_fitMul > 1) price = Math.round(price * _fitMul);
+  // SPEC-165: 「買うまで閉じられない」店では、 手持ちが足りなければ手持ちの額に (= 拾った CE で買う体験は残し、 詰ませない)。
+  // 1 品買ったあとは掛けない (= 残りも手持ちの額になって、 「全部は買えない」が崩れていた)
   const sr = _storyShop();
-  if (sr?.mustBuy && price > state.shop.ce) return Math.max(1, state.shop.ce);
+  if (sr?.mustBuy && _boughtHere === 0 && price > state.shop.ce) return Math.max(1, state.shop.ce);
   return price;
 }
 
