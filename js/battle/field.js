@@ -144,6 +144,7 @@ function _pushProp(kind, at, extra = {}) {
 
 /** 壺・宝箱を壊したとき (= damage.js の hitEnemy から)。 何を落とすかは抽選 */
 export function dropFromProp(e) {
+  const b = state.battle;   // 作者の報告 2026-10-22: 4-4 でゴールデンモアイが壊せず OPEN! が出続けた (= b が無くて列の chestDrop で落ち、 宝箱が消えなかった)
   // SPEC-057: 開けた・割れた手ごたえ (= 宝箱は金の粒と OPEN!)
   if (e.propKind === "chest") {
     fxBurst(e.x, e.y, "#f0c14b", 22, 220);
@@ -224,7 +225,7 @@ export function healBy(ratio) {
 export function applyItem(kind) {
   const b = state.battle;
   if (kind === "heal") {
-    healBy(healRatio() * sigHealMul());   // SPEC-100: 宮廷医女は倍
+    healBy(storyStage()?.pickup?.heal === "full" ? 1 : healRatio() * sigHealMul());   // SPEC-100: 宮廷医女は倍。 SPEC-165: 1-4 のパンケーキは満タンまで
   } else if (kind === "watch") {
     // SPEC-054: 実時間 10 秒、 ゲーム全体が 2 倍速 (= index.js の _loop が 1 コマで 2 回進める)。 続けて拾うと延びる
     b.fastForwardMs = (b.fastForwardMs ?? 0) + WATCH_DURATION_MS;

@@ -1116,7 +1116,7 @@
           "cdMs": 600,
           "range": 0,
           "speedPx": 0,
-          "orbitR": 32
+          "orbitR": 40
         },
         {
           "bullets": 3,
@@ -1124,7 +1124,7 @@
           "cdMs": 600,
           "range": 0,
           "speedPx": 0,
-          "orbitR": 34
+          "orbitR": 42
         },
         {
           "bullets": 4,
@@ -1132,7 +1132,7 @@
           "cdMs": 600,
           "range": 0,
           "speedPx": 0,
-          "orbitR": 36
+          "orbitR": 44
         },
         {
           "bullets": 5,
@@ -1140,7 +1140,7 @@
           "cdMs": 600,
           "range": 0,
           "speedPx": 0,
-          "orbitR": 38
+          "orbitR": 46
         },
         {
           "bullets": 6,
@@ -1148,7 +1148,7 @@
           "cdMs": 600,
           "range": 0,
           "speedPx": 0,
-          "orbitR": 40
+          "orbitR": 48
         }
       ],
       "tierIconIds": [

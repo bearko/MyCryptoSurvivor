@@ -95,6 +95,8 @@ function _wireOnce() {
     const m = RTA_ABSOLUTE_MUL;
     _pick(REGULATION_ABSOLUTE, { rta: true, absolute: { spawnMul: m, hpMul: m, dmgMul: m, speedMul: m } });
   });
+  // 作者 2026-10-22: モード選択からもスキルツリーへ (= 閉じたらこの画面に戻る)
+  _$("btnModeSkillTree")?.addEventListener("click", () => { import("./skill-tree.js").then((T) => T.openSkillTree({ returnTo: _$("gameModeSelectScreen") })); });
   _$("btnModeBack")?.addEventListener("click", () => {
     startTitleBgm();   // SPEC-069: タイトルの曲に戻す (= 押した操作の中で)
     // SPEC-055: ワイプで切り替える

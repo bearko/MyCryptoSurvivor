@@ -163,14 +163,56 @@
 /* 店の only (= 品を固定。 リロール・ギフト・お断り・取り置き・固有スキルを出さない) */
 .shop-modal--story #shopReroll, .shop-modal--story #shopGiftFirstWrap, .shop-modal--story #shopBans, .shop-modal--story #shopBansLeft,
 .shop-modal--story #shopWalletBans, .shop-modal--story #shopSig, .shop-modal--story .shop-corner, .shop-modal--story #shopSub, .shop-modal--story #shopIntro { display: none !important; }
-.shop-modal--story-basic #shopReroll, .shop-modal--story-basic #shopBans, .shop-modal--story-basic #shopBansLeft, .shop-modal--story-basic #shopWalletBans,
-.shop-modal--story-basic .shop-corner, .shop-modal--story-basic #shopSub, .shop-modal--nosig #shopSig { display: none !important; }   /* 取り置き・お断り・「あと n 回でボス」は 5-1、 固有スキルは 5-2 まで隠す */
+.shop-modal--story-basic #shopReroll, .shop-modal--story-basic .shop-corner--lock, .shop-modal--story-basic #shopSub, .shop-modal--nosig #shopSig,
+.shop-modal--story-noban #shopBans, .shop-modal--story-noban #shopBansLeft, .shop-modal--story-noban #shopWalletBans, .shop-modal--story-noban .shop-corner--ban { display: none !important; }
+.shop-modal--full .shop-card { filter: grayscale(0.6); }   /* 4 つ買ったら残りは押せない */   /* 取り置き・お断り・「あと n 回でボス」は 5-1、 固有スキルは 5-2 まで隠す */
 .shop-modal--story .shop-card { box-shadow: 0 0 18px rgba(255, 225, 122, 0.75); }
 .shop-modal--story #shopLeave[disabled] { opacity: 0.4; cursor: not-allowed; }
 
 /* 戦闘の目標の帯 (= HUD の下) */
 .story-goal { position: absolute; left: 50%; transform: translateX(-50%); z-index: 5; padding: 3px 12px; border-radius: 999px; background: rgba(0, 0, 0, 0.55); color: #ffe9a6; font-size: 13px; font-weight: 700; pointer-events: none; white-space: nowrap; }
 .story-goal.hidden { display: none; }
+/* 作者 2026-10-22: 目標は大きく。 数字が増えた瞬間に跳ね、 下の線が満ちる。 達成で金色に光る */
+.story-goal { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 150px; padding: 5px 16px 7px; font-size: 12px; border: 1px solid rgba(255, 255, 255, 0.22); background: rgba(6, 4, 14, 0.78); box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5); }
+.story-goal__lbl { font-size: 11px; letter-spacing: 2px; color: #ffe17a; font-weight: 800; }
+.story-goal__num { display: inline-flex; align-items: baseline; gap: 3px; font-size: 13px; color: #cfd6e6; }
+.story-goal__num i { font-style: normal; opacity: 0.6; }
+.story-goal__now { display: inline-block; font-size: 26px; line-height: 1; font-weight: 900; color: #fff; font-variant-numeric: tabular-nums; text-shadow: 0 0 10px rgba(255, 225, 122, 0.45); }
+.story-goal__now.is-tick { animation: story-goal-tick 0.32s cubic-bezier(0.2, 1.6, 0.4, 1); }
+@keyframes story-goal-tick { 0% { transform: scale(1.5); color: #ffe17a; } 100% { transform: scale(1); } }
+.story-goal__bar { width: 100%; height: 4px; border-radius: 999px; background: rgba(255, 255, 255, 0.14); overflow: hidden; }
+.story-goal__fill { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #5ecf8a, #ffe17a); transition: width 0.35s ease-out; box-shadow: 0 0 8px rgba(255, 225, 122, 0.6); }
+.story-goal__done { font-size: 13px; font-weight: 900; letter-spacing: 3px; color: #ffe17a; }
+.story-goal.is-done { border-color: rgba(255, 225, 122, 0.8); box-shadow: 0 0 18px rgba(255, 225, 122, 0.55); }
+.story-goal.is-burst { animation: story-goal-burst 0.7s ease-out; }
+@keyframes story-goal-burst { 0% { transform: translateX(-50%) scale(1.25); box-shadow: 0 0 0 0 rgba(255, 225, 122, 0.8); } 100% { transform: translateX(-50%) scale(1); box-shadow: 0 0 24px 10px rgba(255, 225, 122, 0); } }
+:root[data-reduce-fx] .story-goal__now.is-tick, :root[data-reduce-fx] .story-goal.is-burst { animation: none; }
+/* 作者 2026-10-22: PC ではセリフの字と札が小さく、 釣り合わない。 広い画面では一回り大きく */
+@media (min-width: 900px) {
+  .story-scene__text { font-size: 21px; line-height: 1.8; }
+  .story-scene__name { font-size: 13px; }
+  .story-stage { transform: translate(-50%, -50%) scale(1.3); }   /* 札とアチーブメントの絵ごと一回り大きく */
+  .story-stage__id { font-size: 16px; padding: 3px 14px; }
+  .story-stage__lbl { font-size: 12px; }
+  .story-world__txt b { font-size: 30px; }
+  .story-world__txt small { font-size: 13px; }
+  .story-world__hint { font-size: 14px; max-width: 44%; }
+  .story-plate__txt b { font-size: 20px; }
+  .story-plate__txt small { font-size: 11px; }
+  .story-map__title { font-size: 28px; }
+  .story-map__sub { font-size: 15px; }
+  .story-map__say { font-size: 15px; }
+  .ssm-top__id b { font-size: 26px; }
+  .ssm-row { font-size: 15px; }
+  .ssm-goal { font-size: 19px; }
+  .ssm-mai { font-size: 14px; }
+  .ssm-en__txt { font-size: 13px; }
+  .story-goal { min-width: 200px; font-size: 14px; }
+  .story-goal__now { font-size: 34px; }
+  .story-goal__lbl { font-size: 13px; }
+  .story-bond__line { font-size: 17px; }
+  .story-bond__name { font-size: 22px; }
+}
 
 /* 顔見せ (= シャドーヒーローが右から入って一言) */
 .story-cameo { position: fixed; right: 4vw; bottom: 22vh; z-index: 60; width: min(40vw, 260px); pointer-events: none; opacity: 0; transform: translateX(40px); transition: opacity 0.35s ease, transform 0.35s ease; }

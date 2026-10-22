@@ -24,6 +24,8 @@ import {
 } from "../constants.js";
 import { triggerStageEndOrTransition } from "./stage-transition.js";
 import { hurtPlayer } from "./hurt.js";   // SPEC-090c
+/** 雑魚が自分に寄れる最短 (= 当たりの距離 × これ。 1 未満なので接触のダメージは出る) */
+const ENEMY_MIN_SEP = 0.8;
 import { rareIntervalMs } from "../perks.js";   // SPEC-090c
 import { fxBossIncoming, fxBossSpawned, fxBossCountdown, fxBurst } from "./fx.js";
 import { startArena, BOSS_SPAWN_POS } from "./arena.js";
@@ -229,6 +231,11 @@ export function tickEnemies(dt, nowMs) {
       const sp = (e.isBoss || e.isShadow) ? e.speed : e.speed * mods.speedMul * shadowMods().speedMul;   // SPEC-112: 東方遠征・乱世の奸雄。 SPEC-165: オーラ
       e.x += (dx / d) * sp * dt;
       e.y += (dy / d) * sp * dt;
+      // 2026-10-22: 雑魚は自分の中心まで来ない (= 重なると刃の外に出て、 一方的に削られた)。 当たりの距離より内側には入れない
+      if (!e.isBoss && !e.isShadow) {
+        const minSep = (e.r + b.player.r) * ENEMY_MIN_SEP, nd = Math.hypot(px - e.x, py - e.y);
+        if (nd < minSep) { const k = nd > 0.01 ? minSep / nd : 1; e.x = px - (px - e.x) * k; e.y = py - (py - e.y) * k; }
+      }
       // SPEC-053: 建物にめりこんだら押し出し、 壁に沿ってプレイヤーへ回りこむ
       if (rects.length) {
         let res = resolveCircle(e.x, e.y, e.r, rects);

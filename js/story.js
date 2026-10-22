@@ -81,7 +81,9 @@ export const HEAL_DROP_BELOW = 0.5;
  *   gimmick               : "beads" | "punch" | "trojan" 土地の仕掛け (= features.gimmick のとき)
  *   mission               : { id, atMs, star, durS, must } 決まった時刻に持ちかける (= must なら断れない)
  *   chestDrop             : 宝箱の中身 (= 1 つなら文字列、 列なら n 個目の宝箱の中身)
- *   shop.must             : 店で「するまで出られない」こと (= ["reroll", "ban"] / ["sig"]。 5-1・5-2)
+ *   shop.must             : 店で「するまで出られない」こと (= ["ban"] 3-2 / ["reroll"] 5-1 / ["sig"] 5-2)
+ *   strike                : 始まりにシャドーの一撃で HP を減らす (= 1-4: { id, giver, atMs, hpRatio }。 パンケーキのありがたみ)
+ *   pickup.heal           : "full" ならそのパンケーキは満タンまで (= 1-4)
  *   shop.atMs: null / spawn: null / chestTimesMs: null : 本番と同じ (= NORMAL のステージ 1 の表。 W5)
  *   mission: null         : features.mission のまま、 ふつうの持ちかけ (= 本番)
  *   bondOn                : この出来事で絆を結ぶ (= "missionClear"。 シャドーの無い絆)
@@ -136,17 +138,18 @@ export const STORY_STAGES = Object.freeze([
     features: { ce: true, shop: true },
     shop: { atMs: [20000], offers: [2], only: true, price: null, mustBuy: true },
     showGum: true,
-    lines: { intro: "story.1-3.intro", mid: [{ on: "shopOpen", key: "story.1-3.mid" }], clear: "story.1-3.clear" },
+    lines: { intro: "story.1-3.intro", mid: [{ on: "firstCe", key: "story.1-3.ce" }, { on: "shopOpen", key: "story.1-3.mid" }], clear: "story.1-3.clear" },
   },
   {
     id: "1-4", world: 1, hero: 10001, startExt: [{ extId: 10, level: 1 }, { extId: 16, level: 1 }, { extId: 2, level: 1 }],
     clear: { kind: "survive", sec: 30 }, targetSec: 30,
-    spawn: { everyMs: 1000, pool: [101, 124], max: 8 }, enemyMul: { hp: 1, dmg: 0.8 },
+    spawn: { everyMs: 1400, pool: [101, 124], max: 6 }, enemyMul: { hp: 1, dmg: 0.4 },   // 一撃で HP 20% になるので、 雑魚は弱く・少なく (= パンケーキまで走れる)
     features: { ce: true, items: ["heal"] },
-    pickup: { kind: "heal", x: 0, y: -340 },   // パンケーキを確定で置く (= 光る道筋で誘導。 取るまでクリアしない)
+    strike: { id: "lubu", giver: 481, atMs: 1200, hpRatio: 0.2 },   // 作者 2026-10-22: 始まりに呂布の一撃で HP を 20% に (= パンケーキのありがたみ)
+    pickup: { kind: "heal", x: 0, y: -340, heal: "full" },   // パンケーキを確定で置く (= 光る道筋で誘導。 取るまでクリアしない。 満タンまで戻る)
     require: "item:heal",
     showGum: true,
-    lines: { intro: "story.1-4.intro", mid: [{ on: "item:heal", key: "story.1-4.mid" }], clear: "story.1-4.clear" },
+    lines: { intro: "story.1-4.intro", mid: [{ on: "strike", key: "story.1-4.strike" }, { on: "item:heal", key: "story.1-4.mid" }], clear: "story.1-4.clear" },
   },
   {
     id: "1-5", world: 1, hero: 10001, startExt: [{ extId: 10, level: 1 }, { extId: 16, level: 1 }, { extId: 2, level: 1 }],
@@ -205,7 +208,7 @@ export const STORY_STAGES = Object.freeze([
     clear: { kind: "shadowSurvive", sec: 20 }, targetSec: 60,
     spawn: { everyMs: 1300, pool: [101, 124], max: 10 }, enemyMul: { hp: 1, dmg: 0.4 }, heroMul: { hp: 3 },
     features: { ce: true },
-    shadow: { id: "lubu", giver: 481, mode: "survive", atMs: 4000, speed: 60, dmg: 16, moves: { slam: 3600, charge: 5200 }, first: { slam: 1500, charge: 3000 }, aura: { spawnMul: 3 } },
+    shadow: { id: "lubu", giver: 481, mode: "survive", atMs: 4000, speed: 70, dmg: 24, moves: { slam: 3200, charge: 4600 }, first: { slam: 1500, charge: 3000 }, aura: { spawnMul: 3 } },   // 作者 2026-10-22: 少しスリルを (dmg 16 → 24・速さ 60 → 70・技の間隔を短く)
     bond: { who: "lubu", gifts: 2 },
     showGum: true,
     lines: { intro: "story.2-5.intro", mid: [{ on: "shadow", key: "story.2-5.mid" }], clear: "story.2-5.clear" },
@@ -225,10 +228,10 @@ export const STORY_STAGES = Object.freeze([
     id: "3-2", world: 3, hero: "select", startExt: [],
     clear: { kind: "kills", n: 40 }, targetSec: 60,
     spawn: { everyMs: 950, pool: [101, 124, 134], max: 9 }, enemyMul: { hp: 1.3, dmg: 0.5 },
-    features: { ce: true, tree: true, shop: true },
-    shop: { atMs: [20000], offers: [], only: false, price: null, mustBuy: false },   // 選んだヒーローの店 (= ふつうの品ぞろえ)
+    features: { ce: true, tree: true, shop: true, ban: true },
+    shop: { atMs: [20000], offers: [], only: false, price: null, mustBuy: false, must: ["ban"] },   // 選んだヒーローの店 (= ふつうの品ぞろえ)。 お断りを 1 回使うまで出られない (= 作者 2026-10-22: 序盤に不要な品を外す道具なので、 ここで)
     showGum: true,
-    lines: { intro: "story.3-2.intro", mid: [{ on: "firstKill", key: "story.3-2.mid" }], clear: "story.3-2.clear" },
+    lines: { intro: "story.3-2.intro", mid: [{ on: "firstKill", key: "story.3-2.mid" }, { on: "shopOpen", key: "story.3-2.shop" }, { on: "ban", key: "story.3-2.ban" }], clear: "story.3-2.clear" },
   },
   {
     id: "3-3", world: 3, hero: "keep", startExt: [],
@@ -318,10 +321,10 @@ export const STORY_STAGES = Object.freeze([
     clear: { kind: "kills", n: 80 }, targetSec: 90,
     spawn: { everyMs: 800, pool: [101, 124, 134], max: 12 }, enemyMul: { hp: 1.3, dmg: 0.5 },
     features: { ce: true, tree: true, shop: true, reroll: true, items: ["heal"] },
-    shop: { atMs: [15000, 50000], offers: [], only: false, price: null, mustBuy: false, must: ["reroll", "ban"] },   // リロールとお断りを 1 回ずつ使うまで出られない
+    shop: { atMs: [15000, 50000], offers: [], only: false, price: null, mustBuy: false, must: ["reroll"] },   // リロールを 1 回使うまで出られない (= お断りは 3-2 へ。 作者 2026-10-22)
     heal: { below: 0.5 },
     showGum: true,
-    lines: { intro: "story.5-1.intro", mid: [{ on: "shopOpen", key: "story.5-1.shop" }, { on: "reroll", key: "story.5-1.reroll" }, { on: "ban", key: "story.5-1.ban" }], clear: "story.5-1.clear" },
+    lines: { intro: "story.5-1.intro", mid: [{ on: "shopOpen", key: "story.5-1.shop" }, { on: "reroll", key: "story.5-1.reroll" }], clear: "story.5-1.clear" },
   },
   {
     id: "5-2", world: 5, hero: "keep", startExt: [],
@@ -415,6 +418,7 @@ export function storyAllows(feature, recipe = storyStage()) {
   if (!recipe) return true;
   const f = recipe.features ?? {};
   if (feature.startsWith("items:")) return (f.items ?? []).includes(feature.slice(6));
+  if (feature === "ban") return !!(f.ban || f.reroll);   // お断りは 3-2 で教え、 リロールのある店 (= W5) でも使える
   return !!f[feature];
 }
 

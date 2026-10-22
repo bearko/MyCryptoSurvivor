@@ -20,7 +20,7 @@ import {
 
 const ORBIT_HIT_COOLDOWN_MS = 250;   // 同じ敵を 0.25 sec ごとにしか damage しない
 const ORBIT_ANGULAR_SPEED   = 1.2;   // rad/sec  (= Book)
-const ORBIT_CLOSE_ANG_SPEED = 2.4;   // rad/sec  (= Blade)
+const ORBIT_CLOSE_ANG_SPEED = 3.6;   // rad/sec  (= Blade。 2026-10-22: 2.4 → 3.6。 攻撃の頻度と移動の速さが釣り合っていなかった)
 const BEAM_HIT_INTERVAL_MS  = 250;   // SPEC-031: ビームの dispatch 周期 (= 同 enemy ごと)
 
 // SPEC-028: weapon.level に応じた当たり判定 / アイコンサイズ倍率
@@ -70,10 +70,12 @@ function _spawnProjectile(opts) {
   });
 }
 
+/** 壺・宝箱をねらう距離 (= 2026-10-22: 敵がいるとねらってくれず、 リボルバーなどでは壊せなかった。 この近さなら敵より先に) */
+export const PROP_AIM_R = 170;
 function _findNearestEnemy(px, py, range) {
   const arr = state.battle.enemies;
   const lim2 = (range || Infinity) * (range || Infinity);
-  // SPEC-053: 敵を先に狙い、 近くに敵がいないときだけ壺・宝箱を狙う
+  // SPEC-053: 敵を先に狙う。 壺・宝箱は、 敵より近いか PROP_AIM_R の中なら先に (= 2026-10-22)。 ほかは敵がいないときだけ
   let best = null, bestD2 = lim2, prop = null, propD2 = lim2;
   for (const e of arr) {
     const dx = e.x - px, dy = e.y - py;
@@ -81,6 +83,7 @@ function _findNearestEnemy(px, py, range) {
     if (e.isProp) { if (d2 < propD2) { propD2 = d2; prop = e; } }
     else if (d2 < bestD2) { bestD2 = d2; best = e; }
   }
+  if (prop && (propD2 < bestD2 || propD2 <= PROP_AIM_R * PROP_AIM_R)) return prop;
   return best ?? prop;
 }
 
@@ -169,10 +172,12 @@ export function fireBigHoming(w, dmgMul, bulletBonus) {
 // ============================================================
 
 export function fireDropTarget(w, dmgMul, bulletBonus) {
-  // SPEC-053: 敵がいれば敵だけを狙う (= 壺・宝箱は敵がいないときだけ)
+  // SPEC-053: 敵がいれば敵を狙う。 2026-10-22: 近く (= PROP_AIM_R) の壺・宝箱も候補に (= 敵がいる限り壊せなかった)
   const all = state.battle.enemies;
+  const { x: ppx, y: ppy } = state.battle.player;
   const foes = all.filter(e => !e.isProp);
-  const enemies = foes.length ? foes : all;
+  const nearProps = all.filter(e => e.isProp && Math.hypot(e.x - ppx, e.y - ppy) <= PROP_AIM_R);
+  const enemies = foes.length ? [...nearProps, ...foes] : all;
   if (enemies.length === 0) return;
   const total = (w.bullets ?? 1) + bulletBonus;
   const fallH = w.params?.fallH ?? 220;
@@ -389,8 +394,8 @@ export function ensureOrbits(w, dmgMul, bulletBonus) {
   const r        = baseR * rangeMul;
   // SPEC-028: 武器レベルで当たり判定 / アイコンを拡大
   const lvMul        = _levelSizeMul(w);
-  const baseHitR     = (w.archetype === "orbitClose") ?  9 : 11;
-  const baseIconSize = (w.archetype === "orbitClose") ? 22 : 26;
+  const baseHitR     = (w.archetype === "orbitClose") ? 12 : 11;   // 2026-10-22: ブレードは 9 → 12 (= 当たるギリギリまで寄らないと倒せないのがストレス)
+  const baseIconSize = (w.archetype === "orbitClose") ? 28 : 26;
   const hitR         = baseHitR     * lvMul;
   const iconSize     = baseIconSize * lvMul;
   const dmg          = Math.max(1, Math.round(w.dmg * dmgMul));
@@ -463,11 +468,16 @@ export function tickOrbits(dt, nowMs) {
     const oy = player.y + Math.sin(o.angle) * o.r;
     o.x = ox; o.y = oy;
     // 衝突 (= SPEC-016: hitEnemy 経由で 数字 + freeze)
+    const inner = o.kind === "orbitClose";   // 2026-10-22: ブレードは円の内側 (= 自分に重なった敵) にも当たる。 重なると刃の外に出て、 一方的に削られていた
     for (let j = enemies.length - 1; j >= 0; j--) {
       const e = enemies[j];
       const dx = e.x - ox, dy = e.y - oy;
       const sumR = e.r + (o.radius ?? 10);
-      if (dx * dx + dy * dy > sumR * sumR) continue;
+      if (dx * dx + dy * dy > sumR * sumR) {
+        if (!inner) continue;
+        const px = e.x - player.x, py = e.y - player.y;
+        if (px * px + py * py > o.r * o.r) continue;
+      }
       const last = o.hitMap[e.id] ?? 0;
       if (nowMs - last < ORBIT_HIT_COOLDOWN_MS) continue;
       o.hitMap[e.id] = nowMs;

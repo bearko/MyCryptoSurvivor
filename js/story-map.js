@@ -17,7 +17,7 @@ import { getHero, localizedHeroName, heroImg } from "./heroes.js";
 import { img, REGULATION_NORMAL } from "./constants.js";
 import { playVoice, hasVoice, stopVoice } from "./voice.js";   // SPEC-165: 台本の録音
 import { LANDS, STORY_PLAN, STORY_MAP, STORY_HERO, loadStory, storyUnlocked, currentStoryId, stageArt, stageRole, TOWER, FINAL_BOSS_ID, MAP_TERRITORY, stagePos, landOf, bondBurst, PROLOGUE, prologueDone, allStoryIds, nextInSameLand } from "./story.js";
-import { naviFrameUrl, NAVI_POSES } from "./navi.js";
+import { naviFrameUrl, poseFrame } from "./navi.js";
 import { playSe } from "./audio.js";
 import { setRichTextN } from "./rich-text.js";   // 固有名詞と用語に色
 import { SFX } from "./constants.js";
@@ -82,7 +82,7 @@ export function renderStoryMap() {
   const ids = allStoryIds();
   p.cleared = p.cleared.filter((id) => ids.includes(id));   // プロローグ (1-0) は 25 に数えない
   const ti = _$("storyMapTitle"); if (ti) ti.textContent = t("story.map.title", "ワールドマップ");
-  const sb = _$("storyMapSub"); if (sb) sb.textContent = tpl(t("story.map.sub", "クリア {n} / {total}"), { n: String(p.cleared.length), total: String(total) });
+  const sb = _$("storyMapSub"); if (sb) sb.textContent = tpl(t("story.map.sub", "クリア {n} / {total}"), { n: String(p.cleared.filter((x) => allStoryIds().includes(x)).length), total: String(total) });
   const bk = _$("storyMapBack"); if (bk) bk.textContent = t("story.map.back", "◀ モード選択へ");
   const hint = _$("storyMapHint"); if (hint) hint.textContent = t("story.map.hint", "ランドを押すと入る");
   const openLands = new Set(LANDS.filter((l) => storyUnlocked(`${l.w}-1`, p)).map((l) => l.id));
@@ -364,7 +364,7 @@ export async function startStoryStage(id) {
   // 始める前のシーン (= 5-5: COVID の口上。 1 回だけ)
   if (r.sceneBefore && !_sceneShown.has(r.sceneBefore)) { showScene(r.sceneBefore, () => startStoryStage(id)); return; }
   // SPEC-165 3-1: 木を先に (= 根を取るまでほかを押せない。 「ステージへ ▶」で始める)
-  if (r.treeFirst && !owns(getMeta(), ROOT_ID) && !_treeDone) {
+  if (r.treeFirst && !_treeDone) {   // 作者 2026-10-22: 根をもう持っている人 (= 前から遊んでいる) にも、 3-1 では木を見せる
     const T = await import("./skill-tree.js");
     hideStoryWorld(); hideStoryMap();
     T.openSkillTree({ go: () => { _treeDone = true; startStoryStage(id); } });
@@ -407,7 +407,9 @@ export function backToStoryMap() {
   state.storyId = null;
   // ランドの最後 (= 次が別のランド) は地図へ (= 靄が晴れて次のランドが現れるのを見る)。 途中なら詳細へ
   const land = id && id !== PROLOGUE.id && nextInSameLand(id) ? landOf(id) : null;
-  const go = () => { if (land) showStoryWorld(land.id); else showStoryMap(); };
+  // 作者 2026-10-22: 5-5 (= NORMAL が開いた) のあとは地図ではなくモード選択へ (= 開いた NORMAL をすぐ選べる)
+  const toModes = r?.unlock === "mode:NORMAL";
+  const go = () => { if (toModes) { hideStoryWorld(); hideStoryMap(); naviHide(); _onBack?.(); } else if (land) showStoryWorld(land.id); else showStoryMap(); };
   if (r?.scene && !_sceneShown.has(r.scene)) { showScene(r.scene, go); return; }   // プロローグ (= 裂け目のあと)
   if (r?.sceneAfter && loadStory().cleared.includes(id)) { showScene(r.sceneAfter, go, { once: true }); return; }   // エンディング
   go();
@@ -448,8 +450,7 @@ function _renderScene() {
 }
 function _poseUrl(pose) {
   // navi の frames: NAVI_POSES の名前 → フレーム名。 無ければそのまま
-  const name = NAVI_POSES?.[pose] ?? NAVI_POSES.smile;
-  try { return naviFrameUrl(name); } catch { return ""; }
+  try { return naviFrameUrl(poseFrame(pose ?? "smile")); } catch { return ""; }   // 2026-10-22: 目線がこちらを向くコマ
 }
 let _typeTimer = 0;
 function _typeInto(el, text) {
