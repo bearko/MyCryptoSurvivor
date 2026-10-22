@@ -21,3 +21,4 @@
 - **5-5 の COVID がボス扱いでなかった** (`js/battle/enemies.js`): レシピの `bossId` を `isBoss` に見ていなかった（倒しても終わらず 5 分の時計で終わっていた）。 「ボスを倒す」の行は倒すまで終わらない。 風林火山の「山」は足が 1/10。 モード選択の下のボタンの高さ
 - **5-5 のカットインがヨシュカだった** (`js/battle/fx.js` + `arena-render.js`): レシピの `bossId` を見る。 振り返りの手引き `docs/process/ONBOARDING_MODE_PLAYBOOK.md`
 - **録音の無い 7 行の台本** `docs/voice/script-story-add.csv` と `build.mjs --story-add`。 共通基盤に `survivor.story`（MyCryptoPortfolio #85・#86。 名鑑の達磨「二入四行論」）
+- **3-2 のお断りの強制をやめる**（全部買うと ✕ が無くなり詰んだ）。 `must` の関所は満たせなくなったら開く
