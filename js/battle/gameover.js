@@ -29,7 +29,6 @@ import { renderRewards, renderGumBreakdown } from "../meta-ui.js";
 import { perk } from "../perks.js";   // SPEC-090c
 import { markPlayed } from "../played.js";
 import { isEasy, stageCount } from "../easy.js";   // SPEC-147 / SPEC-154
-import { showLesson } from "../lesson.js";   // SPEC-147
 import { owns } from "../skill-logic.js";   // SPEC-147
 import { ROOT_ID } from "../skill-data.js";   // SPEC-147
 import { collectAnalysis, renderAnalysis, adviceVars } from "./analysis-ui.js";   // SPEC-148
@@ -233,7 +232,6 @@ function sayOnLose(reason, modal) {
   modal?.classList.remove("gameover-modal--navi");
   if (reason === "clear") return;
   if (isStory()) { modal?.classList.add("gameover-modal--navi"); naviSay(naviLines("story", { key: "story.lose", pose: "teary" }), { place: "result" }); return; }   // SPEC-165: 同じステージをやり直す
-  if (isEasy() && showLesson("s2.lose")) return;   // SPEC-147: 初めてはレッスンで。 SPEC-160: 2 回目からは下の励まし
   // SPEC-151: 粒子の演出のときは、 全身のマインちゃんが「復活させてあげる」をもう言っているので、 帯では 2 行目だけ
   // SPEC-155: 説明は初回だけ (= 粒子が出せない端末でも、 2 回目からは帯で言い直さない)
   const lines = state.battle.heroDissolved || hasSeenRevive() ? [] : naviLines("revive");   // SPEC-150
@@ -418,7 +416,7 @@ function _heroName() {
   return n?.ja ?? n?.en ?? null;
 }
 
-/** SPEC-147: EASY で倒れたら、 根 (= 覚醒) を取るまで「もう一度挑む」を出さず、 スキルツリーへ誘う */
+/** 倒れた画面のボタンの出し分け (= SPEC-165: ストーリーでは木はレシピが許すまで出さず、 ランキングには送らない。 旧 EASY の根なしのゲート (SPEC-147 / 164) は撤去) */
 export function easyRetryGate() {
   const again = document.getElementById("gameOverRetry");
   const tree = document.getElementById("gameOverSkillTree");
@@ -434,12 +432,9 @@ export function easyRetryGate() {
   }
   document.querySelector("#gameOverModal .gameover-modal__form")?.classList.remove("hidden");
   tree?.classList.remove("hidden");
-  const gate = state.easyMode && !owns(getMeta(), ROOT_ID);
-  again?.classList.toggle("hidden", gate);
-  tree?.classList.toggle("gameover-modal__again--pulse", gate);
-  // SPEC-164: 根を取るまでは「スキルツリーへ」を押してもらう (= 大きく出し、 ランキング送信とタイトルに戻るは押せない)
-  document.getElementById("gameOverModal")?.classList.toggle("gameover-modal--gate", gate);
-  for (const id of ["gameOverSubmit", "gameOverName", "gameOverToTitle"]) { const el = document.getElementById(id); if (el) el.disabled = gate; }
+  again?.classList.remove("hidden");
+  tree?.classList.remove("gameover-modal__again--pulse");
+  document.getElementById("gameOverModal")?.classList.remove("gameover-modal--gate");
 }
 
 function _renderGameOverModal() {

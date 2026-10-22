@@ -15,7 +15,7 @@ import { playSe } from "../audio.js";   // SPEC-158: 勝利の SE
 import { triggerGameOver } from "./gameover.js";
 import { triggerActivityReport } from "./activity-report.js";
 import { t, tpl, onLangChange, getLang } from "../i18n.js";
-import { reportStageEnd, reportRtaStageEnd } from "../platform.js";
+import { reportStageEnd, reportRtaStageEnd, reportStoryAllClear } from "../platform.js";
 import { formatElapsed } from "../survival.js";
 import { countUp, revealIn } from "../reveal.js";
 import { presentResult } from "../result-telop.js";
@@ -27,10 +27,9 @@ import { perk } from "../perks.js";   // SPEC-090c
 import { heroImg } from "../heroes.js";
 import { loadShare, shouldOfferShare, openSharePrompt, closeSharePrompt } from "../share-x.js";   // SPEC-143
 import { isEasy, stageCount } from "../easy.js";   // SPEC-147 / SPEC-154
-import { showLesson } from "../lesson.js";   // SPEC-147
 import { stopVoice } from "../voice.js";   // SPEC-149: 説明の途中でボスを倒したら、 ボイスを切ってクリアの SE
 import { startConfetti, removeConfetti } from "../confetti.js";   // SPEC-149
-import { isStory, storyStage, landOf, markStoryCleared, markStoryLoadout, STORY_HERO, nextStoryId, storyRecipe, storyAllows, nextInSameLand } from "../story.js";   // SPEC-165
+import { isStory, storyStage, landOf, markStoryCleared, markStoryLoadout, STORY_HERO, nextStoryId, storyRecipe, storyAllows, nextInSameLand, storyAllCleared } from "../story.js";   // SPEC-165
 import { naviSay, naviLines } from "../navi.js";   // SPEC-165
 
 let _wired = false;
@@ -130,7 +129,6 @@ export function triggerStageEndOrTransition() {
       renderRewards(document.getElementById("stageTransitionRewards"), { gum: snap?.gum ?? 0, dust: snap?.dust ?? 0 }, { delayMs: 500 });   // SPEC-090 + SPEC-132
       renderGumBreakdown(document.getElementById("stageTransitionGum"), { rows: snap?.gumRows ?? [], bonus: snap?.gumBonus ?? 0, mul: snap?.gumMul ?? 0 });   // SPEC-136
       startConfetti();   // SPEC-149: 紙吹雪 (= マイクリの金宝箱の演出)
-      if (isEasy() && endIdx === 0) showLesson("s1.clear");   // SPEC-147
       // SPEC-143: ステージ 1 のクリアで、 マインちゃんが X での投稿をすすめる (= 結果が出そろってから重ねる。 EASY では出さない)
       if (!isEasy() && shouldOfferShare(loadShare(), { stageIdx: endIdx, rta: !!state.rtaMode })) {
         clearTimeout(_shareTimer);
@@ -162,11 +160,12 @@ const _onProceedClick = () => (isStory() ? proceedStory() : proceedToNextStage()
 function _storyClear() {
   const r = storyStage();
   const snap = state.run.stages.find((s) => s.idx === (state.currentStageIdx ?? 0));
-  markStoryCleared(r.id, { sec: Math.round((snap?.elapsedMs ?? state.battle.stageElapsedMs ?? 0) / 1000), kills: snap?.kills ?? state.killCount });
+  const progress = markStoryCleared(r.id, { sec: Math.round((snap?.elapsedMs ?? state.battle.stageElapsedMs ?? 0) / 1000), kills: snap?.kills ?? state.killCount });
+  reportStoryAllClear(progress, storyAllCleared);   // SPEC-165: 全クリアで共通基盤のアチーブメント survivor.story (= 25 のときだけ中身がある)
   // 作者 2026-10-22: 持ち物 (= ヒーロー・装備・CE・固有スキルの段) はストーリーのあいだ残る。 タイトルに戻っても、 次のステージはここから
   markStoryLoadout({ hero: state.ownedHero?.heroId ?? STORY_HERO, owned: (state.ownedExtensions ?? []).map((o) => ({ extId: o.extId, level: o.level })), ce: state.shop?.ce ?? 0, sigLevel: state.shop?.sigLevel ?? 1, sigCe: state.shop?.sigCe ?? 0 });
   if (r.unlock === "hero:4006") import("../hero-unlock.js").then((H) => H.unlockEasyReward()).catch(() => {});   // SPEC-165: 3-1 でビリー・ザ・キッドが仲間に
-  if (r.unlock === "mode:NORMAL") import("../easy.js").then((E) => E.markEasyCleared()).catch(() => {});   // SPEC-165: 5-5 で NORMAL が開く (= いまのスイッチを立てる。 最後の PR でロックを差し替える)
+  if (r.unlock === "mode:NORMAL") import("../easy.js").then((E) => E.markEasyCleared()).catch(() => {});   // SPEC-165: 5-5 で NORMAL が開く (= 「チュートリアルを終えた」の印。 mode-select が読む)
   state.battle.gameOver = true;
   if (r.scene) {   // SPEC-165 §3.z: プロローグ (= クリアの画面を出さず、 裂け目 → 暗転 → シーン → マップ)
     pauseTime();

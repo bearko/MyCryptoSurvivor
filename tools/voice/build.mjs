@@ -49,7 +49,7 @@ export const ADDED_3 = ["shop.intro", "tree.first"];
 
 /**
  * SPEC-147: EASY のレッスン (= 「…_lesson.wav」。 番号は 0 から。 台本は docs/voice/script-lessons.csv)。
- * 名前は lesson.<番号> (= js/easy.js の LESSON_KEYS と同じ並び)
+ * 名前は lesson.<番号> (= SPEC-165 で EASY は撤去。 録音は残し、 RETIRED_VOICES で鳴らさない)
  */
 export const LESSONS = [
   "lesson.s1.move", "lesson.s1.ce", "lesson.s1.shop", "lesson.s1.boss", "lesson.s1.clear",

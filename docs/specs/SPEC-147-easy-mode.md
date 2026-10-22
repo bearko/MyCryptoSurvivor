@@ -1,11 +1,13 @@
 ---
 id: SPEC-147
 title: EASY Mode — A Guided 3-Stage Run for First-Timers (Short Stages, Mine's Voiced Lessons, Designed Loss on Stage 3, Skill Tree Awakening, Then NORMAL)
-status: Done
+status: Superseded
 pr: 186
 phase: v1.7 Onboarding
 kind: Added
 ---
+
+> **Superseded**（2026-10-22）: SPEC-165（ストーリーモード）が置き換えた。 EASY の札・2 ステージ・レッスン・根まで弱いヒーローは撤去（PR I）。
 
 # SPEC-147 — EASY（初めての人のための短い 3 ステージ）
 

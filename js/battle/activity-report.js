@@ -33,9 +33,7 @@ import {
   getPlayerName, setPlayerName, submitScore, getRankingApiUrl,
 } from "../ranking-client.js";
 import { markPlayed } from "../played.js";
-import { isEasy, markEasyCleared } from "../easy.js";   // SPEC-147
-import { unlockEasyReward } from "../hero-unlock.js";   // SPEC-153
-import { showLesson } from "../lesson.js";   // SPEC-147
+import { isEasy } from "../easy.js";   // SPEC-165 (= ストーリーは活動レポートを通らない)
 import { collectAnalysis, renderAnalysis } from "./analysis-ui.js";   // SPEC-148
 import { stopVoice } from "../voice.js";   // SPEC-149
 import { startConfetti, removeConfetti } from "../confetti.js";   // SPEC-149
@@ -61,9 +59,8 @@ function showLLUnlocked(extId) {
 export function triggerActivityReport() {
   pauseTime();
   stopVoice();   // SPEC-149: レッスンの読み上げが残っていても、 クリアの演出を優先する
-  const easy = isEasy();   // SPEC-147: EASY は ABSOLUTE・RTA を開かず、 LL も共通基盤も送らない。 代わりに EASY クリアを覚える
+  const easy = isEasy();   // チュートリアルは ABSOLUTE・RTA を開かず、 LL も共通基盤も送らない (= ストーリーは 1 ステージ完結なのでここは通らない)
   if (!easy) markPlayed();   // SPEC-088: 1 回遊び終えた (= 次から ABSOLUTE・RTA が選べる)
-  if (easy) { markEasyCleared(); unlockEasyReward(); }   // SPEC-153: ビリー・ザ・キッドが仲間に
   // SPEC-106: そのヒーローで全ステージをクリアした (= 初めてなら LL の解放を知らせる)
   const llFirst = !easy && addHeroClear(state.ownedHero?.heroId) && !!getExt(HERO_STARTING_WEAPON[state.ownedHero?.heroId])?.ll;
   _rewards = { ...grantRunRewards(true, { gumMul: perk("gumMul") }), dust: runDust() };   // SPEC-090: 全クリアの GUM (+ SPEC-090c 金勘定)
@@ -96,7 +93,6 @@ export function triggerActivityReport() {
       renderAnalysis(document.getElementById("activityReportAnalysis"), analysis);   // SPEC-148
       startConfetti();   // SPEC-149
       if (llFirst) showLLUnlocked(HERO_STARTING_WEAPON[state.ownedHero?.heroId]);   // SPEC-106
-      if (easy) showLesson("s2.clear");   // SPEC-147
     },
   });
 }
@@ -106,14 +102,6 @@ function _wireOnce() {
   _wired = true;
   document.getElementById("activityReportRetry")
     ?.addEventListener("click", _onRetryClick);
-  // SPEC-147: EASY をクリアしたら NORMAL へ (= タイトルを通さずにモード選択へ)
-  document.getElementById("activityReportToNormal")
-    ?.addEventListener("click", async () => {
-      document.getElementById("activityReportModal")?.classList.add("hidden");
-      await returnToTitle({ navi: false });
-      const m = await import("../main.js");
-      m.openModeSelectFromTitle?.();
-    });
   // SPEC-052: タイトルに戻る (= ゲームオーバーと同じ処理)
   document.getElementById("activityReportToTitle")
     ?.addEventListener("click", () => {
@@ -222,10 +210,7 @@ function _renderReport() {
 
   // タイトル
   const titleEl = document.getElementById("activityReportTitle");
-  if (titleEl) titleEl.textContent = isEasy() ? t("report.easyTitle", "EASY クリア！") : t("report.title", "活動レポート");
-  // SPEC-147: EASY は「NORMAL に挑む」を一番上に。 ランキングは送らない (= 短いステージの点なので)
-  const toNormal = document.getElementById("activityReportToNormal");
-  if (toNormal) { toNormal.classList.toggle("hidden", !isEasy()); toNormal.textContent = t("report.toNormal", "NORMAL に挑む ▶"); }
+  if (titleEl) titleEl.textContent = t("report.title", "活動レポート");
   document.querySelector("#activityReportModal .gameover-modal__form")?.classList.toggle("hidden", isEasy());
 
   // SPEC-038: ヒーローはアイコン + 名前で大きく表示

@@ -56,9 +56,8 @@ import { resetSignature, tickSignature } from "./signature.js";   // SPEC-100
 import { tickLLExtras } from "./ll.js";   // SPEC-101
 import { naviSay, naviLines } from "../navi.js";
 import { clearNaviTipQueue } from "../navi-tips.js";
-import { isEasy, easyStage, easyHeroMul, stageCount } from "../easy.js";   // SPEC-147 / SPEC-154
+import { isEasy, easyStage, stageCount } from "../easy.js";   // SPEC-165 (= チュートリアル = ストーリー)
 import { newRunStats, tickRunStats } from "./run-stats.js";   // SPEC-148
-import { tickLessons, clearLessons, showLesson } from "../lesson.js";   // SPEC-147
 import { clearBossChest } from "./boss-chest.js";   // SPEC-153
 import { isStory, storyStage, landOf, loadStory, mergeStartExt } from "../story.js";   // SPEC-165
 import { resetStoryBattle, tickStoryBattle } from "./story-battle.js";   // SPEC-165
@@ -198,15 +197,13 @@ export function startBattle(hero) {
   resetStoryBattle();                           // SPEC-165: ストーリーの進み (= クリア条件・目印・一言)
 
   // SPEC-014: hero.stats.hp / agi から HP 上限と移動速度を派生 (= hero ごとに性能差)
-  // SPEC-147: EASY は根 (= サバイバーの覚醒) を取るまで弱い (= HP と攻撃 ×0.6。 根で ×1.0 に戻る)
-  const ezMul        = easyHeroMul(getMeta());
-  const maxHp        = Math.round(baseMaxHp(heroMaxHp(hero)) * ezMul * (storyStage()?.heroMul?.hp ?? 1));   // SPEC-090c: 頑丈なからだ・鉄壁。 SPEC-165: 試練では HP を多く
+  const maxHp        = Math.round(baseMaxHp(heroMaxHp(hero)) * (storyStage()?.heroMul?.hp ?? 1));   // SPEC-090c: 頑丈なからだ・鉄壁。 SPEC-165: 試練では HP を多く
   state.statsMax.hp  = maxHp;
   b.baseMaxHp        = maxHp;   // SPEC-090c: アーマーはこれに足す (= buffs.js)
   state.stats.hp     = maxHp;
   b.player.speed     = heroSpeed(hero);
   // SPEC-097: PHY は武器のダメージに、 INT は武器の間隔に効く (= weapons.js が掛ける)
-  b.heroDmgMul       = heroDmgMul(hero) * ezMul;   // SPEC-147
+  b.heroDmgMul       = heroDmgMul(hero);
   b.heroCdMul        = heroCdMul(hero);
   resetSignature(hero);   // SPEC-100: 固有スキル
   state.xp           = XP_INITIAL;
@@ -233,13 +230,8 @@ export function startBattle(hero) {
 
   b.active = true;
   resetFx();             // SPEC-045: 揺れ・粒・予告をステージごとに作り直す
-  if (!isEasy()) startCoachIfFirst();   // SPEC-042: 初回のステージ 1 だけ操作ガイド (= SPEC-147: EASY はレッスンで説明する)
-  // SPEC-147: EASY の時刻 (= レッスンが読む)
-  const ez = easyStage();
-  b.easyBossAtMs = ez?.bossAtMs ?? null;
-  b.easyWarnMs = ez?.warnMs ?? null;
-  b.easyShopTimes = ez?.shopTimesMs ?? null;
-  b.easyRareDone = false;
+  if (!isEasy()) startCoachIfFirst();   // SPEC-042: 初回のステージ 1 だけ操作ガイド (= SPEC-165: ストーリーはレシピの一言で説明する)
+  b.easyRareDone = false;   // SPEC-165: レシピの rareAtMs (= 決まった時刻のレアエネミー) を 1 回だけ
   // SPEC-090c: 先手 (= 始まってすぐ選ぶ。 各ステージの始まりに。 経験値の梯子は進めない)
   // SPEC-109: ショップで遊ぶときは CE に読み替える (= resetShopForStage)
   // SPEC-111: RTA でもショップ (= 作者の決定 2026-10-20。 RTA の記録は作者のものだけなので、 レギュレーションの版は分けない)
@@ -259,10 +251,9 @@ export function startBattle(hero) {
   resizeCanvas();
   centerCameraOnPlayer();   // SPEC-155: 最初のコマから自分を真ん中に (= 止めたまま降りこむ復活で、 ステージの外が映っていた)
   _showStageIntro();     // SPEC-046: 「STAGE n / ステージ名」の帯
-  // SPEC-153: ボスの予告が出たら、 マインちゃんが「中央の赤いエリアにボスが来るよ！」 (= EASY のステージ 1 ではレッスンが同じことを言う)
+  // SPEC-153: ボスの予告が出たら、 マインちゃんが「中央の赤いエリアにボスが来るよ！」
   setBossIncomingHook(() => {
     if (isStory()) return;   // SPEC-165: ストーリーはレシピの一言 (= bossWarn) が言う
-    if (showLesson("s1.boss")) return;
     naviSay(naviLines("bossWarn"), { place: "battle", autoHideMs: 1800, top: _commTop() });
   });
   resizeCanvas();
@@ -315,7 +306,6 @@ function _showStageIntro() {
   naviSay(naviLines("stage", {
     stageIdx: idx, stageCount: stageCount(), rta: !!state.rtaMode,   // SPEC-154
     stageName: stage ? t(stage.nameKey, stage.nameKey) : "",
-    bossSec: easyStage() ? Math.round(easyStage().bossAtMs / 1000) : null,   // SPEC-153
   }), { place: "battle", autoHideMs: 1600, top: _commTop() });
 }
 let _introTimer = 0;
@@ -324,7 +314,6 @@ export function stopBattle() {
   state.battle.active = false;
   hideCoach();   // SPEC-042
   clearNaviTipQueue();   // SPEC-068: 戦闘をやめたら、 話す予定のひとことは捨てる
-  clearLessons();        // SPEC-147
   clearBossChest();      // SPEC-153
   if (_raf) {
     cancelAnimationFrame(_raf);
@@ -385,7 +374,6 @@ function _step(dt, now) {
   tickRegen(dt);                 // SPEC-011: Ramen 系列の HP regen
   tickCoach(dt, v.x !== 0 || v.y !== 0);   // SPEC-042: 操作ガイド
   tickMilestones(_commTop() + 64);          // SPEC-105: 撃破数の節目 (= 止めない)
-  tickLessons();                            // SPEC-147: EASY のレッスン (= 店より先に止める)
   if (state.shop) tickShop();               // SPEC-109: 時刻になったら店を開く (= 時間を止める)
   if (state.mission) tickMissions();        // SPEC-112: ミッションの持ちかけ・残り時間・達成
   if (state.battle.contactCooldownMs > 0) {

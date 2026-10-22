@@ -1,10 +1,9 @@
-// SPEC-149: 紙吹雪 (= マイクリの金宝箱の演出の値のまま)・レッスンのボイスの中断・EASY の釣り合い
+// SPEC-149: 紙吹雪 (= マイクリの金宝箱の演出の値のまま)
 // 実行: node --test tests/confetti.test.mjs
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { CONFETTI, CONFETTI_COLORS, resetParticle, stepParticle } from "../js/confetti.js";
-import { EASY_STAGES } from "../js/easy.js";
 
 const read = (p) => readFileSync(new URL(p, import.meta.url), "utf8");
 
@@ -47,9 +46,3 @@ test("配線: ステージクリアと全クリアで紙吹雪、 閉じたら�
   assert.match(read("../css/components.css"), /\.confetti \{[^}]*pointer-events: none;[^}]*z-index: calc\(var\(--z-help\) \+ 2\)/);
 });
 
-test("EASY: 敵の数は 1/3。 ステージ 1 は雑魚が弱く、 ステージ 2 から本気", () => {
-  assert.equal(EASY_STAGES[0].spawnIntervalMs, 960);
-  assert.equal(EASY_STAGES[1].spawnIntervalMs, 570);   // 負ける設計のステージ 2 は 1/2 (= SPEC-154)
-  assert.ok(EASY_STAGES[0].enemyDmgMul <= 0.5);
-  assert.ok(EASY_STAGES[1].enemyDmgMul > EASY_STAGES[0].enemyDmgMul);
-});

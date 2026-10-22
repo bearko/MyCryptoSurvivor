@@ -19,7 +19,6 @@ const { TIP_KEYS } = await import("../js/navi-tips.js");
 const { normalizeSettings, updateSettings, DEFAULT_SETTINGS } = await import("../js/settings.js");
 const { STAGE_TABLE } = await import("../js/constants.js");
 const { ADVICE_NODES } = await import("../js/battle/run-stats.js");   // SPEC-159
-const { LESSON_KEYS } = await import("../js/easy.js");
 const { TELOP_KINDS } = await import("../js/result-telop.js");
 const ui = JSON.parse(readFileSync(new URL("../data/i18n/ui.json", import.meta.url), "utf8"));
 const heroesRaw = JSON.parse(readFileSync(new URL("../data/heroes.json", import.meta.url), "utf8"));
@@ -49,9 +48,8 @@ test("マインちゃんのどのセリフにもボイスがある", () => {
     // SPEC-159: 4 回目の録音 (= EASY のすすめ・復活・木から戻った・おすすめ・ボスの予告・EASY のステージ・ミッション・レッスン・テロップ)
     ...naviLines("mode", { first: true }), ...naviLines("revive"), ...naviLines("afterTree", { bought: 1 }), ...naviLines("afterTree", { bought: 0 }),
     ...Object.keys(ADVICE_NODES).map((key) => naviLines("advice", { key, vars: { a: "a", b: "b" } })[0]),
-    ...naviLines("bossWarn"), ...naviLines("stage", { stageIdx: 0, stageCount: 2, stageName: "n", bossSec: 15 }),
+    ...naviLines("bossWarn"),
     { key: "navi.mission.1", voice: "mission.1" }, { key: "navi.mission.2", voice: "mission.2" },   // js/battle/missions.js
-    ...LESSON_KEYS.map((k) => ({ key: `lesson.${k}`, voice: `lesson.${k}` })),   // js/lesson.js (= hasVoice で付ける)
     ...Object.values(TELOP_KINDS).map((k) => ({ key: k.line, voice: k.voice })),   // js/result-telop.js
   ];
   for (const l of all) {

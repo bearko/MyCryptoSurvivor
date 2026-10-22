@@ -19,9 +19,9 @@ import { playWipe } from "./transition.js";
 import { naviTitle } from "./navi.js";
 import { startTitleBgm } from "./ui-sound.js";
 import { hasPlayed, isModeLocked } from "./played.js";
-import { hasClearedEasy } from "./easy.js";   // SPEC-147
+import { hasClearedEasy } from "./easy.js";   // SPEC-165: チュートリアル (= ストーリー 5-5) を終えた印
 import { enterStory } from "./story-map.js";   // SPEC-165
-import { loadStory, allStoryIds } from "./story.js";   // SPEC-165
+import { loadStory, allStoryIds, storyAllCleared } from "./story.js";   // SPEC-165
 
 let _wired   = false;
 let _onPick  = null;   // (regulation) => void、 hero select に進む callback
@@ -48,19 +48,15 @@ export function showModeSelect() {
 
 /** SPEC-088: ロックの札。 カードは見せたまま薄くし、 ボタン・スライダー・リンクを押せなくして、 開く条件を 1 行 */
 const _LOCKABLE = [
-  { mode: "NORMAL",   cardId: "modeCardNormal",   lockId: "modeCardNormalLock" },   // SPEC-147: EASY をクリアするまで
+  { mode: "NORMAL",   cardId: "modeCardNormal",   lockId: "modeCardNormalLock" },   // SPEC-165: ストーリーを最後までクリアするまで
   { mode: "ABSOLUTE", cardId: "modeCardAbsolute", lockId: "modeCardAbsoluteLock" },
   { mode: "RTA",      cardId: "modeCardRta",      lockId: "modeCardRtaLock" },
 ];
 
 function _applyLocks() {
   const played = hasPlayed();
-  const easyCleared = hasClearedEasy();
-  // SPEC-147: EASY の札 (= 初めての人には光らせる。 クリア済みなら印)
-  const easyCard = _$("modeCardEasy");
-  easyCard?.classList.remove("mode-card--recommend");   // SPEC-165: おすすめはストーリー (= EASY は最後の PR で外す)
-  _$("modeCardStory")?.classList.toggle("mode-card--recommend", !played && !easyCleared);
-  _$("modeCardEasyDone")?.classList.toggle("hidden", !easyCleared);
+  const easyCleared = tutorialDone();
+  _$("modeCardStory")?.classList.toggle("mode-card--recommend", !played && !easyCleared);   // SPEC-165: 初めての人にはストーリーを光らせる
   for (const { mode, cardId, lockId } of _LOCKABLE) {
     const card = _$(cardId);
     if (!card) continue;
@@ -76,6 +72,11 @@ function _applyLocks() {
   }
 }
 
+/** SPEC-165: チュートリアルを終えたか (= ストーリー 5-5 のクリア (= mcs.easyCleared) か、 全 25 のクリア。 旧 EASY のクリアも同じ印) */
+function tutorialDone() {
+  return hasClearedEasy() || storyAllCleared(loadStory());
+}
+
 export function hideModeSelect() {
   _$("gameModeSelectScreen")?.classList.add("hidden");
 }
@@ -84,8 +85,7 @@ function _wireOnce() {
   if (_wired) return;
   _wired = true;
 
-  _$("btnModeEasy")?.addEventListener("click", () => _pick(REGULATION_NORMAL, { easy: true }));   // SPEC-147
-  _$("btnModeStory")?.addEventListener("click", () => { state.storyId = null; state.easyMode = false; state.rtaMode = false; hideModeSelect(); enterStory(); });   // SPEC-165: プロローグをまだ通っていなければ、 説明なしでいきなり 1-0 (= ワイプは enterStory の側で 1 回だけ。 二重に掛けると内側が捨てられて真っ暗のまま止まった)
+  _$("btnModeStory")?.addEventListener("click", () => { state.storyId = null; state.rtaMode = false; hideModeSelect(); enterStory(); });   // SPEC-165: プロローグをまだ通っていなければ、 説明なしでいきなり 1-0 (= ワイプは enterStory の側で 1 回だけ。 二重に掛けると内側が捨てられて真っ暗のまま止まった)
   _$("btnModeNormal")?.addEventListener("click", () => _pick(REGULATION_NORMAL));
   _$("btnModeAbsolute")?.addEventListener("click", () => _pick(REGULATION_ABSOLUTE));
   // SPEC-040: RTA は NORMAL のルール + rtaMode
@@ -110,12 +110,11 @@ function _wireOnce() {
   });
 }
 
-function _pick(regulation, { rta = false, absolute = null, easy = false } = {}) {
-  // SPEC-088: 初プレイは NORMAL だけ (= ボタンは disabled にしてあるが、 ここでも止める)。 SPEC-147: NORMAL は EASY のあと
-  if (!easy && isModeLocked(rta ? "RTA" : regulation, hasPlayed(), hasClearedEasy())) return;
+function _pick(regulation, { rta = false, absolute = null } = {}) {
+  // SPEC-088: 初プレイは NORMAL だけ (= ボタンは disabled にしてあるが、 ここでも止める)。 SPEC-165: NORMAL はストーリーのあと
+  if (isModeLocked(rta ? "RTA" : regulation, hasPlayed(), tutorialDone())) return;
   state.regulation = regulation;
   state.rtaMode = rta;
-  state.easyMode = !!easy;   // SPEC-147
   state.storyId = null;      // SPEC-165
   if (regulation === REGULATION_NORMAL) {
     state.absolute = { spawnMul: 1, hpMul: 1, dmgMul: 1, speedMul: 1 };
@@ -174,18 +173,13 @@ function _renderLabels() {
   const ti = _$("modeSelectTitle"); if (ti) ti.textContent = t("mode.title", "ゲームモード");
   const sb = _$("modeSelectSub");   if (sb) sb.textContent = t("mode.sub",   "難易度を選んで進む");
   const nd = _$("modeCardNormalDesc"); if (nd) nd.textContent = t("mode.normalDesc", "通常のバランス。 全 4 軸が 1.0×。 スコア倍率 1.00。");
-  // SPEC-147: EASY
-  const ed = _$("modeCardEasyDesc"); if (ed) ed.textContent = t("mode.easyDesc", "短い 3 ステージで、 遊び方をマインちゃんが案内。 クリアは 1 回でよい。");
-  const em = _$("modeCardEasyMul");  if (em) em.textContent = t("mode.easyMul", "案内つき");
-  const eo = _$("modeCardEasyDone"); if (eo) eo.textContent = t("mode.easyDone", "✓ クリア済み");
-  const bE = _$("btnModeEasy");      if (bE) bE.textContent = t("mode.startEasy", "EASY で始める");
   // SPEC-165: ストーリー (= クリア数も)
   const sn = _$("modeCardStoryName"); if (sn) sn.textContent = t("mode.storyName", "ストーリー（β）");
   const sd = _$("modeCardStoryDesc"); if (sd) sd.textContent = t("mode.storyDesc", "");
   const sm = _$("modeCardStoryMul");  if (sm) sm.textContent = t("mode.storyMul", "案内つき");
   const bS = _$("btnModeStory");      if (bS) bS.textContent = t("mode.startStory", "ストーリーを始める");
   const so = _$("modeCardStoryDone"); if (so) { const p = loadStory(); so.classList.toggle("hidden", p.cleared.length === 0); so.textContent = `✓ ${p.cleared.length} / ${allStoryIds().length}`; }
-  const nl = _$("modeCardNormalLock"); if (nl) nl.textContent = t("mode.lockedNormal", "🔒 EASY をクリアすると選べるようになる");
+  const nl = _$("modeCardNormalLock"); if (nl) nl.textContent = t("mode.lockedNormal", "🔒 ストーリーを最後までクリアすると選べるようになる");
   const ad = _$("modeCardAbsoluteDesc"); if (ad) ad.textContent = t("mode.absoluteDesc", "難易度を 4 軸で自分でチューニング。 きつくするほどスコア倍率 UP、 楽にすると DOWN。");
   const bN = _$("btnModeNormal");    if (bN) bN.textContent = t("mode.startNormal", "これで始める");
   const bA = _$("btnModeAbsolute");  if (bA) bA.textContent = t("mode.startAbsolute", "これで始める");

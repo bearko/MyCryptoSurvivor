@@ -1,11 +1,13 @@
 ---
 id: SPEC-164
 title: EASY Guidance Gates — No Ring on the CE Lesson, Skill-Tree-Only Revive Before the Root, Root-First Skill Tree, and a Gentle Stage 2 (Harmless Mobs, Long Boss, Thunder Drum for Half)
-status: Done
+status: Superseded
 pr: 204
 phase: v1.8 Balance
 kind: Changed
 ---
+
+> **Superseded**（2026-10-22）: SPEC-165 が置き換えた。 根なしのゲートと根まで ×0.5 は撤去。
 
 # SPEC-164 — EASY の導線のゲートと、 ステージ 2 のやさしさ
 

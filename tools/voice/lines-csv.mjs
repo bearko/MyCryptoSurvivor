@@ -5,7 +5,6 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { STAGE_TABLE, HERO_STARTING_WEAPON } from "../../js/constants.js";
 import { NODE_MAP } from "../../js/skill-data.js";
 import { ADVICE_NODES } from "../../js/battle/run-stats.js";
-import { EASY_STAGES } from "../../js/easy.js";
 
 const ui = JSON.parse(readFileSync(new URL("../../data/i18n/ui.json", import.meta.url), "utf8"));
 const heroes = JSON.parse(readFileSync(new URL("../../data/heroes.json", import.meta.url), "utf8"));
@@ -21,7 +20,6 @@ const fill = (s, vars) => s.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? String(
 /** key → [[variant, vars]] (= 変数のある文の展開。 無いものは 1 行) */
 function variants(key) {
   if (key === "navi.stage.first") return [["stage1", { stage: stageName(0) }]];
-  if (key === "navi.stage.first.easy") return [["stage1", { stage: stageName(0), sec: Math.round(EASY_STAGES[0].bossAtMs / 1000) }]];
   if (key === "navi.stage.next") return STAGE_TABLE.slice(1, -1).map((s, i) => [`stage${i + 2}`, { stage: stageName(i + 1) }]);
   if (key === "navi.stage.last") return [[`stage${STAGE_TABLE.length}`, { stage: stageName(STAGE_TABLE.length - 1) }]];
   if (key === "navi.hero.pick") return heroList.map((h) => [`hero${h.heroId}`, { name: ja(h.name), weapon: weaponName(HERO_STARTING_WEAPON[h.heroId]) }]);
@@ -29,8 +27,8 @@ function variants(key) {
   return [["", {}]];
 }
 
-const PREFIXES = ["navi.", "lesson.", "advice.", "telop.navi."];
-const SKIP = new Set(["lesson.next"]);
+const PREFIXES = ["navi.", "advice.", "telop.navi."];   // SPEC-165: レッスン (lesson.) は撤去。 ストーリーの台本は tools/voice/story-csv.mjs
+const SKIP = new Set();
 const rows = [];
 for (const [k, v] of Object.entries(ui)) {
   if (!PREFIXES.some((p) => k.startsWith(p)) || SKIP.has(k)) continue;

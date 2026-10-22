@@ -16,7 +16,6 @@ import { triggerLevelUpPick } from "./levelup.js";
 import { addShopGift } from "./shop.js";   // SPEC-109
 import { playSe } from "../audio.js";
 import { naviTipOnce } from "../navi-tips.js";
-import { showLesson } from "../lesson.js";   // SPEC-147
 
 /**
  * マジックカードを (x, y) にドロップ (= CE gem と同位置に重ねて出すことが多い)。
@@ -58,7 +57,6 @@ export function tickMagicCards(_dt) {
   if (state.shop) {
     addShopGift(picked);
     playSe(SFX.GEM_PICKUP, 100, 0.5);
-    showLesson("s2.gift");   // SPEC-147 (= EASY のときだけ出る)
     return;
   }
 

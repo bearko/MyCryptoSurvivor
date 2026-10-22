@@ -7,7 +7,7 @@
 // - 下の小さな関数は、 戦闘の各所が「定数の代わり」に呼ぶ (= state.perks が無ければ元の定数のまま)
 // 効果はすべて足し算の倍率 (= 強化エクステンション (SPEC-011) はその上に掛かる。 buffs.js)。
 
-import { bondRewards, loadStory } from "./story.js";   // SPEC-165: 絆のパッシブ
+import { bondUnlocked } from "./bonds.js";   // SPEC-165: 絆のパッシブ (= NORMAL をすでに遊べる人は最初から)
 import { state } from "./state.js";
 import { TREE_NODES, EXT_MASTERY, MAIN_CHANCE_PER_RANK, MAIN_CHANCE_BASE } from "./skill-data.js";
 import { nodeRank } from "./skill-logic.js";
@@ -120,7 +120,7 @@ export const healRatio = () => perk("pancakeHeal") || HEAL_RATIO;
 export const thunderBossRatio = () => Math.round((Math.max(THUNDER_BOSS_RATIO, bondThunder()) + perk("thunderBossRatio")) * 1000) / 1000;
 /** SPEC-165: ゴースト織田信長との絆 (= 雷鼓の対ボス 20% → 30%。 ストーリーの進みから読む) */
 function bondThunder() {
-  try { return bondRewards(loadStory()).unlock.includes("passive:thunder30") ? 0.3 : 0; } catch { return 0; }
+  try { return bondUnlocked("passive:thunder30") ? 0.3 : 0; } catch { return 0; }
 }
 /** ボス戦の宝箱の間隔 */
 export const bossChestCfg = () => (perk("bossChestFast") ? { ...BOSS_CHEST, ...BOSS_CHEST_FAST } : BOSS_CHEST);

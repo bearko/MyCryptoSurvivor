@@ -2,7 +2,7 @@
 // 実行: node --test tests/story.test.mjs
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 
 const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), "utf8");
 const S = await import("../js/story.js");
@@ -150,14 +150,14 @@ test("クリア条件 (= 純関数): 倒す・耐える・到達・集める・�
   assert.deepEqual(S.bondRewards({ cleared: [], best: {}, bonds: [] }), { gifts: 0, unlock: [] });
 });
 
-test("つなぎ: easy.js はストーリーをチュートリアルとして扱い、 レシピを EASY の形で返す。 レッスンは出ない。 ランドマップ・札・結果の画面", () => {
+test("つなぎ: easy.js はストーリーをチュートリアルとして扱い、 レシピを EASY の形で返す (= EASY のモードとレッスンは撤去)。 ランドマップ・札・結果の画面", () => {
   const easy = read("js/easy.js");
-  assert.match(easy, /return !!state\.easyMode \|\| isStory\(\);/);
-  assert.match(easy, /if \(isStory\(\)\) return storyOverride\(storyStage\(\)\);/);
-  assert.match(easy, /if \(isStory\(\)\) return 1;/);
-  assert.match(easy, /easyHeroMul\(meta, easy = !!state\.easyMode\)/);
-  const lesson = read("js/lesson.js");
-  assert.match(lesson, /if \(!isEasy\(\) \|\| isStory\(\) \|\| !globalThis\.document\) return false;/);
+  assert.match(easy, /export function isEasy\(\) \{\n\s+return isStory\(\);/);
+  assert.match(easy, /return isStory\(\) \? storyOverride\(storyStage\(\)\) : null;/);
+  assert.match(easy, /return isStory\(\) \? 1 : STAGE_TABLE\.length;/);
+  assert.doesNotMatch(easy, /EASY_STAGES|LESSON_KEYS|easyHeroMul|easyMode/);
+  assert.ok(!existsSync(new URL("../js/lesson.js", import.meta.url)) && !existsSync(new URL("../js/lesson-cursor.js", import.meta.url)), "レッスンは消した");
+  assert.doesNotMatch(read("js/state.js") + read("js/main.js") + read("js/mode-select.js"), /easyMode/);
   assert.match(read("js/battle/enemies.js"), /ez\?\.pool \?\? currentPool\(b\.stageElapsedMs\)/);
   assert.match(read("js/battle/enemies.js"), /ez\?\.maxEnemies \?\? stageMaxEnemies\(stage\)/);
   assert.match(read("js/battle/damage.js"), /if \(storyAllows\("ce"\)\) spawnGem/);

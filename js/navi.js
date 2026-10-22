@@ -25,7 +25,9 @@ import { HERO_STARTING_WEAPON } from "./constants.js";
  */
 export const RETIRED_VOICES = new Set([
   "hero.1001", "hero.1002", "hero.1004", "hero.2001", "hero.2002", "hero.2005", "hero.2011", "hero.2012",
-  "mode.easy",   // SPEC-165: 初めての案内はストーリーへ (= 文だけ。 録音は J で)
+  "mode.easy", "stage.1.easy",   // SPEC-165: 初めての案内はストーリーへ。 EASY のステージの案内も撤去
+  "lesson.s1.move", "lesson.s1.ce", "lesson.s1.shop", "lesson.s1.boss", "lesson.s1.clear", "lesson.s2.start", "lesson.s2.rare", "lesson.s2.gift",
+  "lesson.s2.mission", "lesson.s2.reward", "lesson.s2.boss", "lesson.s2.lose", "lesson.s2.root", "lesson.s2.thunder", "lesson.s2.clear",   // SPEC-165: レッスンは撤去 (= 録音は残す)
 ]);
 
 /** コマ (= ファイル名の navi_ain_ のあと) */
@@ -95,10 +97,9 @@ export function naviLines(scene, ctx = {}) {
     case "stage": {
       const i = ctx.stageIdx | 0;
       const last = (ctx.stageCount | 0) > 0 && i === ctx.stageCount - 1;
-      // SPEC-153: EASY はボスが 15 秒で来るので「4 分で」とは言わない (= 秒を入れる)
-      const key = i === 0 ? (ctx.bossSec ? "navi.stage.first.easy" : "navi.stage.first") : (last ? "navi.stage.last" : "navi.stage.next");
-      const voice = i === 0 && ctx.bossSec ? "stage.1.easy" : `stage.${i + 1}`;   // SPEC-085: ステージの名前ごとのボイス
-      const lines = [{ key, vars: { stage: ctx.stageName ?? "", sec: String(ctx.bossSec ?? "") }, pose: last ? "hooray" : "pointer", voice: hasVoice(voice) ? voice : null }];
+      const key = i === 0 ? "navi.stage.first" : (last ? "navi.stage.last" : "navi.stage.next");
+      const voice = `stage.${i + 1}`;   // SPEC-085: ステージの名前ごとのボイス
+      const lines = [{ key, vars: { stage: ctx.stageName ?? "" }, pose: last ? "hooray" : "pointer", voice: hasVoice(voice) ? voice : null }];
       if (i === 0 && ctx.rta) lines.push({ key: "navi.stage.rta", pose: "wink", voice: "stage.rta" });
       return lines;
     }

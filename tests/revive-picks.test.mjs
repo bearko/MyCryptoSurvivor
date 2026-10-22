@@ -78,7 +78,6 @@ test("復活のしかたの説明 (= マインちゃんの全身と時計) は�
   assert.match(go, /if \(hasSeenRevive\(\)\) \{ show\(\); return; \}\n\s+markReviveSeen\(\);\n\s+_introSaid = true;\n\s+const lines = naviLines\("revive"\);/);
   // SPEC-160: 2 回目からは画面の下の帯のマインちゃんがまず励ます (= 画面遷移は増やさない)
   assert.match(go, /if \(!_introSaid && !lines\.length\) \{ _loseN \+= 1; lines\.push\(\.\.\.naviLines\("lose", \{ n: _loseN \}\)\); \}/);
-  assert.match(go, /if \(isEasy\(\) && showLesson\("s2\.lose"\)\) return;/, "EASY も 2 回目からは励まし");
   assert.match(go, /const lines = state\.battle\.heroDissolved \|\| hasSeenRevive\(\) \? \[\] : naviLines\("revive"\);/, "帯でも言い直さない");
   assert.match(read("../js/constants.js"), /export const LS_REVIVE_SEEN = `\$\{LS_PREFIX\}\.reviveSeen`;/);
   // 設定の「もう一度聞く」で忘れる
@@ -94,7 +93,6 @@ test("台本の CSV は変数を実際の語に展開してある (= {stage} や
   const keys = read("../docs/voice/script-mine-keys.txt").trim().split("\n");
   const csv = read("../docs/voice/script-mine.csv");
   assert.ok(!/\{\w+\}/.test(csv), "変数が残っていない");
-  assert.ok(keys.some((l) => l.startsWith("navi.stage.first.easy#stage1\t") && /15 秒|15秒/.test(l)), "EASY の秒数が入っている");
   assert.ok(keys.some((l) => l.startsWith("navi.hero.pick#hero10001\t") && l.includes("MCHウォーリアー") && l.includes("ブレード")));
   assert.ok(keys.some((l) => l.startsWith("advice.shot\t") && l.includes("厚い皮")));
   assert.equal(keys.filter((l) => l.startsWith("navi.stage.next#")).length, 1, "ステージ 2 のぶん");
