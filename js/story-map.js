@@ -15,6 +15,7 @@ import { naviHide } from "./navi.js";
 import { startMenuBgm } from "./ui-sound.js";
 import { getHero, localizedHeroName, heroImg } from "./heroes.js";
 import { img, REGULATION_NORMAL } from "./constants.js";
+import { playVoice, hasVoice, stopVoice } from "./voice.js";   // SPEC-165: 台本の録音
 import { LANDS, STORY_PLAN, STORY_MAP, STORY_HERO, loadStory, storyUnlocked, currentStoryId, stageArt, stageRole, TOWER, FINAL_BOSS_ID, MAP_TERRITORY, stagePos, landOf, bondBurst, PROLOGUE, prologueDone, allStoryIds, nextInSameLand } from "./story.js";
 import { naviFrameUrl, NAVI_POSES } from "./navi.js";
 import { playSe } from "./audio.js";
@@ -179,6 +180,7 @@ function _say(key) {
   const s = t(key, ""); if (!s || s === key) return;
   txt.textContent = s;
   el.classList.remove("hidden");
+  if (hasVoice(key)) playVoice(key);   // 録音があれば読む
   clearTimeout(_sayTimer);
   _sayTimer = setTimeout(() => el.classList.add("hidden"), 6500);
 }
@@ -440,6 +442,7 @@ function _renderScene() {
   const nm = _$("storySceneName"); if (nm) nm.textContent = who === "covid" ? "COVID-19" : "NAVI // MINE";
   scr.classList.toggle("is-foe", who === "covid");
   const txt = _$("storySceneText"); if (txt) { txt.textContent = ""; _typeInto(txt, ln.text); }
+  stopVoice(); if (who === "mine" && hasVoice(ln.key)) playVoice(ln.key);   // 録音があれば読む (= 次の行へ進んだら前の声は切る)
   const pg = _$("storySceneNo"); if (pg) pg.textContent = `${sc.i + 1} / ${sc.lines.length}`;
   const next = _$("storySceneNext"); if (next) next.textContent = last ? t("story.scene.toMap", "ワールドマップへ ▶") : t("story.scene.next", "▶");
 }

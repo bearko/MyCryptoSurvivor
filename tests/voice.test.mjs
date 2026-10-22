@@ -25,9 +25,9 @@ const heroesRaw = JSON.parse(readFileSync(new URL("../data/heroes.json", import.
 const heroes = Array.isArray(heroesRaw) ? heroesRaw : (heroesRaw.heroes ?? Object.values(heroesRaw));
 
 test("ボイスのファイルがすべてある (= MP3。 長さも分かっている)", () => {
-  assert.equal(Object.keys(VOICE_LINES).length, 89);   // 台本 35 本 ＋ 追加の録音 8 本 (= 許褚は差し替え。 SPEC-097) ＋ 倒れたとき・スキルツリー 13 本 (= SPEC-116) ＋ 最初の店の説明 1 本 ＋ SPEC-159 の 32 本
+  assert.equal(Object.keys(VOICE_LINES).length, 89 + 49);   // SPEC-165: ＋ ストーリーの台本の 1 回目 49 本 (= 0 番の mission.1 は既存)   // 台本 35 本 ＋ 追加の録音 8 本 (= 許褚は差し替え。 SPEC-097) ＋ 倒れたとき・スキルツリー 13 本 (= SPEC-116) ＋ 最初の店の説明 1 本 ＋ SPEC-159 の 32 本
   for (const [id, v] of Object.entries(VOICE_LINES)) {
-    assert.match(v.file, /^assets\/voice\/mine\/[\w.]+\.mp3$/, id);
+    assert.match(v.file, /^assets\/voice\/mine\/[\w.-]+\.mp3$/, id);   // SPEC-165: story.1-1.intro のようにハイフンも
     assert.ok(existsSync(new URL(`../${v.file}`, import.meta.url)), v.file);
     assert.ok(statSync(new URL(`../${v.file}`, import.meta.url)).size < 80000, `${v.file} は小さい`);
     assert.ok(v.ms > 500 && v.ms < 10000, `${id}: ${v.ms}`);   // SPEC-159: 「敵の弾に削られてるね…」が 9.1 秒
@@ -53,7 +53,6 @@ test("マインちゃんのどのセリフにもボイスがある", () => {
     ...Object.values(TELOP_KINDS).map((k) => ({ key: k.line, voice: k.voice })),   // js/result-telop.js
   ];
   for (const l of all) {
-    if (l.key === "navi.mode.story" && !l.voice) { assert.ok(ui[l.key]?.ja && ui[l.key]?.en, `${l.key} の文`); continue; }   // SPEC-165: 録音は J で (= いまは文だけ)
     // SPEC-097: ボイスをまだ録っていないヒーローの紹介だけは、 文だけ
     if (l.key.startsWith("navi.hero.pick.") && !l.voice) assert.ok(!VOICE_LINES[`hero.${l.key.split(".").pop()}`] || RETIRED_VOICES.has(`hero.${l.key.split(".").pop()}`), l.key);
     else assert.ok(l.voice && VOICE_LINES[l.voice], `${l.key} のボイス (${l.voice})`);
@@ -61,6 +60,9 @@ test("マインちゃんのどのセリフにもボイスがある", () => {
   }
   // 使っていないボイスはない (= タイトルコールは main.js が鳴らす。 SPEC-097 で外したものを除く)
   const used = new Set(all.map((l) => l.voice).concat("title.call", "shop.intro", ...RETIRED_VOICES));   // shop.intro は shop.js が鳴らす
+  // SPEC-165: ストーリーの台本 (= 名前は文の key そのもの。 naviLines("story", { key }) とシーン・地図のひとことが鳴らす)
+  const storyKeys = new Set(readFileSync(new URL("../docs/voice/script-story-keys.txt", import.meta.url), "utf8").trim().split("\n").map((l) => l.split("\t")[0]));
+  for (const id of Object.keys(VOICE_LINES)) if (storyKeys.has(id)) { used.add(id); assert.ok(ui[id]?.ja && ui[id]?.en, `${id} の文`); }
   for (const id of Object.keys(VOICE_LINES)) assert.ok(used.has(id), `${id} を使っていない`);
 });
 

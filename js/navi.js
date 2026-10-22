@@ -74,7 +74,7 @@ export function naviLines(scene, ctx = {}) {
     }
     case "mode":
       // SPEC-147: 初めての人 (= EASY をまだクリアしていない・NORMAL も遊んでいない) には EASY をすすめる
-      if (ctx.first) return [{ key: "navi.mode.story", pose: "sparkle" }];   // SPEC-165: 初めてはストーリーへ (= navi.mode.easy は EASY と一緒に外す)
+      if (ctx.first) return [{ key: "navi.mode.story", pose: "sparkle", voice: hasVoice("navi.mode.story") ? "navi.mode.story" : null }];   // SPEC-165: 初めてはストーリーへ
       return [
         { key: "navi.mode.1", pose: "cross", mood: "cross", voice: "mode.1" },
         { key: "navi.mode.2", pose: "pointer", voice: "mode.2" },
