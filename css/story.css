@@ -228,3 +228,37 @@ body.is-rift #app { animation: story-warp 2.6s ease-in forwards; }
 .story-scene__face.is-foe { width: 256px; height: 256px; filter: drop-shadow(0 0 28px rgba(239, 95, 138, 0.7)); }
 /* スマホでヒーロー選択の × が共通基盤のチャットのボタンと重なる (= 作者の報告 2026-10-22) */
 @media (max-width: 640px) { .hero-modal__close-x { margin-right: 56px; } }
+
+/* ---------- 旅 (= 次のステージへ。 ヒーローが札から札へ歩く・次の札が開く) ---------- */
+.story-world__hero { position: absolute; width: 64px; height: 64px; transform: translate(-50%, -110%); image-rendering: pixelated; z-index: 5; pointer-events: none; filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.8)); animation: story-hero-bob 0.5s ease-in-out infinite alternate; }
+.story-world__hero.is-walk { transition: left 2s cubic-bezier(0.4, 0, 0.2, 1), top 2s cubic-bezier(0.4, 0, 0.2, 1); }
+@keyframes story-hero-bob { from { margin-top: 0; } to { margin-top: -6px; } }
+.story-stage.is-reveal { animation: story-reveal 1.1s cubic-bezier(0.2, 0.9, 0.2, 1.3) both; }
+.story-stage.is-reveal .story-stage__art { filter: drop-shadow(0 0 16px rgba(255, 225, 122, 0.95)); }
+@keyframes story-reveal { 0% { transform: translate(-50%, -50%) scale(0.4); opacity: 0; filter: brightness(3); } 60% { transform: translate(-50%, -50%) scale(1.15); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(1); filter: none; } }
+/* 新しく現れたランドの札 (= 靄が晴れたあとに弾む) */
+.story-plate.is-new { animation: story-plate-new 1.2s 1.2s cubic-bezier(0.2, 0.9, 0.2, 1.3) both; }
+@keyframes story-plate-new { 0% { transform: translate(-50%, -50%) scale(0.3); opacity: 0; } 60% { transform: translate(-50%, -50%) scale(1.15); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(1); } }
+
+/* ---------- ランクアップの演出 (= 1-5: ブレード → エリートブレード) ---------- */
+.story-rankup { position: fixed; inset: 0; z-index: var(--z-modal-top); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; background: radial-gradient(ellipse at 50% 45%, rgba(40, 30, 10, 0.92) 0%, rgba(4, 3, 10, 0.96) 70%); opacity: 0; transition: opacity 0.3s ease; cursor: pointer; overflow: hidden; }
+.story-rankup.is-run { opacity: 1; }
+.story-rankup.is-out { opacity: 0; }
+.story-rankup__rays { position: absolute; left: 50%; top: 45%; width: 900px; height: 900px; transform: translate(-50%, -50%); border-radius: 50%; background: repeating-conic-gradient(from 0deg, rgba(255, 225, 122, 0) 0deg, rgba(255, 225, 122, 0.35) 10deg, rgba(255, 225, 122, 0) 20deg, rgba(255, 225, 122, 0) 45deg); opacity: 0; animation: story-rays 2.6s ease-out forwards; }
+.story-rankup__rays--2 { animation-direction: reverse; animation-duration: 3.4s; }
+@keyframes story-rays { 0%, 30% { opacity: 0; transform: translate(-50%, -50%) rotate(0deg) scale(0.6); } 45% { opacity: 1; } 100% { opacity: 0.6; transform: translate(-50%, -50%) rotate(60deg) scale(1.1); } }
+.story-rankup__stage { position: relative; width: 192px; height: 192px; }
+.story-rankup__from, .story-rankup__to { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; }
+.story-rankup__from { animation: story-ru-from 1.1s ease-in forwards; }
+@keyframes story-ru-from { 0% { transform: scale(0.8); opacity: 0; } 20% { transform: scale(1); opacity: 1; } 70% { transform: scale(1.05) rotate(-2deg); } 80% { transform: scale(1.05) rotate(2deg); } 90% { transform: scale(1.1) rotate(-2deg); filter: brightness(2); } 100% { transform: scale(1.3); opacity: 0; filter: brightness(4); } }
+.story-rankup__to { opacity: 0; animation: story-ru-to 1.4s 1.05s cubic-bezier(0.2, 0.9, 0.2, 1.3) forwards; filter: drop-shadow(0 0 28px rgba(255, 225, 122, 0.95)); }
+@keyframes story-ru-to { 0% { transform: scale(0.3); opacity: 0; filter: brightness(4) drop-shadow(0 0 28px rgba(255, 225, 122, 0.95)); } 50% { transform: scale(1.25); opacity: 1; } 100% { transform: scale(1.1); opacity: 1; filter: brightness(1) drop-shadow(0 0 28px rgba(255, 225, 122, 0.95)); } }
+.story-rankup__flash { position: absolute; inset: -40%; border-radius: 50%; background: radial-gradient(circle, #fff 0%, rgba(255, 240, 200, 0.8) 30%, rgba(255, 225, 122, 0) 70%); opacity: 0; animation: story-ru-flash 0.6s 0.95s ease-out forwards; pointer-events: none; }
+@keyframes story-ru-flash { 0% { opacity: 0; transform: scale(0.4); } 30% { opacity: 1; } 100% { opacity: 0; transform: scale(1.6); } }
+.story-rankup__txt { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; color: #fff; opacity: 0; animation: story-ru-txt 0.6s 1.3s ease-out forwards; text-shadow: 0 2px 6px #000; }
+.story-rankup__txt small { font-size: 11px; letter-spacing: 4px; color: #ffe17a; }
+.story-rankup__txt b { font-size: 20px; font-weight: 900; }
+.story-rankup__txt b span { color: #ffe17a; margin: 0 6px; }
+@keyframes story-ru-txt { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.story-rankup__skip { position: absolute; bottom: max(24px, var(--safe-b)); font-size: 11px; opacity: 0.6; }
+:root[data-reduce-fx] .story-rankup__rays, :root[data-reduce-fx] .story-world__hero { animation: none; }

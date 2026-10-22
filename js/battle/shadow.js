@@ -34,8 +34,9 @@ export function spawnShadow(def) {
   const p = b.player;
   const a = Math.random() * Math.PI * 2;
   const r = def.r ?? SHADOW_DEFAULTS.r;
-  const x = p.x + Math.cos(a) * 260, y = p.y + Math.sin(a) * 260;
-  const hp = def.mode === "defeat" ? (def.hp ?? SHADOW_DEFAULTS.hp) : 1e9;
+  const x = def.at ? def.at.x : p.x + Math.cos(a) * 260, y = def.at ? def.at.y : p.y + Math.sin(a) * 260;   // at: 決まった場所 (= 1-5 は真ん中)
+  const attackable = def.mode === "defeat" || def.mode === "spar";
+  const hp = attackable ? (def.hp ?? SHADOW_DEFAULTS.hp) : 1e9;
   const moves = def.moves ?? SHADOW_DEFAULTS.moves;
   const first = def.first ?? Object.fromEntries(Object.keys(moves).map((k) => [k, Math.round(moves[k] * 0.6)]));
   const cd = {}; for (const k of Object.keys(moves)) cd[k] = first[k] ?? moves[k];
@@ -51,8 +52,8 @@ export function spawnShadow(def) {
     isBoss: false,
     isShadow: true,
     shadowId: def.id,
-    invuln: def.mode !== "defeat",
-    noHpBar: def.mode !== "defeat",
+    invuln: !attackable,
+    noHpBar: !attackable,
     xpValue: 0,
     aura: def.aura ?? null,
     behavior: null, shot: null, shotDmg: 0, fireCdMs: 0, aiming: false, aimAngle: 0, strafeDir: 1,

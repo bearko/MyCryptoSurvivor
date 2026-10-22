@@ -30,7 +30,7 @@ import { isEasy, stageCount } from "../easy.js";   // SPEC-147 / SPEC-154
 import { showLesson } from "../lesson.js";   // SPEC-147
 import { stopVoice } from "../voice.js";   // SPEC-149: 説明の途中でボスを倒したら、 ボイスを切ってクリアの SE
 import { startConfetti, removeConfetti } from "../confetti.js";   // SPEC-149
-import { isStory, storyStage, landOf, markStoryCleared, nextStoryId, storyRecipe, storyAllows } from "../story.js";   // SPEC-165
+import { isStory, storyStage, landOf, markStoryCleared, nextStoryId, storyRecipe, storyAllows, nextInSameLand } from "../story.js";   // SPEC-165
 import { naviSay, naviLines } from "../navi.js";   // SPEC-165
 
 let _wired = false;
@@ -203,8 +203,16 @@ export async function proceedStory() {
   removeConfetti();
   document.getElementById("stageTransitionModal")?.classList.add("hidden");
   resumeTime();
-  if (next && storyRecipe(next)) { m.startStoryStage(next); return; }
-  leaveStoryToMap();
+  if (next && storyRecipe(next) && nextInSameLand(state.storyId)) {   // 同じランド: 詳細の画面に戻って、 次の札が開き、 ヒーローが歩いていく (= 押すと飛ばせる)
+    const cur = state.storyId;
+    while (state.pauseFlags > 0) resumeTime();
+    const b = await import("./index.js");
+    b.stopBattle?.();
+    document.getElementById("app")?.classList.add("hidden");
+    m.travelToNext(cur, next);
+    return;
+  }
+  leaveStoryToMap();   // ランドの最後: マップへ (= 靄が晴れて次のランドが現れるのを見る)
 }
 /** SPEC-165: 戦闘をやめてランドマップへ */
 export async function leaveStoryToMap() {
@@ -259,8 +267,9 @@ function _renderTransitionModal() {
     if (titleEl) titleEl.textContent = t("story.clear.title", "ステージクリア!");
     const curEl = document.getElementById("stageTransitionCurrent");
     if (curEl) curEl.textContent = `${story.id}  ${t(`story.land.${land.id}`, land.id)} — ${t(`story.${story.id}.name`, "")}`;
-    if (subEl) subEl.textContent = nextId && storyRecipe(nextId) ? tpl(t("stage.proceedNext", "次は {next}"), { next: nextId }) : t("story.clear.done", "ここまで！ つづきは準備中");
-    if (proceedEl) { proceedEl.textContent = t("story.map.next", "次のステージへ ▶"); proceedEl.classList.toggle("hidden", !(nextId && storyRecipe(nextId))); }
+    const sameLand = !!(nextId && storyRecipe(nextId)) && nextInSameLand(story.id);
+    if (subEl) subEl.textContent = sameLand ? tpl(t("stage.proceedNext", "次は {next}"), { next: nextId }) : (nextId && storyRecipe(nextId) ? t("story.clear.landDone", "ランドを取り戻した！ マップへ戻ろう") : t("story.clear.done", "ここまで！ つづきは準備中"));
+    if (proceedEl) { proceedEl.textContent = t("story.map.next", "次のステージへ ▶"); proceedEl.classList.toggle("hidden", !sameLand); }   // ランドの最後は「マップへ」だけ
     const mapBtn = document.getElementById("stageTransitionMap"); if (mapBtn) mapBtn.textContent = t("story.map.toMap", "マップへ");
     const snapS = state.run.stages.find((s) => s.idx === idx);
     const setS = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };

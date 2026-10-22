@@ -13,7 +13,7 @@ import { hasVoice, voiceMs } from "../voice.js";
 import { storyStage, storyCleared, storyGoal, REACH_RADIUS, reachPoints, reachedPoint, markStoryBond, bondBurst } from "../story.js";
 import { spawnGem } from "./gems.js";
 import { spawnMagicCard } from "./magic-cards.js";
-import { addShopGift } from "./shop.js";
+import { addShopGift, openShop } from "./shop.js";
 import { tpl } from "../i18n.js";
 import { spawnShadow, dismissShadow, findShadow } from "./shadow.js";
 import { spawnItem } from "./field.js";
@@ -30,7 +30,9 @@ export function resetStoryBattle() {
   const b = state.battle;
   const r = storyStage();
   const pts = reachPoints(r?.clear);
-  b.story = r ? { id: r.id, ce: 0, said: new Set(), healDropped: false, healWaiting: false, reached: false, done: false, cameoAt: 0, reachIdx: 0, goal: pts[0] ?? null, events: [], shadow: null, shadowMs: 0, shadowDefeated: false, shadowWon: false } : null;
+  b.story = r ? { id: r.id, ce: 0, said: new Set(), healDropped: false, healWaiting: false, reached: false, done: false, cameoAt: 0, reachIdx: 0, goal: pts[0] ?? null, events: [], shadow: null, shadowMs: 0, shadowDefeated: false, shadowWon: false,
+    picked: new Set(), pickupSpawned: false, preIdx: 0, preDone: !r.pre, shadowHits: 0, sparShopOpened: false, rankedUp: false } : null;
+  if (r?.pre?.points?.length) b.story.goal = r.pre.points[0];   // 1-5: まず移動の練習の地点へ
 }
 
 /** CE を拾った (= gems.js から。 collect の条件) */
@@ -70,10 +72,15 @@ export function tickStoryBattle() {
   _goalBand(!!(r && st && !b.gameOver && !st.done));
   if (!st || !r || b.gameOver || st.done) return;
   if ((state.killCount | 0) >= 1) storySay("firstKill");
+  // 1-4: 始まりにパンケーキを確定で置く (= 取るまで光る道筋で誘導)
+  if (r.pickup && !st.pickupSpawned) { st.pickupSpawned = true; spawnItem(r.pickup.kind, r.pickup.x, r.pickup.y); st.goal = { x: r.pickup.x, y: r.pickup.y }; }
   // 拾った・開けた などの出来事 (= field.js が積む。 その瞬間の一言)
   while (st.events.length) {
     const ev = st.events.shift();
     storySay(ev);
+    if (ev.startsWith("item:")) { st.picked.add(ev.slice(5)); if (r.pickup && ev === `item:${r.pickup.kind}`) st.goal = null; }
+    if (ev === "shadowHit") { st.shadowHits += 1; if (r.spar && !st.sparShopOpened && st.shadowHits >= r.spar.hits) { st.sparShopOpened = true; storySay("sparHits"); setTimeout(() => { if (state.battle === b && !b.gameOver && !st.shadowWon && !st.shadowDefeated && findShadow()) openShop({ opening: false }); }, 1200); } }   // 呂布がもういなければ開かない
+    if (ev === "rankup") { st.rankedUp = true; const sh = findShadow(); if (sh && r.spar) { sh.hp = Math.min(sh.hp, r.spar.hpAfter); sh.hpMax = r.spar.hpAfter; } storySay("rankup"); }
     if (r.bondOn && ev === r.bondOn && r.bond?.who && !st.bondDone) { st.bondDone = true; markStoryBond(r.bond.who); _bondBurst(r, st); storySay("bond"); }   // SPEC-165: 5-3 (= ミッション達成で絆)
   }
   _tickShadow(r, st, b);
@@ -84,6 +91,15 @@ export function tickStoryBattle() {
     storySay("healDrop");
   }
   if (st.healWaiting && !(b.items ?? []).some((it) => it.kind === "heal")) st.healWaiting = false;
+  // 1-5: 移動の練習 (= pre の地点を順に。 全部めぐると呂布が出る)
+  if (r.pre?.points?.length && !st.preDone) {
+    const pp = r.pre.points;
+    if (reachedPoint(pp[st.preIdx], b.player.x, b.player.y)) {
+      fxBurst(pp[st.preIdx].x, pp[st.preIdx].y, "#ffe17a", 24, 260); playSe(SFX.PICK_HEAL, 0, 0.7);
+      st.preIdx += 1;
+      if (st.preIdx >= pp.length) { st.preDone = true; st.goal = null; } else { st.goal = pp[st.preIdx]; storySay("reach"); }
+    }
+  }
   // 到達: いまの地点に触れたら次の地点へ (= 最後の地点で顔見せがあれば、 一言のあいだ少し待つ)
   const pts = reachPoints(r.clear);
   if (pts.length && st.reachIdx < pts.length && reachedPoint(pts[st.reachIdx], b.player.x, b.player.y, r.clear.radius ?? REACH_RADIUS)) {
@@ -93,7 +109,7 @@ export function tickStoryBattle() {
     fxBurst(pt.x, pt.y, "#ffe17a", 24, 260);
     playSe(SFX.PICK_HEAL, 0, 0.7);
   }
-  const ctx = { kills: state.killCount | 0, elapsedMs: b.stageElapsedMs ?? 0, px: b.player.x, py: b.player.y, ce: st.ce, bossDefeated: !!b.bossDefeated, reachIdx: st.reachIdx, shadowMs: st.shadowMs, shadowDefeated: st.shadowDefeated };
+  const ctx = { kills: state.killCount | 0, elapsedMs: b.stageElapsedMs ?? 0, px: b.player.x, py: b.player.y, ce: st.ce, bossDefeated: !!b.bossDefeated, reachIdx: st.reachIdx, shadowMs: st.shadowMs, shadowDefeated: st.shadowDefeated, picked: st.picked };
   if (!storyCleared(r, ctx)) return;
   if (r.clear.kind === "reach" && !st.reached) {
     st.reached = true;
@@ -119,7 +135,8 @@ export function tickStoryBattle() {
 function _tickShadow(r, st, b) {
   const def = r.shadow;
   if (!def) return;
-  if (!st.shadow && (b.stageElapsedMs ?? 0) >= (def.atMs ?? 3000)) {
+  const ready = def.trigger === "afterPre" ? st.preDone : (b.stageElapsedMs ?? 0) >= (def.atMs ?? 3000);
+  if (!st.shadow && ready) {
     st.shadow = spawnShadow({ ...def });
     showCameo(def.giver);
     const ms = _sayShadow(r, "appear") || 0;
@@ -128,7 +145,7 @@ function _tickShadow(r, st, b) {
   }
   if (!st.shadow || st.shadowWon) return;
   const alive = findShadow();
-  if (def.mode === "defeat") { if (!alive) st.shadowDefeated = true; return; }
+  if (def.mode === "defeat" || def.mode === "spar") { if (!alive) st.shadowDefeated = true; return; }
   if (alive) st.shadowMs += 1000 / 60;   // _step は 60 fps 相当で呼ばれる (= dt は呼び元が持つので目安)
 }
 /**
@@ -181,7 +198,7 @@ function _sayShadow(r, kind) {
 /** 到達の目印 (= 世界の座標で描く。 画面の外なら縁に矢印) */
 export function drawStoryWorld(ctx, camera, w, h, nowMs) {
   const r = storyStage(), st = state.battle?.story;
-  if (!r || !st || r.clear?.kind !== "reach" || st.reached || !st.goal) return;
+  if (!r || !st || st.reached || !st.goal) return;   // reach のほか、 1-4 のパンケーキと 1-5 の練習の地点にも
   const sx = st.goal.x - camera.x, sy = st.goal.y - camera.y;
   const pulse = 0.75 + 0.25 * Math.sin(nowMs / 220);
   // 黄色い道筋 (= 自分からゴールへ。 仕掛けの赤い線と同じ作り: 光る帯・流れる破線・点滅。 近づくほど濃く太く、 光の粒が速く流れる)
