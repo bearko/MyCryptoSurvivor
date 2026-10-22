@@ -53,6 +53,7 @@ export function renderGumBreakdown(el, r) {
       (x.stageNos?.length ?? 0) > 1 ? tpl(t("gum.fxStages", "{rate} GUM × ({list})"), { rate: String(x.rate), list: x.stageNos.join(" ＋ ") }) : fx(x.rate, x.n), x.gum]);
     else if (x.key === "level") lines.push([t("gum.level", "到達レベル"), `Lv.${x.n}`, fx(x.rate, x.n), x.gum]);
     else if (x.key === "gifts") lines.push([t("gum.gifts", "所持ギフト券"), tpl(t("gum.giftsN", "{n} 枚"), { n: String(x.n) }), fx(x.rate, x.n), x.gum]);
+    else if (x.key === "bond") lines.push([t("gum.bond", "絆の報酬"), "", "", x.gum]);   // SPEC-165: シャドーを越えた
   }
   if ((r?.missionGum | 0) > 0) lines.push([t("gum.missions", "ミッション達成"), tpl(t("gum.stageN", "{n} 回"), { n: String(r.missions | 0) }), "", r.missionGum]);
   if ((r?.bonus | 0) > 0) lines.push([t("gum.bonus", "スキルツリー"), t("gum.bonusWhat", "金勘定・金運"), `＋${Math.round((r.mul ?? 0) * 100)}%`, r.bonus]);

@@ -10,7 +10,11 @@ import { state } from "../state.js";
 import { t } from "../i18n.js";
 import { naviSay, naviLines, NAVI_TYPE_MS } from "../navi.js";
 import { hasVoice, voiceMs } from "../voice.js";
-import { storyStage, storyCleared, storyGoal, REACH_RADIUS, reachPoints, reachedPoint, markStoryBond } from "../story.js";
+import { storyStage, storyCleared, storyGoal, REACH_RADIUS, reachPoints, reachedPoint, markStoryBond, bondBurst } from "../story.js";
+import { spawnGem } from "./gems.js";
+import { spawnMagicCard } from "./magic-cards.js";
+import { addShopGift } from "./shop.js";
+import { tpl } from "../i18n.js";
 import { spawnShadow, dismissShadow, findShadow } from "./shadow.js";
 import { spawnItem } from "./field.js";
 import { triggerStageEndOrTransition } from "./stage-transition.js";
@@ -70,7 +74,7 @@ export function tickStoryBattle() {
   while (st.events.length) {
     const ev = st.events.shift();
     storySay(ev);
-    if (r.bondOn && ev === r.bondOn && r.bond?.who && !st.bondDone) { st.bondDone = true; markStoryBond(r.bond.who); storySay("bond"); }   // SPEC-165: 5-3 (= ミッション達成で絆)
+    if (r.bondOn && ev === r.bondOn && r.bond?.who && !st.bondDone) { st.bondDone = true; markStoryBond(r.bond.who); _bondBurst(r, st); storySay("bond"); }   // SPEC-165: 5-3 (= ミッション達成で絆)
   }
   _tickShadow(r, st, b);
   // 1-4: HP が減ったらハートを足もとに (= 拾うまで湧きを止める)
@@ -101,7 +105,7 @@ export function tickStoryBattle() {
     // 試練を越えた: survive なら消える。 どちらも絆を結び、 一言のあいだ待つ
     st.shadowWon = true;
     if (r.shadow.mode !== "defeat") dismissShadow();
-    if (r.bond?.who) markStoryBond(r.bond.who);
+    if (r.bond?.who) { markStoryBond(r.bond.who); _bondBurst(r, st); }
     const ms = _sayShadow(r, "win") || 0;
     st.cameoAt = performance.now() + Math.max(1800, ms);
     return;
@@ -127,6 +131,46 @@ function _tickShadow(r, st, b) {
   if (def.mode === "defeat") { if (!alive) st.shadowDefeated = true; return; }
   if (alive) st.shadowMs += 1000 / 60;   // _step は 60 fps 相当で呼ばれる (= dt は呼び元が持つので目安)
 }
+/**
+ * 絆の報酬ラッシュ (= 作者の方針: 報酬は早めに・一気に)。 越えた瞬間に、 足もとへ CE の宝石の輪・マジックカード・ハートが降り、
+ * ギフト券はその場で財布へ、 GUM はクリアの内訳に「絆の報酬」の行で上乗せ。 画面の真ん中に 1 枚の札で中身を見せる
+ */
+function _bondBurst(r, st) {
+  const bu = bondBurst(r);
+  const b = state.battle;
+  if (!bu || !b || st.burstDone) return;
+  st.burstDone = true;
+  const P = b.player;
+  const n = 24, each = Math.max(1, Math.round(bu.ce / n));
+  for (let i = 0; i < n; i++) { const a = (i / n) * Math.PI * 2; const d = 70 + (i % 3) * 22; spawnGem(P.x + Math.cos(a) * d, P.y + Math.sin(a) * d, each); }
+  for (let i = 0; i < (bu.cards | 0); i++) { const a = -Math.PI / 2 + (i - (bu.cards - 1) / 2) * 0.7; spawnMagicCard(P.x + Math.cos(a) * 54, P.y + Math.sin(a) * 54); }
+  if (bu.heal) spawnItem("heal", P.x, P.y + 60);
+  if (r.bond?.gifts) addShopGift(r.bond.gifts);
+  st.bondGum = bu.gum | 0;
+  fxBurst(P.x, P.y, "#ffe17a", 40, 360);
+  playSe(SFX.LEVEL_UP, 0, 0.6);
+  _showBurstCard(r, bu);
+}
+
+/** 報酬ラッシュの札 (= body に置く。 render() で消えない。 2.6 秒で消える) */
+function _showBurstCard(r, bu) {
+  document.querySelector(".story-burst")?.remove();
+  const el = document.createElement("div");
+  el.className = "story-burst";
+  el.setAttribute("role", "status");
+  const rows = [];
+  if (bu.ce) rows.push(`<li><b>CE</b> +${bu.ce}</li>`);
+  if (bu.cards) rows.push(`<li><b>${t("story.burst.cards", "マジックカード")}</b> ×${bu.cards}</li>`);
+  if (r.bond?.gifts) rows.push(`<li><b>${t("story.burst.gifts", "ギフト券")}</b> ×${r.bond.gifts}</li>`);
+  if (bu.heal) rows.push(`<li><b>${t("story.burst.heal", "ハート")}</b> ×1</li>`);
+  if (bu.gum) rows.push(`<li><b>GUM</b> +${bu.gum}</li>`);
+  for (const u of r.bond?.unlock ?? []) rows.push(`<li class="story-burst__unlock">${t(`story.unlock.${u.replace(":", ".")}`, u)}</li>`);
+  el.innerHTML = `<div class="story-burst__head">${tpl(t("story.burst.title", "絆の報酬 ── {who}"), { who: t(`mission.${r.bond?.who}.giver`, r.bond?.who ?? "") })}</div><ul>${rows.join("")}</ul>`;
+  document.body.appendChild(el);
+  requestAnimationFrame(() => el.classList.add("story-burst--in"));
+  setTimeout(() => { el.classList.add("story-burst--out"); setTimeout(() => el.remove(), 500); }, 2600);
+}
+
 function _sayShadow(r, kind) {
   const key = `shadow.${r.shadow.id}.${kind}`;
   const ms = Math.max(t(key, key).length * NAVI_TYPE_MS, voiceMs(hasVoice(key) ? key : "")) + LINE_HOLD_MS;

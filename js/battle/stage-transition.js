@@ -8,6 +8,7 @@
 //
 // pauseFlags 不変条件: open で pauseTime + 1、 続行 click で resumeTime + 1。
 
+import { addRewards } from "../meta.js";   // SPEC-165: 絆の報酬ラッシュの GUM
 import { state, pauseTime, resumeTime } from "../state.js";
 import { STAGE_TABLE, SFX } from "../constants.js";
 import { playSe } from "../audio.js";   // SPEC-158: 勝利の SE
@@ -82,6 +83,8 @@ export function triggerStageEndOrTransition() {
       // SPEC-136: 内訳 (= 生存時間・撃破数・ステージクリア) を控えて、 結果の画面に式で出す
       const r = grantStageGum(snap, { gumMul: perk("gumMul") });
       Object.assign(snap, { gum: r.gum, gumRows: r.rows, gumBonus: r.bonus, gumMul: r.mul });
+      const bg = state.battle.story?.bondGum | 0;   // SPEC-165: 絆の報酬ラッシュの GUM (= 内訳に 1 行)
+      if (bg > 0) { addRewards({ gum: bg }); snap.gum += bg; snap.gumRows = [...(snap.gumRows ?? []), { key: "bond", n: 1, rate: bg, gum: bg }]; }
     }
   }
 

@@ -862,5 +862,13 @@
   "story.guardian.seiryu": {"ja": "東 ・ 青龍", "en": "East · Azure Dragon"},
   "story.guardian.zeus": {"ja": "中央 ・ 天候操作装置", "en": "Center · Weather Control"},
   "story.map.tower": {"ja": "天候操作装置ゼウス ・ 頂上にファオ", "en": "Zeus · Fao at the top"},
-  "story.map.sealed": {"ja": "四方を越えると現れる", "en": "Rises once the four lands fall"}
+  "story.map.sealed": {"ja": "四方を越えると現れる", "en": "Rises once the four lands fall"},
+  "gum.bond": {"ja": "絆の報酬", "en": "Bond reward"},
+  "story.burst.title": {"ja": "絆の報酬 ── {who}", "en": "Bond reward — {who}"},
+  "story.burst.cards": {"ja": "マジックカード", "en": "Magic Card"},
+  "story.burst.gifts": {"ja": "ギフト券", "en": "Gift ticket"},
+  "story.burst.heal": {"ja": "ハート", "en": "Heart"},
+  "story.unlock.item.watch": {"ja": "解放: お助けアイテム「懐中時計」", "en": "Unlocked: Pocket Watch"},
+  "story.unlock.item.robot": {"ja": "解放: お助けアイテム「合体ロボ」", "en": "Unlocked: Mecha"},
+  "story.unlock.passive.thunder30": {"ja": "解放: 雷鼓の対ボス 30%", "en": "Unlocked: Thunder Drum 30% vs bosses"}
 }
