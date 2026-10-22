@@ -38,7 +38,7 @@ import { enemyNameOf } from "./enemy-name.js";   // SPEC-148
 import { showThreatNotice } from "./milestones.js";   // SPEC-107
 import { missionMods } from "./missions.js";   // SPEC-112
 import { isEasy, easyStage, bossSpawnAtMs, bossWarnLeadMs } from "../easy.js";   // SPEC-147
-import { storyAllows } from "../story.js";   // SPEC-165
+import { storyAllows, isStory, storyStage } from "../story.js";   // SPEC-165
 import { storyHoldsSpawn } from "./story-battle.js";   // SPEC-165
 import { shadowMods } from "./shadow.js";   // SPEC-165: シャドーのオーラ
 import {
@@ -94,7 +94,9 @@ export function tickEnemies(dt, nowMs) {
   }
 
   // SPEC-022 / SPEC-030: 5 分経過 or ボス撃破で **ステージ終了** (= 次ステージ or 全クリア)
-  if (!b.gameOver && !b.bossChestOpen && (b.bossDefeated || b.stageElapsedMs >= STAGE_DURATION_MS)) {   // SPEC-153: 宝箱を開けるまで待つ
+  // SPEC-165: ストーリーの「ボスを倒す」の行は、 5 分たってもボスが生きていれば終わらない (= 倒すまで)
+  const timeUp = b.stageElapsedMs >= STAGE_DURATION_MS && !(isStory() && storyStage()?.clear?.kind === "boss");
+  if (!b.gameOver && !b.bossChestOpen && (b.bossDefeated || timeUp)) {   // SPEC-153: 宝箱を開けるまで待つ
     triggerStageEndOrTransition();
     return;
   }
@@ -354,7 +356,7 @@ export function spawnEnemyAtRing(enemyId = 101, at = null, { variant = undefined
   const spec = ENEMY_SPECS[enemyId] ?? DEFAULT_SPEC;
   const halfW = b.viewport.w / 2 + ENEMY_SPAWN_MARGIN_PX;
   const halfH = b.viewport.h / 2 + ENEMY_SPAWN_MARGIN_PX;
-  const isBoss = enemyId === stage.bossEnemyId;
+  const isBoss = enemyId === (easyStage()?.bossId ?? stage.bossEnemyId);   // 作者の報告 2026-10-22: 5-5 の COVID がボス扱いでなく (= レシピの bossId を見ていなかった)、 倒しても終わらなかった
 
   let x, y;
   if (at) {

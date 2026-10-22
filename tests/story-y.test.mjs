@@ -72,4 +72,9 @@ test("ブレードは大きく速く、 重なった敵にも当たる。 雑魚
   assert.match(read("../js/battle/damage.js"), /if \(!\(isStory\(\) && storyStage\(\)\?\.clear\?\.kind === "boss"\)\)/);
   assert.match(read("../js/story-map.js"), /const toModes = r\?\.unlock === "mode:NORMAL";/);
   assert.match(read("../index.html"), /id="btnModeSkillTree"/);
+  // 2026-10-22: 5-5 の COVID はボス扱い (= レシピの bossId)。 ボスを倒す行は 5 分で終わらない
+  const en = read("../js/battle/enemies.js");
+  assert.match(en, /const isBoss = enemyId === \(easyStage\(\)\?\.bossId \?\? stage\.bossEnemyId\);/);
+  assert.match(en, /const timeUp = b\.stageElapsedMs >= STAGE_DURATION_MS && !\(isStory\(\) && storyStage\(\)\?\.clear\?\.kind === "boss"\);/);
+  assert.equal(STORY_MAP["5-5"].boss.atMs, 120000);
 });

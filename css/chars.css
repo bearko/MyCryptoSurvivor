@@ -558,6 +558,6 @@
 @media (min-width: 900px) {
   .navi--comm { --s: 2; }
   .navi--comm .navi__bubble, .navi--comm .navi__measure { font-size: 1.05rem; line-height: 1.55; }
-  .navi--comm .navi__measure { --bubble-max: min(48vw, 420px); }
+  .navi--comm .navi__bubble, .navi--comm .navi__measure { --bubble-max: min(48vw, 420px); }   /* 吹き出しと測る幅は必ず同じに (= 違うと行が増えて見切れる) */
   .navi--comm .navi__name { font-size: 0.7rem; }
 }

@@ -361,12 +361,12 @@ export const STORY_STAGES = Object.freeze([
   },
   {
     id: "5-5", world: 5, hero: "keep", startExt: [],
-    clear: { kind: "boss" }, targetSec: 300,
+    clear: { kind: "boss" }, targetSec: 180,
     spawn: null, enemyMul: { hp: 1, dmg: 0.9 }, heroMul: { hp: 1.2 },
     features: { ce: true, tree: true, shop: true, reroll: true, sig: true, chests: true, pots: true, magicCards: true, rare: true, shooters: true, gimmick: true, variants: true, mission: true, items: ["heal", "magnet", "thunder", "watch", "robot"], bossChest: true },
     shop: { atMs: null, offers: [], only: false, price: null, mustBuy: false },
     chestTimesMs: null, rareAtMs: 20000, gimmick: "beads", variants: { giant: 0.1, runner: 0.1 }, mission: null,
-    boss: { id: 681, atMs: 240000, warnMs: 10000, hpMul: 0.25, dmgMul: 0.6, thunder: false },   // COVID-19 15,000 HP (= 1 ステージぶんの装備の DPS 400〜600 で 25〜40 秒)。 作者 2026-10-22: ラスボスはファオではなく COVID
+    boss: { id: 681, atMs: 120000, warnMs: 10000, hpMul: 0.25, dmgMul: 0.6, thunder: false },   // COVID-19 15,000 HP (= 1 ステージぶんの装備の DPS 400〜600 で 25〜40 秒)。 作者 2026-10-22: ラスボスはファオではなく COVID
     unlock: "mode:NORMAL",
     sceneBefore: "final",   // 始める前に COVID のシーン
     sceneAfter: "ending",   // クリアの画面のあとにエンディングのシーン → マップ
