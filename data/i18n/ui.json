@@ -720,7 +720,7 @@
   "story.1-5.mid": {"ja": "次の地点へ！ 敵は、 走りながらでも倒せるよ。", "en": "Next spot! You can cut enemies down while running."},
   "story.1-5.clear": {"ja": "ランクアップは、 いちばん大きく強くなる道。 Ocean を取り戻した！ マップへ戻ろう。", "en": "Rank-ups are the biggest jump in power. Ocean is free! Head back to the map."},
   "story.lose": {"ja": "惜しい！ もう一度やってみよう。 さっきより、 きっとうまくいくよ。", "en": "So close! Try again. You'll do better this time."},
-  "story.shop.free": {"ja": "🎁 ただ", "en": "🎁 Free"},
+  "story.shop.free": {"ja": "🎁 無料", "en": "🎁 Free"},
   "story.goal.shadowSurvive": {"ja": "試練 {now} / {goal} 秒 耐える", "en": "Trial: survive {now} / {goal} s"},
   "story.goal.shadowDefeat": {"ja": "シャドーを倒す", "en": "Defeat the Shadow"},
   "story.2-1.name": {"ja": "品を選ぶ", "en": "Make a Choice"},

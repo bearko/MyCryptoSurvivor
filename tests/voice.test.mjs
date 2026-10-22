@@ -25,12 +25,12 @@ const heroesRaw = JSON.parse(readFileSync(new URL("../data/heroes.json", import.
 const heroes = Array.isArray(heroesRaw) ? heroesRaw : (heroesRaw.heroes ?? Object.values(heroesRaw));
 
 test("ボイスのファイルがすべてある (= MP3。 長さも分かっている)", () => {
-  assert.equal(Object.keys(VOICE_LINES).length, 89 + 49);   // SPEC-165: ＋ ストーリーの台本の 1 回目 49 本 (= 0 番の mission.1 は既存)   // 台本 35 本 ＋ 追加の録音 8 本 (= 許褚は差し替え。 SPEC-097) ＋ 倒れたとき・スキルツリー 13 本 (= SPEC-116) ＋ 最初の店の説明 1 本 ＋ SPEC-159 の 32 本
+  assert.equal(Object.keys(VOICE_LINES).length, 89 + 103);   // SPEC-165: ＋ ストーリーの台本 103 本 (= 1〜103。 0 番の mission.1 は既存。 104・105 の 1-0 はまだ)   // 台本 35 本 ＋ 追加の録音 8 本 (= 許褚は差し替え。 SPEC-097) ＋ 倒れたとき・スキルツリー 13 本 (= SPEC-116) ＋ 最初の店の説明 1 本 ＋ SPEC-159 の 32 本
   for (const [id, v] of Object.entries(VOICE_LINES)) {
     assert.match(v.file, /^assets\/voice\/mine\/[\w.-]+\.mp3$/, id);   // SPEC-165: story.1-1.intro のようにハイフンも
     assert.ok(existsSync(new URL(`../${v.file}`, import.meta.url)), v.file);
-    assert.ok(statSync(new URL(`../${v.file}`, import.meta.url)).size < 80000, `${v.file} は小さい`);
-    assert.ok(v.ms > 500 && v.ms < 10000, `${id}: ${v.ms}`);   // SPEC-159: 「敵の弾に削られてるね…」が 9.1 秒
+    assert.ok(statSync(new URL(`../${v.file}`, import.meta.url)).size < 100000, `${v.file} は小さい`);   // SPEC-165: 5-3 の始まり (11.9 秒) が 93KB
+    assert.ok(v.ms > 500 && v.ms < 12000, `${id}: ${v.ms}`);   // SPEC-159: 「敵の弾に削られてるね…」が 9.1 秒。 SPEC-165: 5-3 の始まりが 11.9 秒
   }
   assert.ok(hasVoice("title.call"));
 });
