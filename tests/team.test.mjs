@@ -130,3 +130,11 @@ test("作者 2026-10-23: 選ぶ画面を詰める・サブは 2 人まとめて�
   assert.equal(ui["team.pickMain"].ja, "ヒーローを選択", "「札を選ぶ」ではなく");
   for (const k of ["team.sort.hp", "team.sort.phy", "team.sort.int", "team.sort.agi", "team.tab.all", "hero.perks.summary"]) assert.ok(ui[k]?.ja && ui[k]?.en, k);
 });
+
+test("作者 2026-10-23 (2): 2 人そろったら閉じる・メインのアトリビュートを出す・説明の 1 行は無い", () => {
+  const main = read("../js/main.js"), html = read("../index.html");
+  assert.match(main, /if \(at < 0 && subs\.length >= 2\) \{ closeSubPicker\(\); return; \}/);
+  assert.match(main, /_mainAttrsLine\(ids\[0\], lang\)/);
+  assert.ok(!/id="heroTeamHint"/.test(html), "「SUB の枠を押すと…」は消した");
+  assert.match(read("../css/team.css"), /\.hero-modal--team \.hero-detail__weapon \{ display: none; \}/, "開始武器の行はチームの顔に任せる");
+});
