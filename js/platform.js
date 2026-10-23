@@ -6,6 +6,7 @@
 // ゲームの進行・pauseTime には触らない。ログイン状態は共通基盤が持つ（localStorage は使わない）。
 
 import { owns, ownedCount } from "./skill-logic.js";
+import { isTestSite } from "./team.js";   // SPEC-166
 import { TREE_NODES, ROOT_ID } from "./skill-data.js";
 import { noteTrophies, refreshHeroUnlocks } from "./hero-unlock.js";   // SPEC-098
 
@@ -70,7 +71,8 @@ export function achievementIdsForMeta(meta) {
   return ids;
 }
 
-const _sdk = () => (typeof window !== "undefined" ? window.BearkoGames : undefined);
+// SPEC-166: テスト用のサイトでは共通基盤に何も送らない (= アチーブメント・RTA・総合スコア・チャット)
+const _sdk = () => (typeof window !== "undefined" && !isTestSite() ? window.BearkoGames : undefined);
 
 // 送る列: 1 つずつ順に (= 未ログインの最初の書き込みで仮アカウントができるため)。 同じ起動で同じ ID は 1 度だけ
 let _ready = Promise.resolve();   // 共通基盤の init が終わるまで待つ

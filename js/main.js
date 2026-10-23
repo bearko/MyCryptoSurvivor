@@ -3,6 +3,7 @@
 // ============================================================
 
 import { hasPlayed } from "./played.js";   // SPEC-147
+import { isTestHost, isTestSite, teamAvailable, normalizeTeam, toggleSub, withMain, loadTeam, saveTeam } from "./team.js";   // SPEC-166
 import { hasClearedEasy } from "./easy.js";   // SPEC-147
 import { state, pauseTime, resumeTime } from "./state.js";
 import { initI18n, setLang, getLang, t, tpl, onLangChange } from "./i18n.js";
@@ -298,6 +299,7 @@ export function openHeroSelectModal() {   // SPEC-165: ストーリーの 3-2 �
   if (!modal) return;
   pauseTime();
   state.pendingHeroPick = null;
+  state.pendingTeamSubs = normalizeTeam(loadTeam(), { main: null, unlocked: getUnlockedHeroes() }).subs;   // SPEC-166: 前の編成
   renderHeroSelectModal();
   renderHeroDetail(null);   // SPEC-014: 詳細パネルを placeholder 状態にリセット
   modal.classList.remove("hidden");
@@ -353,6 +355,10 @@ function renderHeroSelectModal() {
     n: String(HERO_ROSTER.filter((h) => unlocked.has(h.heroId)).length), total: String(HERO_ROSTER.length),
   });
 
+  const teamOn = _teamOn(unlocked);   // SPEC-166
+  const subs = teamOn ? withMain(state.pendingTeamSubs ?? [], state.pendingHeroPick) : [];
+  if (teamOn) state.pendingTeamSubs = subs;
+  _renderTeamBar(teamOn, subs, lang);
   for (const hero of roster) {
     const isSelected = state.pendingHeroPick === hero.heroId;
     const locked = !unlocked.has(hero.heroId);
@@ -390,10 +396,49 @@ function renderHeroSelectModal() {
       </div>
     `;
     tile.addEventListener("click", () => pickHero(hero.heroId));
+    // SPEC-166: サブに入れる / 外す (= 札の右下の ＋。 メインには付けない)
+    if (teamOn && !locked && !isSelected) {
+      const isSub = subs.includes(hero.heroId);
+      if (isSub) tile.classList.add("hero-tile--sub");
+      const add = document.createElement("span");
+      add.className = "hero-tile__team" + (isSub ? " is-on" : "");
+      add.setAttribute("role", "button");
+      add.setAttribute("aria-label", isSub ? t("team.remove", "サブから外す") : t("team.add", "サブに入れる"));
+      add.textContent = isSub ? `SUB ${subs.indexOf(hero.heroId) + 1}` : "＋";
+      add.addEventListener("click", (e) => { e.stopPropagation(); state.pendingTeamSubs = toggleSub(subs, hero.heroId, state.pendingHeroPick); renderHeroSelectModal(); });
+      tile.appendChild(add);
+    }
     grid.appendChild(tile);
   }
 
   refreshHeroSelectCta();
+}
+
+/** SPEC-166: 編成を出すか (= テスト用のホスト・3 人以上・ストーリーと RTA ではない) */
+function _teamOn(unlocked = getUnlockedHeroes()) {
+  return teamAvailable({ testHost: isTestHost(), unlockedCount: HERO_ROSTER.filter((h) => unlocked.has(h.heroId)).length, story: isStory(), rta: !!state.rtaMode });
+}
+
+/** SPEC-166: 編成の帯 (= 左がメイン、 右 2 つがサブ。 サブの枠を押すと外れる) */
+function _renderTeamBar(on, subs, lang) {
+  const bar = $("#heroTeam"), slots = $("#heroTeamSlots");
+  if (!bar || !slots) return;
+  bar.classList.toggle("hidden", !on);
+  if (!on) return;
+  slots.innerHTML = "";
+  const ids = [state.pendingHeroPick ?? null, subs[0] ?? null, subs[1] ?? null];
+  ids.forEach((id, i) => {
+    const hero = id != null ? getHero(id) : null;
+    const slot = document.createElement("button");
+    slot.type = "button";
+    slot.className = "hero-team__slot" + (i === 0 ? " is-main" : "") + (hero ? "" : " is-empty");
+    const tag = i === 0 ? "MAIN" : `SUB ${i}`;
+    slot.innerHTML = hero
+      ? `<img src="${heroImg(hero.heroId)}" alt="" /><span class="hero-team__tag">${tag}</span><span class="hero-team__name">${escapeText(localizedHeroName(hero, lang))}</span>`
+      : `<span class="hero-team__tag">${tag}</span><span class="hero-team__name">${escapeText(i === 0 ? t("team.pickMain", "札を選ぶ") : t("team.empty", "空き"))}</span>`;
+    if (i > 0 && hero) slot.addEventListener("click", () => { state.pendingTeamSubs = toggleSub(subs, id, state.pendingHeroPick); renderHeroSelectModal(); });
+    slots.appendChild(slot);
+  });
 }
 
 function pickHero(heroId) {
@@ -668,6 +713,9 @@ function applyHeroPick() {
   if (!hero || !isHeroUnlocked(hero.heroId)) return;   // SPEC-098: ロック中は始められない
   playSe(SFX.HERO_PICK);   // SPEC-017: tooldev.mp3
   state.ownedHero = { ...hero };
+  // SPEC-166: サブ (= 編成が出ていないときはソロ)。 次に開いたときのために覚える
+  state.teamSubs = _teamOn() ? withMain(state.pendingTeamSubs ?? [], hero.heroId) : [];
+  if (_teamOn()) saveTeam({ subs: state.teamSubs });
   state.currentStageIdx = 0;       // SPEC-030: 新規 hero pick で stage 1 から
   // SPEC-033: 全ステージ通しの履歴をリセット (= activity report 用)
   state.run.stages.length = 0;
@@ -776,6 +824,7 @@ document.addEventListener("contextmenu", (e) => { if (!e.target.closest("input, 
 document.addEventListener("gesturestart", (e) => e.preventDefault(), { passive: false });
 document.addEventListener("touchmove", (e) => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
 window.addEventListener("DOMContentLoaded", () => {
+  if (isTestSite()) document.body.classList.add("is-test-site");   // SPEC-166: テスト用のサイトの印 (= 右下に TEST)
   // SPEC-039: bearko.games 共通基盤（アチーブメント）。SDK がなければ何もしない
   initPlatform(APP_VERSION);
   installChatDock();   // SPEC-156: チャットのドックのぶん、 木と結果の画面を狭める

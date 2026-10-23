@@ -20,6 +20,7 @@ import {
 import { shakeOffset, renderFxWorld, renderFxScreen } from "./fx.js";
 import { absorbScale } from "./absorb.js";   // SPEC-102
 import { renderSignatureWorld } from "./signature.js";   // SPEC-100
+import { renderTeamWorld } from "./team-battle.js";   // SPEC-166
 import { missionMods } from "./missions.js";   // SPEC-112
 import { robotExtId } from "../perks.js";   // SPEC-140
 import { renderLLWorld } from "./ll.js";   // SPEC-101
@@ -387,6 +388,7 @@ export function renderBattle(ctx, nowMs = 0) {
     }
   }
 
+  renderTeamWorld(ctx, camera, nowMs);   // SPEC-166: サブ 2 人 (= メインより下)
   // SPEC-010: player (sprite で円形クリップ、 fallback は単色円)
   const px = player.x - camera.x;
   const py = player.y - camera.y;

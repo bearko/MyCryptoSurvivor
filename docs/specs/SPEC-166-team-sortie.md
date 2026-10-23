@@ -178,7 +178,7 @@ kind: Added
 
 | # | 何を | PR |
 |---|---|---|
-| A | 第 1 段: `js/team.js`（純関数と保存 `mcs.team`）、 `js/battle/team-battle.js`（サブの追従・描画・武器の出どころ）、 武器の撃つ位置を持ち主に（`archetypes.js` の `weaponOrigin`。 ブレードとレーザーもサブの周り）、 ヒーロー選択のチームの帯と札の ＋、 テスト用のサイト（全員・全モード・送信なし・TEST の印）、 自動プレイ `--team` | — |
+| A | 第 1 段: `js/team.js`（純関数と保存 `mcs.team`）、 `js/battle/team-battle.js`（サブの追従・描画・武器の出どころ）、 武器の撃つ位置を持ち主に（`archetypes.js` の `weaponOrigin`。 ブレードとレーザーもサブの周り）、 ヒーロー選択のチームの帯と札の ＋、 テスト用のサイト（全員・全モード・送信なし・TEST の印）、 自動プレイ `--team` | this |
 
 ## 11. 第 2 段の確認点（★ = 推し）
 

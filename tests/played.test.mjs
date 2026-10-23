@@ -50,7 +50,7 @@ test("終えたときに記録する (= ゲームオーバーと活動レポー�
   const read = (p) => readFileSync(new URL(p, import.meta.url), "utf8");
   assert.match(read("../js/battle/gameover.js"), /markPlayed\(\)/, "ゲームオーバーで記録");
   assert.match(read("../js/battle/activity-report.js"), /markPlayed\(\)/, "全クリアで記録");
-  assert.match(read("../js/mode-select.js"), /isModeLocked\(rta \? "RTA" : regulation, hasPlayed\(\), tutorialDone\(\)\)/, "選ぶところでも止める (= SPEC-165: ストーリーのクリアも見る)");
+  assert.match(read("../js/mode-select.js"), /isModeLocked\(rta \? "RTA" : regulation, hasPlayed\(\)(?: \|\| isTestSite\(\))?, tutorialDone\(\)\)/, "選ぶところでも止める (= SPEC-165: ストーリーのクリアも見る)");
   assert.match(read("../js/mode-select.js"), /return hasClearedEasy\(\) \|\| storyAllCleared\(loadStory\(\)\);/, "5-5 のクリアの印か、 全 25 のクリア");
   const html = read("../index.html");
   for (const [cardId, lockId] of [["modeCardAbsolute", "modeCardAbsoluteLock"], ["modeCardRta", "modeCardRtaLock"]]) {
