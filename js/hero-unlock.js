@@ -9,6 +9,7 @@
 
 import { hasClearedEasy } from "./easy.js";   // SPEC-153 / SPEC-165
 import { hasPlayed } from "./played.js";   // SPEC-153
+import { isTestSite } from "./team.js";   // SPEC-166
 
 /** 最初から使える人 (= ブレード)。 SPEC-165: リボルバー (= ビリー・ザ・キッド) はストーリー 3-1 の解放 */
 export const STARTER_HEROES = [10001];
@@ -92,6 +93,7 @@ function _save() {
 
 /** いま使えるヒーロー (= Set<heroId>) */
 export function getUnlockedHeroes() {
+  if (isTestSite()) return new Set([...STARTER_HEROES, EASY_REWARD_HERO, ...HERO_UNLOCKS.map((h) => h.heroId)]);   // SPEC-166: テスト用のサイトでは全員 (= 共通基盤につながないので、 アチーブメントでは解放できない)
   if (!_unlocked) _unlocked = unlockedHeroes([], _loadRemembered(), { easyCleared: hasClearedEasy() || hasPlayed() });   // チュートリアルを終えた人・前から遊んでいた人はビリーを使える
   return _unlocked;
 }

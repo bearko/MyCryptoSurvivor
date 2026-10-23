@@ -922,5 +922,11 @@
   "story.bond.kicker": {"ja": "絆を結んだ", "en": "BOND FORMED"},
   "story.bond.kickerWin": {"ja": "試練を越えた", "en": "TRIAL PASSED"},
   "story.bond.rewards": {"ja": "絆の報酬", "en": "BOND REWARDS"},
-  "story.bond.tap": {"ja": "タップで続ける ▶", "en": "Tap to continue ▶"}
+  "story.bond.tap": {"ja": "タップで続ける ▶", "en": "Tap to continue ▶"},
+  "team.label": {"ja": "チーム", "en": "Team"},
+  "team.hint": {"ja": "札の ＋ でサブに入れる", "en": "Tap ＋ on a card to add a sub"},
+  "team.add": {"ja": "サブに入れる", "en": "Add as sub"},
+  "team.remove": {"ja": "サブから外す", "en": "Remove sub"},
+  "team.pickMain": {"ja": "札を選ぶ", "en": "Pick a card"},
+  "team.empty": {"ja": "空き", "en": "Empty"}
 }

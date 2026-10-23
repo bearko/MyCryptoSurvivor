@@ -1,1 +1,1 @@
-- **三人一組のチーム編成（下書き）** (`docs/specs/SPEC-166-team-sortie.md`): 参考作の調査と、 メイン 1 人 ＋ ついて回って自動で撃つサブ 2 人の案。 確認点 9 つ
+- **三人一組のチーム編成（第 1 段・テスト用のサブドメイン）** (`js/team.js` + `js/battle/team-battle.js` + `js/battle/archetypes.js` + `js/main.js` + `index.html` + `css/components.css`): メイン 1 人 ＋ ついて回って自分の初期武器を撃つサブ 2 人。 サブの武器は武器の枠 5 に入る。 HP・固有スキル・LL はメインだけ。 ヒーロー 3 人の解放で開く。 ストーリーと RTA はソロ。 `survivor-test.bearko.games` だけで出る（全員・全モード・共通基盤へは送らない・TEST の印）

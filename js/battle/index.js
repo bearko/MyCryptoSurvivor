@@ -11,6 +11,8 @@ import { tickMilestones, resetMilestones } from "./milestones.js";   // SPEC-105
 import { isShopMode, resetShopForStage, tickShop, hideShopBar } from "./shop.js";   // SPEC-109
 import { resetMissionsForStage, tickMissions } from "./missions.js";   // SPEC-112
 import { state } from "../state.js";
+import { setupTeamBattle, tickTeam } from "./team-battle.js";   // SPEC-166: チーム編成
+import { isTestHost } from "../team.js";   // SPEC-166
 import {
   FACTION_COLOR, FACTION_COLOR_DEFAULT,
   PLAYER_RADIUS, PLAYER_SPEED_PX_S, CHAR_SCALE,
@@ -220,6 +222,8 @@ export function startBattle(hero) {
     if (!state.ownedExtensions.some((o) => String(o.extId) === String(starterId))) {
       state.ownedExtensions.push({ extId: starterId, level: Math.min(EXT_MAX_LEVEL, 1 + startLevelBonus(starterId)) });   // SPEC-139: 仕込み
     }
+    // SPEC-166: サブ 2 人 (= テスト用のホストだけ。 ストーリーと RTA はソロ)。 サブの初期武器も武器の枠に
+    setupTeamBattle(isTestHost() && !isStory() && !state.rtaMode ? (state.teamSubs ?? []) : []);
     // SPEC-162: 引き継いだ強化の効き目を掛け直す (= 武器は組み直し)
     for (const o of state.ownedExtensions) if (getCategory(getExt(o.extId)) === "buff") applyBuff(o.extId, o.level);
     rebuildWeaponsFromOwned();
@@ -347,6 +351,7 @@ function _step(dt, now) {
   const v = getInputVector();
   tickRunStats(state.run.stats, dt);   // SPEC-148: 生存時間 (= 止まっているあいだは呼ばれない)
   tickPlayer(dt, v);
+  tickTeam(dt, v);   // SPEC-166: サブが追いかける
   centerCameraOnPlayer();
   tickEnemies(dt, now);          // SPEC-007: スポーン + 追跡 + 接触ダメージ
   tickBossMoves(dt);             // SPEC-080: ボスの型 (= 突進・叩きつけ・放射・渦)

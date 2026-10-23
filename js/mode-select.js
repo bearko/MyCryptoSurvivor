@@ -7,6 +7,7 @@
 // ABSOLUTE: 4 軸を 0.5〜2.0 で 0.25 step で調整。 平均がスコア倍率。
 
 import { state } from "./state.js";
+import { isTestSite } from "./team.js";   // SPEC-166
 import {
   ABSOLUTE_AXES, ABSOLUTE_SLIDER_MIN, ABSOLUTE_SLIDER_MAX,
   ABSOLUTE_SLIDER_STEP, ABSOLUTE_SLIDER_DEFAULT,
@@ -54,7 +55,7 @@ const _LOCKABLE = [
 ];
 
 function _applyLocks() {
-  const played = hasPlayed();
+  const played = hasPlayed() || isTestSite();   // SPEC-166
   const easyCleared = tutorialDone();
   _$("modeCardStory")?.classList.toggle("mode-card--recommend", !played && !easyCleared);   // SPEC-165: 初めての人にはストーリーを光らせる
   for (const { mode, cardId, lockId } of _LOCKABLE) {
@@ -74,6 +75,7 @@ function _applyLocks() {
 
 /** SPEC-165: チュートリアルを終えたか (= ストーリー 5-5 のクリア (= mcs.easyCleared) か、 全 25 のクリア。 旧 EASY のクリアも同じ印) */
 function tutorialDone() {
+  if (isTestSite()) return true;   // SPEC-166: テスト用のサイトはモードを全部開く
   return hasClearedEasy() || storyAllCleared(loadStory());
 }
 
@@ -114,7 +116,7 @@ function _wireOnce() {
 
 function _pick(regulation, { rta = false, absolute = null } = {}) {
   // SPEC-088: 初プレイは NORMAL だけ (= ボタンは disabled にしてあるが、 ここでも止める)。 SPEC-165: NORMAL はストーリーのあと
-  if (isModeLocked(rta ? "RTA" : regulation, hasPlayed(), tutorialDone())) return;
+  if (isModeLocked(rta ? "RTA" : regulation, hasPlayed() || isTestSite(), tutorialDone())) return;
   state.regulation = regulation;
   state.rtaMode = rta;
   state.storyId = null;      // SPEC-165
