@@ -762,7 +762,8 @@
           </div>
         </div>
         <!-- SPEC-090c: いま効いている恒久強化 (= 1 行。 無ければ出さない) -->
-        <p class="hero-perks hidden" id="heroPerks"></p>
+        <!-- 作者 2026-10-23: スキルツリーの効果は畳む (= 押すと中身。 選ぶ画面をスクロールさせない) -->
+        <details class="hero-perks hidden" id="heroPerks"><summary class="hero-perks__sum" id="heroPerksSum">スキルツリーの効果</summary><span class="hero-perks__body" id="heroPerksBody"></span></details>
         <div class="hero-detail__placeholder" id="heroDetailPlaceholder"
              data-i18n="hero.detail.placeholder">ヒーローを選んでください</div>
         <div class="hero-detail__content hidden" id="heroDetailContent">
@@ -802,18 +803,23 @@
         <span class="hero-team__label" data-i18n="team.label">チーム</span>
         <div class="hero-team__slots" id="heroTeamSlots"></div>
         <span class="hero-team__jin" id="heroTeamJin"></span>
-        <span class="hero-team__hint" id="heroTeamHint" data-i18n="team.hint">SUB の枠を押して、 サブを選ぶ</span>
+        <span class="hero-team__hint" id="heroTeamHint" data-i18n="team.hint">SUB の枠を押すと、 2 人まとめて選べる</span>
       </div>
       <!-- SPEC-166: サブを選ぶ (= 解放したあらゆる MCH ヒーロー。 JIN になる人が先) -->
       <div class="sub-picker hidden" id="subPicker" role="dialog" aria-modal="true" aria-labelledby="subPickerTitle">
         <div class="sub-picker__card">
           <header class="sub-picker__head">
-            <h3 class="sub-picker__title" id="subPickerTitle"></h3>
-            <button type="button" class="sub-picker__clear" id="subPickerClear" data-i18n="team.remove">サブから外す</button>
+            <h3 class="sub-picker__title" id="subPickerTitle" data-i18n="team.pick.title">サブを選ぶ</h3>
+            <button type="button" class="sub-picker__clear" id="subPickerClear" data-i18n="team.clear">2 人とも外す</button>
             <button type="button" class="hero-modal__close-x" id="subPickerClose" aria-label="Close">×</button>
           </header>
-          <p class="sub-picker__note" id="subPickerNote"></p>
+          <!-- いまの 2 枠 (= 押すとその枠に入れる)・JIN の見込み -->
+          <div class="sub-picker__top"><div class="sub-picker__slots" id="subPickerSlots"></div><p class="sub-picker__jin" id="subPickerJin"></p></div>
+          <!-- 武器のタブ (= その武器を持ってくる人の数) と並べ替え -->
+          <div class="sub-picker__tabs" id="subPickerTabs" role="tablist"></div>
+          <div class="sub-picker__sorts" id="subPickerSorts"><span class="sub-picker__sorts-label" data-i18n="team.sort.label">並べ替え</span></div>
           <div class="sub-picker__grid" id="subPickerGrid"></div>
+          <footer class="sub-picker__foot"><button type="button" class="btn sub-picker__done" id="subPickerDone" data-i18n="team.done">決定</button></footer>
         </div>
       </div>
       <div class="hero-modal__grid" id="heroSelectGrid"

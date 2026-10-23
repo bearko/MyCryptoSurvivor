@@ -164,16 +164,19 @@ export function refreshTitleEntry() {
 export function renderHeroPerks() {
   const el = document.getElementById("heroPerks");
   if (!el) return;
+  // 作者 2026-10-23: 畳んでおき、 「スキルツリーの効果（n）」を押すと中身 (= 選ぶ画面の上を広く取りすぎていた)
+  const sum = document.getElementById("heroPerksSum"), body = document.getElementById("heroPerksBody");
+  const set = (s, b) => { if (sum && body) { sum.textContent = s; body.textContent = b; } else el.textContent = b; };
   const m = treeMeta();
   if (state.rtaMode) {
     const any = owns(m, ROOT_ID);
-    el.textContent = any ? t("hero.perks.rta", "RTA ではスキルツリーの効果は切れる") : "";
+    set(t("hero.perks.summary", "スキルツリーの効果"), any ? t("hero.perks.rta", "RTA ではスキルツリーの効果は切れる") : "");
     el.classList.toggle("hidden", !any);
     return;
   }
   const lines = perksSummary(computePerks(m), getLang());
   el.classList.toggle("hidden", lines.length === 0);
-  el.textContent = lines.length ? `${t("hero.perks.title", "スキルツリー")}：${lines.join("・")}` : "";
+  set(`${t("hero.perks.summary", "スキルツリーの効果")}（${lines.length}）`, lines.join("・"));
 }
 
 // ============================================================

@@ -120,3 +120,13 @@ test("?test=1 はそのタブのあいだ続き、 ?test=0 で戻る。 送る�
   assert.match(pf, /presence: false/, "来訪・同時接続も送らない");
   assert.match(read("../js/ranking-client.js"), /if \(isTestMode\(\)\) return/, "旧ランキングにも送らない");
 });
+
+test("作者 2026-10-23: 選ぶ画面を詰める・サブは 2 人まとめて・武器のタブと並べ替え", () => {
+  const html = read("../index.html"), main = read("../js/main.js"), ui = JSON.parse(read("../data/i18n/ui.json"));
+  assert.match(html, /<details class="hero-perks hidden" id="heroPerks"><summary/, "スキルツリーの効果は畳む");
+  for (const id of ["subPickerSlots", "subPickerTabs", "subPickerSorts", "subPickerDone"]) assert.match(html, new RegExp(`id="${id}"`));
+  assert.match(main, /_subSlot = subs\.length < 2 \? subs\.length/, "1 人目を選んだら 2 人目の枠へ");
+  assert.match(main, /hero-modal--team/, "チームのときは詳しい欄を小さく");
+  assert.equal(ui["team.pickMain"].ja, "ヒーローを選択", "「札を選ぶ」ではなく");
+  for (const k of ["team.sort.hp", "team.sort.phy", "team.sort.int", "team.sort.agi", "team.tab.all", "hero.perks.summary"]) assert.ok(ui[k]?.ja && ui[k]?.en, k);
+});

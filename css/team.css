@@ -132,7 +132,6 @@
   appearance: none; display: grid; grid-template-columns: 40px 1fr; grid-template-rows: auto auto auto; column-gap: 6px; row-gap: 2px;
   text-align: left; padding: 6px; border-radius: 6px; background: var(--panel-2, #1b1433); border: 1.5px solid var(--border, rgba(255,255,255,.14)); color: var(--text, #eef2ff); cursor: pointer;
 }
-.sub-tile img { grid-row: 1 / 4; width: 40px; height: 40px; image-rendering: pixelated; }
 .sub-tile__name { font-size: 0.78rem; font-weight: 700; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sub-tile__jin {
   justify-self: start; padding: 0 6px; font: 900 0.66rem/1.5 "Dela Gothic One", system-ui, sans-serif; color: var(--ts-white);
@@ -145,3 +144,109 @@
 .sub-tile__attrs i.pair { background: rgba(255, 212, 0, 0.25); }
 .sub-tile.is-jin { border-color: var(--ts-red); box-shadow: 3px 3px 0 var(--ts-red); }
 .sub-tile.is-current { outline: 2px solid var(--ts-white); }
+
+/* ============================================================
+   作者 2026-10-23: 選ぶ画面をスクロールさせない・いちばん目立つのはチームの 3 人の顔
+   ============================================================ */
+/* 3 人の顔 (= 右下に小さく持ってくる武器) */
+.team-face { position: relative; display: inline-block; width: 56px; height: 56px; flex: 0 0 auto; }
+.team-face__hero { width: 56px; height: 56px; image-rendering: pixelated; filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.6)); }
+.team-face__weapon {
+  position: absolute; right: -4px; bottom: -4px; width: 24px; height: 24px; padding: 1px; image-rendering: pixelated;
+  background: var(--ts-ink); border: 1.5px solid var(--ts-white); border-radius: 4px; transform: rotate(-6deg);
+}
+.team-face--empty { display: inline-flex; align-items: center; justify-content: center; border: 2px dashed rgba(255, 255, 255, 0.3); border-radius: 8px; color: rgba(255, 255, 255, 0.5); font-size: 1.4rem; }
+
+.hero-team { margin: 0.2rem 0 0.35rem; gap: 0.3rem 0.5rem; }
+.hero-team__label { writing-mode: vertical-rl; font-size: 0.7rem; letter-spacing: 0.3em; }
+.hero-team__slots { gap: 0.35rem; }
+.hero-team__slot {
+  flex-direction: column; align-items: center; justify-content: flex-start; gap: 2px; min-height: 0; padding: 0.35rem 0.25rem 0.3rem;
+  text-align: center; background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0.2));
+}
+.hero-team__slot.is-main { box-shadow: 0 0 0 1px var(--accent) inset, 0 0 12px color-mix(in srgb, var(--accent) 35%, transparent); }
+.hero-team__tag { top: 3px; left: 5px; right: auto; }
+.hero-team__name { font-size: 0.7rem; font-weight: 700; max-width: 100%; }
+.hero-team__weapon { font-size: 0.6rem; line-height: 1.1; color: var(--muted, #aab4d0); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hero-team__hint { font-size: 0.66rem; }
+
+/* チームのときは、 選んだ人の詳しい欄を小さく (= 帯と札と「冒険を始める」を 1 画面に) */
+.hero-modal--team .hero-stage { height: clamp(84px, 12vh, 120px); }
+.hero-modal--team .hero-stage[data-shot] .hero-stage__sprite { width: 128px; height: 128px; bottom: -16px; }
+.hero-modal--team .hero-detail { gap: 0.3rem; }
+.hero-modal--team .hero-detail__content { grid-template-columns: minmax(0, 1fr) 112px; gap: 0.35rem; }
+.hero-modal--team .hero-radar { max-width: 112px; }
+.hero-modal--team .hero-detail__weapon-desc,
+.hero-modal--team .hero-detail__weapon-ll,
+.hero-modal--team .hero-detail__weapon-skill,
+.hero-modal--team .hero-detail__sig-desc { display: none; }
+.hero-modal--team .hero-detail__weapon { padding: 0.25rem 0.4rem; }
+.hero-modal--team .hero-detail__weapon-icon { width: 28px; height: 28px; }
+.hero-modal--team .hero-modal__grid { gap: 0.35rem; }
+
+/* スキルツリーの効果 (= 畳む。 押すと中身) */
+details.hero-perks { padding: 0.15rem 0.6rem; }
+details.hero-perks.hidden { display: none; }
+.hero-perks__sum { cursor: pointer; list-style: none; font-weight: 700; font-size: 0.68rem; }
+.hero-perks__sum::-webkit-details-marker { display: none; }
+.hero-perks__sum::before { content: "▸ "; }
+details.hero-perks[open] .hero-perks__sum::before { content: "▾ "; }
+.hero-perks__body { display: block; margin-top: 0.2rem; }
+
+/* サブを選ぶ窓: 上の 2 枠・JIN・武器のタブ・並べ替え・決定 */
+.sub-picker__top { display: flex; align-items: center; gap: 10px; padding: 8px 12px 4px; flex-wrap: wrap; }
+.sub-picker__slots { display: flex; gap: 8px; }
+.sub-slot {
+  appearance: none; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 8px 4px; cursor: pointer;
+  background: rgba(255, 255, 255, 0.05); border: 2px solid rgba(255, 255, 255, 0.2); color: var(--ts-white); font: 800 0.62rem/1 "Chakra Petch", system-ui, sans-serif; letter-spacing: 0.1em;
+}
+.sub-slot.is-active { border-color: var(--ts-red); box-shadow: 4px 4px 0 var(--ts-red); background: rgba(227, 0, 27, 0.15); }
+.sub-picker__jin { margin: 0; flex: 1; min-width: 150px; font-size: 0.74rem; line-height: 1.35; }
+.sub-picker__jin .jin-on { display: inline-block; padding: 1px 8px; margin-right: 4px; background: var(--ts-red); color: var(--ts-white); transform: skewX(-12deg); font-family: "Dela Gothic One", system-ui, sans-serif; box-shadow: 3px 3px 0 var(--ts-ink); }
+.sub-picker__jin .jin-pair b { color: #ffd400; }
+.sub-picker__tabs { display: flex; gap: 4px; padding: 4px 12px; overflow-x: auto; scrollbar-width: none; }
+.sub-picker__tabs::-webkit-scrollbar { display: none; }
+.sub-tab {
+  appearance: none; flex: 0 0 auto; display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; cursor: pointer;
+  background: var(--ts-ink); color: var(--ts-white); border: 1.5px solid rgba(255, 255, 255, 0.25); transform: skewX(-10deg); font-size: 0.7rem;
+}
+.sub-tab img { width: 20px; height: 20px; image-rendering: pixelated; transform: skewX(10deg); }
+.sub-tab span { transform: skewX(10deg); white-space: nowrap; }
+.sub-tab b { transform: skewX(10deg); min-width: 1.4em; padding: 0 4px; background: rgba(255, 255, 255, 0.12); font-size: 0.66rem; text-align: center; }
+.sub-tab.is-on { background: var(--ts-red); border-color: var(--ts-white); box-shadow: 3px 3px 0 var(--ts-white); }
+.sub-tab.is-on b { background: var(--ts-white); color: var(--ts-ink); }
+.sub-picker__sorts { display: flex; align-items: center; gap: 4px; padding: 2px 12px 4px; flex-wrap: wrap; }
+.sub-picker__sorts-label { font-size: 0.64rem; color: var(--muted, #aab4d0); margin-right: 2px; }
+.sub-sort { appearance: none; padding: 2px 10px; cursor: pointer; font-size: 0.68rem; color: var(--ts-white); background: transparent; border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 999px; }
+.sub-sort.is-on { background: var(--ts-white); color: var(--ts-ink); font-weight: 800; }
+.sub-picker__foot { padding: 8px 12px 12px; display: flex; justify-content: flex-end; background: rgba(0, 0, 0, 0.25); }
+.sub-picker__done { min-width: 9em; }
+.sub-picker__empty { grid-column: 1 / -1; text-align: center; color: var(--muted, #aab4d0); font-size: 0.8rem; padding: 1.5rem 0; }
+
+/* サブの札: 顔 (= 右下に武器)・名前・武器・アトリビュート */
+.sub-tile { grid-template-columns: 48px 1fr; }
+.sub-face { position: relative; grid-row: 1 / 5; width: 48px; height: 48px; }
+.sub-face__hero { width: 48px; height: 48px; image-rendering: pixelated; }
+.sub-face__weapon { position: absolute; right: -3px; bottom: -3px; width: 22px; height: 22px; padding: 1px; image-rendering: pixelated; background: var(--ts-ink); border: 1.5px solid var(--ts-white); border-radius: 4px; }
+.sub-tile__weapon { font-size: 0.64rem; color: #ffd400; font-weight: 700; }
+.sub-tile__stat { font-size: 0.62rem; color: var(--muted, #aab4d0); }
+.sub-tile__picked { justify-self: start; padding: 0 6px; font: 900 0.62rem/1.5 "Chakra Petch", system-ui, sans-serif; letter-spacing: 0.1em; background: var(--ts-white); color: var(--ts-ink); transform: skewX(-12deg); }
+.sub-tile.is-current { outline: 2px solid var(--ts-white); background: rgba(255, 255, 255, 0.1); }
+.hero-modal--team .hero-modal__hint { display: none; }   /* アトリビュートの 1 行は、 チームの JIN の 1 行と札が持つ */
+@media (max-height: 780px) {   /* 背の低い画面: レーダーは畳み、 大きな絵と札の顔を小さく */
+  .hero-modal--team .hero-stage { height: 64px; }
+  .hero-modal--team .hero-radar { display: none; }
+  .hero-modal--team .hero-detail__content { grid-template-columns: minmax(0, 1fr); }
+  .hero-modal--team .hero-tile__portrait { height: 52px; }
+  .hero-modal--team .hero-tile__weapon-name { display: none; }
+  .team-face, .team-face__hero { width: 46px; height: 46px; }
+  .hero-modal--team .hero-detail__weapon { display: none; }   /* 武器はチームの顔の右下に出ている */
+  .hero-modal--team .hero-tile__sub { display: none; }
+  .hero-modal--team .hero-detail__stats { display: none; }
+}
+
+/* 古い img の決まり (= .hero-team__slot img / .sub-tile img) に負けないように、 顔と武器は個別に */
+.hero-team__slot .team-face__hero, .sub-tile .sub-face__hero { width: 100%; height: 100%; flex: none; }
+.hero-team__slot .team-face__weapon { width: 24px; height: 24px; }
+.sub-tile .sub-face__weapon { width: 22px; height: 22px; }
+@media (max-height: 780px) { .hero-team__slot .team-face__weapon { width: 20px; height: 20px; } }
