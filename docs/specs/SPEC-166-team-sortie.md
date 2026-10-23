@@ -2,7 +2,7 @@
 id: SPEC-166
 title: Team Sortie — Three-Hero Squads (One Main You Control, Two Subs That Follow and Fire Their Own Starter Weapons), a Team Gauge for a Combined Strike, Unlocked Once Three Heroes Are Freed
 status: Draft
-pr: TBD
+pr: 234
 phase: v2.0 Team
 kind: Added
 ---
