@@ -19,7 +19,7 @@ export const SUB_FOLLOW = 6;
 
 /** テスト用のホストか (= 新しい機能を先に試す場所。 SPEC-166 §4.5) */
 export function isTestHost(hostname = (typeof location !== "undefined" ? location.hostname : "")) {
-  return TEST_HOSTS.includes(String(hostname || "").toLowerCase());
+  return TEST_HOSTS.includes(String(hostname || "").toLowerCase()) || (arguments.length === 0 && isTestFlag());   // ?test=1 でも (= 本番でテスト)
 }
 
 /** テスト用のサイトそのものか (= ローカルは含めない)。 ここでは全員とすべてのモードが使え、 共通基盤へは何も送らない */
@@ -27,6 +27,23 @@ export const TEST_SITE = "survivor-test.bearko.games";
 export function isTestSite(hostname = (typeof location !== "undefined" ? location.hostname : "")) {
   return String(hostname || "").toLowerCase() === TEST_SITE;
 }
+
+/**
+ * URL の ?test=1 で本番でもテストする (= 作者 2026-10-23 A 案)。 そのタブを閉じるまで続く (= sessionStorage)。 ?test=0 で戻る。
+ * 本番と同じ場所なので、 ヒーローの解放はいまのまま (= 全員にはしない)・共通基盤へは送らない
+ */
+export const SS_TEST = "mcs.test";
+export function isTestFlag(loc = (typeof location !== "undefined" ? location : null), storage = globalThis.sessionStorage) {
+  const q = new URLSearchParams(loc?.search ?? "").get("test");
+  try {
+    if (q === "1") storage?.setItem(SS_TEST, "1");
+    else if (q === "0") storage?.removeItem(SS_TEST);
+    return storage?.getItem(SS_TEST) === "1";
+  } catch (_) { return q === "1"; }
+}
+
+/** 共通基盤へ送らない (= テスト用のサイトか ?test=1) */
+export function isTestMode() { return isTestSite() || isTestFlag(); }
 
 /** 編成の画面を出すか */
 export function teamAvailable({ testHost, unlockedCount, story = false, rta = false }) {

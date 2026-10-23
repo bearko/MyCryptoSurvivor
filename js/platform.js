@@ -6,7 +6,7 @@
 // ゲームの進行・pauseTime には触らない。ログイン状態は共通基盤が持つ（localStorage は使わない）。
 
 import { owns, ownedCount } from "./skill-logic.js";
-import { isTestSite } from "./team.js";   // SPEC-166
+import { isTestSite, isTestMode } from "./team.js";   // SPEC-166
 import { TREE_NODES, ROOT_ID } from "./skill-data.js";
 import { noteTrophies, refreshHeroUnlocks } from "./hero-unlock.js";   // SPEC-098
 import { noteAchievedHeroes } from "./hero-pool.js";   // SPEC-166
@@ -74,6 +74,8 @@ export function achievementIdsForMeta(meta) {
 
 // SPEC-166: テスト用のサイトでは共通基盤に何も送らない (= アチーブメント・RTA・総合スコア・チャット)
 const _sdk = () => (typeof window !== "undefined" && !isTestSite() ? window.BearkoGames : undefined);
+// SPEC-166: ?test=1 では読むのはよい (= ヒーローの解放・名前・チャット) が、 送らない (= アチーブメント・RTA・総合スコア・来訪)
+const _sdkSend = () => (isTestMode() ? undefined : _sdk());
 
 // 送る列: 1 つずつ順に (= 未ログインの最初の書き込みで仮アカウントができるため)。 同じ起動で同じ ID は 1 度だけ
 let _ready = Promise.resolve();   // 共通基盤の init が終わるまで待つ
@@ -85,7 +87,7 @@ let _pump = null;
 export function unlockAchievements(ids) {
   // SPEC-098: 本作のアチーブメントで解放されるヒーローは、 通信できなくてもこの端末で解放する
   noteTrophies(ids || []);
-  const bg = _sdk();
+  const bg = _sdkSend();
   if (!bg || typeof bg.unlockTrophy !== "function") return;
   for (const id of ids || []) {
     if (typeof id !== "string" || !id || _sentIds.has(id)) continue;
@@ -105,7 +107,7 @@ async function _drain() {
   await _ready;
   while (_queue.length) {
     const id = _queue.shift();
-    const bg = _sdk();
+    const bg = _sdkSend();
     if (!bg || typeof bg.unlockTrophy !== "function") { _queue.length = 0; return; }
     try {
       const r = await bg.unlockTrophy(id);
@@ -135,7 +137,7 @@ export function initPlatform(version) {
     // SPEC-052: 通知は画面の上に出す (= 結果画面のボタンを隠さない。 SDK 1.5.0 から。 古い SDK は無視する)
     // SPEC-091: 全体チャットの 💬 は右上 (= 下はマインちゃんの帯と通知が使う。 SDK 1.6.0 から)。
     //           読み込みの画面には出さない (= タイトルに入ったとき setChatVisible(true))
-    _ready = Promise.resolve(bg.init({ game: "survivor", version, toast: "top", chat: { position: "top-right", offset: { x: 12, y: 12 } } }))
+    _ready = Promise.resolve(bg.init({ game: "survivor", version, toast: "top", chat: { position: "top-right", offset: { x: 12, y: 12 } }, ...(isTestMode() ? { presence: false } : {}) }))   // SPEC-166: ?test=1 は来訪・同時接続も送らない
       .then(() => setChatVisible(false))
       .catch((e) => console.warn("[platform] init", e));
     // SPEC-098: 持っているアチーブメントからヒーローを解放する (= 起動時・ほかのタブから戻ったとき・新しく得たとき)
@@ -200,7 +202,7 @@ export function rtaRegulationFor(regulation, absolute) {
 
 /** RTA を出せるか (= SDK が読めたときだけ。 ローカルで開いたときなどは RTA の card を隠す) */
 export function isRtaAvailable() {
-  const bg = _sdk();
+  const bg = _sdkSend();
   return !!(bg && bg.rta && typeof bg.rta.start === "function");
 }
 
@@ -214,7 +216,7 @@ export function rtaCheckpointForStageEnd(stageIdx, stageCount) {
 }
 
 function _rtaCall(name, fn) {
-  const bg = _sdk();
+  const bg = _sdkSend();
   if (!bg || !bg.rta) return;
   try {
     Promise.resolve(fn(bg.rta))
@@ -280,7 +282,7 @@ export function scoreMetrics({ run, cleared, reportScore, regulation, absolute }
 
 /** 挑戦が終わったとき (= 全クリア・倒れた・タイトルに戻った)。 ステージを 1 つも終えていなければ送らない */
 export function reportRunScore(metrics) {
-  const bg = _sdk();
+  const bg = _sdkSend();
   if (!bg || typeof bg.submitScore !== "function" || !metrics) return;
   if (metrics.stagesCleared < 1) return;
   try {

@@ -74,7 +74,8 @@ kind: Added
 - `team.survivor.bearko.games` のような 2 段のサブドメインは Cloudflare の無料の証明書（`*.bearko.games`）が効かないので 1 段にした
 - テスト用のサイトでは: **ヒーロー 10 人とすべてのモードが最初から使える**（共通基盤につながないので、 アチーブメントでは解放できないため）。 **共通基盤には何も送らない**（アチーブメント・RTA・総合スコア・チャット）。 画面の右下に **TEST** の印。 セーブ（localStorage）はホスト名ごとに分かれるので、 本番の進みには触らない
 - ローカル（`localhost` / `127.0.0.1`）も編成は出す（自動プレイと確認のため）。 ただし全員解放と送信止めはしない（いまの自動プレイを変えない）
-- 作者の作業（1 回だけ）: Cloudflare のダッシュボード → Workers & Pages → `mycryptosurvivor` → 設定 → ドメインとルート → 追加 → カスタムドメイン → `survivor-test.bearko.games`
+- **本番でも `?test=1` で試せる**（作者の決定 2026-10-23 A 案）: `https://survivor.bearko.games/?test=1` で開くと、 チーム編成と JIN が出る。 そのタブを閉じるまで続き（sessionStorage `mcs.test`）、 `?test=0` で戻る。 **共通基盤へは送らない**（アチーブメント・RTA・総合スコア・来訪と同時接続・旧ランキング）。 読むのはよい（ヒーローの解放・名前・チャット）。 本番と同じ場所なので **ヒーローの解放はいまのまま**（全員にはしない）。 GUM やスキルツリーなど、 そのほかのセーブは本番と同じものを使う。 右下に TEST の印
+- 作者の作業（サブドメインを使うときだけ・1 回）: Cloudflare のダッシュボード → Workers & Pages → `mycryptosurvivor` → 設定 → ドメインとルート → 追加 → カスタムドメイン → `survivor-test.bearko.games`
 
 ### 4.6 JIN と必殺技（第 2 段。 作者の答え 2026-10-23）
 
@@ -197,6 +198,7 @@ kind: Added
 
 | # | 何を | PR |
 |---|---|---|
+| C | `?test=1`（`js/team.js` の `isTestFlag` / `isTestMode`）。 送る関数だけ止める（`platform.js` の `_sdkSend`、 `ranking-client.js`）。 本番のホスト名で、 付けないと出ない・付けると出る ことを確かめた | — |
 | B | 第 2 段: `data/hero-pool.json`（MCH の図鑑の 201 人とアトリビュートの人数。 `tools/data/build-hero-pool.mjs`）、 `js/jin.js`（JIN・強さの段・サブの武器）、 `js/hero-pool.js`（サブに選べる人）、 サブを選ぶ窓、 チームゲージとボタン・カットイン・単発と強化・専用背景（`js/battle/team-battle.js` + `css/team.css`）、 2 人そろいの補正 | — |
 | A | 第 1 段: `js/team.js`（純関数と保存 `mcs.team`）、 `js/battle/team-battle.js`（サブの追従・描画・武器の出どころ）、 武器の撃つ位置を持ち主に（`archetypes.js` の `weaponOrigin`。 ブレードとレーザーもサブの周り）、 ヒーロー選択のチームの帯と札の ＋、 テスト用のサイト（全員・全モード・送信なし・TEST の印）、 自動プレイ `--team` | this |
 

@@ -102,3 +102,21 @@ test("必殺技: ボタンで撃つ・ステージが進むほど強い・強化
   assert.match(read("../js/battle/weapons.js"), /teamDmgMul\(\)/);
   assert.match(read("../js/battle/sprites.js"), /team\.bg\.path/, "JIN の専用背景");
 });
+
+// ---- ?test=1 (= 本番でテスト。 作者 2026-10-23 A 案) ----
+import { isTestFlag } from "../js/team.js";
+test("?test=1 はそのタブのあいだ続き、 ?test=0 で戻る。 送るものは止める", () => {
+  const mem = new Map(); const ss = { getItem: (k) => mem.get(k) ?? null, setItem: (k, v) => mem.set(k, String(v)), removeItem: (k) => mem.delete(k) };
+  assert.equal(isTestFlag({ search: "" }, ss), false);
+  assert.equal(isTestFlag({ search: "?test=1" }, ss), true);
+  assert.equal(isTestFlag({ search: "" }, ss), true, "URL から消えても同じタブなら続く");
+  assert.equal(isTestFlag({ search: "?test=0" }, ss), false);
+  assert.equal(isTestFlag({ search: "?jin=1" }, ss), false);
+  const pf = read("../js/platform.js");
+  for (const fn of ["unlockAchievements", "_kick", "_rtaCall", "reportRunScore", "isRtaAvailable"]) {
+    const body = pf.slice(pf.search(new RegExp(`(export )?(async )?function ${fn}\\(`)));
+    assert.match(body.slice(0, 900), /_sdkSend\(\)/, `${fn} は送らない`);
+  }
+  assert.match(pf, /presence: false/, "来訪・同時接続も送らない");
+  assert.match(read("../js/ranking-client.js"), /if \(isTestMode\(\)\) return/, "旧ランキングにも送らない");
+});

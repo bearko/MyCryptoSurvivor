@@ -3,6 +3,7 @@
 // ============================================================
 
 import { LS_RANKING_API_URL, LS_PLAYER_NAME } from "./constants.js";
+import { isTestMode } from "./team.js";   // SPEC-166
 
 // ⚠ デプロイ後、 btoa("https://script.google.com/macros/s/.../exec") で base64 化して埋め込む
 // SPEC-036: 本プロジェクト共通ランキング (= GAS Web App、 全員アクセス) を default URL に
@@ -60,6 +61,7 @@ export function setPlayerName(name) {
  * @returns {Promise<{ok: boolean, error?: string}>}
  */
 export async function submitScore(payload) {
+  if (isTestMode()) return { ok: false, skipped: "test" };   // SPEC-166: ?test=1 ではランキングに送らない
   const url = getRankingApiUrl();
   if (!url) return { ok: false, error: "ランキング API URL が未設定" };
   try {
