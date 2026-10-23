@@ -3,7 +3,7 @@
 // ============================================================
 
 import { hasPlayed } from "./played.js";   // SPEC-147
-import { isTestHost, isTestSite, teamAvailable, normalizeTeam, toggleSub, withMain, loadTeam, saveTeam } from "./team.js";   // SPEC-166
+import { isTestHost, isTestSite, isTestFlag, teamAvailable, normalizeTeam, toggleSub, withMain, loadTeam, saveTeam } from "./team.js";   // SPEC-166
 import { loadHeroPool, poolHero, poolAttrs, poolHeroName, subPoolIds } from "./hero-pool.js";   // SPEC-166
 import { computeJin } from "./jin.js";   // SPEC-166
 import { hasClearedEasy } from "./easy.js";   // SPEC-147
@@ -876,7 +876,7 @@ document.addEventListener("contextmenu", (e) => { if (!e.target.closest("input, 
 document.addEventListener("gesturestart", (e) => e.preventDefault(), { passive: false });
 document.addEventListener("touchmove", (e) => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
 window.addEventListener("DOMContentLoaded", () => {
-  if (isTestSite()) document.body.classList.add("is-test-site");   // SPEC-166: テスト用のサイトの印 (= 右下に TEST)
+  if (isTestSite() || isTestFlag()) document.body.classList.add("is-test-site");   // SPEC-166: テスト用のサイト・?test=1 の印 (= 右下に TEST)
   // SPEC-039: bearko.games 共通基盤（アチーブメント）。SDK がなければ何もしない
   initPlatform(APP_VERSION);
   installChatDock();   // SPEC-156: チャットのドックのぶん、 木と結果の画面を狭める

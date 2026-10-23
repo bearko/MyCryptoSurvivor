@@ -1,2 +1,3 @@
 - **三人一組のチーム編成（第 1 段・テスト用のサブドメイン）** (`js/team.js` + `js/battle/team-battle.js` + `js/battle/archetypes.js` + `js/main.js` + `index.html` + `css/components.css`): メイン 1 人 ＋ ついて回って自分の初期武器を撃つサブ 2 人。 サブの武器は武器の枠 5 に入る。 HP・固有スキル・LL はメインだけ。 ヒーロー 3 人の解放で開く。 ストーリーと RTA はソロ。 `survivor-test.bearko.games` だけで出る（全員・全モード・共通基盤へは送らない・TEST の印）
 - **JIN と必殺技（第 2 段）** (`js/jin.js` + `js/hero-pool.js` + `data/hero-pool.json` + `js/battle/team-battle.js` + `css/team.css`): サブはアチーブメントで解放したあらゆる MCH ヒーロー（サブを選ぶ窓は JIN になる人が先）。 3 人が同じアトリビュートで JIN（持つ人が少ないほど強い・単発の総攻撃か一定時間の強化・専用背景）、 2 人そろいは武器の威力に小さな補正。 撃破で溜まるチームゲージと、 スタイリッシュなボタンで撃つ必殺技・カットイン
+- **本番でも `?test=1` で試せる**: チーム編成と JIN が出て、 共通基盤とランキングへは送らない（そのタブのあいだ。 `?test=0` で戻る）
