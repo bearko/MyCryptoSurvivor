@@ -48,6 +48,7 @@
   <link rel="stylesheet" href="css/battle-ui.css" />
   <!-- SPEC-058: 結果とメニュー (= 結果のテロップ・タイル・活動レポート・メニュー・設定・ランキング・遊び方) -->
   <link rel="stylesheet" href="css/result-ui.css" />
+  <link rel="stylesheet" href="css/team.css" />
   <!-- SPEC-090: スキルツリー (= タイトルの上に重ねる木の画面) -->
   <link rel="stylesheet" href="css/skill-tree.css" />
   <!-- SPEC-109: ショップ -->
@@ -297,6 +298,16 @@
 
     <section class="stage">
       <canvas id="battleCanvas" class="battle-canvas" aria-label="battle stage"></canvas>
+      <!-- SPEC-166: チームゲージと必殺技のボタン (= サブがいるときだけ)。 J キーでも撃てる -->
+      <div class="team-strike hidden" id="teamStrike">
+        <div class="ts-gauge" aria-hidden="true"><span class="ts-gauge__fill" id="tsFill"></span><span class="ts-gauge__label" id="tsLabel">TEAM</span></div>
+        <button type="button" class="ts-btn" id="tsBtn" disabled aria-label="必殺技"><span class="ts-btn__main" id="tsBtnText">チームストライク</span><span class="ts-btn__sub" id="tsBtnSub">0%</span></button>
+      </div>
+      <div class="ts-cutin hidden" id="tsCutin" aria-hidden="true">
+        <div class="ts-cutin__band"></div>
+        <div class="ts-cutin__faces"></div>
+        <div class="ts-cutin__text"><span class="ts-cutin__title"></span><span class="ts-cutin__sub"></span></div>
+      </div>
       <div id="joystick" class="joystick hidden" aria-hidden="true">
         <div class="joystick__base"  id="joystickBase"></div>
         <div class="joystick__stick" id="joystickStick"></div>
@@ -790,7 +801,20 @@
       <div class="hero-team hidden" id="heroTeam">
         <span class="hero-team__label" data-i18n="team.label">チーム</span>
         <div class="hero-team__slots" id="heroTeamSlots"></div>
-        <span class="hero-team__hint" id="heroTeamHint" data-i18n="team.hint">札の ＋ でサブに入れる</span>
+        <span class="hero-team__jin" id="heroTeamJin"></span>
+        <span class="hero-team__hint" id="heroTeamHint" data-i18n="team.hint">SUB の枠を押して、 サブを選ぶ</span>
+      </div>
+      <!-- SPEC-166: サブを選ぶ (= 解放したあらゆる MCH ヒーロー。 JIN になる人が先) -->
+      <div class="sub-picker hidden" id="subPicker" role="dialog" aria-modal="true" aria-labelledby="subPickerTitle">
+        <div class="sub-picker__card">
+          <header class="sub-picker__head">
+            <h3 class="sub-picker__title" id="subPickerTitle"></h3>
+            <button type="button" class="sub-picker__clear" id="subPickerClear" data-i18n="team.remove">サブから外す</button>
+            <button type="button" class="hero-modal__close-x" id="subPickerClose" aria-label="Close">×</button>
+          </header>
+          <p class="sub-picker__note" id="subPickerNote"></p>
+          <div class="sub-picker__grid" id="subPickerGrid"></div>
+        </div>
       </div>
       <div class="hero-modal__grid" id="heroSelectGrid"
            role="listbox" aria-label="Hero choices"></div>

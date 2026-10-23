@@ -924,9 +924,15 @@
   "story.bond.rewards": {"ja": "絆の報酬", "en": "BOND REWARDS"},
   "story.bond.tap": {"ja": "タップで続ける ▶", "en": "Tap to continue ▶"},
   "team.label": {"ja": "チーム", "en": "Team"},
-  "team.hint": {"ja": "札の ＋ でサブに入れる", "en": "Tap ＋ on a card to add a sub"},
+  "team.hint": {"ja": "SUB の枠を押して、 サブを選ぶ", "en": "Tap a SUB slot to choose a sub"},
   "team.add": {"ja": "サブに入れる", "en": "Add as sub"},
   "team.remove": {"ja": "サブから外す", "en": "Remove sub"},
   "team.pickMain": {"ja": "札を選ぶ", "en": "Pick a card"},
-  "team.empty": {"ja": "空き", "en": "Empty"}
+  "team.empty": {"ja": "＋ 選ぶ", "en": "＋ Choose"},
+  "team.jin.buff": {"ja": "一定時間 強化", "en": "Timed power-up"},
+  "team.jin.strike": {"ja": "単発の総攻撃", "en": "All-out strike"},
+  "team.jin.pair": {"ja": "2 人そろい", "en": "Pair"},
+  "team.jin.none": {"ja": "JIN なし（同じアトリビュートの 3 人で JIN）", "en": "No JIN (3 heroes sharing an attribute make a JIN)"},
+  "team.pick.title": {"ja": "SUB {n} を選ぶ", "en": "Choose SUB {n}"},
+  "team.pick.note": {"ja": "解放したヒーロー {n} 人。 同じアトリビュートの 3 人で JIN。 持っている人が少ないアトリビュートほど強い", "en": "{n} unlocked heroes. Three sharing an attribute make a JIN — the rarer the attribute, the stronger."}
 }

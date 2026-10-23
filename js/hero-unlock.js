@@ -10,6 +10,7 @@
 import { hasClearedEasy } from "./easy.js";   // SPEC-153 / SPEC-165
 import { hasPlayed } from "./played.js";   // SPEC-153
 import { isTestSite } from "./team.js";   // SPEC-166
+import { noteAchievedHeroes } from "./hero-pool.js";   // SPEC-166
 
 /** 最初から使える人 (= ブレード)。 SPEC-165: リボルバー (= ビリー・ザ・キッド) はストーリー 3-1 の解放 */
 export const STARTER_HEROES = [10001];
@@ -136,6 +137,7 @@ export async function refreshHeroUnlocks() {
   try {
     const r = await bg.getTrophies();
     if (!r?.ok && !Array.isArray(r?.trophies)) return [];
+    noteAchievedHeroes(r.trophies ?? []);   // SPEC-166: サブに選べるヒーロー (= アチーブメントの絵)
     return noteTrophies((r.trophies ?? []).map((t) => t.id));
   } catch (_) {
     return [];

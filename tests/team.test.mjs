@@ -50,3 +50,55 @@ test("配線: 武器は持ち主の位置から・サブの初期武器は武器
   assert.match(read("../js/platform.js"), /!isTestSite\(\) \? window\.BearkoGames/);
   assert.match(read("../js/hero-unlock.js"), /if \(isTestSite\(\)\) return new Set/);
 });
+
+// ---- 第 2 段: JIN・サブの武器・必殺技 ----
+import { computeJin, jinTier, subWeaponFor, STRIKE_ATTRS, PAIR_CAP, jinBackground } from "../js/jin.js";
+import { strikeDamage, buffParams, GAUGE_MAX } from "../js/battle/team-battle.js";
+const POOL = JSON.parse(read("../data/hero-pool.json"));
+const H = (id) => POOL.heroes.find((h) => h.id === id);
+
+test("台帳: MCH の図鑑の 201 人とアトリビュートの人数", () => {
+  assert.equal(POOL.heroes.length, 201);
+  assert.ok(Object.values(POOL.attrs).every((a) => a.n >= 1 && a.ja && a.en));
+  for (const id of [4006, 2043, 2016, 2003, 4041, 1006, 1007, 2013, 4052]) assert.ok(H(id), `本作の ${id} も台帳にいる`);
+});
+
+test("JIN: 3 人で成立・2 人は補正だけ・持っている人が少ないアトリビュートほど強い", () => {
+  assert.ok(jinTier(3).mul > jinTier(10).mul && jinTier(10).mul > jinTier(38).mul, "少ないほど強い");
+  const hard = computeJin([H(4041), H(1006), H(1007)], POOL.attrs);   // テスラ・ピタゴラス・大長今 = 理系学問
+  assert.equal(hard.full?.attr, 107);
+  assert.equal(hard.full.kind, "buff", "学問は一定時間の強化");
+  const two = computeJin([H(4041), H(1006)], POOL.attrs);
+  assert.equal(two.full, null, "2 人では JIN にならない");
+  assert.ok(two.pairBonus > 0 && two.pairBonus <= PAIR_CAP);
+  // 桃園の誓い (= 3 人しかいない) は最強の単発
+  const peach = POOL.heroes.filter((h) => h.attrs.includes(203));
+  assert.equal(peach.length, 3);
+  const p = computeJin(peach, POOL.attrs);
+  assert.equal(p.full.attr, 203); assert.equal(p.full.star, 5); assert.equal(p.full.kind, "strike");
+  assert.ok(STRIKE_ATTRS.has(203));
+  assert.match(jinBackground(203), /^Image\/Backgrounds\/\d+\.png$/);
+  assert.equal(computeJin([H(4041), { id: 10001, attrs: [] }, H(1006)], POOL.attrs).full, null, "MCHウォーリアーはアトリビュートが無い");
+});
+
+test("サブの武器: 初期武器 → アトリビュート → ステータス。 メインともう 1 人のサブとは重ねない", () => {
+  assert.equal(subWeaponFor(H(4006), { starter: 1, used: new Set([10]), attrs: POOL.attrs }), 1, "本作の人は初期武器");
+  const peach = POOL.heroes.filter((h) => h.attrs.includes(203));
+  const used = new Set([10]);
+  const ws = peach.map((h) => { const w = subWeaponFor(h, { used, attrs: POOL.attrs }); used.add(w); return w; });
+  assert.equal(new Set(ws).size, 3, "3 人とも別の系統");
+  assert.ok(ws.every((w) => w >= 1 && w <= 10));
+  assert.notEqual(subWeaponFor(H(4006), { starter: 1, used: new Set([1, 10]), attrs: POOL.attrs }), 1, "初期武器がメインと同じなら別の系統");
+});
+
+test("必殺技: ボタンで撃つ・ステージが進むほど強い・強化は一定時間", () => {
+  assert.ok(GAUGE_MAX >= 100);
+  assert.ok(strikeDamage(2) > strikeDamage(0));
+  assert.equal(strikeDamage(0, 2), strikeDamage(0) * 2);
+  const b = buffParams(1.5);
+  assert.equal(b.dmgMul, 1.5); assert.ok(b.cdMul < 1); assert.ok(b.ms > 0);
+  assert.match(read("../index.html"), /id="tsBtn"/);
+  assert.match(read("../js/battle/damage.js"), /teamOnKill\(\)/);
+  assert.match(read("../js/battle/weapons.js"), /teamDmgMul\(\)/);
+  assert.match(read("../js/battle/sprites.js"), /team\.bg\.path/, "JIN の専用背景");
+});

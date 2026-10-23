@@ -176,7 +176,8 @@ export function getBackgroundSprite() {
   const idx   = state.currentStageIdx ?? 0;
   const stage = STAGE_TABLE[idx];
   const st    = storyStage();   // SPEC-165: ストーリーはランドの背景 (= MCH のランドの絵)
-  const path  = st ? landOf(st.id).bg : (stage?.bgPath ?? BG_IMAGE_PATH);
+  const jinBg = state.battle?.team?.bg && state.battle.team.t < state.battle.team.bg.until ? state.battle.team.bg.path : null;   // SPEC-166: JIN の専用背景 (= 出しているあいだだけ)
+  const path  = jinBg ?? (st ? landOf(st.id).bg : (stage?.bgPath ?? BG_IMAGE_PATH));
   return _loadImage(img(path));
 }
 
