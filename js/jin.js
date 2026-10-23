@@ -29,7 +29,7 @@ export const STRIKE_ATTRS = new Set([102, 110, 111, 112, 117, 118, 120, 121, 122
 /** 強化の JIN の長さ (= 秒) と、 武器の間隔の縮み (= 倍率の半分だけ速く) */
 export const BUFF_SEC = 8;
 
-/** JIN の専用背景 (= MCH の Backgrounds。 作者が JIN ごとの絵を決めるまでは、 アトリビュートの id で決まった 1 枚) */
+/** JIN の専用背景 (= MCH の Backgrounds。 仮: 作者が JIN ごとの絵を決めるまでは、 アトリビュートの id で決まった 1 枚。 作者 2026-10-23 で一旦保留 → Issue に積んだ) */
 export const JIN_BACKGROUNDS = ["1002", "1003", "1004", "1010", "1028", "1030", "1039", "1041", "1046", "1051", "1052", "1053", "1056", "2505", "2705", "2805", "2905"];
 export function jinBackground(attrId) {
   return `Image/Backgrounds/${JIN_BACKGROUNDS[Math.abs(Number(attrId) | 0) % JIN_BACKGROUNDS.length]}.png`;
