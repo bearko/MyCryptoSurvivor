@@ -945,5 +945,7 @@
   "team.sort.int": {"ja": "連射", "en": "INT"},
   "team.sort.agi": {"ja": "速さ", "en": "AGI"},
   "team.pick.empty": {"ja": "この武器を持ってくる人はいない", "en": "No hero brings this weapon"},
-  "hero.perks.summary": {"ja": "スキルツリーの効果", "en": "Skill tree effects"}
+  "hero.perks.summary": {"ja": "スキルツリーの効果", "en": "Skill tree effects"},
+  "team.mainAttrs": {"ja": "メインのアトリビュート", "en": "Main's attributes"},
+  "team.mainAttrs.none": {"ja": "なし（JIN にならない）", "en": "None (no JIN)"}
 }

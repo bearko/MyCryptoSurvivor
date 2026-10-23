@@ -458,7 +458,18 @@ function _renderTeamBar(on, subs, lang) {
     slots.appendChild(slot);
   });
   const jinEl = $("#heroTeamJin");
-  if (jinEl) jinEl.innerHTML = _jinLine(ids, lang);
+  if (jinEl) jinEl.innerHTML = _jinLine(ids, lang) + _mainAttrsLine(ids[0], lang);
+}
+
+/** 作者 2026-10-23: メインのアトリビュート (= JIN の判定に使う。 MCH のヒーローデータ。 少ない順に人数つき) */
+function _mainAttrsLine(id, lang) {
+  if (id == null) return "";
+  const attrs = poolAttrs();
+  const list = [...(poolHero(id)?.attrs ?? [])].sort((x, y) => (attrs[x]?.n ?? 99) - (attrs[y]?.n ?? 99));
+  const chips = list.length
+    ? list.map((a) => `<i>${escapeText(attrs[a]?.[lang] ?? attrs[a]?.ja ?? a)}<small>${attrs[a]?.n ?? ""}</small></i>`).join("")
+    : `<i class="none">${escapeText(t("team.mainAttrs.none", "なし（JIN にならない）"))}</i>`;
+  return `<span class="hero-team__attrs"><span>${escapeText(t("team.mainAttrs", "メインのアトリビュート"))}</span>${chips}</span>`;
 }
 
 /** SPEC-166: JIN の 1 行 (= 帯とサブの札で使う) */
@@ -517,7 +528,8 @@ function _renderSubPicker() {
       const b = document.createElement("button");
       b.type = "button";
       b.className = "sub-tab" + (String(_subTab) === String(key) ? " is-on" : "");
-      b.innerHTML = `${ext ? `<img src="${extTierImg(ext, 1)}" alt="" onerror="this.remove()" />` : ""}<span>${escapeText(label)}</span><b>${n}</b>`;
+      b.innerHTML = ext ? `<img src="${extTierImg(ext, 1)}" alt="${escapeAttr(label)}" onerror="this.remove()" /><b>${n}</b>` : `<span>${escapeText(label)}</span><b>${n}</b>`;
+      b.title = label; b.setAttribute("aria-label", `${label} ${n}`);
       b.addEventListener("click", () => { _subTab = key; _renderSubPicker(); });
       tabs.appendChild(b);
     };
@@ -565,7 +577,7 @@ function _renderSubPicker() {
       .map((a) => `<i class="${r.j.full?.attr === a ? "on" : r.j.pairs.some((p) => p.attr === a) ? "pair" : ""}">${escapeText(attrs[a]?.[lang] ?? attrs[a]?.ja ?? a)}<small>${attrs[a]?.n ?? ""}</small></i>`).join("");
     const stat = _subSort !== "jin" ? `<span class="sub-tile__stat">${escapeText(t(SUB_SORTS.find((x) => x[0] === _subSort)[1], ""))} ${r.h.stats?.[_subSort] ?? 0}</span>` : "";
     const badge = r.picked >= 0 ? `<span class="sub-tile__picked">SUB ${r.picked + 1}</span>` : r.j.full ? `<span class="sub-tile__jin">JIN ${"★".repeat(r.j.full.star)} ${escapeText(r.j.full.name[lang] ?? r.j.full.name.ja)}</span>` : "";
-    tile.innerHTML = `${_faceHtml(r.id, r.w, "sub-face")}<span class="sub-tile__name">${escapeText(poolHeroName(r.h, lang))}</span>${ext ? `<span class="sub-tile__weapon">${escapeText(getSeriesName(ext, lang))}</span>` : ""}${stat}${badge}<span class="sub-tile__attrs">${chips}</span>`;
+    tile.innerHTML = `${_faceHtml(r.id, r.w, "sub-face")}<span class="sub-tile__body"><span class="sub-tile__name">${escapeText(poolHeroName(r.h, lang))}</span>${ext ? `<span class="sub-tile__weapon">${escapeText(getSeriesName(ext, lang))}</span>` : ""}${stat}${badge}<span class="sub-tile__attrs">${chips}</span></span>`;
     tile.addEventListener("click", () => _pickSub(r.id));
     grid.appendChild(tile);
   }
@@ -579,10 +591,12 @@ function _pickSub(id) {
   else {
     if (_subSlot < subs.length) subs[_subSlot] = id; else subs.push(id);
     subs = subs.slice(0, 2);
-    _subSlot = subs.length < 2 ? subs.length : (_subSlot === 0 ? 1 : 1);
+    _subSlot = subs.length < 2 ? subs.length : 1;
   }
   state.pendingTeamSubs = subs;
   renderHeroSelectModal();
+  // 作者 2026-10-23: 2 人そろったら、 すぐ元の画面へ (= ×を押させない)
+  if (at < 0 && subs.length >= 2) { closeSubPicker(); return; }
   _renderSubPicker();
 }
 function closeSubPicker() { $("#subPicker")?.classList.add("hidden"); }

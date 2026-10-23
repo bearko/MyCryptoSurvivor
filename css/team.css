@@ -250,3 +250,28 @@ details.hero-perks[open] .hero-perks__sum::before { content: "▾ "; }
 .hero-team__slot .team-face__weapon { width: 24px; height: 24px; }
 .sub-tile .sub-face__weapon { width: 22px; height: 22px; }
 @media (max-height: 780px) { .hero-team__slot .team-face__weapon { width: 20px; height: 20px; } }
+
+/* 作者 2026-10-23 (2): 武器は顔の右下にきちっと (= 傾けない・名前にかぶせない)・チームのときは開始武器の行を出さない・タブはアイコンと数だけで折り返す */
+.hero-team__slot .team-face { margin-bottom: 2px; }
+.team-face__weapon { right: 0; bottom: 0; transform: none; }
+.hero-modal--team .hero-detail__weapon { display: none; }   /* 持ってくる武器はチームの顔の右下と名前の下に出ている */
+.hero-team__attrs { display: flex; flex-wrap: wrap; align-items: center; gap: 3px; margin-top: 3px; font-size: 0.66rem; color: var(--muted, #aab4d0); }
+.hero-team__attrs > span { margin-right: 2px; }
+.hero-team__attrs i { font-style: normal; padding: 0 5px; border-radius: 3px; background: rgba(255, 255, 255, 0.08); color: var(--text, #eef2ff); }
+.hero-team__attrs i small { margin-left: 2px; opacity: 0.6; }
+.hero-team__attrs i.none { color: var(--muted, #aab4d0); }
+.sub-picker__tabs { flex-wrap: wrap; overflow-x: visible; gap: 4px 3px; }
+.sub-tab { padding: 3px 6px; gap: 3px; }
+.sub-tab img { width: 22px; height: 22px; }
+/* タブを 1 行に (= アイコンの下に数。 幅を均等に分ける) */
+.sub-picker__tabs { flex-wrap: nowrap; gap: 3px; }
+.sub-tab { flex: 1 1 0; min-width: 0; flex-direction: column; justify-content: center; gap: 1px; padding: 3px 2px; transform: none; clip-path: polygon(8% 0, 100% 0, 92% 100%, 0 100%); }
+.sub-tab img, .sub-tab span, .sub-tab b { transform: none; }
+.sub-tab span { font-size: 0.62rem; }
+.sub-tab b { font-size: 0.6rem; line-height: 1.2; padding: 0 3px; }
+.sub-tab.is-on { box-shadow: none; }
+/* サブの札: 顔 ｜ 文字の列 (= 行が増えても左の列に落ちない) */
+.sub-tile { display: flex; align-items: flex-start; gap: 6px; }
+.sub-tile .sub-face { flex: 0 0 48px; grid-row: auto; }
+.sub-tile__body { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-width: 0; flex: 1; }
+.sub-tile__name { max-width: 100%; }
