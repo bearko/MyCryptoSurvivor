@@ -9,12 +9,13 @@
 import { state } from "../state.js";
 import * as A from "./archetypes.js";
 import { weaponDmgMul } from "../perks.js";   // SPEC-131: 武器の極意
+import { teamDmgMul, teamCdMul } from "./team-battle.js";   // SPEC-166
 
 export function tickWeapons(_dt, nowMs) {
   const b = state.battle;
   // SPEC-097: ヒーローの INT / PHY の倍率も掛ける (= startBattle が置く。 プレビューなど無いときは 1)
-  const cdMul       = (state.buffs?.cdMul  ?? 1) * (b.heroCdMul  ?? 1);
-  const baseDmgMul  = (state.buffs?.dmgMul ?? 1) * (b.heroDmgMul ?? 1);
+  const cdMul       = (state.buffs?.cdMul  ?? 1) * (b.heroCdMul  ?? 1) * teamCdMul();     // SPEC-166: 強化の JIN
+  const baseDmgMul  = (state.buffs?.dmgMul ?? 1) * (b.heroDmgMul ?? 1) * teamDmgMul();   // SPEC-166: 2 人そろい・強化の JIN
   const bulletBonus = state.buffs?.bulletCountBonus ?? 0;
 
   for (const w of b.weapons) {

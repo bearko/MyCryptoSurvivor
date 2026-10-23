@@ -4,6 +4,8 @@
 
 import { hasPlayed } from "./played.js";   // SPEC-147
 import { isTestHost, isTestSite, teamAvailable, normalizeTeam, toggleSub, withMain, loadTeam, saveTeam } from "./team.js";   // SPEC-166
+import { loadHeroPool, poolHero, poolAttrs, poolHeroName, subPoolIds } from "./hero-pool.js";   // SPEC-166
+import { computeJin } from "./jin.js";   // SPEC-166
 import { hasClearedEasy } from "./easy.js";   // SPEC-147
 import { state, pauseTime, resumeTime } from "./state.js";
 import { initI18n, setLang, getLang, t, tpl, onLangChange } from "./i18n.js";
@@ -75,6 +77,7 @@ async function init() {
   await Promise.all([
     initI18n(),
     loadHeroes().catch((e) => console.error("loadHeroes failed", e)),
+    loadHeroPool().catch((e) => console.error("loadHeroPool failed", e)),   // SPEC-166: サブに選べるヒーロー
     loadExtensions().catch((e) => console.error("loadExtensions failed", e)),
     loadEnemies().catch((e) => console.error("loadEnemies failed", e)),
   ]);
@@ -259,6 +262,9 @@ function setupHeroSelectModal() {
 
   $("#heroSelectClose")?.addEventListener("click", cancelHeroSelect);
   $("#heroSelectCta")?.addEventListener("click", applyHeroPick);
+  // SPEC-166: サブを選ぶ窓
+  $("#subPickerClose")?.addEventListener("click", closeSubPicker);
+  $("#subPickerClear")?.addEventListener("click", () => { state.pendingTeamSubs = (state.pendingTeamSubs ?? []).filter((_, i) => i !== _subSlot); closeSubPicker(); renderHeroSelectModal(); });
 
   // 背景クリックで閉じる
   modal.addEventListener("click", (e) => {
@@ -299,7 +305,7 @@ export function openHeroSelectModal() {   // SPEC-165: ストーリーの 3-2 �
   if (!modal) return;
   pauseTime();
   state.pendingHeroPick = null;
-  state.pendingTeamSubs = normalizeTeam(loadTeam(), { main: null, unlocked: getUnlockedHeroes() }).subs;   // SPEC-166: 前の編成
+  state.pendingTeamSubs = normalizeTeam(loadTeam(), { main: null, unlocked: subPoolIds(getUnlockedHeroes()) }).subs;   // SPEC-166: 前の編成 (= サブは解放したあらゆる MCH ヒーロー)
   renderHeroSelectModal();
   renderHeroDetail(null);   // SPEC-014: 詳細パネルを placeholder 状態にリセット
   modal.classList.remove("hidden");
@@ -396,18 +402,6 @@ function renderHeroSelectModal() {
       </div>
     `;
     tile.addEventListener("click", () => pickHero(hero.heroId));
-    // SPEC-166: サブに入れる / 外す (= 札の右下の ＋。 メインには付けない)
-    if (teamOn && !locked && !isSelected) {
-      const isSub = subs.includes(hero.heroId);
-      if (isSub) tile.classList.add("hero-tile--sub");
-      const add = document.createElement("span");
-      add.className = "hero-tile__team" + (isSub ? " is-on" : "");
-      add.setAttribute("role", "button");
-      add.setAttribute("aria-label", isSub ? t("team.remove", "サブから外す") : t("team.add", "サブに入れる"));
-      add.textContent = isSub ? `SUB ${subs.indexOf(hero.heroId) + 1}` : "＋";
-      add.addEventListener("click", (e) => { e.stopPropagation(); state.pendingTeamSubs = toggleSub(subs, hero.heroId, state.pendingHeroPick); renderHeroSelectModal(); });
-      tile.appendChild(add);
-    }
     grid.appendChild(tile);
   }
 
@@ -416,7 +410,7 @@ function renderHeroSelectModal() {
 
 /** SPEC-166: 編成を出すか (= テスト用のホスト・3 人以上・ストーリーと RTA ではない) */
 function _teamOn(unlocked = getUnlockedHeroes()) {
-  return teamAvailable({ testHost: isTestHost(), unlockedCount: HERO_ROSTER.filter((h) => unlocked.has(h.heroId)).length, story: isStory(), rta: !!state.rtaMode });
+  return teamAvailable({ testHost: isTestHost(), unlockedCount: subPoolIds(unlocked).size, story: isStory(), rta: !!state.rtaMode });
 }
 
 /** SPEC-166: 編成の帯 (= 左がメイン、 右 2 つがサブ。 サブの枠を押すと外れる) */
@@ -428,18 +422,76 @@ function _renderTeamBar(on, subs, lang) {
   slots.innerHTML = "";
   const ids = [state.pendingHeroPick ?? null, subs[0] ?? null, subs[1] ?? null];
   ids.forEach((id, i) => {
-    const hero = id != null ? getHero(id) : null;
+    const hero = id != null ? (getHero(id) ?? poolHero(id)) : null;   // SPEC-166: サブは 10 人以外の MCH ヒーローも
     const slot = document.createElement("button");
     slot.type = "button";
     slot.className = "hero-team__slot" + (i === 0 ? " is-main" : "") + (hero ? "" : " is-empty");
     const tag = i === 0 ? "MAIN" : `SUB ${i}`;
     slot.innerHTML = hero
-      ? `<img src="${heroImg(hero.heroId)}" alt="" /><span class="hero-team__tag">${tag}</span><span class="hero-team__name">${escapeText(localizedHeroName(hero, lang))}</span>`
-      : `<span class="hero-team__tag">${tag}</span><span class="hero-team__name">${escapeText(i === 0 ? t("team.pickMain", "札を選ぶ") : t("team.empty", "空き"))}</span>`;
-    if (i > 0 && hero) slot.addEventListener("click", () => { state.pendingTeamSubs = toggleSub(subs, id, state.pendingHeroPick); renderHeroSelectModal(); });
+      ? `<img src="${heroImg(id)}" alt="" /><span class="hero-team__tag">${tag}</span><span class="hero-team__name">${escapeText(localizedHeroName(hero, lang))}</span>`
+      : `<span class="hero-team__tag">${tag}</span><span class="hero-team__name">${escapeText(i === 0 ? t("team.pickMain", "札を選ぶ") : t("team.empty", "＋ 選ぶ"))}</span>`;
+    if (i > 0) slot.addEventListener("click", () => openSubPicker(i - 1));   // SPEC-166: サブは解放したあらゆる MCH ヒーローから
     slots.appendChild(slot);
   });
+  // JIN の見込み (= メイン ＋ サブ。 3 人そろうと JIN、 2 人そろうと小さな補正)
+  const jinEl = $("#heroTeamJin");
+  if (jinEl) jinEl.innerHTML = _jinLine(ids, lang);
 }
+
+/** SPEC-166: JIN の 1 行 (= 帯とサブの札で使う) */
+function _jinLine(ids, lang) {
+  const members = ids.filter((x) => x != null).map((x) => poolHero(x)).filter(Boolean);
+  if (members.length < 2) return "";
+  const j = computeJin(members, poolAttrs());
+  const kind = (k) => (k === "buff" ? t("team.jin.buff", "一定時間 強化") : t("team.jin.strike", "単発の総攻撃"));
+  if (j.full) return `<b class="jin-on">JIN ${"★".repeat(j.full.star)} ${escapeText(j.full.name[lang] ?? j.full.name.ja)}</b> <span>${escapeText(kind(j.full.kind))} ×${j.full.mul}</span>`;
+  if (j.pairs.length) return `<span class="jin-pair">${escapeText(t("team.jin.pair", "2 人そろい"))}: ${j.pairs.slice(0, 3).map((p) => escapeText(p.name[lang] ?? p.name.ja)).join("・")} <b>+${Math.round(j.pairBonus * 1000) / 10}%</b></span>`;
+  return `<span class="jin-none">${escapeText(t("team.jin.none", "JIN なし (= 同じアトリビュートの 3 人で JIN)"))}</span>`;
+}
+
+/** SPEC-166: サブを選ぶ窓 (= slot 0 / 1)。 解放したあらゆる MCH ヒーロー。 JIN になる人 → 2 人そろい → ほか の順 */
+let _subSlot = 0;
+function openSubPicker(slot) {
+  _subSlot = slot;
+  const picker = $("#subPicker"), grid = $("#subPickerGrid");
+  if (!picker || !grid) return;
+  const lang = getLang();
+  const subs = [...(state.pendingTeamSubs ?? [])];
+  const main = state.pendingHeroPick;
+  const other = subs.filter((_, i) => i !== slot);
+  const attrs = poolAttrs();
+  const pool = [...subPoolIds(getUnlockedHeroes())].filter((id) => id !== main && !other.includes(id));
+  const rows = pool.map((id) => {
+    const h = poolHero(id);
+    const members = [main, ...other, id].filter((x) => x != null).map((x) => poolHero(x)).filter(Boolean);
+    const j = computeJin(members, attrs);
+    const score = j.full ? 1000 - (j.full.n ?? 99) : j.pairs.length ? 500 - (j.pairs[0].n ?? 99) : 0;
+    return { id, h, j, score };
+  }).filter((r) => r.h).sort((a, b) => b.score - a.score || a.id - b.id);
+  $("#subPickerTitle").textContent = tpl(t("team.pick.title", "SUB {n} を選ぶ"), { n: String(slot + 1) });
+  $("#subPickerNote").textContent = tpl(t("team.pick.note", "解放したヒーロー {n} 人。 同じアトリビュートの 3 人で JIN。 持っている人が少ないアトリビュートほど強い"), { n: String(rows.length) });
+  $("#subPickerClear").classList.toggle("hidden", subs[slot] == null);
+  grid.innerHTML = "";
+  for (const r of rows) {
+    const tile = document.createElement("button");
+    tile.type = "button";
+    tile.className = "sub-tile" + (r.j.full ? " is-jin" : r.j.pairs.length ? " is-pair" : "") + (subs[slot] === r.id ? " is-current" : "");
+    const chips = [...r.h.attrs].sort((x, y) => (attrs[x]?.n ?? 99) - (attrs[y]?.n ?? 99)).slice(0, 4)
+      .map((a) => `<i class="${r.j.full?.attr === a ? "on" : r.j.pairs.some((p) => p.attr === a) ? "pair" : ""}">${escapeText(attrs[a]?.[lang] ?? attrs[a]?.ja ?? a)}<small>${attrs[a]?.n ?? ""}</small></i>`).join("");
+    const badge = r.j.full ? `<span class="sub-tile__jin">JIN ${"★".repeat(r.j.full.star)} ${escapeText(r.j.full.name[lang] ?? r.j.full.name.ja)}</span>` : "";
+    tile.innerHTML = `<img src="${heroImg(r.id)}" alt="" loading="lazy" /><span class="sub-tile__name">${escapeText(poolHeroName(r.h, lang))}</span>${badge}<span class="sub-tile__attrs">${chips}</span>`;
+    tile.addEventListener("click", () => {
+      const next = [...(state.pendingTeamSubs ?? [])];
+      if (slot < next.length) next[slot] = r.id; else next.push(r.id);
+      state.pendingTeamSubs = next.slice(0, 2);
+      closeSubPicker();
+      renderHeroSelectModal();
+    });
+    grid.appendChild(tile);
+  }
+  picker.classList.remove("hidden");
+}
+function closeSubPicker() { $("#subPicker")?.classList.add("hidden"); }
 
 function pickHero(heroId) {
   if (!getHero(heroId)) return;

@@ -6,7 +6,7 @@
 //   --mode normal|story   --hero 10001   --k 0.3 (= 受けるダメージの倍率。 人の上手さの代わり)   --gum N (= 最初の GUM。 木は安い順に自動で取る)
 //   --runs N (= 倒れたら木で強化して復活。 周回の伸びを見る)   --maxsec 330 (= 1 ステージの上限)   --real (= 実時間。 既定は Playwright の clock で速く回す)
 //   --buy all|weapons (= 店の買い方)   --label 名前
-//   --team 4006,4041 (= SPEC-166: サブ 2 人。 ローカルはテスト用のホストなので編成が出る。 全員を解放しておく)
+//   --team 4006,4041 (= SPEC-166: サブ 2 人。 MCH のどのヒーローでもよい。 ローカルはテスト用のホストなので編成が出る)
 // Playwright は npm の依存にしない (= PLAYWRIGHT にパスを渡す。 無ければ "playwright" を探す)。
 // 出力: 周回ごとに ステージ・倒れた秒・撃破・CE・装備 と、 10 秒ごとの様子 (= 敵の数・HP・与ダメ・被ダメ)。 JSON (= --out) と要約
 const { chromium } = await import(process.env.PLAYWRIGHT ?? "playwright");
@@ -28,7 +28,7 @@ p.on("pageerror", (e) => errs.push(e.message));
 await ctx.route((u) => !u.href.startsWith(BASE) && !u.href.includes("raw.githubusercontent.com"), (r) => r.abort());
 const TEAM = (opt("team", "") || "").split(",").filter(Boolean).map(Number);   // SPEC-166
 await p.addInitScript(({ gum, story, decline, team }) => { try { window.__autoDecline = !!decline;
-  if (team.length) localStorage.setItem("mcs.heroes.unlocked", JSON.stringify([4006, 2043, 2016, 2003, 4041, 1006, 1007, 2013, 4052]));   // SPEC-166
+  if (team.length) { localStorage.setItem("mcs.heroes.unlocked", JSON.stringify([4006, 2043, 2016, 2003, 4041, 1006, 1007, 2013, 4052])); localStorage.setItem("mcs.heroes.achieved", JSON.stringify(team)); }   // SPEC-166
   localStorage.setItem("mcs.settings", JSON.stringify({ bgm: 0, se: 0, voice: 0, reduceFx: true }));
   localStorage.setItem("mcs.played", "1"); localStorage.setItem("mcs.easyCleared", "1"); localStorage.setItem("mcs.coachSeen", "1"); localStorage.setItem("mcs.reviveSeen", "1");
   localStorage.setItem("mcs.naviTips", JSON.stringify(["item.heal", "item.magnet", "item.watch", "item.thunder", "item.card", "item.bossChest", "gimmick.beads", "gimmick.punch", "gimmick.trojan", "enemy.shooter", "mission.offer"]));
@@ -72,7 +72,7 @@ if (MODE === "story") {
 } else {
 await p.click("#btnModeNormal", { force: true }); await tick(1500);
 await p.evaluate((hero) => { const tiles = [...document.querySelectorAll("#heroSelectGrid .hero-tile")]; (tiles.find((t) => t.dataset.heroId === String(hero) && !t.disabled && !t.classList.contains("locked")) ?? tiles.find((t) => !t.disabled && !t.classList.contains("locked")))?.click(); }, HERO); await tick(400);
-for (const id of TEAM) { await p.evaluate((id) => document.querySelector(`.hero-tile[data-hero-id="${id}"] .hero-tile__team`)?.click(), id); await tick(200); }   // SPEC-166: サブに入れる
+if (TEAM.length) { await p.evaluate((ids) => { window.__state.pendingTeamSubs = ids; }, TEAM); await tick(200); }   // SPEC-166: サブ (= 解放したあらゆる MCH ヒーロー。 mcs.heroes.achieved にも入れておく)
 await p.click("#heroSelectCta", { force: true });
 }
 for (let k = 0; k < 100 && !(await p.evaluate(() => !!window.__state?.battle?.active)); k++) await tick(200);

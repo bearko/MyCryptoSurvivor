@@ -13,6 +13,7 @@
 // 呼出側は逆順走査して splice 不整合を回避すること。
 
 import { state } from "../state.js";
+import { teamOnKill } from "./team-battle.js";   // SPEC-166
 import { storyAllows, isStory, storyStage } from "../story.js";   // SPEC-165
 import { spawnGem } from "./gems.js";
 import { spawnMagicCard } from "./magic-cards.js";
@@ -77,6 +78,7 @@ export function hitEnemy(idx, dmg, src = "other") {
     if (e.isRare) spawnMagicCard(e.x, e.y);
     enemies.splice(idx, 1);
     state.killCount++;
+    teamOnKill();   // SPEC-166: チームゲージ
     recordKill(state.run?.stats);   // SPEC-148
     fxEnemyKilled(e);   // SPEC-045: 粒・撃破音 (= ボスなら揺れ・閃光)
     // SPEC-022 + SPEC-033: ボス撃破フラグ → 次 tick で triggerStageEndOrTransition

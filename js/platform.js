@@ -9,6 +9,7 @@ import { owns, ownedCount } from "./skill-logic.js";
 import { isTestSite } from "./team.js";   // SPEC-166
 import { TREE_NODES, ROOT_ID } from "./skill-data.js";
 import { noteTrophies, refreshHeroUnlocks } from "./hero-unlock.js";   // SPEC-098
+import { noteAchievedHeroes } from "./hero-pool.js";   // SPEC-166
 
 // ============================================================
 // SPEC-039 / SPEC-096: アチーブメント (= 共通基盤 SPEC-008。 SDK の関数名は unlockTrophy のまま)
@@ -139,7 +140,7 @@ export function initPlatform(version) {
       .catch((e) => console.warn("[platform] init", e));
     // SPEC-098: 持っているアチーブメントからヒーローを解放する (= 起動時・ほかのタブから戻ったとき・新しく得たとき)
     _ready.then(() => refreshHeroUnlocks());
-    if (typeof bg.onTrophy === "function") bg.onTrophy((def) => { if (def?.id) noteTrophies([def.id]); });
+    if (typeof bg.onTrophy === "function") bg.onTrophy((def) => { if (def?.id) { noteAchievedHeroes([def]); noteTrophies([def.id]); } });   // SPEC-166: サブに選べるヒーロー
     if (typeof document !== "undefined") {
       document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") refreshHeroUnlocks(); });
     }
