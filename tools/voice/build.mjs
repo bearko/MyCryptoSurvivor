@@ -4,6 +4,7 @@
 //   node tools/voice/build.mjs <WAV のフォルダ> --lessons  … SPEC-147: EASY のレッスン (= 「番号-…_lesson.wav」。 LESSONS)
 //   node tools/voice/build.mjs <WAV のフォルダ> --added4   … SPEC-159: 4 回目 (= 「番号-…-mine_added.wav」。 ADDED_4。 null は既存を優先して捨てる)
 //   node tools/voice/build.mjs <WAV のフォルダ> --story    … SPEC-165: ストーリーの台本 (= 「番号-…-mine_add.wav」。 番号 1 から = docs/voice/script-story-keys.txt の mine の行の並び。 0 は mission.1 で既存)
+//   node tools/voice/build.mjs <WAV のフォルダ> --jin       … SPEC-173: ストーリーの残り 6 本とチームの説明 11 本 (= 「番号-…-mine_add_jin.wav」。 番号 00 から = docs/voice/script-jin-keys.txt の並び。 ボイスの名前は文の key)
 //   node tools/voice/build.mjs <WAV のフォルダ> --story-add … SPEC-165: ストーリーの追加の録音 (= 「番号-…-mine_add2.wav」。 番号 1 から = docs/voice/script-story-add-keys.txt の並び。 story-csv.mjs が「まだ録音の無い文」から作る)
 //   WAV は「番号-セリフ-….wav」 (= 番号は 00 がタイトルコール、 01 から ORDER の並び。 作者の台本の CSV と同じ)。
 //   ffmpeg / ffprobe が要る (= このツールだけ。 ゲームは MP3 を読むだけ)
@@ -82,21 +83,25 @@ export const STORY = [null, ...readFileSync("docs/voice/script-story-keys.txt", 
 export const STORY_ADD = [null, ...readFileSync("docs/voice/script-story-add-keys.txt", "utf8").trim().split("\n").filter(Boolean).map((l) => l.split("\t")[0])];
 
 const OUT_DIR = "assets/voice/mine";
+/** SPEC-173: ストーリーの残り 6 本とチームの説明 11 本 (= 2026-10-24。 番号 00 から = docs/voice/script-jin-keys.txt の並び) */
+export const JIN_ADD = readFileSync("docs/voice/script-jin-keys.txt", "utf8").trim().split("\n").filter(Boolean);
+
 const src = process.argv[2];
 const added2 = process.argv.includes("--added2");   // SPEC-116: 2 回目の追加の録音
 const added3 = process.argv.includes("--added3");   // 3 回目の追加の録音
 const lessons = process.argv.includes("--lessons");   // SPEC-147: EASY のレッスン
 const added4 = process.argv.includes("--added4");   // SPEC-159: 4 回目の追加の録音
 const storyAdd = process.argv.includes("--story-add");   // SPEC-165: ストーリーの追加の録音
+const jin = process.argv.includes("--jin");   // SPEC-173
 const story = process.argv.includes("--story") || storyAdd;   // SPEC-165: ストーリーの台本
-const added = added2 || added3 || added4 || lessons || story || process.argv.includes("--added");   // 追加の録音だけ変換し、 いまの一覧に足す
-const BATCH = storyAdd ? STORY_ADD : (story ? STORY : (added4 ? ADDED_4 : (lessons ? LESSONS : (added3 ? ADDED_3 : (added2 ? ADDED_2 : ADDED)))));
+const added = added2 || added3 || added4 || lessons || story || jin || process.argv.includes("--added");   // 追加の録音だけ変換し、 いまの一覧に足す
+const BATCH = jin ? JIN_ADD : storyAdd ? STORY_ADD : (story ? STORY : (added4 ? ADDED_4 : (lessons ? LESSONS : (added3 ? ADDED_3 : (added2 ? ADDED_2 : ADDED)))));
 const SUFFIX_ADDED2 = /-MyCryptoSurvivors_tutorial_skilltree\.wav$/i;
 const SUFFIX_ADDED4 = /-mine_added\.wav$/i;
 const SUFFIX_STORY = /-mine_add\.wav$/i;
 const SUFFIX_STORY_ADD = /-mine_add2?\.wav$/i;   // 「mine_add2」でも「mine_add」でも (= 別のフォルダで渡される前提)
-const SUFFIX = storyAdd ? SUFFIX_STORY_ADD : story ? SUFFIX_STORY : (added4 ? SUFFIX_ADDED4 : (lessons ? /_lesson\.wav$/i : (added3 ? /_added3\.wav$/i : (added2 ? SUFFIX_ADDED2 : /_added\.wav$/i))));
-if (!src) { console.error("usage: node tools/voice/build.mjs <wav dir> [--added | --added2 | --added3 | --lessons | --added4 | --story | --story-add]"); process.exit(1); }
+const SUFFIX = jin ? /-mine_add_jin\.wav$/i : storyAdd ? SUFFIX_STORY_ADD : story ? SUFFIX_STORY : (added4 ? SUFFIX_ADDED4 : (lessons ? /_lesson\.wav$/i : (added3 ? /_added3\.wav$/i : (added2 ? SUFFIX_ADDED2 : /_added\.wav$/i))));
+if (!src) { console.error("usage: node tools/voice/build.mjs <wav dir> [--added | --added2 | --added3 | --lessons | --added4 | --story | --story-add | --jin]"); process.exit(1); }
 mkdirSync(OUT_DIR, { recursive: true });
 const wavs = readdirSync(src).filter((f) => /^\d+-.*\.wav$/i.test(f) && (added ? SUFFIX.test(f) : !/_added\d*\.wav$/i.test(f) && !SUFFIX_ADDED2.test(f)));
 const lines = added ? { ...(await import("../../js/voice-lines.js")).VOICE_LINES } : {};
@@ -111,7 +116,7 @@ for (const f of wavs) {
   const sec = Number(execFileSync("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", out]).toString().trim());
   lines[id] = { file: out, ms: Math.round(sec * 1000) };
 }
-const ALL = [...new Set([...ORDER, ...ADDED, ...ADDED_2, ...ADDED_3, ...LESSONS, ...ADDED_4.filter(Boolean), ...STORY.filter(Boolean), ...STORY_ADD.filter(Boolean)])];
+const ALL = [...new Set([...ORDER, ...ADDED, ...ADDED_2, ...ADDED_3, ...LESSONS, ...ADDED_4.filter(Boolean), ...STORY.filter(Boolean), ...STORY_ADD.filter(Boolean), ...JIN_ADD])];
 const missing = (added ? BATCH : ORDER).filter((id) => id && !lines[id]);
 if (missing.length && !story) throw new Error(`WAV がない: ${missing.join(", ")}`);   // ストーリーは何回かに分けて録るので、 無いぶんは文だけ
 if (story && missing.length) console.log(`まだ無い: ${missing.length} 本 (= 文だけで出る)`);

@@ -322,7 +322,7 @@ function _renderHud(force) {
   box.classList.toggle("is-buff", buffing);
   const lang = getLang();
   const label = document.getElementById("tsLabel");
-  if (label) label.textContent = jin ? `JIN ${"★".repeat(jin.star)}` : "TEAM";
+  if (label) label.textContent = jin ? `JIN ${"★".repeat(jin.star)}` : "JIN";   // SPEC-173: 「JIN ゲージ」 (= 作者 2026-10-24。 TEAM から)
   const btn = document.getElementById("tsBtn");
   if (btn) btn.disabled = !ready;
   const main = document.getElementById("tsBtnText");

@@ -159,7 +159,7 @@ export function naviLines(scene, ctx = {}) {
       return (ctx.bought | 0) > 0
         ? [{ key: "navi.afterTree.bought", pose: "hooray", voice: "afterTree.bought" }]
         : [{ key: "navi.afterTree.none", pose: "pointer", voice: "afterTree.none" }];
-    // SPEC-172: チームの説明 (= 初めてチームで遊ぶ人へ。 ボイスはまだない)
+    // SPEC-172: チームの説明 (= 初めてチームで遊ぶ人へ)。 SPEC-173: ボイスの名前は文の key と同じ
     case "team": {
       const T = {
         "team.hero":   [["navi.team.hero.1", "hooray"], ["navi.team.hero.2", "pointer"]],
@@ -170,7 +170,7 @@ export function naviLines(scene, ctx = {}) {
         "team.gauge":  [["navi.team.gauge", "sparkle"]],
         "team.done":   [["navi.team.done", "hooray"]],
       }[String(ctx.key ?? "")] ?? [];
-      return T.map(([key, pose]) => ({ key, pose }));
+      return T.map(([key, pose]) => ({ key, pose, voice: hasVoice(key) ? key : null }));
     }
     case "tip": {
       // SPEC-068: 初めてのアイテム・仕掛け・敵のひとこと。 key は navi-tips.js の TIP_KEYS

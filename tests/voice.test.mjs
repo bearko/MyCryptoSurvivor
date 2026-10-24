@@ -25,7 +25,7 @@ const heroesRaw = JSON.parse(readFileSync(new URL("../data/heroes.json", import.
 const heroes = Array.isArray(heroesRaw) ? heroesRaw : (heroesRaw.heroes ?? Object.values(heroesRaw));
 
 test("ボイスのファイルがすべてある (= MP3。 長さも分かっている)", () => {
-  assert.equal(Object.keys(VOICE_LINES).length, 89 + 103);   // SPEC-165: ＋ ストーリーの台本 103 本 (= 1〜103。 0 番の mission.1 は既存。 104・105 の 1-0 はまだ)   // 台本 35 本 ＋ 追加の録音 8 本 (= 許褚は差し替え。 SPEC-097) ＋ 倒れたとき・スキルツリー 13 本 (= SPEC-116) ＋ 最初の店の説明 1 本 ＋ SPEC-159 の 32 本
+  assert.equal(Object.keys(VOICE_LINES).length, 89 + 103 + 17);   // SPEC-173: ＋ ストーリーの残り 6 本とチームの説明 11 本   // SPEC-165: ＋ ストーリーの台本 103 本 (= 1〜103。 0 番の mission.1 は既存。 104・105 の 1-0 はまだ)   // 台本 35 本 ＋ 追加の録音 8 本 (= 許褚は差し替え。 SPEC-097) ＋ 倒れたとき・スキルツリー 13 本 (= SPEC-116) ＋ 最初の店の説明 1 本 ＋ SPEC-159 の 32 本
   for (const [id, v] of Object.entries(VOICE_LINES)) {
     assert.match(v.file, /^assets\/voice\/mine\/[\w.-]+\.mp3$/, id);   // SPEC-165: story.1-1.intro のようにハイフンも
     assert.ok(existsSync(new URL(`../${v.file}`, import.meta.url)), v.file);
@@ -42,6 +42,7 @@ test("マインちゃんのどのセリフにもボイスがある", () => {
     ...heroes.flatMap((h) => naviLines("heroPick", { heroId: h.heroId, heroName: "x", weaponName: "y" })),
     ...STAGE_TABLE.flatMap((s, i) => naviLines("stage", { stageIdx: i, stageCount: STAGE_TABLE.length, stageName: "n", rta: true })),
     ...TIP_KEYS.flatMap((key) => naviLines("tip", { key })),
+    ...["team.hero", "team.picker", "team.set", "team.auto", "team.tactic", "team.gauge", "team.done"].flatMap((key) => naviLines("team", { key })),   // SPEC-173
     // SPEC-116: 倒れたとき・スキルツリー
     ...naviLines("lose", { guide: true }), ...[0, 1, 2].flatMap((n) => naviLines("lose", { n })),
     ...naviLines("treeHint"), ...["root", "first", "noGum", "done", "claimable", "idle"].flatMap((step) => naviLines("tree", { step })),

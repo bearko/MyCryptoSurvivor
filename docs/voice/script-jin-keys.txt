@@ -1,0 +1,17 @@
+story.1-3.ce
+story.1-4.strike
+story.3-2.shop
+story.1-0.intro
+story.1-0.reach
+story.treeNudge
+navi.team.hero.1
+navi.team.hero.2
+navi.team.picker.1
+navi.team.picker.2
+navi.team.picker.3
+navi.team.set.1
+navi.team.set.2
+navi.team.auto
+navi.team.tactic
+navi.team.gauge
+navi.team.done
