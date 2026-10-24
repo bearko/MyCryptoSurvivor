@@ -2,7 +2,7 @@
 id: SPEC-170
 title: Team Balance and Reroll Fix — Sub Weapon Upgrades Cost Twice the Shop Rank-Up, Bosses Get Double HP and 1.25x Attack When You Bring a Team, and Rerolls Only Skip Series Already Bought in This Shop
 status: Approved
-pr: TBD
+pr: 246
 phase: v2.0 Team
 kind: Changed
 ---
