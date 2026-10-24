@@ -2,7 +2,7 @@
 id: SPEC-169
 title: Per-Sub Tactics — Each Sub Takes Its Own Orders, With One Tactic Button per Sub (Face, "SUB n", Current Order) That Opens the Four Choices for That Sub
 status: Approved
-pr: TBD
+pr: 245
 phase: v2.0 Team
 kind: Changed
 ---
