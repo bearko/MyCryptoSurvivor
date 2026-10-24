@@ -2,7 +2,7 @@
 id: SPEC-172
 title: Team Lessons and Shop Category Labels — Mine Explains Teams the First Time (Hero Select, Sub Picker, After Setting a Team, Battle Start, First Full Gauge), and Shop Cards Show "Weapon" or "Buff" on Phones Again
 status: Approved
-pr: TBD
+pr: 249
 phase: v2.0 Team
 kind: Added
 ---
