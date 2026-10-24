@@ -215,7 +215,6 @@ export function openShop({ opening = false } = {}) {
   _offers = kept.map((id) => ({ extId: id, sale: false, sold: false }));
   if (sr?.only) { _offers = sr.offers.map((id) => ({ extId: id, sale: false, sold: !offerFor(id, banned) })); s.welcome = false; }
   else _fillOffers();
-  _noteSeries();
   // SPEC-165: 2-2 「全部は買えない」 (= 持ち物の CE はステージをまたいで残るので、 開いた瞬間の手持ちに合わせて値段を上げる。 fit = 手持ちで買える割合)
   _fitMul = 1;
   if (sr?.fit > 0 && s.ce > 0) {
@@ -253,7 +252,7 @@ function _keptOffers() { return _offers.filter((o) => o.sold || state.shop.locke
 /** 引き直しで出さない品 (= 残る札と、 この店でもう並べた系列) */
 function _refillExclude(keep = _keptOffers()) {
   const exclude = new Set(keep.map((o) => String(o.extId)));
-  // 作者 2026-10-22: この店でもう並べた系列は出さない (= リロールで同じ系列を 4 回買うのを防ぐ)。 取り置きだけは残る
+  // 作者 2026-10-22: この店で買った系列は出さない (= リロールで同じ系列を 4 回買うのを防ぐ)。 見送った品はまた並ぶ (= SPEC-170。 続けては出にくい: last)
   for (const e of EXT_ROSTER) if (_seriesHere.has(seriesOf(e.extId)) && !state.shop.locked.some((x) => String(x) === String(e.extId))) exclude.add(String(e.extId));
   return exclude;
 }
@@ -272,7 +271,7 @@ export function canReroll() {
 let _giftFirst = true;   // SPEC-130: 「ギフト券支払いを優先」 (= 店を開くたびに保存から読む)
 /** 作者 2026-10-22: お断りは CE を払う (= 不要な品を外す道具。 ただで何度も押させない) */
 export const SHOP_BAN_COST = 20;
-let _seriesHere = new Set();   // 作者 2026-10-22: この店で並べた系列 (= リロールしても同じ系列は 2 度出さない)
+let _seriesHere = new Set();   // この店で買った系列 (= 作者 2026-10-22「同じ系列は 1 回」。 2026-10-24 SPEC-170: 並べただけの系列は数えない。 終盤は品が少なく、 2〜3 回のリロールで尽きていた)
 let _fitMul = 1;         // SPEC-165: 2-2 の「全部は買えない」の倍率 (= 開いた瞬間の CE から。 1 = そのまま)
 
 function _storyShop() { return storyAllows("shop") ? (storyStage()?.shop ?? null) : null; }   // SPEC-165
@@ -321,6 +320,7 @@ export function buyOffer(extId) {
   // 作者 2026-10-24: 買った枠は「売り切れ」のまま、 リロールしても補充しない (= 1 回の店で買えるのは枠の数まで。 SPEC-167)
   o.sale = false;
   o.sold = true;
+  _noteSeries(extId);   // SPEC-170: 買った系列だけ、 この店では 2 度並べない
   o.bought = (o.bought | 0) + 1;
   s.locked = s.locked.filter((id) => String(id) !== String(extId));
   s.purchases += 1;
@@ -359,11 +359,13 @@ export function buySigUp() {
   return true;
 }
 
-/** SPEC-168: サブ i の武器の次の段の値段 (= 店でそのランクアップを買うときと同じ。 黒髭の 2 割引も効く)。 もう上がらなければ null */
+/** SPEC-170: サブの武器の段の値段は、 店でそのランクアップを買うときの 2 倍 (= 作者 2026-10-24: 1 倍では上げる効率が良すぎた) */
+export const SUB_UP_PRICE_MUL = 2;
+/** SPEC-168: サブ i の武器の次の段の値段 (= 店でそのランクアップを買うときの SUB_UP_PRICE_MUL 倍。 黒髭の 2 割引も効く)。 もう上がらなければ null */
 export function subUpPrice(i) {
   const sub = state.battle?.subs?.[i];
   if (!sub || sub.level >= EXT_MAX_LEVEL) return null;
-  return shopPrice({ nextLevel: sub.level + 1 }, state.currentStageIdx ?? 0, _merchant.quirk);
+  return shopPrice({ nextLevel: sub.level + 1 }, state.currentStageIdx ?? 0, _merchant.quirk) * SUB_UP_PRICE_MUL;
 }
 
 /** SPEC-168: サブ i の武器を 1 段上げる (= 店の 3 列。 枠には数えない) */
@@ -617,8 +619,8 @@ function _banCost() {
 
 /** 系列の名前 (= 同じ武器のランクアップは同じ系列。 無ければ extId) */
 function seriesOf(extId) { const e = getExt(extId); return e?.series ?? e?.seriesName?.ja ?? String(extId); }
-/** 並べた品の系列を覚える (= 開いたとき・リロールのあと) */
-function _noteSeries() { for (const o of _offers) _seriesHere.add(seriesOf(o.extId)); }
+/** 買った品の系列を覚える (= SPEC-170) */
+function _noteSeries(extId) { _seriesHere.add(seriesOf(extId)); }
 
 /** いまのリロールの値段 (= 無料なら 0) */
 export function currentRerollCost() {
@@ -637,7 +639,6 @@ export function rerollShop() {
   _offers = _keptOffers();
   _offers.forEach((o) => { o.banArm = false; });
   _fillOffers(last);
-  _noteSeries();
   _rerolledHere += 1; state.battle?.story?.events?.push("reroll");   // SPEC-165
   renderShop();
   playSe(SFX.LEVEL_UP, 100, 0.4);

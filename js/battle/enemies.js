@@ -41,6 +41,7 @@ import { isEasy, easyStage, bossSpawnAtMs, bossWarnLeadMs } from "../easy.js";  
 import { storyAllows, isStory, storyStage } from "../story.js";   // SPEC-165
 import { storyHoldsSpawn } from "./story-battle.js";   // SPEC-165
 import { shadowMods } from "./shadow.js";   // SPEC-165: シャドーのオーラ
+import { teamBossMul } from "./team-battle.js";   // SPEC-170: チームのときのボス
 import {
   floodMul, packAngles, separateEnemies, stageMaxEnemies, spawnBudget,
   densityTarget, screenDensity, densityShortfall, DENSITY_CHECK_MS, DENSITY_GAIN, DENSITY_MAX_PER_CHECK,
@@ -396,8 +397,10 @@ export function spawnEnemyAtRing(enemyId = 101, at = null, { variant = undefined
   const xpMul  = isBoss ? 1 : (stage.xpMul       ?? 1);
 
   // SPEC-080: ボスは型を増やしたぶん HP も増やす (= BOSS_MOVES の hpMul)
-  const hp     = Math.max(1, Math.round(spec.hp  * hpMul * (isBoss ? (BOSS_MOVES[enemyId]?.hpMul ?? 1) : 1)));
-  const dmg    = Math.max(1, Math.round(spec.dmg * dmgMul));
+  // SPEC-170: チームで出ているときは、 ボスの HP と攻撃を上げる (= 3 人ぶんの火力)
+  const tb     = isBoss ? teamBossMul() : null;
+  const hp     = Math.max(1, Math.round(spec.hp  * hpMul * (isBoss ? (BOSS_MOVES[enemyId]?.hpMul ?? 1) : 1) * (tb?.hpMul ?? 1)));
+  const dmg    = Math.max(1, Math.round(spec.dmg * dmgMul * (tb?.dmgMul ?? 1)));
   const xpVal  = Math.max(1, Math.round((spec.xpValue ?? 1) * xpMul));
   const speed  = Math.max(10, spec.speed * absSpeed);
 
