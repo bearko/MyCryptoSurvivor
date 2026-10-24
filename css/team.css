@@ -275,3 +275,40 @@ details.hero-perks[open] .hero-perks__sum::before { content: "▾ "; }
 .sub-tile .sub-face { flex: 0 0 48px; grid-row: auto; }
 .sub-tile__body { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-width: 0; flex: 1; }
 .sub-tile__name { max-width: 100%; }
+
+/* ============================================================
+   作者 2026-10-24: ゲージは右上・溜まるまでは不透明度 60%・満タンで 100% にして光らせる・サブの作戦
+   ============================================================ */
+.team-strike {
+  top: 8px; right: 8px; bottom: auto; gap: 4px; opacity: 0.6; transition: opacity 0.25s;
+}
+.team-strike.is-ready, .team-strike.is-buff, .team-strike.is-menu { opacity: 1; }
+.ts-gauge { width: 132px; height: 16px; }
+.ts-btn { min-width: 116px; height: 46px; padding: 0 14px; }
+.ts-btn__main { font-size: 13px; max-width: 150px; }
+.ts-btn__sub { font-size: 10px; }
+.team-strike.is-ready .ts-gauge { animation: ts-glow 0.9s ease-in-out infinite; }
+.team-strike.is-ready .ts-btn { filter: drop-shadow(0 0 6px #ff3048) drop-shadow(0 0 14px rgba(255, 212, 0, 0.7)); }
+@keyframes ts-glow {
+  0%, 100% { box-shadow: 5px 5px 0 var(--ts-red), 0 0 0 1px var(--ts-ink), 0 0 6px rgba(255, 48, 72, 0.6); }
+  50% { box-shadow: 5px 5px 0 var(--ts-red), 0 0 0 1px var(--ts-ink), 0 0 18px rgba(255, 212, 0, 0.95); }
+}
+@media (prefers-reduced-motion: reduce) { .team-strike.is-ready .ts-gauge { animation: none; } }
+
+/* 作戦 (= 押すと 4 つ。 選ぶと閉じる) */
+.ts-tactic {
+  pointer-events: auto; appearance: none; display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; cursor: pointer;
+  background: var(--ts-ink); color: var(--ts-white); border: 1.5px solid var(--ts-white); transform: skewX(-12deg); font-size: 0.68rem;
+}
+.ts-tactic > span { transform: skewX(12deg); }
+.ts-tactic__kicker { font: 800 0.58rem/1 "Chakra Petch", system-ui, sans-serif; letter-spacing: 0.12em; color: #ffd400; }
+.ts-tactic__label { font-weight: 800; white-space: nowrap; }
+.ts-tactics { display: none; pointer-events: auto; flex-direction: column; gap: 3px; }
+.team-strike.is-menu .ts-tactics { display: flex; }
+.ts-tactics button {
+  appearance: none; display: flex; align-items: center; gap: 6px; min-width: 132px; padding: 5px 10px; cursor: pointer; text-align: left;
+  background: var(--ts-ink); color: var(--ts-white); border: 1.5px solid rgba(255, 255, 255, 0.4); transform: skewX(-12deg); font-size: 0.74rem; font-weight: 800;
+}
+.ts-tactics button > * { transform: skewX(12deg); }
+.ts-tactics button i { font-style: normal; }
+.ts-tactics button.is-on { background: var(--ts-red); border-color: var(--ts-white); box-shadow: 3px 3px 0 var(--ts-white); }
