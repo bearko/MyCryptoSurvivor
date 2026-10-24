@@ -2,7 +2,7 @@
 id: SPEC-168
 title: Sub Weapons in Their Own Slots — Subs Keep Their Weapons Outside the Main's Five, Upgraded From a Three-Column Panel (Main Signature, Sub 1, Sub 2) in the Shop; Subs Move at the Main's Speed
 status: Approved
-pr: TBD
+pr: 244
 phase: v2.0 Team
 kind: Changed
 ---
