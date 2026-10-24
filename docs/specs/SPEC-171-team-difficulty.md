@@ -2,7 +2,7 @@
 id: SPEC-171
 title: Difficulty by Sub Count — Each Sub You Bring Raises Regular Enemy HP (Most in Stage 1, Less Later) and Boss HP and Attack, So Solo, One Sub and Two Subs Feel About as Hard
 status: Approved
-pr: TBD
+pr: 248
 phase: v2.0 Team
 kind: Changed
 ---
