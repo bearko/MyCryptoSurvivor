@@ -254,3 +254,21 @@ test("SPEC-167: 買える数の上限は枠の数 (= SHOP_MAX_BUYS は無い)。
   const ui = JSON.parse(readFileSync(new URL("../data/i18n/ui.json", import.meta.url), "utf8"));
   assert.equal(ui["shop.sold"].ja, "売り切れ");
 });
+
+// ---- SPEC-170: リロールで見送った品はまた並ぶ (= 買った系列だけ出さない)・サブの武器の段は 2 倍の値段 ----
+test("SPEC-170: この店で出さないのは買った系列だけ (= 並べただけの系列は数えない)", () => {
+  const src = readFileSync(new URL("../js/battle/shop.js", import.meta.url), "utf8");
+  assert.match(src, /o\.sold = true;\n  _noteSeries\(extId\);/, "買ったときだけ覚える");
+  assert.equal((src.match(/_noteSeries\(/g) ?? []).length, 2, "開いたとき・リロールのあとには覚えない (= 定義と買ったとき)");
+});
+
+test("SPEC-170: サブの武器の段は、 店でそのランクアップを買うときの 2 倍", async () => {
+  const shop = await import("../js/battle/shop.js");
+  const { shopPrice } = await import("../js/battle/shop-logic.js");
+  const { state } = await import("../js/state.js");
+  assert.equal(shop.SUB_UP_PRICE_MUL, 2);
+  shop._test.merchant = { id: "marco", quirk: "sale" };
+  state.currentStageIdx = 1;
+  state.battle = { ...(state.battle ?? {}), subs: [{ heroId: 1, extId: 7, level: 3 }] };
+  assert.equal(shop.subUpPrice(0), shopPrice({ nextLevel: 4 }, 1) * 2);
+});

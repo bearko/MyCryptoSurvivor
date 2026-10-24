@@ -31,6 +31,16 @@ export const STRIKE_BOSS_RATIO = 0.06;
 export const STRIKE_DELAY_MS = 900;
 export const STRIKE_BG_MS = 2200;
 
+/**
+ * SPEC-170: チームで出ているときのボス (= 作者 2026-10-24「こちらが 3 人になったので大幅に強化」)。
+ * ボスへの火力を測ると、 チームはソロの 2.3 倍 (= 序盤)・2.0 倍 (= 中盤)・1.2〜1.5 倍 (= 終盤) で、 これに必殺技が乗る。
+ * HP は 2 倍。 サブは倒れずメインの HP は同じなので、 攻撃 (= 体当たり・突進) も 1.25 倍にして手ごたえを残す
+ */
+export const TEAM_BOSS = { hpMul: 2, dmgMul: 1.25 };
+export function teamBossMul() {
+  return state.battle?.subs?.length ? TEAM_BOSS : null;
+}
+
 // ---- 純関数 ----
 
 /** 必殺技の 1 体あたりの威力 */

@@ -245,3 +245,16 @@ test("SPEC-169: 動きはサブそれぞれの作戦で決まり、 ボタンは
   assert.ok(!/b\.team\.tactic/.test(tb), "チームで 1 つの作戦は無くした");
   assert.match(read("../index.html"), /id="tsTacticRow"/);
 });
+
+test("SPEC-170: チームのときだけボスの HP 2 倍・攻撃 1.25 倍", async () => {
+  const { TEAM_BOSS, teamBossMul } = await import("../js/battle/team-battle.js");
+  const { state } = await import("../js/state.js");
+  assert.deepEqual(TEAM_BOSS, { hpMul: 2, dmgMul: 1.25 });
+  state.battle = { ...(state.battle ?? {}), subs: [] };
+  assert.equal(teamBossMul(), null, "ソロは変えない");
+  state.battle.subs = [{ heroId: 1 }];
+  assert.equal(teamBossMul(), TEAM_BOSS);
+  const en = read("../js/battle/enemies.js");
+  assert.match(en, /const tb {5}= isBoss \? teamBossMul\(\) : null;/);
+  assert.match(en, /\* \(tb\?\.hpMul \?\? 1\)\)\);/);
+});
