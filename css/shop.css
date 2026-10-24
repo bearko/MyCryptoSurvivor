@@ -242,8 +242,7 @@
   .shop-modal .levelup-modal__actions .btn { padding: 0.5rem 0.3rem; }
   /* 窓の下に貼る段は、 窓の余白 (= 詰めたぶん) に合わせる */
   .shop-modal .shop-actions { bottom: -0.65rem; margin: 0 -0.65rem -0.65rem; padding: 0.45rem 0.65rem 0.6rem; }
-  /* さらに詰める: 札の「武器／強化エクステ」は外す (= 枠の色で分かる)。 お断りの残りは手持ちの欄へ */
-  .shop-card .levelup-card__cat { display: none; }
+  /* さらに詰める: お断りの残りは手持ちの欄へ。 札の「武器／強化エクステ」は残す (= 作者 2026-10-24 SPEC-172: 見分けられたほうがよい) */
   .shop-card .levelup-card__series { margin: 0; }
   .shop-actions__bans { display: none; }
   .shop-wallet__bans { display: block; }

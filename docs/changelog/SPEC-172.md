@@ -1,0 +1,1 @@
+- **チームの説明と店の札**（`js/navi-tips.js` + `js/navi.js` + `js/main.js` + `js/battle/team-battle.js` + `data/i18n/ui.json` + `css/shop.css`）: 初めてチームで遊ぶ人に、 マインちゃんがヒーロー選択・サブを選ぶ窓・編成のあと・出撃・ゲージが満タンのときに 1 回だけ説明する。 店の札の「武器エクステ／強化エクステ」をスマホでも出す
