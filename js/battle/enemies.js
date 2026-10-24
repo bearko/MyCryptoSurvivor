@@ -42,6 +42,7 @@ import { storyAllows, isStory, storyStage } from "../story.js";   // SPEC-165
 import { storyHoldsSpawn } from "./story-battle.js";   // SPEC-165
 import { shadowMods } from "./shadow.js";   // SPEC-165: シャドーのオーラ
 import { teamBossMul, teamEnemyHpMul } from "./team-battle.js";   // SPEC-170 / 171: サブの人数ぶんの雑魚とボス
+import { extraMods } from "./extra-panels.js";   // SPEC-176: Extra パネル
 import {
   floodMul, packAngles, separateEnemies, stageMaxEnemies, spawnBudget,
   densityTarget, screenDensity, densityShortfall, DENSITY_CHECK_MS, DENSITY_GAIN, DENSITY_MAX_PER_CHECK,
@@ -112,7 +113,7 @@ export function tickEnemies(dt, nowMs) {
   const sm = shadowMods();   // SPEC-165: シャドーのオーラ (= 湧き ×n)
   const spawnInterval = ez && ez.spawnIntervalMs != null   // SPEC-165: レシピが null なら本番の式 (= W5)
     ? ez.spawnIntervalMs / mods.spawnMul / sm.spawnMul
-    : ENEMY_SPAWN_INTERVAL_MS * (stage.spawnIntervalMul ?? 1) / Math.max(0.1, absSpawnMul) / floodMul(stage.flood, b.stageElapsedMs) / mods.spawnMul;
+    : ENEMY_SPAWN_INTERVAL_MS * (stage.spawnIntervalMul ?? 1) / Math.max(0.1, absSpawnMul) / floodMul(stage.flood, b.stageElapsedMs) / mods.spawnMul / extraMods().spawnMul;   // SPEC-176: 大軍の令
   // SPEC-078: 経った時間ぶん湧かせる (= 1 コマに何体でも。 湧きを大きく速めても上限で止まる)
   // SPEC-079: ボス戦のあいだは湧かない
   const bud = spawnBudget(b.spawnAcc, dms, spawnInterval, (b.bossSpawned || storyHoldsSpawn()) ? 0 : cap - b.enemies.length);   // SPEC-165: ハートを拾うまで湧きを止める
@@ -167,7 +168,7 @@ export function tickEnemies(dt, nowMs) {
     const pool = currentPool(b.stageElapsedMs);
     const halfW = b.viewport.w / 2 + ENEMY_SPAWN_MARGIN_PX;
     const halfH = b.viewport.h / 2 + ENEMY_SPAWN_MARGIN_PX;
-    const n = Math.round(fl.packSize * absSpawnMul);
+    const n = Math.round(fl.packSize * absSpawnMul * extraMods().spawnMul);   // SPEC-176: 大軍の令
     for (const a of packAngles(n, Math.random() * Math.PI * 2)) {
       if (b.enemies.length >= cap) break;
       const out = 1 + Math.random() * 0.25;   // 少し前後にずらして、 塊にする
@@ -399,10 +400,11 @@ export function spawnEnemyAtRing(enemyId = 101, at = null, { variant = undefined
   // SPEC-080: ボスは型を増やしたぶん HP も増やす (= BOSS_MOVES の hpMul)
   // SPEC-170: チームで出ているときは、 ボスの HP と攻撃を上げる (= 3 人ぶんの火力)
   const tb     = isBoss ? teamBossMul() : null;
-  const hp     = Math.max(1, Math.round(spec.hp  * hpMul * (isBoss ? (BOSS_MOVES[enemyId]?.hpMul ?? 1) : 1) * (isBoss ? (tb?.hpMul ?? 1) : teamEnemyHpMul())));
-  const dmg    = Math.max(1, Math.round(spec.dmg * dmgMul * (tb?.dmgMul ?? 1)));
+  const xm     = extraMods();   // SPEC-176: Extra パネル (= 雑魚は鉄壁の令・疾風の令、 ボスは覇王の令)
+  const hp     = Math.max(1, Math.round(spec.hp  * hpMul * (isBoss ? (BOSS_MOVES[enemyId]?.hpMul ?? 1) : 1) * (isBoss ? (tb?.hpMul ?? 1) * xm.bossMul : teamEnemyHpMul() * xm.hpMul)));
+  const dmg    = Math.max(1, Math.round(spec.dmg * dmgMul * (tb?.dmgMul ?? 1) * (isBoss ? xm.bossMul : 1)));
   const xpVal  = Math.max(1, Math.round((spec.xpValue ?? 1) * xpMul));
-  const speed  = Math.max(10, spec.speed * absSpeed);
+  const speed  = Math.max(10, spec.speed * absSpeed * (isBoss ? 1 : xm.speedMul));
 
   b.enemies.push({
     id: b.nextEntityId++,

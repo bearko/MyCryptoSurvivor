@@ -28,6 +28,9 @@ import { levelUpSub } from "./team-battle.js";   // SPEC-168: サブの武器の
 import { rebuildWeaponsFromOwned } from "./extensions-as-weapons.js";
 import { levelParams, rankOf } from "../ext-level.js";
 import { EXT_MAX_LEVEL } from "../constants.js";
+import { EXTRA_PANELS, EXTRA_MAP, EXTRA_PRICE, EXTRA_MAX_LEVEL, extraMods, extraModsOf, extraAllowed, extraScoreAdd } from "./extra-panels.js";   // SPEC-176
+import { MISSION_CHANCE } from "./missions.js";
+import { BOSS_WARNING_LEAD_MS } from "../constants.js";
 
 import {
   MERCHANTS, OPENING_MERCHANT, isShopMode, shopTimesMs, shopPrice, giftable, giftCost, isGiftFirst, setGiftFirst, pickMerchant, rerollCost, canBan, nextShopSec,
@@ -51,6 +54,7 @@ function _fresh() {
     locked: [], nextIdx: 0, prevMerchant: null, purchases: 0,
     freeRerolls: 0, enteredIdx: -1, snapshot: null,
     sigLevel: 1,   // SPEC-110: 固有スキルの強化段 (= ステージをまたいで残る)
+    extra: {},     // SPEC-176: Extra パネルのレベル (= { id: Lv }。 挑戦のあいだ残る)
     sigCe: 0,      // SPEC-128: 次の段への積み立て (= ステージの終わりに残った CE を振った端数)
     welcome: false, welcomeGiven: false,   // 最初の店のサービス (= 1 品無料。 使うまで残る)
     nextMerchant: null,   // 次に来る商人 (= ヘッダーの帯を歩いてくる)
@@ -69,7 +73,7 @@ export function resetShopForStage(stageIdx) {
     Object.assign(s, structuredClone(s.snapshot));
   } else {
     s.enteredIdx = idx;
-    s.snapshot = { ce: s.ce, gifts: s.gifts, bans: [...s.bans], bansLeft: s.bansLeft, purchases: s.purchases, sigLevel: s.sigLevel, sigCe: s.sigCe ?? 0 };
+    s.snapshot = { ce: s.ce, gifts: s.gifts, bans: [...s.bans], bansLeft: s.bansLeft, purchases: s.purchases, sigLevel: s.sigLevel, sigCe: s.sigCe ?? 0, extra: { ...(s.extra ?? {}) } };
   }
   s.locked = [];       // 装備がステージごとなので、 取り置きもステージで外れる
   s.nextIdx = 0;
@@ -193,7 +197,7 @@ export function openShop({ opening = false } = {}) {
   _seriesHere = new Set();
   _rerolledHere = 0; _bannedHere = 0; _sigHere = 0;
   // ウェーブの節目のひと息: 来店で HP が少し戻る (= 作者の依頼 2026-10-20)
-  _healed = canHeal() ? shopHealAmount(state.stats.hp, state.statsMax.hp) : 0;   // SPEC-112: 不老不死の探求のあいだは戻らない
+  _healed = canHeal() ? Math.round(shopHealAmount(state.stats.hp, state.statsMax.hp) * extraMods().healMul) : 0;   // SPEC-176: 禁止令 パンケーキ   // SPEC-112: 不老不死の探求のあいだは戻らない
   if (_healed > 0) {
     recordHeal(state.run?.stats, "shop", Math.min(state.statsMax.hp, state.stats.hp + _healed) - state.stats.hp);   // SPEC-148
     state.stats.hp = Math.min(state.statsMax.hp, state.stats.hp + _healed);
@@ -721,7 +725,10 @@ export function renderShop() {
   renderOwnedStrip(document.getElementById("shopOwned"), document.getElementById("shopOwnedRows"), document.getElementById("shopOwnedHead"));
 
   const grid = document.getElementById("shopGrid");
-  if (grid) {
+  const xMode = _extraMode();   // SPEC-176: 通常の品が尽きたら Extra パネル
+  modal.classList.toggle("shop-modal--extra", xMode);
+  if (grid && xMode) _renderExtra(grid);
+  else if (grid) {
     grid.innerHTML = "";
     const slots = sr?.only ? _offers.length : Math.max(_offers.length, _slotCount());
     grid.style.setProperty("--cols", String(Math.max(4, slots)));
@@ -865,6 +872,88 @@ function _wireOnce() {
   document.getElementById("shopLeave")?.addEventListener("click", closeShop);
   document.getElementById("shopGiftFirst")?.addEventListener("change", (e) => toggleGiftFirst(e.target.checked));   // SPEC-130
   onLangChange(() => { if (_open) renderShop(); });
+}
+
+// ============================================================
+// SPEC-176: Extra パネル (= 店で並べる通常の品が尽きたら。 1 枚 10,000 CE・各 Lv.10 まで)
+// ============================================================
+
+/** Extra パネルを並べるか (= ストーリー・RTA ではない、 かつ並べる通常の品がもう無い = 装備の枠が全部埋まり、 どれも Lv.MAX) */
+export function isExtraMode() { return _extraMode(); }
+function _extraMode() {
+  const s = state.shop;
+  if (!s || !extraAllowed({ story: isStory(), rta: !!state.rtaMode })) return false;
+  return freshCount({ banned: new Set(s.bans) }) === 0;
+}
+
+/** 効き目の文 (= いまのレベルの値) */
+function _extraValue(id, lv) {
+  const m = { [id]: lv };
+  const x = (v) => `×${(Math.round(v * 100) / 100).toFixed(2)}`;
+  const M = extraModsOf(m);
+  switch (id) {
+    case "horde": return x(M.spawnMul);
+    case "gale": return x(M.speedMul);
+    case "iron": return x(M.hpMul);
+    case "famine": return M.healMul <= 0 ? t("shop.extra.none", "なし") : x(M.healMul);
+    case "trial": return `${Math.round((MISSION_CHANCE + M.missionChanceAdd) * 100)}%`;
+    case "harsh": return x(M.missionMul);
+    case "bell": return tpl(t("shop.extra.sec", "-{n} 秒"), { n: String(M.bossEarlyMs / 1000) });
+    case "overlord": return x(M.bossMul);
+    default: return "";
+  }
+}
+
+/** Extra パネルを 1 段上げる */
+export function buyExtra(id) {
+  const s = state.shop;
+  const p = EXTRA_MAP[id];
+  if (!s || !p || !_extraMode()) return false;
+  s.extra ??= {};
+  const lv = s.extra[id] | 0;
+  if (lv >= EXTRA_MAX_LEVEL || s.ce < EXTRA_PRICE) return false;
+  s.ce -= EXTRA_PRICE;
+  s.extra[id] = lv + 1;
+  _boughtHere += 1;
+  // 早鐘: ボスの予告が出せるだけの間を残す (= 店の直後にいきなりボスが出ない)
+  if (id === "bell" && state.battle) state.battle.bossFloor = { idx: state.currentStageIdx ?? 0, ms: (state.battle.stageElapsedMs ?? 0) + BOSS_WARNING_LEAD_MS + 5000 };
+  playSe(SFX.PICK_BUFF, 100, 0.6);
+  renderShop();
+  return true;
+}
+
+function _renderExtra(grid) {
+  const s = state.shop;
+  grid.innerHTML = "";
+  grid.style.setProperty("--cols", "4");
+  grid.dataset.n = "extra";
+  const head = document.createElement("div");
+  head.className = "shop-extra__head";
+  const mul = Math.min(2, Math.round((1 + extraScoreAdd(s.extra)) * 100) / 100);
+  head.innerHTML = `<b>EXTRA</b><span></span>`;
+  head.querySelector("span").textContent = tpl(t("shop.extra.head", "難しくするほどスコアが伸びる（いま ×{m}）"), { m: mul.toFixed(2) });
+  grid.appendChild(head);
+  for (const p of EXTRA_PANELS) {
+    const lv = s.extra?.[p.id] | 0;
+    const max = lv >= EXTRA_MAX_LEVEL;
+    const short = !max && s.ce < EXTRA_PRICE;
+    const card = document.createElement("button");
+    card.type = "button";
+    card.className = "shop-extra" + (max ? " is-max" : "") + (short ? " is-short" : "") + (lv > 0 ? " is-on" : "");
+    card.dataset.extra = p.id;
+    card.innerHTML = `<img class="shop-extra__icon" alt="" /><span class="shop-extra__name"></span><span class="shop-extra__lv num"></span><span class="shop-extra__what"></span><span class="shop-extra__val num"></span><span class="shop-extra__score num"></span><span class="shop-extra__price num"></span>`;
+    card.querySelector(".shop-extra__what").textContent = t(`shop.extra.${p.id}.what`, "");
+    card.querySelector("img").src = img(`Image/Enemies/${p.icon}.png`);
+    card.querySelector(".shop-extra__name").textContent = t(`shop.extra.${p.id}`, p.id);
+    card.querySelector(".shop-extra__lv").textContent = max ? "Lv.MAX" : `Lv.${lv} → ${lv + 1}`;
+    card.querySelector(".shop-extra__val").textContent = max ? _extraValue(p.id, lv) : `${_extraValue(p.id, lv)} → ${_extraValue(p.id, lv + 1)}`;
+    card.querySelector(".shop-extra__score").textContent = tpl(t("shop.extra.score", "スコア +{n}%"), { n: String(Math.round(p.add * 100)) });
+    card.querySelector(".shop-extra__price").textContent = max ? "MAX" : `◆ ${EXTRA_PRICE.toLocaleString()}`;
+    card.disabled = max;
+    card.setAttribute("aria-disabled", short || max ? "true" : "false");
+    card.addEventListener("click", () => { if (!buyExtra(p.id)) playSe(SFX.GEM_PICKUP, 100, 0.2); });
+    grid.appendChild(card);
+  }
 }
 
 /** テスト用 */

@@ -20,6 +20,7 @@ import {
 // SPEC-090c: スキルツリーで変わる定数は、 定数の代わりにここを呼ぶ
 import { sigHealMul } from "./signature.js";   // SPEC-100
 import { canHeal } from "./missions.js";   // SPEC-112
+import { extraMods } from "./extra-panels.js";   // SPEC-176: 禁止令 パンケーキ
 import { chestTimesMs, bossChestCfg, bossChestDrops, potMaxOnField, potDrops, itemPickupMul, healRatio, thunderBossRatio, chestDropsFor, robotSec } from "../perks.js";
 import { startBgm, currentBgmPath } from "../audio.js";
 import { ARENA } from "./arena.js";
@@ -184,6 +185,7 @@ function _scatterGems(x, y, n, value) {
 
 export function spawnItem(kind, x, y) {
   if (!kind) return;
+  if (kind === "heal" && extraMods().healMul <= 0) return;   // SPEC-176: 禁止令 パンケーキ Lv.10 (= 出ない)
   const b = state.battle;
   b.items.push({ id: b.nextEntityId++, kind, x, y, r: ITEM_RADIUS });
 }
@@ -225,7 +227,7 @@ export function healBy(ratio) {
 export function applyItem(kind) {
   const b = state.battle;
   if (kind === "heal") {
-    healBy(storyStage()?.pickup?.heal === "full" ? 1 : healRatio() * sigHealMul());   // SPEC-100: 宮廷医女は倍。 SPEC-165: 1-4 のパンケーキは満タンまで
+    healBy(storyStage()?.pickup?.heal === "full" ? 1 : healRatio() * sigHealMul() * extraMods().healMul);   // SPEC-176: 禁止令 パンケーキ   // SPEC-100: 宮廷医女は倍。 SPEC-165: 1-4 のパンケーキは満タンまで
   } else if (kind === "watch") {
     // SPEC-054: 実時間 10 秒、 ゲーム全体が 2 倍速 (= index.js の _loop が 1 コマで 2 回進める)。 続けて拾うと延びる
     b.fastForwardMs = (b.fastForwardMs ?? 0) + WATCH_DURATION_MS;

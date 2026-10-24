@@ -43,6 +43,7 @@ import { removeConfetti } from "../confetti.js";   // SPEC-149
 import { hideCoach } from "./coach.js";   // SPEC-151: 渦のあいだ操作ガイドは出さない
 import { CHAR_SPRITE_RATIO, img } from "../constants.js";   // SPEC-150
 import { isStory, storyStage, storyAllows, landOf } from "../story.js";   // SPEC-165
+import { scoreMulWithExtra, extraLevels, extraScoreAdd } from "./extra-panels.js";   // SPEC-176: Extra パネルのスコア倍率
 
 let _wired = false;
 let _showTimer = 0;   // SPEC-150: 粒子が舞い上がってから結果の画面を出す
@@ -385,7 +386,7 @@ async function _onSubmitClick() {
   msg.textContent = t("gameover.submitting", "Submitting…");
 
   const stats = state.lastRunStats || { elapsed: 0, level: 1, kills: 0 };
-  const regMul = computeRegulationMul(state.regulation, state.absolute);
+  const regMul = scoreMulWithExtra(computeRegulationMul(state.regulation, state.absolute), extraLevels());   // SPEC-176: Extra パネル
   const result = await submitScore({
     playerName: name,
     score:      Math.round(stats.elapsed * regMul),

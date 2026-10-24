@@ -37,6 +37,7 @@ import { isEasy } from "../easy.js";   // SPEC-165 (= ストーリーは活動�
 import { collectAnalysis, renderAnalysis } from "./analysis-ui.js";   // SPEC-148
 import { stopVoice } from "../voice.js";   // SPEC-149
 import { startConfetti, removeConfetti } from "../confetti.js";   // SPEC-149
+import { scoreMulWithExtra, extraLevels, extraScoreAdd } from "./extra-panels.js";   // SPEC-176: Extra パネルのスコア倍率
 
 let _wired = false;
 
@@ -70,6 +71,7 @@ export function triggerActivityReport() {
   if (!easy) reportRunScore(scoreMetrics({
     run: state.run, cleared: true, reportScore: computeScore(state.run),
     regulation: state.regulation, absolute: state.absolute,   // SPEC-051: 倍率は共通基盤が計算する
+    extra: extraLevels(),   // SPEC-176: Extra パネル (= 倍率への上乗せも共通基盤が計算する)
   }));
   _wireOnce();
   // SPEC-017: BGM 停止 + win SE (= 既存 gameover の clear 分岐と同じ感触に)
@@ -152,7 +154,7 @@ async function _onSubmitClick() {
   msg.textContent = t("gameover.submitting", "Submitting…");
 
   const baseScore = computeScore(state.run);
-  const regMul    = computeRegulationMul(state.regulation, state.absolute);
+  const regMul    = scoreMulWithExtra(computeRegulationMul(state.regulation, state.absolute), extraLevels());   // SPEC-176: Extra パネル
   const score     = Math.round(baseScore * regMul);
   const totalSec  = Math.round(state.run.totalElapsedMs / 1000);
   const result = await submitScore({
@@ -268,11 +270,10 @@ function _renderReport() {
     const totalSec = Math.round(state.run.totalElapsedMs / 1000);
     // SPEC-037: 最終スコアは regulationMul 込み
     const baseScore = computeScore(state.run);
-    const regMul    = computeRegulationMul(state.regulation, state.absolute);
+    const regMul    = scoreMulWithExtra(computeRegulationMul(state.regulation, state.absolute), extraLevels());   // SPEC-176: Extra パネル
     const score     = Math.round(baseScore * regMul);
-    const regLabel  = (state.regulation === "ABSOLUTE")
-      ? `ABSOLUTE ×${regMul.toFixed(2)}`
-      : `NORMAL ×1.00`;
+    const extraOn   = extraScoreAdd(extraLevels()) > 0;   // SPEC-176: Extra パネルを買った挑戦
+    const regLabel  = ((state.regulation === "ABSOLUTE") ? "ABSOLUTE" : "NORMAL") + (extraOn ? " + EXTRA" : "") + ` ×${regMul.toFixed(2)}`;
     // SPEC-038: スコアを大きく中央表示、 補助情報をアイコン付き 1 行で
     totalsEl.innerHTML =
       `<div class="report-meta-row">` +

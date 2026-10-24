@@ -469,3 +469,43 @@
   .shop-sig--team .shop-sig__face { width: 30px; height: 30px; }
   .shop-sig--team .shop-sig__title { flex-direction: column; }
 }
+
+/* ============================================================
+   SPEC-176: Extra パネル (= 通常の品が尽きたら。 エネミーとシャドーヒーローの絵)
+   ============================================================ */
+.shop-grid[data-n="extra"] { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.shop-extra__head {
+  grid-column: 1 / -1; display: flex; align-items: baseline; gap: 0.6rem;
+  padding: 0.3rem 0.6rem; border-radius: 6px;
+  background: linear-gradient(90deg, rgba(200, 30, 50, 0.55), rgba(20, 10, 20, 0.2));
+  border: 1px solid rgba(255, 120, 120, 0.6);
+}
+.shop-extra__head b { font: 900 1rem/1 "Chakra Petch", system-ui, sans-serif; letter-spacing: 0.2em; color: #ffd400; }
+.shop-extra__head span { font-size: 0.75rem; color: #ffe; }
+.shop-extra {
+  appearance: none; cursor: pointer; text-align: center; color: var(--text);
+  display: flex; flex-direction: column; align-items: center; gap: 0.15rem;
+  padding: 0.45rem 0.35rem 0.4rem; border-radius: 8px;
+  background: linear-gradient(180deg, rgba(120, 20, 30, 0.35), rgba(20, 14, 24, 0.92) 55%);
+  border: 1.5px solid rgba(255, 110, 110, 0.5);
+}
+.shop-extra.is-on { border-color: #ffd400; box-shadow: 0 0 10px rgba(255, 212, 0, 0.35); }
+.shop-extra.is-short { filter: grayscale(0.6); opacity: 0.75; }
+.shop-extra.is-max { cursor: default; opacity: 0.85; }
+.shop-extra__icon { width: 56px; height: 56px; image-rendering: pixelated; object-fit: contain; filter: drop-shadow(0 0 4px rgba(255, 60, 60, 0.6)); }
+.shop-extra__name { font-weight: 800; font-size: 0.82rem; line-height: 1.2; }
+.shop-extra__lv { font-size: 0.7rem; font-weight: 800; color: #ffd400; }
+.shop-extra__what { font-size: 0.62rem; color: var(--muted); line-height: 1.2; }
+.shop-extra__val { font-size: 0.72rem; color: #ffb3b3; }
+.shop-extra__score { font-size: 0.66rem; color: #c9ffb0; }
+.shop-extra__price { margin-top: auto; width: 100%; padding: 0.2rem 0; border-radius: var(--r-pill); font-weight: 800; font-size: 0.8rem; color: #1a1420; background: linear-gradient(180deg, #ffe38a, #e0a922); }
+.shop-extra.is-short .shop-extra__price { background: #555; color: #ccc; }
+@media (max-width: 640px) {
+  .shop-grid[data-n="extra"] { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.3rem; }
+  .shop-extra { padding: 0.3rem 0.2rem; }
+  .shop-extra__icon { width: 40px; height: 40px; }
+  .shop-extra__name { font-size: 0.66rem; }
+  .shop-extra__what, .shop-extra__score { font-size: 0.54rem; }
+  .shop-extra__val, .shop-extra__lv { font-size: 0.6rem; }
+  .shop-extra__price { font-size: 0.66rem; }
+}
