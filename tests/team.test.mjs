@@ -258,3 +258,8 @@ test("SPEC-170: チームのときだけボスの HP 2 倍・攻撃 1.25 倍", a
   assert.match(en, /const tb {5}= isBoss \? teamBossMul\(\) : null;/);
   assert.match(en, /\* \(tb\?\.hpMul \?\? 1\)\)\);/);
 });
+
+test("SPEC-169 追記: サブのボタンは縦に並び、 開いたサブのすぐ下に 4 つ", () => {
+  assert.match(read("../js/battle/team-battle.js"), /if \(_menuSub === i && menu\) row\.appendChild\(menu\);/);
+  assert.match(read("../css/team.css"), /\.ts-tactic-row \{ display: flex; flex-direction: column;/);
+});
