@@ -138,3 +138,31 @@ test("作者 2026-10-23 (2): 2 人そろったら閉じる・メインのアト�
   assert.ok(!/id="heroTeamHint"/.test(html), "「SUB の枠を押すと…」は消した");
   assert.match(read("../css/team.css"), /\.hero-modal--team \.hero-detail__weapon \{ display: none; \}/, "開始武器の行はチームの顔に任せる");
 });
+
+// ---- 作者 2026-10-24: サブの作戦・ゲージは右上・枠を押すと 1 人だけ外す ----
+import { pickTarget, moveToward, roamPoint, TACTICS, TACTIC_LEASH, ROAM_R } from "../js/team.js";
+test("サブの作戦: 4 つ。 ザコは体力の少ない順、 強敵はボス → 体力の多い順。 メインから離れすぎない", () => {
+  assert.deepEqual(TACTICS, ["follow", "roam", "weak", "strong"]);
+  const en = [
+    { id: 1, x: 50, y: 0, hp: 10, hpMax: 10 },
+    { id: 2, x: 100, y: 0, hp: 300, hpMax: 300 },
+    { id: 3, x: 0, y: 80, hp: 900, hpMax: 2000, isBoss: true },
+    { id: 4, x: 30, y: 0, hp: 5, hpMax: 5, isProp: true },
+    { id: 5, x: TACTIC_LEASH + 50, y: 0, hp: 1, hpMax: 1 },
+  ];
+  assert.equal(pickTarget(en, 0, 0, "weak").id, 1, "壺と遠すぎる敵は狙わない");
+  assert.equal(pickTarget(en, 0, 0, "strong").id, 3, "ボスが先");
+  assert.equal(pickTarget(en, 0, 0, "weak", { exclude: en[0] }).id, 2, "もう 1 人と別の敵");
+  assert.equal(pickTarget([], 0, 0, "weak"), null);
+  const m = moveToward({ x: 0, y: 0 }, { x: 100, y: 0 }, 50, 1, 20);
+  assert.equal(m.x, 50);
+  assert.equal(moveToward({ x: 85, y: 0 }, { x: 100, y: 0 }, 50, 1, 20).x, 85, "間合いの中なら止まる");
+  for (let i = 0; i < 20; i++) { const r = roamPoint(0, 0); assert.ok(Math.hypot(r.x, r.y) <= ROAM_R + 1e-9); }
+  const tb = read("../js/battle/team-battle.js");
+  assert.match(tb, /tactic === "roam"/); assert.match(tb, /export function setTeamTactic/);
+  assert.match(read("../index.html"), /data-tactic="strong"/);
+  const css = read("../css/team.css");
+  assert.match(css, /\.team-strike \{\s*top: 8px; right: 8px; bottom: auto;[^}]*opacity: 0\.6/, "右上・溜まるまで 60%");
+  assert.match(css, /\.team-strike\.is-ready, \.team-strike\.is-buff, \.team-strike\.is-menu \{ opacity: 1; \}/);
+  assert.match(read("../js/main.js"), /if \(cur\[i\] != null\) \{ cur\.splice\(i, 1\)/, "選んである枠を押すと 1 人だけ外す");
+});

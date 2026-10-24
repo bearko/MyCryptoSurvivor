@@ -562,7 +562,13 @@ function _renderSubPicker() {
       b.type = "button";
       b.className = "sub-slot" + (i === _subSlot ? " is-active" : "") + (id == null ? " is-empty" : "");
       b.innerHTML = id != null ? `${_faceHtml(id, ws[i + 1])}<span>SUB ${i + 1}</span>` : `<span class="team-face team-face--empty">＋</span><span>SUB ${i + 1}</span>`;
-      b.addEventListener("click", () => { _subSlot = (state.pendingTeamSubs ?? []).length < i ? (state.pendingTeamSubs ?? []).length : i; _renderSubPicker(); });
+      // 作者 2026-10-24: 選んである枠を押すと、 その 1 人だけ外す (= 空いた枠に次の人が入る)。 空の枠を押すとその枠に入れる
+      b.addEventListener("click", () => {
+        const cur = [...(state.pendingTeamSubs ?? [])];
+        if (cur[i] != null) { cur.splice(i, 1); state.pendingTeamSubs = cur; _subSlot = Math.min(i, cur.length); renderHeroSelectModal(); }
+        else _subSlot = cur.length < i ? cur.length : i;
+        _renderSubPicker();
+      });
       head.appendChild(b);
     });
   }

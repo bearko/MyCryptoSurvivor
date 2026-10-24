@@ -92,12 +92,51 @@ export function followStep(cur, target, dt, k = SUB_FOLLOW) {
   return { x: cur.x + (target.x - cur.x) * a, y: cur.y + (target.y - cur.y) * a };
 }
 
+// ---- サブの作戦 (= 作者 2026-10-24。 ついてこい / 動き回れ / ザコを狩れ / 強敵を狙え) ----
+export const TACTICS = ["follow", "roam", "weak", "strong"];
+/** メインからこれ以上は離れない (= 離れたらまず戻る) */
+export const TACTIC_LEASH = 380;
+/** 動き回る輪の半径 (= メインのまわり) と、 次の行き先を決め直すまでの秒 */
+export const ROAM_R = 200;
+export const ROAM_EVERY = [1.2, 2.6];
+/** 狙った敵との間合い (= 近づきすぎない。 ザコは寄り、 強敵は少し離れて撃つ) */
+export const HUNT_KEEP = { weak: 36, strong: 110 };
+/** サブの足の速さ (= メインの速さに掛ける) */
+export const SUB_SPEED_MUL = 1.05;
+
+/** 狙う敵 (= メインから leash 以内。 ザコ: 体力の少ない順 → 近い順、 強敵: ボス → 体力の多い順 → 近い順)。 exclude はもう 1 人が狙っている敵 */
+export function pickTarget(enemies, px, py, mode, { leash = TACTIC_LEASH, exclude = null } = {}) {
+  const near = (enemies ?? []).filter((e) => e && !e.isProp && e.hp > 0 && Math.hypot(e.x - px, e.y - py) <= leash);
+  if (!near.length) return null;
+  const d = (e) => Math.hypot(e.x - px, e.y - py);
+  const hp = (e) => e.hpMax ?? e.hp ?? 0;
+  const list = mode === "strong"
+    ? near.sort((a, b) => Number(!!b.isBoss) - Number(!!a.isBoss) || hp(b) - hp(a) || d(a) - d(b))
+    : near.sort((a, b) => hp(a) - hp(b) || d(a) - d(b));
+  return list.find((e) => e !== exclude) ?? list[0];
+}
+
+/** 行き先へ、 速さ speed で dt 秒ぶん (= keep の間合いで止まる) */
+export function moveToward(cur, target, speed, dt, keep = 0) {
+  const dx = target.x - cur.x, dy = target.y - cur.y, dist = Math.hypot(dx, dy);
+  const go = Math.min(Math.max(0, dist - keep), speed * Math.max(0, dt));
+  if (go <= 0 || dist === 0) return { x: cur.x, y: cur.y };
+  return { x: cur.x + (dx / dist) * go, y: cur.y + (dy / dist) * go };
+}
+
+/** 動き回る行き先 (= メインのまわりの輪の中。 rnd は 0〜1 を返す関数) */
+export function roamPoint(px, py, rnd = Math.random) {
+  const a = rnd() * Math.PI * 2, r = 70 + rnd() * (ROAM_R - 70);
+  return { x: px + Math.cos(a) * r, y: py + Math.sin(a) * r };
+}
+
 // ---- 下半分: localStorage と戦闘の状態 ----
 
 export function loadTeam(storage = globalThis.localStorage) {
-  try { const v = JSON.parse(storage?.getItem(LS_TEAM) ?? "null"); return { subs: Array.isArray(v?.subs) ? v.subs.map(Number) : [] }; } catch (_) { return { subs: [] }; }
+  try { const v = JSON.parse(storage?.getItem(LS_TEAM) ?? "null"); return { subs: Array.isArray(v?.subs) ? v.subs.map(Number) : [], tactic: TACTICS.includes(v?.tactic) ? v.tactic : "follow" }; } catch (_) { return { subs: [], tactic: "follow" }; }
 }
 
 export function saveTeam(team, storage = globalThis.localStorage) {
-  try { storage?.setItem(LS_TEAM, JSON.stringify({ subs: team.subs })); } catch (_) { /* 保存できなくても遊べる */ }
+  const prev = loadTeam(storage);
+  try { storage?.setItem(LS_TEAM, JSON.stringify({ subs: team.subs ?? prev.subs, tactic: TACTICS.includes(team.tactic) ? team.tactic : prev.tactic })); } catch (_) { /* 保存できなくても遊べる */ }
 }

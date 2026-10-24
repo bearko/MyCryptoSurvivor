@@ -14,7 +14,7 @@ import { getHero, heroImg } from "../heroes.js";
 import { getHeroSprite, drawSprite } from "./sprites.js";
 import { HERO_STARTING_WEAPON, CHAR_SPRITE_RATIO, STOCK_LIMIT_WEAPON } from "../constants.js";
 import { getExt, getCategory } from "../extensions.js";
-import { subTarget, followStep } from "../team.js";
+import { subTarget, followStep, TACTICS, TACTIC_LEASH, ROAM_EVERY, HUNT_KEEP, SUB_SPEED_MUL, pickTarget, moveToward, roamPoint, loadTeam, saveTeam } from "../team.js";
 import { computeJin, subWeaponFor, jinBackground, BUFF_SEC } from "../jin.js";
 import { poolHero, poolAttrs, poolHeroName } from "../hero-pool.js";
 import { hitEnemy } from "./damage.js";
@@ -70,7 +70,7 @@ export function setupTeamBattle(subIds = []) {
   const main = poolHero(state.ownedHero?.heroId);
   b.jin = b.subs.length ? computeJin([main, ...b.subs.map((s) => poolHero(s.heroId))], attrs) : { full: null, pairs: [], pairBonus: 0 };
   const keep = (state.currentStageIdx ?? 0) > 0 ? (b.team?.gauge ?? 0) : 0;
-  b.team = { gauge: b.subs.length ? keep : 0, t: 0, buffUntil: 0, buff: null, bg: null, pending: null };
+  b.team = { gauge: b.subs.length ? keep : 0, t: 0, buffUntil: 0, buff: null, bg: null, pending: null, tactic: loadTeam().tactic };   // 作戦は前のものを覚える
   _renderHud(true);
 }
 
@@ -109,6 +109,16 @@ export function teamOnKill() {
   const b = state.battle;
   if (!b?.subs?.length || !b.team) return;
   b.team.gauge = Math.min(GAUGE_MAX, b.team.gauge + 1);
+}
+
+/** 作戦を変える (= 画面のボタン。 次の挑戦でも覚えている) */
+export function setTeamTactic(tactic) {
+  const b = state.battle;
+  if (!TACTICS.includes(tactic) || !b?.team) return;
+  b.team.tactic = tactic;
+  for (const s of b.subs ?? []) { s.target = null; s.roam = null; }
+  saveTeam({ tactic });
+  _renderTactics(true);
 }
 
 /** 必殺技を撃てるか */
@@ -161,10 +171,28 @@ export function tickTeam(dt, input) {
   }
   if (Math.hypot(input?.x ?? 0, input?.y ?? 0) > 0.2) b.teamDir = { x: input.x, y: input.y };
   const p = b.player;
+  const tactic = t?.tactic ?? "follow";
+  const speed = (p.speed ?? 180) * SUB_SPEED_MUL;
   b.subs.forEach((s, i) => {
-    const tg = subTarget(p.x, p.y, b.teamDir, i);
     const before = { x: s.x, y: s.y };
-    const n = followStep(s, tg, dt);
+    const home = subTarget(p.x, p.y, b.teamDir, i);
+    const far = Math.hypot(s.x - p.x, s.y - p.y) > TACTIC_LEASH;
+    let n;
+    if (tactic === "follow" || far) {
+      s.target = null; s.roam = null;
+      n = far ? moveToward(s, home, speed * 1.4, dt) : followStep(s, home, dt);   // 離れすぎたら急いで戻る
+    } else if (tactic === "roam") {
+      s.roamT = (s.roamT ?? 0) - dt;
+      if (!s.roam || s.roamT <= 0 || Math.hypot(s.roam.x - s.x, s.roam.y - s.y) < 8) {
+        s.roam = roamPoint(p.x, p.y);
+        s.roamT = ROAM_EVERY[0] + Math.random() * (ROAM_EVERY[1] - ROAM_EVERY[0]);
+      }
+      n = moveToward(s, s.roam, speed * 0.85, dt);
+    } else {   // weak / strong: 狙った敵へ (= 倒れたり離れたりしたら選び直す。 2 人は別の敵を狙う)
+      const alive = s.target && s.target.hp > 0 && b.enemies.includes(s.target) && Math.hypot(s.target.x - p.x, s.target.y - p.y) <= TACTIC_LEASH;
+      if (!alive) s.target = pickTarget(b.enemies, p.x, p.y, tactic, { exclude: b.subs[1 - i]?.target ?? null });
+      n = s.target ? moveToward(s, s.target, speed, dt, HUNT_KEEP[tactic] ?? 40) : followStep(s, home, dt);
+    }
     s.x = n.x; s.y = n.y;
     const vx = (s.x - before.x) / Math.max(dt, 1e-3);
     s.moving = Math.hypot(vx, s.y - before.y) > 0.5;
@@ -224,7 +252,10 @@ function _renderHud(force) {
     _wired = true;
     document.getElementById("tsBtn")?.addEventListener("click", (e) => { e.stopPropagation(); fireTeamStrike(); });
     window.addEventListener("keydown", (e) => { if (e.code === "KeyJ") fireTeamStrike(); });
+    document.getElementById("tsTactic")?.addEventListener("click", (e) => { e.stopPropagation(); document.getElementById("teamStrike")?.classList.toggle("is-menu"); });
+    for (const el of document.querySelectorAll("#tsTactics [data-tactic]")) el.addEventListener("click", (e) => { e.stopPropagation(); setTeamTactic(el.dataset.tactic); document.getElementById("teamStrike")?.classList.remove("is-menu"); });
   }
+  _renderTactics(force);
   const t = b.team, jin = b.jin?.full;
   const pct = Math.round(((t?.gauge ?? 0) / GAUGE_MAX) * 100);
   const ready = canTeamStrike();
@@ -244,6 +275,22 @@ function _renderHud(force) {
   if (main) main.textContent = jin ? (jin.name[lang] ?? jin.name.ja) : (lang === "en" ? "TEAM STRIKE" : "チームストライク");
   const sub = document.getElementById("tsBtnSub");
   if (sub) sub.textContent = buffing ? "BUFF!" : ready ? "GO!" : `${pct}%`;
+}
+
+let _lastTactic = null;
+function _renderTactics(force) {
+  if (typeof document === "undefined") return;
+  const tac = state.battle?.team?.tactic ?? "follow";
+  if (!force && tac === _lastTactic) return;
+  _lastTactic = tac;
+  const lang = getLang();
+  const label = { follow: ["ついてこい！", "Follow me!"], roam: ["動き回れ！", "Roam!"], weak: ["ザコを狩れ！", "Hunt the small fry!"], strong: ["強敵を狙え！", "Go for the big ones!"] };
+  const btn = document.getElementById("tsTactic");
+  if (btn) btn.querySelector(".ts-tactic__label").textContent = label[tac][lang === "en" ? 1 : 0];
+  for (const el of document.querySelectorAll("#tsTactics [data-tactic]")) {
+    el.classList.toggle("is-on", el.dataset.tactic === tac);
+    el.querySelector("span").textContent = label[el.dataset.tactic][lang === "en" ? 1 : 0];
+  }
 }
 
 let _cutinTimer = null;

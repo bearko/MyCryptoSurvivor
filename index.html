@@ -302,6 +302,14 @@
       <div class="team-strike hidden" id="teamStrike">
         <div class="ts-gauge" aria-hidden="true"><span class="ts-gauge__fill" id="tsFill"></span><span class="ts-gauge__label" id="tsLabel">TEAM</span></div>
         <button type="button" class="ts-btn" id="tsBtn" disabled aria-label="必殺技"><span class="ts-btn__main" id="tsBtnText">チームストライク</span><span class="ts-btn__sub" id="tsBtnSub">0%</span></button>
+        <!-- 作者 2026-10-24: サブの作戦 (= 押すと 4 つから選ぶ) -->
+        <button type="button" class="ts-tactic" id="tsTactic" aria-haspopup="true"><span class="ts-tactic__kicker">作戦</span><span class="ts-tactic__label">ついてこい！</span></button>
+        <div class="ts-tactics" id="tsTactics" role="menu">
+          <button type="button" role="menuitem" data-tactic="follow"><i>👣</i><span>ついてこい！</span></button>
+          <button type="button" role="menuitem" data-tactic="roam"><i>🌀</i><span>動き回れ！</span></button>
+          <button type="button" role="menuitem" data-tactic="weak"><i>🐾</i><span>ザコを狩れ！</span></button>
+          <button type="button" role="menuitem" data-tactic="strong"><i>🎯</i><span>強敵を狙え！</span></button>
+        </div>
       </div>
       <div class="ts-cutin hidden" id="tsCutin" aria-hidden="true">
         <div class="ts-cutin__band"></div>
