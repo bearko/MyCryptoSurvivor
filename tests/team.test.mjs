@@ -217,3 +217,31 @@ test("SPEC-168: サブの武器は持ち主つきで別の武器 (= メインと
   assert.equal(subUpPrice(0), null, "Lv.15 で止まる (= サブは LL にならない)");
   assert.equal(levelUpSub(0), false);
 });
+
+// ---- SPEC-169: 作戦はサブごと ----
+import { loadTeam, saveTeam } from "../js/team.js";
+test("SPEC-169: 作戦はサブごとに保存する (= 前の 1 つだけの形は 2 人ぶんに読み替える)", () => {
+  const mem = new Map();
+  const st = { getItem: (k) => (mem.has(k) ? mem.get(k) : null), setItem: (k, v) => mem.set(k, String(v)) };
+  assert.deepEqual(loadTeam(st), { subs: [], tactics: ["follow", "follow"] });
+  st.setItem("mcs.team", JSON.stringify({ subs: [2003, 1001], tactic: "roam" }));
+  assert.deepEqual(loadTeam(st).tactics, ["roam", "roam"], "前の形");
+  const t1 = []; t1[1] = "strong";
+  saveTeam({ tactics: t1 }, st);
+  assert.deepEqual(loadTeam(st), { subs: [2003, 1001], tactics: ["roam", "strong"] }, "サブ 2 だけ変える");
+  saveTeam({ tactics: ["weak"] }, st);
+  assert.deepEqual(loadTeam(st).tactics, ["weak", "strong"]);
+  saveTeam({ subs: [4006] }, st);
+  assert.deepEqual(loadTeam(st).tactics, ["weak", "strong"], "編成を変えても作戦は残る");
+  saveTeam({ tactics: ["fly"] }, st);
+  assert.deepEqual(loadTeam(st).tactics, ["weak", "strong"], "知らない作戦は無視");
+});
+
+test("SPEC-169: 動きはサブそれぞれの作戦で決まり、 ボタンはサブの数だけ並ぶ", () => {
+  const tb = read("../js/battle/team-battle.js");
+  assert.match(tb, /const tactic = s\.tactic \?\? "follow";/);
+  assert.match(tb, /export function setTeamTactic\(tactic, i = 0\)/);
+  assert.match(tb, /subs\.forEach\(\(s, i\) => \{\n      const btn = document\.createElement\("button"\);/);
+  assert.ok(!/b\.team\.tactic/.test(tb), "チームで 1 つの作戦は無くした");
+  assert.match(read("../index.html"), /id="tsTacticRow"/);
+});

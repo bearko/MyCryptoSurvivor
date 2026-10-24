@@ -62,7 +62,10 @@ export function setupTeamBattle(subIds = []) {
   const main = poolHero(state.ownedHero?.heroId);
   b.jin = b.subs.length ? computeJin([main, ...b.subs.map((s) => poolHero(s.heroId))], attrs) : { full: null, pairs: [], pairBonus: 0 };
   const keep = (state.currentStageIdx ?? 0) > 0 ? (b.team?.gauge ?? 0) : 0;
-  b.team = { gauge: b.subs.length ? keep : 0, t: 0, buffUntil: 0, buff: null, bg: null, pending: null, tactic: loadTeam().tactic };   // 作戦は前のものを覚える
+  const tactics = loadTeam().tactics;   // 作戦はサブごとに前のものを覚える (= SPEC-169)
+  b.subs.forEach((s, i) => { s.tactic = tactics[i] ?? "follow"; });
+  b.team = { gauge: b.subs.length ? keep : 0, t: 0, buffUntil: 0, buff: null, bg: null, pending: null };
+  _menuSub = -1;
   _renderHud(true);
 }
 
@@ -116,13 +119,16 @@ export function teamOnKill() {
   b.team.gauge = Math.min(GAUGE_MAX, b.team.gauge + 1);
 }
 
-/** 作戦を変える (= 画面のボタン。 次の挑戦でも覚えている) */
-export function setTeamTactic(tactic) {
+/** サブ i の作戦を変える (= 画面のボタン。 サブごとに別。 次の挑戦でも覚えている。 SPEC-169) */
+export function setTeamTactic(tactic, i = 0) {
   const b = state.battle;
-  if (!TACTICS.includes(tactic) || !b?.team) return;
-  b.team.tactic = tactic;
-  for (const s of b.subs ?? []) { s.target = null; s.roam = null; }
-  saveTeam({ tactic });
+  const s = b?.subs?.[i];
+  if (!TACTICS.includes(tactic) || !s) return;
+  s.tactic = tactic;
+  s.target = null; s.roam = null;
+  const tactics = [];
+  tactics[i] = tactic;
+  saveTeam({ tactics });
   _renderTactics(true);
 }
 
@@ -177,9 +183,9 @@ export function tickTeam(dt, input) {
   // 隊列の向きは少しずつ回す (= 作者 2026-10-24: 向きを変えた瞬間にサブが反対側へ飛んで、 機敏すぎた)
   if (Math.hypot(input?.x ?? 0, input?.y ?? 0) > 0.2) b.teamDir = turnDir(b.teamDir, input, dt);
   const p = b.player;
-  const tactic = t?.tactic ?? "follow";
   const mainSpeed = (p.speed ?? 180) * (state.buffs?.speedMul ?? 1);   // メインのいまの速さ (= ホースの強化も)
   b.subs.forEach((s, i) => {
+    const tactic = s.tactic ?? "follow";   // SPEC-169: サブごとの作戦
     const before = { x: s.x, y: s.y };
     const home = subTarget(p.x, p.y, b.teamDir, i);
     const far = Math.hypot(s.x - p.x, s.y - p.y) > TACTIC_LEASH;
@@ -259,8 +265,16 @@ function _renderHud(force) {
     _wired = true;
     document.getElementById("tsBtn")?.addEventListener("click", (e) => { e.stopPropagation(); fireTeamStrike(); });
     window.addEventListener("keydown", (e) => { if (e.code === "KeyJ") fireTeamStrike(); });
-    document.getElementById("tsTactic")?.addEventListener("click", (e) => { e.stopPropagation(); document.getElementById("teamStrike")?.classList.toggle("is-menu"); });
-    for (const el of document.querySelectorAll("#tsTactics [data-tactic]")) el.addEventListener("click", (e) => { e.stopPropagation(); setTeamTactic(el.dataset.tactic); document.getElementById("teamStrike")?.classList.remove("is-menu"); });
+    // SPEC-169: 作戦のボタンはサブごと。 押したサブの 4 つを開き、 もう一度押すか選ぶと閉じる
+    document.getElementById("tsTacticRow")?.addEventListener("click", (e) => {
+      const btn = e.target.closest?.("[data-sub]");
+      if (!btn) return;
+      e.stopPropagation();
+      const i = Number(btn.dataset.sub);
+      _menuSub = _menuSub === i ? -1 : i;
+      _renderTactics(true);
+    });
+    for (const el of document.querySelectorAll("#tsTactics [data-tactic]")) el.addEventListener("click", (e) => { e.stopPropagation(); const i = _menuSub; _menuSub = -1; setTeamTactic(el.dataset.tactic, i < 0 ? 0 : i); });
   }
   _renderTactics(force);
   const t = b.team, jin = b.jin?.full;
@@ -285,18 +299,40 @@ function _renderHud(force) {
 }
 
 let _lastTactic = null;
+let _menuSub = -1;   // SPEC-169: 4 つを開いているサブ (= -1 は閉じている)
+const TACTIC_LABEL = { follow: ["ついてこい！", "Follow me!"], roam: ["動き回れ！", "Roam!"], weak: ["ザコを狩れ！", "Hunt the small fry!"], strong: ["強敵を狙え！", "Go for the big ones!"] };
+/** 作戦のボタン (= サブごとに 1 つ。 顔と「SUB n」と作戦の名前) と、 開いているサブの 4 つ */
 function _renderTactics(force) {
   if (typeof document === "undefined") return;
-  const tac = state.battle?.team?.tactic ?? "follow";
-  if (!force && tac === _lastTactic) return;
-  _lastTactic = tac;
-  const lang = getLang();
-  const label = { follow: ["ついてこい！", "Follow me!"], roam: ["動き回れ！", "Roam!"], weak: ["ザコを狩れ！", "Hunt the small fry!"], strong: ["強敵を狙え！", "Go for the big ones!"] };
-  const btn = document.getElementById("tsTactic");
-  if (btn) btn.querySelector(".ts-tactic__label").textContent = label[tac][lang === "en" ? 1 : 0];
+  const subs = state.battle?.subs ?? [];
+  const lang = getLang(), L = (k) => TACTIC_LABEL[k][lang === "en" ? 1 : 0];
+  const key = `${lang}|${_menuSub}|${subs.map((s) => `${s.heroId}:${s.tactic}`).join(",")}`;
+  if (!force && key === _lastTactic) return;
+  _lastTactic = key;
+  const row = document.getElementById("tsTacticRow");
+  if (row) {
+    row.innerHTML = "";
+    subs.forEach((s, i) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "ts-tactic" + (_menuSub === i ? " is-open" : "");
+      btn.dataset.sub = String(i);
+      btn.setAttribute("aria-haspopup", "true");
+      btn.setAttribute("aria-expanded", _menuSub === i ? "true" : "false");
+      btn.innerHTML = `<img class="ts-tactic__face" alt="" /><span class="ts-tactic__kicker"></span><span class="ts-tactic__label"></span>`;
+      btn.querySelector("img").src = heroImg(s.heroId);
+      btn.querySelector(".ts-tactic__kicker").textContent = `SUB ${i + 1}`;
+      btn.querySelector(".ts-tactic__label").textContent = L(s.tactic ?? "follow");
+      row.appendChild(btn);
+    });
+  }
+  document.getElementById("teamStrike")?.classList.toggle("is-menu", _menuSub >= 0);
+  const cur = subs[_menuSub]?.tactic;
+  const head = document.getElementById("tsTacticsHead");
+  if (head) head.textContent = _menuSub >= 0 ? (lang === "en" ? `Orders for SUB ${_menuSub + 1}` : `SUB ${_menuSub + 1} への作戦`) : "";
   for (const el of document.querySelectorAll("#tsTactics [data-tactic]")) {
-    el.classList.toggle("is-on", el.dataset.tactic === tac);
-    el.querySelector("span").textContent = label[el.dataset.tactic][lang === "en" ? 1 : 0];
+    el.classList.toggle("is-on", el.dataset.tactic === cur);
+    el.querySelector("span").textContent = L(el.dataset.tactic);
   }
 }
 
