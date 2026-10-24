@@ -2,7 +2,7 @@
 id: SPEC-176
 title: Extra Panels — Endgame Panels the Merchant Sells Once Every Equipment Slot Is Full and Maxed (Enemy Count, Speed, HP, a Pancake Ban, Mission Rate and Severity, an Earlier Boss, a Stronger Boss), 10,000 CE Each up to Lv.10, Raising the Score Multiplier up to 2.0
 status: Approved
-pr: TBD
+pr: 253
 phase: v2.0 Endgame
 kind: Added
 ---
