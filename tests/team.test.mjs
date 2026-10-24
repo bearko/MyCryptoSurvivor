@@ -256,7 +256,7 @@ test("SPEC-170: サブ 2 人のときのボスは HP 2 倍・攻撃 1.25 倍", a
   assert.equal(teamBossMul(), TEAM_BOSS);
   const en = read("../js/battle/enemies.js");
   assert.match(en, /const tb {5}= isBoss \? teamBossMul\(\) : null;/);
-  assert.match(en, /\(isBoss \? \(tb\?\.hpMul \?\? 1\) :/);
+  assert.match(en, /\(isBoss \? \(tb\?\.hpMul \?\? 1\) \* xm\.bossMul :/);
 });
 
 test("SPEC-169 追記: サブのボタンは縦に並び、 開いたサブのすぐ下に 4 つ", () => {
@@ -281,7 +281,7 @@ test("SPEC-171: サブの人数ぶん難しくなる (= 雑魚の HP は序盤�
   assert.equal(teamEnemyHpMul(), TEAM_DIFFICULTY[1].enemyHp[0]);
   assert.equal(teamEnemyHpMul(2), TEAM_DIFFICULTY[1].enemyHp[2]);
   assert.equal(teamBossMul(), TEAM_DIFFICULTY[1].boss);
-  assert.match(read("../js/battle/enemies.js"), /\(isBoss \? \(tb\?\.hpMul \?\? 1\) : teamEnemyHpMul\(\)\)/);
+  assert.match(read("../js/battle/enemies.js"), /\(isBoss \? \(tb\?\.hpMul \?\? 1\) \* xm\.bossMul : teamEnemyHpMul\(\) \* xm\.hpMul\)/);
 });
 
 test("SPEC-173: チームのゲージは「JIN ゲージ」 (= TEAM と書かない)", () => {

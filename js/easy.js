@@ -9,6 +9,8 @@
 import { BOSS_SPAWN_AT_MS, BOSS_WARNING_LEAD_MS, LS_PREFIX } from "./constants.js";
 import { STAGE_TABLE } from "./constants.js";
 import { isStory, storyStage, storyOverride } from "./story.js";   // SPEC-165
+import { extraMods } from "./battle/extra-panels.js";   // SPEC-176: 早鐘
+import { state } from "./state.js";
 
 /** 「チュートリアルを終えた」の印 (= 5-5 のクリア。 旧 EASY のクリアもこの印で、 NORMAL を開く。 SPEC-165 行 W) */
 export const LS_EASY_CLEARED = `${LS_PREFIX}.easyCleared`;
@@ -30,7 +32,9 @@ export function easyStage() {
 
 /** ボスが出る時刻・予告の長さ (= 戦闘の各所が定数の代わりに呼ぶ) */
 export function bossSpawnAtMs() {
-  return easyStage()?.bossAtMs ?? BOSS_SPAWN_AT_MS;
+  // SPEC-176: 早鐘 (= 10 秒ずつ早く。 店で買った直後は予告を出せるだけの間を残す = bossFloorMs)
+  const floor = state.battle?.bossFloor;
+  return easyStage()?.bossAtMs ?? Math.max(BOSS_SPAWN_AT_MS - extraMods().bossEarlyMs, floor && floor.idx === (state.currentStageIdx ?? 0) ? floor.ms : 0);
 }
 export function bossWarnLeadMs() {
   return easyStage()?.warnMs ?? BOSS_WARNING_LEAD_MS;

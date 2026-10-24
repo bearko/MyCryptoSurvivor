@@ -134,7 +134,7 @@ test("三段撃ち: 1 発を 3 発に (= 真ん中と左右)", () => {
 
 test("つなぎ: 戦闘の各所が効き目を読む・ショップで遊ぶときだけ・画面と文言", () => {
   const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), "utf8");
-  assert.match(read("js/battle/enemies.js"), /\/ mods\.spawnMul;/);
+  assert.match(read("js/battle/enemies.js"), /\/ mods\.spawnMul \/ extraMods\(\)\.spawnMul;/);
   assert.match(read("js/battle/enemies.js"), /e\.speed \* mods\.speedMul/);
   assert.match(read("js/battle/hurt.js"), /missionMods\(\)\.dmgMul/);
   assert.match(read("js/battle/hurt.js"), /missionOnHurt\(\)/);

@@ -28,7 +28,8 @@ import { roundTo5 } from "./shop-logic.js";
 import { naviTipModal } from "../navi-tips.js";   // SPEC-137: 初めてのミッションでマインちゃんが説明
 import { naviHide } from "../navi.js";
 import { setRichText } from "../rich-text.js";   // SPEC-144
-import { easyStage, isEasy } from "../easy.js";   // SPEC-147
+import { easyStage, isEasy, bossSpawnAtMs } from "../easy.js";   // SPEC-147
+import { extraMods } from "./extra-panels.js";   // SPEC-176: 試練の令・苛烈の令
 
 // ============================================================
 // 純関数 (= tests/missions.test.mjs)
@@ -73,8 +74,11 @@ export function clampStar(star) {
   return n >= 1 && n <= 3 ? n : 1;
 }
 /** その★の中身 (= 秒・効き目・条件) */
-export function tierOf(mission, star = 1) {
-  return mission?.tiers?.[clampStar(star) - 1] ?? { durS: 30, mods: {} };
+export function tierOf(mission, star = 1, harsh = extraMods().missionMul) {
+  const t = mission?.tiers?.[clampStar(star) - 1] ?? { durS: 30, mods: {} };
+  if (!(harsh > 1)) return t;
+  // SPEC-176: 苛烈の令 (= 時間と撃破の条件が伸びる)
+  return { ...t, durS: Math.round(t.durS * harsh), ...(t.goal?.kills ? { goal: { ...t.goal, kills: Math.round(t.goal.kills * harsh) } } : {}) };
 }
 /** いちばん長い秒 (= 持ちかける時刻を決めるとき。 どの★を選んでもボスの予告に重ならない) */
 export function maxDurS(mission) {
@@ -111,13 +115,13 @@ export function pickMission({ prevId = null, heroId = null, rnd = Math.random } 
  */
 export function planOffer({ stageIdx, waveIdx, durS, count, rolls = [Math.random(), Math.random()] }) {
   if (waveIdx < 1 || count >= MISSION_PER_STAGE) return null;
-  if (rolls[0] >= MISSION_CHANCE) return null;
+  if (rolls[0] >= MISSION_CHANCE + extraMods().missionChanceAdd) return null;   // SPEC-176: 試練の令
   const times = shopTimesMs(stageIdx, { atStart: shopAtStart() });   // SPEC-152
   const from = times[waveIdx - 1];
   const at = Math.round(from + MISSION_WINDOW_MS[0] + rolls[1] * (MISSION_WINDOW_MS[1] - MISSION_WINDOW_MS[0]));
   const next = times[waveIdx];   // 無ければ (= 最後の店のあと) ボスまで
   if (next != null && at > next - MISSION_SHOP_GAP_MS) return null;
-  if (at + durS * 1000 > BOSS_SPAWN_AT_MS - BOSS_WARNING_LEAD_MS) return null;
+  if (at + durS * 1000 > bossSpawnAtMs() - BOSS_WARNING_LEAD_MS) return null;   // SPEC-176: 早鐘でボスが早まる
   return at;
 }
 

@@ -10,6 +10,7 @@ import { isTestSite, isTestMode } from "./team.js";   // SPEC-166
 import { TREE_NODES, ROOT_ID } from "./skill-data.js";
 import { noteTrophies, refreshHeroUnlocks } from "./hero-unlock.js";   // SPEC-098
 import { noteAchievedHeroes } from "./hero-pool.js";   // SPEC-166
+import { normalizeExtra } from "./battle/extra-panels.js";   // SPEC-176
 
 // ============================================================
 // SPEC-039 / SPEC-096: アチーブメント (= 共通基盤 SPEC-008。 SDK の関数名は unlockTrophy のまま)
@@ -272,7 +273,7 @@ export const SCORE_BALANCE = 3;
  * 1 回の挑戦の成績 (= 共通基盤に送る形)。 純関数 (= tests/platform.test.mjs)
  *   run: state.run、 cleared: 全ステージクリアか、 reportScore: 活動レポートのスコア (= 倍率の前)
  */
-export function scoreMetrics({ run, cleared, reportScore, regulation, absolute }) {
+export function scoreMetrics({ run, cleared, reportScore, regulation, absolute, extra = null }) {
   const stagesCleared = Math.min(3, (run?.stages ?? []).length);
   const out = {
     stagesCleared,
@@ -282,6 +283,9 @@ export function scoreMetrics({ run, cleared, reportScore, regulation, absolute }
     difficulty: regulation === "ABSOLUTE" ? "absolute" : "normal",
     balance: SCORE_BALANCE,   // SPEC-066 / SPEC-082
   };
+  // SPEC-176: Extra パネルのレベル (= 共通基盤が同じ表で倍率に足す。 買っていなければ送らない)
+  const ex = normalizeExtra(extra);
+  if (Object.keys(ex).length) out.extra = ex;
   if (out.difficulty === "absolute") {
     const a = absolute || {};
     out.absolute = { spawnMul: a.spawnMul ?? 1, hpMul: a.hpMul ?? 1, dmgMul: a.dmgMul ?? 1, speedMul: a.speedMul ?? 1 };
