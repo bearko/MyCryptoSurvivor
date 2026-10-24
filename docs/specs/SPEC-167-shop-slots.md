@@ -2,7 +2,7 @@
 id: SPEC-167
 title: Shop Slots — Bought Slots Stay Sold Out Through Rerolls, You Can Buy as Many as the Shop Has Slots (Four, Five at the Extra-Offer Merchant), and Reroll Is Disabled When Nothing Can Be Restocked
 status: Approved
-pr: TBD
+pr: 243
 phase: v1.9 Shop
 kind: Changed
 ---
