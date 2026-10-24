@@ -2,7 +2,7 @@
 id: SPEC-175
 title: Missions for Everyone — Every Shadow Hero's Mission Comes Up Equally in NORMAL, Regardless of Story Progress (No More Weighting Toward Givers You Bonded With)
 status: Approved
-pr: TBD
+pr: 252
 phase: v2.0 Team
 kind: Changed
 ---
