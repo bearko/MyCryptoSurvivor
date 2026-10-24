@@ -1,1 +1,2 @@
 - **作戦はサブごとに**（`js/team.js` + `js/battle/team-battle.js` + `index.html` + `css/team.css`）: サブの数だけ作戦のボタン（顔・SUB n・いまの作戦）を並べ、 押したサブの 4 つから選ぶ。 作戦はサブの枠ごとに覚える
+- **作戦のボタンは縦に**（`js/battle/team-battle.js` + `css/team.css`）: SUB 1 の下に SUB 2。 押したサブのすぐ下に 4 つが開き、 下のサブはそのぶんずれる

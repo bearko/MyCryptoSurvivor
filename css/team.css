@@ -296,7 +296,7 @@ details.hero-perks[open] .hero-perks__sum::before { content: "▾ "; }
 @media (prefers-reduced-motion: reduce) { .team-strike.is-ready .ts-gauge { animation: none; } }
 
 /* 作戦 (= SPEC-169: サブごとにボタン。 押したサブの 4 つを開き、 選ぶと閉じる) */
-.ts-tactic-row { display: flex; gap: 6px; pointer-events: none; }
+.ts-tactic-row { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; pointer-events: none; }   /* 作者 2026-10-24: サブは縦に。 開いたサブの下に 4 つ */
 .ts-tactic.is-open { background: var(--ts-red); box-shadow: 3px 3px 0 var(--ts-white); }
 .ts-tactic__face { width: 22px; height: 22px; image-rendering: pixelated; transform: skewX(12deg); margin: -3px 0; }
 .ts-tactics__head { font: 800 0.62rem/1.2 "Chakra Petch", system-ui, sans-serif; letter-spacing: 0.08em; color: #ffd400; text-align: right; text-shadow: 0 1px 0 #000; }

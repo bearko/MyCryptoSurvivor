@@ -320,7 +320,9 @@ function _renderTactics(force) {
   if (!force && key === _lastTactic) return;
   _lastTactic = key;
   const row = document.getElementById("tsTacticRow");
+  const menu = document.getElementById("tsTactics");
   if (row) {
+    if (menu && menu.parentNode === row) row.after(menu);   // 4 つは作り直さない (= 押したときの配線が付いている)
     row.innerHTML = "";
     subs.forEach((s, i) => {
       const btn = document.createElement("button");
@@ -334,6 +336,7 @@ function _renderTactics(force) {
       btn.querySelector(".ts-tactic__kicker").textContent = `SUB ${i + 1}`;
       btn.querySelector(".ts-tactic__label").textContent = L(s.tactic ?? "follow");
       row.appendChild(btn);
+      if (_menuSub === i && menu) row.appendChild(menu);   // 作者 2026-10-24: 縦に並べ、 開いたサブのすぐ下に 4 つ (= 下のサブはそのぶんずれる)
     });
   }
   document.getElementById("teamStrike")?.classList.toggle("is-menu", _menuSub >= 0);
