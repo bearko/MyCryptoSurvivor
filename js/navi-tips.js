@@ -23,6 +23,12 @@ export const TIP_KEYS = [
 ];
 /** SPEC-137: 止まっている画面 (= ミッションの持ちかけ) で、 画面の下の通信の帯に出すひとこと。 ボイスはない */
 export const MODAL_TIP_KEYS = ["mission.offer"];
+/**
+ * SPEC-172: チームの説明 (= 作者 2026-10-24。 初めてチームで遊ぶ人へ。 ボイスはまだない)。
+ *   画面 (= ヒーロー選択・サブを選ぶ窓・編成のあと) は naviTeamScreen、 戦闘 (= 始まり・ゲージが満タン) は naviTipOnce の順番に並ぶ
+ */
+export const TEAM_SCREEN_TIPS = ["team.hero", "team.picker", "team.set"];
+export const TEAM_BATTLE_TIPS = ["team.auto", "team.tactic", "team.gauge", "team.done"];
 /** 言い終えてから引っこむまで */
 export const TIP_HOLD_MS = 2400;
 /** 次のひとことまでの間 */
@@ -35,7 +41,7 @@ export function loadSeen(storage) {
   try {
     const raw = storage?.getItem(LS_NAVI_TIPS);
     const arr = raw ? JSON.parse(raw) : [];
-    return new Set(Array.isArray(arr) ? arr.filter((k) => TIP_KEYS.includes(k) || MODAL_TIP_KEYS.includes(k)) : []);
+    return new Set(Array.isArray(arr) ? arr.filter((k) => TIP_KEYS.includes(k) || MODAL_TIP_KEYS.includes(k) || TEAM_SCREEN_TIPS.includes(k) || TEAM_BATTLE_TIPS.includes(k)) : []);
   } catch (_) {
     return new Set();
   }
@@ -48,7 +54,7 @@ export function saveSeen(storage, seen) {
 
 /** その場面で話すか (= 純関数。 知らない場面と、 もう見た場面は話さない) */
 export function shouldShowTip(seen, key) {
-  return TIP_KEYS.includes(key) && !seen.has(key);
+  return (TIP_KEYS.includes(key) || TEAM_BATTLE_TIPS.includes(key)) && !seen.has(key);
 }
 
 /** いま話してよいか (= 純関数。 戦闘中・止まっていない・マインちゃんが黙っている) */
@@ -89,7 +95,7 @@ function _next() {
     return;
   }
   const key = _queue.shift();
-  const lines = naviLines("tip", { key });
+  const lines = naviLines(TEAM_BATTLE_TIPS.includes(key) ? "team" : "tip", { key });   // SPEC-172
   naviSay(lines, { place: "battle", autoHideMs: TIP_HOLD_MS, top: _commTop() });
   const text = t(lines[0]?.key ?? "", "");
   _timer = setTimeout(() => { _timer = 0; _next(); }, tipDurationMs(text) + TIP_GAP_MS);
@@ -120,6 +126,19 @@ export function naviTipModal(key, lines) {
   seen.add(key);
   saveSeen(_storage(), seen);
   naviSay(lines, { place: "result" });
+  return true;
+}
+
+/**
+ * SPEC-172: チームの説明 (= 画面)。 初めてならすぐ話す (= 画面の下の通信の帯。 吹き出しを押すと次の行)。 話したら true
+ */
+export function naviTeamScreen(key, { place = "hero" } = {}) {
+  if (!globalThis.document || !TEAM_SCREEN_TIPS.includes(key)) return false;
+  const seen = _getSeen();
+  if (seen.has(key)) return false;
+  seen.add(key);
+  saveSeen(_storage(), seen);
+  naviSay(naviLines("team", { key }), { place });
   return true;
 }
 

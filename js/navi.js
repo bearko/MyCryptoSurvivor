@@ -159,6 +159,19 @@ export function naviLines(scene, ctx = {}) {
       return (ctx.bought | 0) > 0
         ? [{ key: "navi.afterTree.bought", pose: "hooray", voice: "afterTree.bought" }]
         : [{ key: "navi.afterTree.none", pose: "pointer", voice: "afterTree.none" }];
+    // SPEC-172: チームの説明 (= 初めてチームで遊ぶ人へ。 ボイスはまだない)
+    case "team": {
+      const T = {
+        "team.hero":   [["navi.team.hero.1", "hooray"], ["navi.team.hero.2", "pointer"]],
+        "team.picker": [["navi.team.picker.1", "pointer"], ["navi.team.picker.2", "wink"], ["navi.team.picker.3", "smile"]],
+        "team.set":    [["navi.team.set.1", "sparkle"], ["navi.team.set.2", "hooray"]],
+        "team.auto":   [["navi.team.auto", "pointer"]],
+        "team.tactic": [["navi.team.tactic", "pointer"]],
+        "team.gauge":  [["navi.team.gauge", "sparkle"]],
+        "team.done":   [["navi.team.done", "hooray"]],
+      }[String(ctx.key ?? "")] ?? [];
+      return T.map(([key, pose]) => ({ key, pose }));
+    }
     case "tip": {
       // SPEC-068: 初めてのアイテム・仕掛け・敵のひとこと。 key は navi-tips.js の TIP_KEYS
       const key = String(ctx.key ?? "");

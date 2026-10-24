@@ -87,3 +87,43 @@ test("設定に「マインちゃんの補足」と「もう一度聞く」が�
     assert.ok(UI[k]?.ja && UI[k]?.en, k);
   }
 });
+
+// ---- SPEC-172: チームの説明 ----
+test("SPEC-172: チームの説明は 7 場面・どれも日本語と英語とポーズがある (= ボイスはまだない)", async () => {
+  const { TEAM_SCREEN_TIPS, TEAM_BATTLE_TIPS } = await import("../js/navi-tips.js");
+  assert.deepEqual(TEAM_SCREEN_TIPS, ["team.hero", "team.picker", "team.set"]);
+  assert.deepEqual(TEAM_BATTLE_TIPS, ["team.auto", "team.tactic", "team.gauge", "team.done"]);
+  const n = { "team.hero": 2, "team.picker": 3, "team.set": 2, "team.auto": 1, "team.tactic": 1, "team.gauge": 1, "team.done": 1 };
+  for (const key of [...TEAM_SCREEN_TIPS, ...TEAM_BATTLE_TIPS]) {
+    const lines = naviLines("team", { key });
+    assert.equal(lines.length, n[key], key);
+    for (const l of lines) {
+      assert.ok(UI[l.key]?.ja && UI[l.key]?.en, l.key);
+      assert.ok(NAVI_POSES[l.pose], `${l.key}: ${l.pose}`);
+    }
+  }
+  assert.equal(UI["navi.team.hero.1"].ja, "NORMAL モードはチームで挑戦できるよ！");
+  assert.equal(UI["navi.team.done"].ja, "これでチームの設定はおしまい！ チームの力でクリアを目指そう！");
+});
+
+test("SPEC-172: チームの説明は見たら覚える (= 戦闘のものは順番に並ぶ・設定の「もう一度聞く」で忘れる)", () => {
+  const st = memStorage();
+  st.setItem("mcs.naviTips", JSON.stringify(["team.hero", "team.auto", "xxx"]));
+  const seen = loadSeen(st);
+  assert.ok(seen.has("team.hero") && seen.has("team.auto") && !seen.has("xxx"));
+  assert.equal(shouldShowTip(seen, "team.auto"), false);
+  assert.equal(shouldShowTip(seen, "team.gauge"), true, "戦闘の説明は naviTipOnce で並ぶ");
+  assert.equal(shouldShowTip(seen, "team.hero"), false, "画面の説明は naviTeamScreen で出す");
+  const main = readFileSync(new URL("../js/main.js", import.meta.url), "utf8");
+  assert.match(main, /if \(!\(_teamOn\(\) && naviTeamScreen\("team\.hero"\)\)\) naviSay\(naviLines\("hero"\)/);
+  assert.match(main, /naviTeamScreen\("team\.picker"\);/);
+  assert.match(main, /naviTeamScreen\("team\.set"\)/);
+  const tb = readFileSync(new URL("../js/battle/team-battle.js", import.meta.url), "utf8");
+  assert.match(tb, /naviTipOnce\("team\.auto"\); naviTipOnce\("team\.tactic"\);/);
+  assert.match(tb, /if \(b\.team\.gauge >= GAUGE_MAX\) \{ naviTipOnce\("team\.gauge"\); naviTipOnce\("team\.done"\); \}/);
+});
+
+test("SPEC-172: 店の札の「武器エクステ／強化エクステ」はスマホでも出す", () => {
+  const css = readFileSync(new URL("../css/shop.css", import.meta.url), "utf8");
+  assert.ok(!/\.shop-card \.levelup-card__cat \{ display: none; \}/.test(css));
+});

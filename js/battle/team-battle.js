@@ -20,6 +20,7 @@ import { computeJin, subWeaponFor, jinBackground, BUFF_SEC } from "../jin.js";
 import { poolHero, poolAttrs, poolHeroName } from "../hero-pool.js";
 import { hitEnemy } from "./damage.js";
 import { getLang } from "../i18n.js";
+import { naviTipOnce } from "../navi-tips.js";   // SPEC-172: チームの説明 (= 初めてのとき)
 
 /** ゲージが満タンになる撃破数 (= 1 ステージで 2〜4 回撃てる量) */
 export const GAUGE_MAX = 150;
@@ -96,6 +97,7 @@ export function setupTeamBattle(subIds = []) {
   b.subs.forEach((s, i) => { s.tactic = tactics[i] ?? "follow"; });
   b.team = { gauge: b.subs.length ? keep : 0, t: 0, buffUntil: 0, buff: null, bg: null, pending: null };
   _menuSub = -1;
+  if (b.subs.length) { naviTipOnce("team.auto"); naviTipOnce("team.tactic"); }   // SPEC-172: 初めてチームで出たとき
   _renderHud(true);
 }
 
@@ -147,6 +149,7 @@ export function teamOnKill() {
   const b = state.battle;
   if (!b?.subs?.length || !b.team) return;
   b.team.gauge = Math.min(GAUGE_MAX, b.team.gauge + 1);
+  if (b.team.gauge >= GAUGE_MAX) { naviTipOnce("team.gauge"); naviTipOnce("team.done"); }   // SPEC-172: 初めて満タンになったとき (= 2 回目からは黙る)
 }
 
 /** サブ i の作戦を変える (= 画面のボタン。 サブごとに別。 次の挑戦でも覚えている。 SPEC-169) */

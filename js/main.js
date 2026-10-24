@@ -57,6 +57,7 @@ import { img } from "./constants.js";
 import { installReduceFxAttr } from "./motion.js";
 import { playWipe } from "./transition.js";
 import { naviSay, naviHide, naviLines, naviTitle } from "./navi.js";
+import { naviTeamScreen } from "./navi-tips.js";   // SPEC-172: チームの説明
 import { installUiSound, startTitleBgm, startMenuBgm, waitAutoplay } from "./ui-sound.js";
 import { startHeroPreview, stopHeroPreview } from "./hero-preview.js";
 import { playVoice, stopVoice } from "./voice.js";
@@ -310,7 +311,8 @@ export function openHeroSelectModal() {   // SPEC-165: ストーリーの 3-2 �
   renderHeroSelectModal();
   renderHeroDetail(null);   // SPEC-014: 詳細パネルを placeholder 状態にリセット
   modal.classList.remove("hidden");
-  naviSay(naviLines("hero"), { place: "hero" });   // SPEC-059: 通信の帯 (= ヒーローの大きな絵には重ねない)
+  // SPEC-172: チームで遊べるようになって初めての人には、 チームの説明 (= 1 回だけ)
+  if (!(_teamOn() && naviTeamScreen("team.hero"))) naviSay(naviLines("hero"), { place: "hero" });   // SPEC-059: 通信の帯 (= ヒーローの大きな絵には重ねない)
 }
 
 function closeHeroSelectModal() {
@@ -491,6 +493,7 @@ function openSubPicker(slot) {
   _subSlot = subs[slot] == null && subs.length < slot ? subs.length : slot;
   _renderSubPicker();
   $("#subPicker")?.classList.remove("hidden");
+  naviTeamScreen("team.picker");   // SPEC-172: 初めて開いたとき (= マインちゃんは窓の上に出す。 css/team.css)
 }
 function _renderSubPicker() {
   const grid = $("#subPickerGrid");
@@ -602,7 +605,14 @@ function _pickSub(id) {
   if (at < 0 && subs.length >= 2) { closeSubPicker(); return; }
   _renderSubPicker();
 }
-function closeSubPicker() { $("#subPicker")?.classList.add("hidden"); }
+function closeSubPicker() {
+  $("#subPicker")?.classList.add("hidden");
+  _teamSetLesson();
+}
+/** SPEC-172: メインとサブがそろったら、 JIN の説明 (= 1 回だけ) */
+function _teamSetLesson() {
+  if (state.pendingHeroPick != null && (state.pendingTeamSubs ?? []).length > 0 && _teamOn()) naviTeamScreen("team.set");
+}
 
 function pickHero(heroId) {
   if (!getHero(heroId)) return;
@@ -622,6 +632,7 @@ function pickHero(heroId) {
       weaponName: ext ? getTierName(ext, 1, getLang()) : "",
       n: _heroPickN,
     }), { place: "hero" });
+    _teamSetLesson();   // SPEC-172: サブを前の編成から引き継いでいれば、 メインを選んだところで
   }
 }
 let _heroPickN = 0;
