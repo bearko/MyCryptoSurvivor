@@ -36,9 +36,29 @@ export const STRIKE_BG_MS = 2200;
  * ボスへの火力を測ると、 チームはソロの 2.3 倍 (= 序盤)・2.0 倍 (= 中盤)・1.2〜1.5 倍 (= 終盤) で、 これに必殺技が乗る。
  * HP は 2 倍。 サブは倒れずメインの HP は同じなので、 攻撃 (= 体当たり・突進) も 1.25 倍にして手ごたえを残す
  */
-export const TEAM_BOSS = { hpMul: 2, dmgMul: 1.25 };
+/**
+ * SPEC-171: サブの人数ぶんの難しさ (= 作者 2026-10-24「選んだ数だけ難易度が変動」。 [0 人, 1 人, 2 人])。
+ *   enemyHp: 雑魚の HP の倍率 (= ステージ 1・2・3。 サブの武器は Lv.1 から始まるので、 序盤ほど効きが大きい)
+ *   boss: ボスの HP と攻撃 (= 体当たり・突進)
+ */
+export const TEAM_DIFFICULTY = [
+  { enemyHp: [1, 1, 1], boss: null },
+  { enemyHp: [1.5, 1.3, 1.15], boss: { hpMul: 1.5, dmgMul: 1.12 } },
+  { enemyHp: [2.2, 1.7, 1.4], boss: { hpMul: 2, dmgMul: 1.25 } },
+];
+/** いまのサブの人数の行 */
+export function teamDifficulty(n = state.battle?.subs?.length ?? 0) {
+  return TEAM_DIFFICULTY[Math.max(0, Math.min(TEAM_DIFFICULTY.length - 1, n | 0))];
+}
+/** 2 人のときのボス (= SPEC-170。 名前は残す) */
+export const TEAM_BOSS = TEAM_DIFFICULTY[2].boss;
 export function teamBossMul() {
-  return state.battle?.subs?.length ? TEAM_BOSS : null;
+  return teamDifficulty().boss;
+}
+/** SPEC-171: 雑魚の HP の倍率 (= サブの人数とステージ) */
+export function teamEnemyHpMul(stageIdx = state.currentStageIdx ?? 0) {
+  const t = teamDifficulty().enemyHp;
+  return t[Math.max(0, Math.min(t.length - 1, stageIdx | 0))];
 }
 
 // ---- 純関数 ----

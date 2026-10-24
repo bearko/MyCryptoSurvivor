@@ -246,20 +246,40 @@ test("SPEC-169: 動きはサブそれぞれの作戦で決まり、 ボタンは
   assert.match(read("../index.html"), /id="tsTacticRow"/);
 });
 
-test("SPEC-170: チームのときだけボスの HP 2 倍・攻撃 1.25 倍", async () => {
+test("SPEC-170: サブ 2 人のときのボスは HP 2 倍・攻撃 1.25 倍", async () => {
   const { TEAM_BOSS, teamBossMul } = await import("../js/battle/team-battle.js");
   const { state } = await import("../js/state.js");
   assert.deepEqual(TEAM_BOSS, { hpMul: 2, dmgMul: 1.25 });
   state.battle = { ...(state.battle ?? {}), subs: [] };
   assert.equal(teamBossMul(), null, "ソロは変えない");
-  state.battle.subs = [{ heroId: 1 }];
+  state.battle.subs = [{ heroId: 1 }, { heroId: 2 }];
   assert.equal(teamBossMul(), TEAM_BOSS);
   const en = read("../js/battle/enemies.js");
   assert.match(en, /const tb {5}= isBoss \? teamBossMul\(\) : null;/);
-  assert.match(en, /\* \(tb\?\.hpMul \?\? 1\)\)\);/);
+  assert.match(en, /\(isBoss \? \(tb\?\.hpMul \?\? 1\) :/);
 });
 
 test("SPEC-169 追記: サブのボタンは縦に並び、 開いたサブのすぐ下に 4 つ", () => {
   assert.match(read("../js/battle/team-battle.js"), /if \(_menuSub === i && menu\) row\.appendChild\(menu\);/);
   assert.match(read("../css/team.css"), /\.ts-tactic-row \{ display: flex; flex-direction: column;/);
+});
+
+test("SPEC-171: サブの人数ぶん難しくなる (= 雑魚の HP は序盤ほど・ボスは 1 人と 2 人で段階)", async () => {
+  const { TEAM_DIFFICULTY, teamDifficulty, teamEnemyHpMul, teamBossMul } = await import("../js/battle/team-battle.js");
+  const { state } = await import("../js/state.js");
+  assert.equal(TEAM_DIFFICULTY.length, 3);
+  assert.deepEqual(TEAM_DIFFICULTY[0], { enemyHp: [1, 1, 1], boss: null }, "ソロは変えない");
+  for (const n of [1, 2]) {
+    const t = TEAM_DIFFICULTY[n], prev = TEAM_DIFFICULTY[n - 1];
+    for (let i = 0; i < 3; i++) assert.ok(t.enemyHp[i] > prev.enemyHp[i], "人数が増えるほど強い");
+    assert.ok(t.enemyHp[0] >= t.enemyHp[1] && t.enemyHp[1] >= t.enemyHp[2], "序盤ほど効く");
+    assert.ok(t.boss.hpMul > (prev.boss?.hpMul ?? 1) && t.boss.dmgMul > (prev.boss?.dmgMul ?? 1));
+  }
+  state.battle = { ...(state.battle ?? {}), subs: [{ heroId: 1 }] };
+  state.currentStageIdx = 0;
+  assert.equal(teamDifficulty(), TEAM_DIFFICULTY[1]);
+  assert.equal(teamEnemyHpMul(), TEAM_DIFFICULTY[1].enemyHp[0]);
+  assert.equal(teamEnemyHpMul(2), TEAM_DIFFICULTY[1].enemyHp[2]);
+  assert.equal(teamBossMul(), TEAM_DIFFICULTY[1].boss);
+  assert.match(read("../js/battle/enemies.js"), /\(isBoss \? \(tb\?\.hpMul \?\? 1\) : teamEnemyHpMul\(\)\)/);
 });
