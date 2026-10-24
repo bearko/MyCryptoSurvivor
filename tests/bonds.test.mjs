@@ -4,7 +4,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, existsSync } from "node:fs";
 import { bondUnlocked, bondedGivers } from "../js/bonds.js";
-import { pickMission, BONDED_GIVER_WEIGHT, MISSIONS } from "../js/battle/missions.js";
+import { pickMission, MISSIONS } from "../js/battle/missions.js";
 import { achievementIdsForStory } from "../js/platform.js";
 import { storyAllCleared, allStoryIds } from "../js/story.js";
 
@@ -19,18 +19,18 @@ test("絆で開くもの: 信長の絆で雷鼓 30%。 NORMAL をすでに遊べ
   assert.match(read("../js/perks.js"), /bondUnlocked\("passive:thunder30"\) \? 0\.3 : 0/);
 });
 
-test("ミッションの出し手: 絆のある人が 3 倍出やすい (= 無い人を外しはしない)", () => {
+test("SPEC-175: ミッションの出し手は全員が同じ割合 (= ストーリーの絆に関わらず。 プレイ中のヒーローと同じ人・直前の人は出さない)", () => {
   assert.deepEqual([...bondedGivers(P(["lubu", "alexander"]))].sort(), ["alexander", "lubu"]);
-  assert.equal(BONDED_GIVER_WEIGHT, 3);
-  const bonded = new Set(["lubu"]);
-  const n = 20000; let hit = 0;
-  for (let i = 0; i < n; i++) if (pickMission({ rnd: Math.random, bonded }).id === "lubu") hit++;
-  const expect = BONDED_GIVER_WEIGHT / (MISSIONS.length - 1 + BONDED_GIVER_WEIGHT);
-  assert.ok(Math.abs(hit / n - expect) < 0.02, `呂布 ${(hit / n).toFixed(3)} ≒ ${expect.toFixed(3)}`);
-  // 絆が無ければ均等。 rnd を固定すれば決まる
+  const n = 22000, hit = new Map();
+  for (let i = 0; i < n; i++) { const id = pickMission({ rnd: Math.random }).id; hit.set(id, (hit.get(id) ?? 0) + 1); }
+  assert.equal(hit.size, MISSIONS.length, "全員が来る");
+  for (const [id, c] of hit) assert.ok(Math.abs(c / n - 1 / MISSIONS.length) < 0.015, `${id} ${(c / n).toFixed(3)}`);
   assert.equal(pickMission({ rnd: () => 0 }).id, MISSIONS[0].id);
   assert.equal(pickMission({ rnd: () => 0.999 }).id, MISSIONS[MISSIONS.length - 1].id);
-  assert.match(read("../js/battle/missions.js"), /bonded: bondedGivers\(\)/);
+  assert.notEqual(pickMission({ rnd: () => 0, prevId: MISSIONS[0].id }).id, MISSIONS[0].id, "直前の人は出さない");
+  for (let i = 0; i < 200; i++) assert.notEqual(pickMission({ heroId: 2003 }).id, "ripper", "プレイ中のヒーローの影は出さない");
+  const src = read("../js/battle/missions.js");
+  assert.ok(!/bondedGivers|BONDED_GIVER_WEIGHT/.test(src), "絆で重みを付けない");
 });
 
 test("survivor.story: 25 ステージを全部クリアしたときだけ (= 5-5 のクリアで送る)", () => {
