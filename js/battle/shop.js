@@ -15,7 +15,7 @@ import {
   img, SFX, SHOP_PER_STAGE, SHOP_OFFERS, SHOP_BANS, SHOP_FREE_REROLLS, SHOP_HEADSTART_CE,
 } from "../constants.js";
 import { getExt, extTierImg, getSeriesName } from "../extensions.js";
-import { samplePicks, offerFor, grantPick, buildPickCard, renderOwnedStrip } from "./levelup.js";
+import { samplePicks, freshCount, offerFor, grantPick, buildPickCard, renderOwnedStrip } from "./levelup.js";
 import { perk, buffPriceCut, shopAtStart } from "../perks.js";
 import { t, tpl, getLang, onLangChange } from "../i18n.js";
 import { playSe } from "../audio.js";
@@ -227,11 +227,9 @@ export function openShop({ opening = false } = {}) {
 
 /** 品を足りるまで引く (= 取り置きと売り切れはそのまま) */
 function _fillOffers(last = new Set(_offers.map((o) => String(o.extId)))) {
-  const n = SHOP_OFFERS + (_merchant.quirk === "extraOffer" ? 1 : 0);
-  const keep = _offers.filter((o) => o.sold || state.shop.locked.includes(o.extId));
-  const exclude = new Set(keep.map((o) => String(o.extId)));
-  // 作者 2026-10-22: この店でもう並べた系列は出さない (= リロールで同じ系列を 4 回買うのを防ぐ)。 取り置きだけは残る
-  for (const e of EXT_ROSTER) if (_seriesHere.has(seriesOf(e.extId)) && !state.shop.locked.some((x) => String(x) === String(e.extId))) exclude.add(String(e.extId));
+  const n = _slotCount();
+  const keep = _keptOffers();
+  const exclude = _refillExclude(keep);
   const bias = _merchant.quirk === "buffBias" ? "buff" : (_merchant.quirk === "newBias" ? "new" : null);
   const fresh = samplePicks(Math.max(0, n - keep.length), {
     exclude, last, banned: new Set(state.shop.bans), bias,
@@ -244,9 +242,30 @@ function _fillOffers(last = new Set(_offers.map((o) => String(o.extId)))) {
   }
 }
 
+/** 店の枠の数 (= 4。 マゼランは 5)。 作者 2026-10-24: 1 回の店で買えるのはこの枠の数まで */
+function _slotCount() { return SHOP_OFFERS + (_merchant.quirk === "extraOffer" ? 1 : 0); }
+/** 引き直しても残る札 (= 売り切れと取り置き) */
+function _keptOffers() { return _offers.filter((o) => o.sold || state.shop.locked.includes(o.extId)); }
+/** 引き直しで出さない品 (= 残る札と、 この店でもう並べた系列) */
+function _refillExclude(keep = _keptOffers()) {
+  const exclude = new Set(keep.map((o) => String(o.extId)));
+  // 作者 2026-10-22: この店でもう並べた系列は出さない (= リロールで同じ系列を 4 回買うのを防ぐ)。 取り置きだけは残る
+  for (const e of EXT_ROSTER) if (_seriesHere.has(seriesOf(e.extId)) && !state.shop.locked.some((x) => String(x) === String(e.extId))) exclude.add(String(e.extId));
+  return exclude;
+}
+
+/**
+ * リロールできるか (= 作者 2026-10-24)。 引き直せる枠 (= 売り切れでも取り置きでもない枠) が 1 つも無いか、
+ * 新しく並べられる品が残っていなければできない (= 押しても何も来ない・買えないリロールをさせない)
+ */
+export function canReroll() {
+  if (!state.shop || _storyShop()?.only) return false;
+  const keep = _keptOffers();
+  if (_slotCount() - keep.length <= 0) return false;
+  return freshCount({ exclude: _refillExclude(keep), banned: new Set(state.shop.bans) }) > 0;
+}
+
 let _giftFirst = true;   // SPEC-130: 「ギフト券支払いを優先」 (= 店を開くたびに保存から読む)
-/** 作者 2026-10-22: 1 回の店で買えるのは 4 つまで (= 強化が一気に進みすぎないように) */
-export const SHOP_MAX_BUYS = 4;
 /** 作者 2026-10-22: お断りは CE を払う (= 不要な品を外す道具。 ただで何度も押させない) */
 export const SHOP_BAN_COST = 20;
 let _seriesHere = new Set();   // 作者 2026-10-22: この店で並べた系列 (= リロールしても同じ系列は 2 度出さない)
@@ -282,7 +301,6 @@ export function buyOffer(extId) {
   if (!offer) return false;
   const price = _priceOf(o, offer);
   if (price > s.ce) return false;
-  if (_boughtHere >= SHOP_MAX_BUYS) return false;   // 作者 2026-10-22: 1 回の店で買えるのは 4 つまで
   _offers.forEach((x) => { x.banArm = false; });
   const storyFree = _storyShop()?.price === 0;   // SPEC-165: 1-2 はただ (= ギフト券も減らない)
   if (price === 0 && storyFree) { /* ただ */ }
@@ -296,6 +314,7 @@ export function buyOffer(extId) {
     import("./story-fx.js").then((m) => m.playRankup(extId, lvBefore, lvAfter, () => { closeShop(); state.battle?.story?.events?.push("rankup"); }));
   }
   // 作者 2026-10-22: 買った札は消える (= SPEC-163 の「同じ札を続けて買える」はやめた。 CE が切れるまで同じ段を登れて、 一気に強くなりすぎた)
+  // 作者 2026-10-24: 買った枠は「売り切れ」のまま、 リロールしても補充しない (= 1 回の店で買えるのは枠の数まで。 SPEC-167)
   o.sale = false;
   o.sold = true;
   o.bought = (o.bought | 0) + 1;
@@ -505,13 +524,13 @@ export function currentRerollCost() {
 export function rerollShop() {
   const s = state.shop;
   const cost = currentRerollCost();
-  if (cost > s.ce) return;
+  if (cost > s.ce || !canReroll()) return;
   if (_gamaFree > 0) _gamaFree -= 1;
   else if (s.freeRerolls > 0) s.freeRerolls -= 1;
   else { s.ce -= cost; _paidRerolls += 1; }
-  // 取り置きだけ残し、 買った枠も含めて引き直す (= 作者の依頼 2026-10-20)。 前に並んでいた品は続けて出さない
+  // 取り置きと売り切れの枠を残して引き直す (= 作者 2026-10-24。 2026-10-20 の「買った枠も含めて」はやめた)。 前に並んでいた品は続けて出さない
   const last = new Set(_offers.map((o) => String(o.extId)));
-  _offers = _offers.filter((o) => !o.sold && s.locked.includes(o.extId));
+  _offers = _keptOffers();
   _offers.forEach((o) => { o.banArm = false; });
   _fillOffers(last);
   _noteSeries();
@@ -556,7 +575,6 @@ export function renderShop() {
   modal.classList.toggle("shop-modal--story", !!sr?.only);
   modal.classList.toggle("shop-modal--story-basic", isStory() && !storyAllows("reroll"));   // SPEC-165: リロールと取り置きは 5-1 で開く
   modal.classList.toggle("shop-modal--story-noban", isStory() && !storyAllows("ban"));   // お断りは 3-2 で開く (= 作者 2026-10-22)
-  modal.classList.toggle("shop-modal--full", _boughtHere >= SHOP_MAX_BUYS);   // 4 つ買ったら残りの札は押せない
   modal.classList.toggle("shop-modal--nosig", isStory() && !storyAllows("sig"));   // 固有スキルは 5-2 で開く
   const face = document.getElementById("shopMerchantImg");
   if (face) { face.src = img(`Image/Enemies/${m.enemyId}.png`); face.alt = t(`shop.m.${m.id}.name`, m.id); }
@@ -600,8 +618,9 @@ export function renderShop() {
   const grid = document.getElementById("shopGrid");
   if (grid) {
     grid.innerHTML = "";
-    grid.style.setProperty("--cols", String(Math.max(4, _offers.length)));
-    grid.dataset.n = String(_offers.length);   // スマホで 5 枚のとき 3 列にする (= css)
+    const slots = sr?.only ? _offers.length : Math.max(_offers.length, _slotCount());
+    grid.style.setProperty("--cols", String(Math.max(4, slots)));
+    grid.dataset.n = String(slots);   // スマホで 5 枚のとき 3 列にする (= css)
     const banned = new Set(s.bans);
     _offers.forEach((o, i) => {
       const wrap = document.createElement("div");
@@ -614,13 +633,13 @@ export function renderShop() {
         const im = wrap.querySelector("img");
         const own = state.ownedExtensions.find((x) => String(x.extId) === String(o.extId));
         if (ext) im.src = extTierImg(ext, own?.level ?? 1);
-        wrap.querySelector("span").textContent = o.sold ? t("shop.sold", "お買い上げ") : t("shop.gone", "もう買えない");
+        wrap.querySelector("span").textContent = o.sold ? t("shop.sold", "売り切れ") : t("shop.gone", "もう買えない");
         grid.appendChild(wrap);
         return;
       }
       const card = buildPickCard(offer, i);
       const price = _priceOf(o, offer);
-      const short = price > s.ce || _boughtHere >= SHOP_MAX_BUYS;   // 作者 2026-10-22: 4 つ買ったら残りは押せない
+      const short = price > s.ce;
       const chip = document.createElement("span");
       chip.className = "shop-price" + (short ? " shop-price--short" : "") + (price === 0 ? " shop-price--gift" : "") + (o.sale ? " shop-price--sale" : "");
       chip.textContent = price === 0 ? (sr?.price === 0 ? t("story.shop.free", "🎁 無料") : s.welcome ? t("shop.welcomeFree", "🎁 サービス") : tpl(t("shop.free", "🎟 ギフト券 ×{n}"), { n: String(giftCost(offer) ?? 1) })) : `◆ ${price}`;
@@ -671,6 +690,17 @@ export function renderShop() {
       }
       grid.appendChild(wrap);
     });
+    // 空いた枠 (= お断りした・並べる品が尽きた)。 枠の数を見えるままにする
+    if (!sr?.only) {
+      const more = canReroll();
+      for (let i = _offers.length; i < _slotCount(); i++) {
+        const wrap = document.createElement("div");
+        wrap.className = "shop-offer shop-offer--sold shop-offer--empty";
+        wrap.innerHTML = `<div class="shop-offer__soldcard"><span></span></div>`;
+        wrap.querySelector("span").textContent = more ? t("shop.empty", "空き（リロールで入荷）") : t("shop.outOfStock", "品切れ");
+        grid.appendChild(wrap);
+      }
+    }
   }
 
   // お断りした品
@@ -699,7 +729,7 @@ export function renderShop() {
   if (rr) {
     const cost = currentRerollCost();
     rr.textContent = cost === 0 ? t("shop.rerollFree", "リロール（無料）") : tpl(t("shop.reroll", "リロール ◆ {n}"), { n: String(cost) });
-    rr.disabled = cost > s.ce;
+    rr.disabled = cost > s.ce || !canReroll();   // 作者 2026-10-24: 引き直せる枠も品も無ければ押せない
   }
   const leave = document.getElementById("shopLeave");
   if (leave) {
@@ -707,7 +737,7 @@ export function renderShop() {
     const done = { reroll: _rerolledHere, ban: _bannedHere, sig: _sigHere, buy: _boughtHere };
     // 満たす手段が無くなった関所は開く (= 作者 2026-10-22: 3-2 で全部買って ✕ が無くなり、 閉じられずに詰んだ人が出た)
     const bannable = _offers.some((o) => !o.sold && offerFor(o.extId, new Set(s.bans)) && canBan(offerFor(o.extId, new Set(s.bans)), state.battle?.starterExtId, s.bansLeft) && s.ce >= _banCost());
-    const possible = { reroll: currentRerollCost() <= s.ce, ban: bannable, sig: true, buy: true };
+    const possible = { reroll: currentRerollCost() <= s.ce && canReroll(), ban: bannable, sig: true, buy: true };
     const left = (sr?.must ?? []).filter((k) => !done[k] && possible[k]);   // SPEC-165: 5-1 リロール / 5-2 固有スキル
     const gate = (!!sr?.mustBuy && _boughtHere === 0) || left.length > 0;
     leave.disabled = gate;
@@ -733,4 +763,4 @@ function _wireOnce() {
 }
 
 /** テスト用 */
-export const _test = { get offers() { return _offers; }, set merchant(m) { _merchant = m; } };
+export const _test = { get offers() { return _offers; }, set offers(v) { _offers = v; }, set merchant(m) { _merchant = m; }, set series(v) { _seriesHere = new Set(v); } };

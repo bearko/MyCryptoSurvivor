@@ -164,12 +164,13 @@ test("来店の回復は四捨五入した整数 (= HP が自然回復で小数�
   assert.equal(shopHealAmount(146.6, 147), 0);            // 0.4 → 0
 });
 
-test("取り置き・お断りは札の角のアイコン。 お断りは 2 回で確定、 リロールは買った枠も引き直す", () => {
+test("取り置き・お断りは札の角のアイコン。 お断りは 2 回で確定、 リロールは売り切れの枠を残す (= SPEC-167)", () => {
   const shop = readFileSync(new URL("../js/battle/shop.js", import.meta.url), "utf8");
   assert.match(shop, /shop-corner shop-corner--lock/);
   assert.match(shop, /shop-corner shop-corner--ban/);
   assert.match(shop, /if \(o\.banArm\) \{ banOffer\(extId\); return; \}/);
-  assert.match(shop, /_offers = _offers\.filter\(\(o\) => !o\.sold && s\.locked\.includes\(o\.extId\)\);/);
+  assert.match(shop, /_offers = _keptOffers\(\);/);
+  assert.match(shop, /function _keptOffers\(\) \{ return _offers\.filter\(\(o\) => o\.sold \|\| state\.shop\.locked\.includes\(o\.extId\)\); \}/);
   const ui = JSON.parse(readFileSync(new URL("../data/i18n/ui.json", import.meta.url), "utf8"));
   assert.equal(ui["shop.banArm"].ja, "もう一度タップで今後表示しない");
 });
@@ -195,4 +196,61 @@ test("SPEC-130: 「ギフト券支払いを優先」は既定オンで、 切り
   const src = readFileSync(new URL("../js/battle/shop.js", import.meta.url), "utf8");
   assert.match(src, /if \(_giftFirst && giftable\(offer, state\.shop\.gifts\)\) return 0;/);
   assert.ok(readFileSync(new URL("../index.html", import.meta.url), "utf8").includes('id="shopGiftFirst"'));
+});
+
+// ---- SPEC-167: 店の枠 (= 買った枠は売り切れのまま・引き直せる枠も品も無ければリロールできない) ----
+test("SPEC-167: 枠の数まで買える・売り切れは引き直さない・在庫が尽きたらリロールできない", async () => {
+  const { EXT_ROSTER, EXT_DEFS } = await import("../js/extensions.js");
+  const { state } = await import("../js/state.js");
+  const { freshCount } = await import("../js/battle/levelup.js");
+  const shop = await import("../js/battle/shop.js");
+  const { MERCHANTS } = await import("../js/battle/shop-logic.js");
+  const EXT = JSON.parse(readFileSync(new URL("../data/extensions.json", import.meta.url), "utf8")).extensions;
+  EXT_ROSTER.length = 0;
+  for (const e of EXT) { EXT_ROSTER.push(e); EXT_DEFS[String(e.extId)] = e; }
+  state.ownedExtensions = [];
+  state.battle = { ...(state.battle ?? {}), starterExtId: 1 };
+  state.shop = { ce: 999, bans: [], locked: [], freeRerolls: 0 };
+  const all = new Set(EXT_ROSTER.map((e) => String(e.extId)));
+  assert.equal(freshCount({ exclude: all }), 0, "全部除けば 0");
+  assert.equal(freshCount({ exclude: new Set() }), all.size);
+
+  const magellan = MERCHANTS.find((m) => m.quirk === "extraOffer");
+  const marco = MERCHANTS.find((m) => m.quirk === "sale");
+  const ids = EXT_ROSTER.slice(0, 5).map((e) => e.extId);
+  // マゼランの 5 枠を全部買った → 引き直せる枠が無い
+  shop._test.merchant = magellan;
+  shop._test.series = [];
+  shop._test.offers = ids.map((id) => ({ extId: id, sold: true }));
+  assert.equal(shop.canReroll(), false, "5 枠すべて売り切れ");
+  // 1 枠でも残っていれば引き直せる (= ほかに並べられる品がある)
+  shop._test.offers = ids.map((id, i) => ({ extId: id, sold: i < 4 }));
+  assert.equal(shop.canReroll(), true);
+  // 並べる品が尽きた (= この店で全系列を並べた) → できない
+  shop._test.series = EXT_ROSTER.map((e) => e.series ?? e.seriesName?.ja ?? String(e.extId));
+  assert.equal(shop.canReroll(), false, "在庫切れ");
+  // 4 枠の店で 4 つ売り切れ → できない (= 4 つまで)、 マゼランは 5 枠なのでもう 1 つ買える
+  shop._test.series = [];
+  shop._test.merchant = marco;
+  shop._test.offers = ids.slice(0, 4).map((id) => ({ extId: id, sold: true }));
+  assert.equal(shop.canReroll(), false);
+  shop._test.merchant = magellan;
+  assert.equal(shop.canReroll(), true, "マゼランは 5 枠");
+  // 取り置きも引き直さない
+  shop._test.merchant = marco;
+  shop._test.offers = ids.slice(0, 4).map((id, i) => ({ extId: id, sold: i < 3 }));
+  state.shop.locked = [ids[3]];
+  assert.equal(shop.canReroll(), false, "売り切れ 3 + 取り置き 1");
+  state.shop.locked = [];
+  assert.equal(shop.canReroll(), true);
+});
+
+test("SPEC-167: 買える数の上限は枠の数 (= SHOP_MAX_BUYS は無い)。 リロールのボタンは引き直せないとき押せない", () => {
+  const src = readFileSync(new URL("../js/battle/shop.js", import.meta.url), "utf8");
+  assert.doesNotMatch(src, /SHOP_MAX_BUYS/);
+  assert.match(src, /rr\.disabled = cost > s\.ce \|\| !canReroll\(\);/);
+  assert.match(src, /if \(cost > s\.ce \|\| !canReroll\(\)\) return;/);
+  assert.match(src, /reroll: currentRerollCost\(\) <= s\.ce && canReroll\(\)/, "5-1 のリロールの関所は、 できなければ開く");
+  const ui = JSON.parse(readFileSync(new URL("../data/i18n/ui.json", import.meta.url), "utf8"));
+  assert.equal(ui["shop.sold"].ja, "売り切れ");
 });

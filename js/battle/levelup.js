@@ -185,24 +185,7 @@ function _samplePicks(n, exclude = new Set(), last = new Set(), withLL = true, b
   const ll = withLL ? llOption(state.ownedExtensions, state.battle?.starterExtId, getExt, EXT_MAX_LEVEL, llUnlocked()) : null;
   if (ll) return n <= 1 ? [ll] : [ll, ..._samplePicks(n - 1, new Set([...exclude, String(ll.extId)]), last, false, banned, bias)];
   const ownedById = new Map(state.ownedExtensions.map(o => [String(o.extId), o]));
-
-  // SPEC-023: stock 上限到達後は新規系列を候補から除外 (= 既所持の lv up のみ)
-  const ownedWeaponCount = state.ownedExtensions
-    .filter(o => getCategory(getExt(o.extId)) === "weapon").length;
-  const ownedBuffCount   = state.ownedExtensions
-    .filter(o => getCategory(getExt(o.extId)) === "buff").length;
-  const weaponStockFull = ownedWeaponCount >= stockLimit("weapon");   // SPEC-090c: 大きな鞄で +1
-  const buffStockFull   = ownedBuffCount   >= stockLimit("buff");
-
-  let eligible = EXT_ROSTER.filter(e => {
-    if (banned.has(String(e.extId))) return false;   // SPEC-109: お断りした系列
-    const o = ownedById.get(String(e.extId));
-    if (o) return o.level < EXT_MAX_LEVEL;   // 既所持は EXT_MAX_LEVEL 未満なら eligible
-    // 未所持: stock 上限に達していなければ追加可能
-    if (e.category === "weapon") return !weaponStockFull;
-    if (e.category === "buff")   return !buffStockFull;
-    return true;
-  });
+  let eligible = _eligibleExts(banned, ownedById);
 
   // SPEC-109: 店主の癖 (= 強化が出やすい・まだ持っていない系列が出やすい)。 候補を重ねて出やすくする
   if (bias === "buff") eligible = eligible.concat(eligible.filter((e) => e.category === "buff"));
@@ -220,6 +203,39 @@ function _samplePicks(n, exclude = new Set(), last = new Set(), withLL = true, b
     const o   = ownedById.get(String(e.extId));
     return { extId: e.extId, ext: e, ..._levels(e.extId, o) };
   });
+}
+
+/** いま並べられる系列 (= お断り・段が上がりきった・枠がいっぱい を除く) */
+function _eligibleExts(banned, ownedById = new Map(state.ownedExtensions.map(o => [String(o.extId), o]))) {
+  // SPEC-023: stock 上限到達後は新規系列を候補から除外 (= 既所持の lv up のみ)
+  const ownedWeaponCount = state.ownedExtensions
+    .filter(o => getCategory(getExt(o.extId)) === "weapon").length;
+  const ownedBuffCount   = state.ownedExtensions
+    .filter(o => getCategory(getExt(o.extId)) === "buff").length;
+  const weaponStockFull = ownedWeaponCount >= stockLimit("weapon");   // SPEC-090c: 大きな鞄で +1
+  const buffStockFull   = ownedBuffCount   >= stockLimit("buff");
+
+  return EXT_ROSTER.filter(e => {
+    if (banned.has(String(e.extId))) return false;   // SPEC-109: お断りした系列
+    const o = ownedById.get(String(e.extId));
+    if (o) return o.level < EXT_MAX_LEVEL;   // 既所持は EXT_MAX_LEVEL 未満なら eligible
+    // 未所持: stock 上限に達していなければ追加可能
+    if (e.category === "weapon") return !weaponStockFull;
+    if (e.category === "buff")   return !buffStockFull;
+    return true;
+  });
+}
+
+/**
+ * 作者 2026-10-24: 引き直したときに新しく並べられる品の数 (= exclude を除く。 0 ならリロールしても何も来ない)。
+ * 乱数も「このレベルアップで出したもの」の記録も使わない
+ */
+export function freshCount({ exclude = new Set(), banned = new Set() } = {}) {
+  const ban = new Set([...banned].map(String));
+  const ids = new Set(_eligibleExts(ban).map((e) => String(e.extId)));
+  const ll = llOption(state.ownedExtensions, state.battle?.starterExtId, getExt, EXT_MAX_LEVEL, llUnlocked());
+  if (ll) ids.add(String(ll.extId));
+  return [...ids].filter((id) => !exclude.has(id)).length;
 }
 
 /**

@@ -4,7 +4,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { STORY_MAP, storyAllows } from "../js/story.js";
-import { SHOP_MAX_BUYS, SHOP_BAN_COST } from "../js/battle/shop.js";
+import { SHOP_BAN_COST } from "../js/battle/shop.js";
 import { TREE_NUDGE_GUM } from "../js/battle/stage-transition.js";
 
 const read = (p) => readFileSync(new URL(p, import.meta.url), "utf8");
@@ -32,12 +32,10 @@ test("2-5 の呂布は少し痛い。 3-1 の木は根があっても開く。 G
   assert.match(read("../js/battle/stage-transition.js"), /key: "story\.treeNudge"/);
 });
 
-test("店: 買った札は消える・1 回の店で 4 つまで・同じ系列は 1 回・お断りは CE", () => {
+test("店: 買った札は売り切れ・同じ系列は 1 回・お断りは CE (= 何個まで買えるかは SPEC-167 の枠の数)", () => {
   const sh = read("../js/battle/shop.js");
-  assert.equal(SHOP_MAX_BUYS, 4);
   assert.equal(SHOP_BAN_COST, 20);
   assert.match(sh, /o\.sold = true;/);
-  assert.match(sh, /if \(_boughtHere >= SHOP_MAX_BUYS\) return false;/);
   assert.match(sh, /_seriesHere\.has\(seriesOf\(e\.extId\)\)/);
   assert.match(sh, /s\.ce -= cost;/);
 });
