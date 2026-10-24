@@ -165,7 +165,7 @@
 .shop-modal--story #shopWalletBans, .shop-modal--story #shopSig, .shop-modal--story .shop-corner, .shop-modal--story #shopSub, .shop-modal--story #shopIntro { display: none !important; }
 .shop-modal--story-basic #shopReroll, .shop-modal--story-basic .shop-corner--lock, .shop-modal--story-basic #shopSub, .shop-modal--nosig #shopSig,
 .shop-modal--story-noban #shopBans, .shop-modal--story-noban #shopBansLeft, .shop-modal--story-noban #shopWalletBans, .shop-modal--story-noban .shop-corner--ban { display: none !important; }
-.shop-modal--full .shop-card { filter: grayscale(0.6); }   /* 4 つ買ったら残りは押せない */   /* 取り置き・お断り・「あと n 回でボス」は 5-1、 固有スキルは 5-2 まで隠す */
+/* 取り置き・お断り・「あと n 回でボス」は 5-1、 固有スキルは 5-2 まで隠す */
 .shop-modal--story .shop-card { box-shadow: 0 0 18px rgba(255, 225, 122, 0.75); }
 .shop-modal--story #shopLeave[disabled] { opacity: 0.4; cursor: not-allowed; }
 

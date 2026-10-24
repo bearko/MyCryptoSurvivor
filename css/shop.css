@@ -428,3 +428,6 @@
   .shop-giftpref { font-size: 0.58rem; gap: 3px; }
   .shop-giftpref input { width: 12px; height: 12px; }
 }
+
+/* 空いた枠 (= お断りした・並べる品が尽きた。 作者 2026-10-24: 枠の数を見えるままにする) */
+.shop-offer--empty .shop-offer__soldcard { opacity: 0.7; font-weight: 600; }
