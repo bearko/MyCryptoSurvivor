@@ -401,6 +401,18 @@ export function allStoryIds() {
   for (const land of LANDS) for (let i = 1; i <= (STORY_PLAN[land.w] ?? 0); i++) out.push(`${land.w}-${i}`);
   return out;
 }
+/**
+ * SPEC-174: チュートリアル (= ストーリー) の段 (= 共通基盤の tutorialStep。 管理画面の「チュートリアル」タブで離脱を見る)。
+ * 0 = 始めた (= どれかのステージを初めて始めた)、 1 = プロローグ (1-0) をクリア、 2〜26 = 1-1〜5-5 をクリア (= 最後は id "done")
+ * @returns {{ step: number, id: string } | null}
+ */
+export function tutorialStepOf(storyId) {
+  if (storyId === "start") return { step: 0, id: "start" };
+  if (storyId === PROLOGUE.id) return { step: 1, id: "s1-0" };
+  const ids = allStoryIds(), i = ids.indexOf(String(storyId));
+  if (i < 0) return null;
+  return { step: i + 2, id: i === ids.length - 1 ? "done" : `s${ids[i]}` };
+}
 export function landOf(id) {
   const w = Number(String(id).split("-")[0]);
   return LANDS.find((l) => l.w === w) ?? LANDS[0];

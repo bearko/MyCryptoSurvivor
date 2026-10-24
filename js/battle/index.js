@@ -48,7 +48,7 @@ import { tickBossMoves } from "./boss-moves.js";
 import { startCoachIfFirst, tickCoach, hideCoach } from "./coach.js";
 import { resetFx, tickFx } from "./fx.js";
 import { startBgm } from "../audio.js";
-import { startRtaRun, rtaRegulationFor, placePlatformToasts, setChatVisible, reportStageStart } from "../platform.js";
+import { startRtaRun, rtaRegulationFor, placePlatformToasts, setChatVisible, reportStageStart, reportTutorialStep } from "../platform.js";
 import { BGM_BATTLE, STAGE_TABLE, WATCH_SPEED, EXT_MAX_LEVEL, REGULATION_NORMAL } from "../constants.js";
 import { t, tpl } from "../i18n.js";
 import { heroImg } from "../heroes.js";
@@ -60,7 +60,7 @@ import { clearNaviTipQueue } from "../navi-tips.js";
 import { isEasy, easyStage, stageCount } from "../easy.js";   // SPEC-165 (= チュートリアル = ストーリー)
 import { newRunStats, tickRunStats } from "./run-stats.js";   // SPEC-148
 import { clearBossChest } from "./boss-chest.js";   // SPEC-153
-import { isStory, storyStage, landOf, loadStory, mergeStartExt } from "../story.js";   // SPEC-165
+import { isStory, storyStage, landOf, loadStory, mergeStartExt, tutorialStepOf } from "../story.js";   // SPEC-165
 import { resetStoryBattle, tickStoryBattle } from "./story-battle.js";   // SPEC-165
 
 let _canvas = null;
@@ -250,6 +250,7 @@ export function startBattle(hero) {
     if (headStart > 0) { state.level += headStart; triggerLevelUpPick(headStart); }
   }
   resetMissionsForStage(!!state.shop);   // SPEC-112: ミッションはショップで遊ぶときだけ
+  if (isStory()) reportTutorialStep(tutorialStepOf("start"));   // SPEC-174: チュートリアルを始めた (= どれかのステージを初めて始めた。 2 回目からはサーバーが無視する)
 
   resizeCanvas();
   centerCameraOnPlayer();   // SPEC-155: 最初のコマから自分を真ん中に (= 止めたまま降りこむ復活で、 ステージの外が映っていた)
