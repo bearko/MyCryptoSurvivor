@@ -2,7 +2,7 @@
 id: SPEC-174
 title: Tutorial Steps — Send Story-Mode Progress (Start, Prologue, Each of the 25 Stages, Done) to the Platform's tutorialStep So the Admin KPI Screen Shows Where New Players Drop Off
 status: Approved
-pr: TBD
+pr: 251
 phase: v2.0 Analytics
 kind: Added
 ---
