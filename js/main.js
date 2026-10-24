@@ -47,7 +47,7 @@ import { loadEnemies } from "./enemies.js";
 import { tickStatsDecay, renderHud } from "./survival.js";
 import { startBattle } from "./battle/index.js";
 import { playSe, unlockAudio, suspendBgm, resumeBgm } from "./audio.js";
-import { SFX } from "./constants.js";
+import { SFX, REGULATION_NORMAL } from "./constants.js";
 import { APP_VERSION } from "./constants.js";
 import { initPlatform, setChatVisible, reportMetaAchievements } from "./platform.js";
 import { installChatDock } from "./chat-dock.js";   // SPEC-156
@@ -413,7 +413,7 @@ function renderHeroSelectModal() {
 
 /** SPEC-166: 編成を出すか (= テスト用のホスト・3 人以上・ストーリーと RTA ではない) */
 function _teamOn(unlocked = getUnlockedHeroes()) {
-  return teamAvailable({ testHost: isTestHost(), unlockedCount: subPoolIds(unlocked).size, story: isStory(), rta: !!state.rtaMode });
+  return teamAvailable({ unlockedCount: subPoolIds(unlocked).size, story: isStory(), rta: !!state.rtaMode, normal: state.regulation === REGULATION_NORMAL });   // SPEC-173: 本番でも (= NORMAL だけ)
 }
 
 /** SPEC-166: チームの武器 (= メインの初期武器、 サブはアトリビュートから。 同じ系統は重ねない)。 [main, sub1, sub2] の extId */

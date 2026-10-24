@@ -4,8 +4,8 @@
 //
 // メイン 1 人 (= 操作する人。 いまと同じ) ＋ サブ 2 人 (= ついて回って、 自分の初期武器を自分の位置から撃つ)。
 // サブの初期武器は武器の枠 (= 5) に入る。 HP・被弾・固有スキル・LL はメインだけ。
-// テスト用のホスト (= survivor-test.bearko.games とローカル) でだけ開く (= 作者 2026-10-23。 本番では出ない)。
-// ストーリーと RTA はソロのまま。 ヒーローを 3 人解放したら開く。
+// SPEC-173: 本番でも開く (= 作者 2026-10-24。 それまではテスト用のホストだけ)。 NORMAL だけ (= ストーリー・RTA・ABSOLUTE はソロ)。
+// ヒーローを 3 人解放したら開く。
 // 上半分は純関数 (= テストする)。
 
 export const TEST_HOSTS = ["survivor-test.bearko.games", "localhost", "127.0.0.1"];
@@ -45,9 +45,9 @@ export function isTestFlag(loc = (typeof location !== "undefined" ? location : n
 /** 共通基盤へ送らない (= テスト用のサイトか ?test=1) */
 export function isTestMode() { return isTestSite() || isTestFlag(); }
 
-/** 編成の画面を出すか */
-export function teamAvailable({ testHost, unlockedCount, story = false, rta = false }) {
-  return !!testHost && !story && !rta && (unlockedCount | 0) >= TEAM_MIN_UNLOCKED;
+/** 編成の画面を出すか (= SPEC-173: 本番でも。 NORMAL だけ) */
+export function teamAvailable({ unlockedCount, story = false, rta = false, normal = true }) {
+  return !!normal && !story && !rta && (unlockedCount | 0) >= TEAM_MIN_UNLOCKED;
 }
 
 /** 保存した編成を正す (= 解放していない人・メインと同じ人・重なり・3 人目以降を落とす) */

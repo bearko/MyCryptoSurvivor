@@ -12,11 +12,11 @@ test("テスト用のホストでだけ編成が出る (= 本番の survivor.bea
   assert.equal(isTestHost("survivor.bearko.games"), false);
   assert.equal(isTestSite("survivor-test.bearko.games"), true);
   assert.equal(isTestSite("localhost"), false, "ローカルでは全員解放・送信止めはしない (= 自動プレイを変えない)");
-  assert.equal(teamAvailable({ testHost: true, unlockedCount: 3 }), true);
-  assert.equal(teamAvailable({ testHost: true, unlockedCount: 2 }), false, "3 人そろうまでソロ");
-  assert.equal(teamAvailable({ testHost: false, unlockedCount: 10 }), false);
-  assert.equal(teamAvailable({ testHost: true, unlockedCount: 10, story: true }), false, "ストーリーはソロ");
-  assert.equal(teamAvailable({ testHost: true, unlockedCount: 10, rta: true }), false, "RTA はソロ");
+  assert.equal(teamAvailable({ unlockedCount: 3 }), true, "SPEC-173: 本番でも");
+  assert.equal(teamAvailable({ unlockedCount: 2 }), false, "3 人そろうまでソロ");
+  assert.equal(teamAvailable({ unlockedCount: 10, normal: false }), false, "ABSOLUTE はソロ");
+  assert.equal(teamAvailable({ unlockedCount: 10, story: true }), false, "ストーリーはソロ");
+  assert.equal(teamAvailable({ unlockedCount: 10, rta: true }), false, "RTA はソロ");
 });
 
 test("サブは 2 人まで・メインと重ならない・解放していない人は落とす", () => {
@@ -47,7 +47,7 @@ test("配線: 武器は持ち主の位置から・サブの武器はメインの
   assert.match(arch, /weaponOrigin\(o\.weaponKey \?\? o\.weaponExtId\)/, "ブレードはサブの周り");
   assert.match(arch, /weaponOrigin\(b\.weaponKey \?\? b\.weaponExtId\)/, "レーザーはサブから");
   assert.ok(!/ownedExtensions\.push/.test(read("../js/battle/team-battle.js")), "サブの武器はメインの枠に入れない");
-  assert.match(read("../js/battle/index.js"), /setupTeamBattle\(isTestHost\(\) && !isStory\(\) && !state\.rtaMode/);
+  assert.match(read("../js/battle/index.js"), /setupTeamBattle\(!isStory\(\) && !state\.rtaMode && state\.regulation === REGULATION_NORMAL/, "SPEC-173: 本番でも NORMAL だけ");
   assert.match(read("../js/platform.js"), /!isTestSite\(\) \? window\.BearkoGames/);
   assert.match(read("../js/hero-unlock.js"), /if \(isTestSite\(\)\) return new Set/);
 });
@@ -282,4 +282,9 @@ test("SPEC-171: サブの人数ぶん難しくなる (= 雑魚の HP は序盤�
   assert.equal(teamEnemyHpMul(2), TEAM_DIFFICULTY[1].enemyHp[2]);
   assert.equal(teamBossMul(), TEAM_DIFFICULTY[1].boss);
   assert.match(read("../js/battle/enemies.js"), /\(isBoss \? \(tb\?\.hpMul \?\? 1\) : teamEnemyHpMul\(\)\)/);
+});
+
+test("SPEC-173: チームのゲージは「JIN ゲージ」 (= TEAM と書かない)", () => {
+  assert.match(read("../index.html"), /id="tsLabel">JIN</);
+  assert.ok(!/: "TEAM"/.test(read("../js/battle/team-battle.js")));
 });

@@ -1,0 +1,1 @@
+- **ボイス・JIN ゲージ・チームを本番へ**（`tools/voice/build.mjs` + `assets/voice/mine/` + `js/voice-lines.js` + `js/navi.js` + `data/i18n/ui.json` + `js/team.js` + `js/main.js` + `js/battle/index.js` + `js/battle/team-battle.js` + `index.html`）: ストーリーの残り 6 本とチームの説明 11 本のボイス（録音に合わせて 4 本の文を直した）。 チームのゲージの見出しを「JIN」に。 チーム編成を本番でも（NORMAL だけ）

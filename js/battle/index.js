@@ -12,7 +12,6 @@ import { isShopMode, resetShopForStage, tickShop, hideShopBar } from "./shop.js"
 import { resetMissionsForStage, tickMissions } from "./missions.js";   // SPEC-112
 import { state } from "../state.js";
 import { setupTeamBattle, tickTeam } from "./team-battle.js";   // SPEC-166: チーム編成
-import { isTestHost } from "../team.js";   // SPEC-166
 import {
   FACTION_COLOR, FACTION_COLOR_DEFAULT,
   PLAYER_RADIUS, PLAYER_SPEED_PX_S, CHAR_SCALE,
@@ -50,7 +49,7 @@ import { startCoachIfFirst, tickCoach, hideCoach } from "./coach.js";
 import { resetFx, tickFx } from "./fx.js";
 import { startBgm } from "../audio.js";
 import { startRtaRun, rtaRegulationFor, placePlatformToasts, setChatVisible, reportStageStart } from "../platform.js";
-import { BGM_BATTLE, STAGE_TABLE, WATCH_SPEED, EXT_MAX_LEVEL } from "../constants.js";
+import { BGM_BATTLE, STAGE_TABLE, WATCH_SPEED, EXT_MAX_LEVEL, REGULATION_NORMAL } from "../constants.js";
 import { t, tpl } from "../i18n.js";
 import { heroImg } from "../heroes.js";
 import { heroMaxHp, heroSpeed, heroDmgMul, heroCdMul } from "../hero-stats.js";   // SPEC-097
@@ -222,8 +221,8 @@ export function startBattle(hero) {
     if (!state.ownedExtensions.some((o) => String(o.extId) === String(starterId))) {
       state.ownedExtensions.push({ extId: starterId, level: Math.min(EXT_MAX_LEVEL, 1 + startLevelBonus(starterId)) });   // SPEC-139: 仕込み
     }
-    // SPEC-166: サブ 2 人 (= テスト用のホストだけ。 ストーリーと RTA はソロ)。 SPEC-168: サブの武器はメインの枠と別
-    setupTeamBattle(isTestHost() && !isStory() && !state.rtaMode ? (state.teamSubs ?? []) : []);
+    // SPEC-166: サブ 2 人 (= SPEC-173: 本番でも。 NORMAL だけ。 ストーリー・RTA・ABSOLUTE はソロ)。 SPEC-168: サブの武器はメインの枠と別
+    setupTeamBattle(!isStory() && !state.rtaMode && state.regulation === REGULATION_NORMAL ? (state.teamSubs ?? []) : []);
     // SPEC-162: 引き継いだ強化の効き目を掛け直す (= 武器は組み直し)
     for (const o of state.ownedExtensions) if (getCategory(getExt(o.extId)) === "buff") applyBuff(o.extId, o.level);
     rebuildWeaponsFromOwned();
