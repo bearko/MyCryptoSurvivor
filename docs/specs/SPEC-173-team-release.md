@@ -2,7 +2,7 @@
 id: SPEC-173
 title: Team Release — Mine's Recorded Lines for the Story Leftovers and the Team Lessons, the Team Gauge Renamed "JIN", and Team Sorties Opened on Production (NORMAL Only)
 status: Approved
-pr: TBD
+pr: 250
 phase: v2.0 Team
 kind: Changed
 ---
