@@ -12,6 +12,7 @@ import { state } from "../state.js";
 import { getExt, getCategory } from "../extensions.js";
 import { EXT_MAX_LEVEL, LL_LEVEL, SERIES_COLOR_DEFAULT } from "../constants.js";
 import { rankOf, levelParams } from "../ext-level.js";   // SPEC-162
+import { weaponKey } from "./team-battle.js";   // SPEC-168
 
 /**
  * @param {number|string} extId
@@ -56,18 +57,26 @@ export function weaponFromExt(extId, level) {
 /**
  * state.ownedExtensions のうち category=weapon のものから state.battle.weapons を再生成。
  * buff entry は対象外 (= 別途 buffs.js で適用)。 lastFireMs は維持できる範囲で維持。
+ * SPEC-168: サブの武器 (= state.battle.subs[i].extId / level) も持ち主つきで足す (= メインの枠とは別)
  */
 export function rebuildWeaponsFromOwned() {
-  const oldByExtId = new Map(state.battle.weapons.map(w => [String(w.extId), w]));
+  const oldByKey = new Map(state.battle.weapons.map(w => [weaponKey(w), w]));
   const next = [];
+  const add = (w) => {
+    if (!w) return;
+    const old = oldByKey.get(weaponKey(w));
+    if (old) w.lastFireMs = old.lastFireMs;
+    next.push(w);
+  };
   for (const o of state.ownedExtensions) {
     const ext = getExt(o.extId);
     if (!ext || getCategory(ext) !== "weapon") continue;
-    const w = weaponFromExt(o.extId, o.level);
-    if (!w) continue;
-    const old = oldByExtId.get(String(o.extId));
-    if (old) w.lastFireMs = old.lastFireMs;
-    next.push(w);
+    add(weaponFromExt(o.extId, o.level));
   }
+  (state.battle.subs ?? []).forEach((s, i) => {
+    const w = weaponFromExt(s.extId, Math.min(EXT_MAX_LEVEL, s.level ?? 1));   // サブは LL にならない
+    if (w) w.owner = i;
+    add(w);
+  });
   state.battle.weapons = next;
 }

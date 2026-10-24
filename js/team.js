@@ -101,8 +101,30 @@ export const ROAM_R = 200;
 export const ROAM_EVERY = [1.2, 2.6];
 /** 狙った敵との間合い (= 近づきすぎない。 ザコは寄り、 強敵は少し離れて撃つ) */
 export const HUNT_KEEP = { weak: 36, strong: 110 };
-/** サブの足の速さ (= メインの速さに掛ける) */
-export const SUB_SPEED_MUL = 1.05;
+/** サブの足の速さ (= メインのいまの速さに掛ける。 作者 2026-10-24: 機敏すぎたのでメインと同じに) */
+export const SUB_SPEED_MUL = 1;
+/** 立ち位置から離れたぶんだけ少し速く追いつく (= 0〜CATCHUP_MAX。 メインと同じ速さだと、 走り続けると追いつけない) */
+export const CATCHUP_FROM = 50;
+export const CATCHUP_SPAN = 250;
+export const CATCHUP_MAX = 0.35;
+/** 隊列の向きが回る速さ (= ラジアン / 秒。 向きを変えた瞬間にサブが反対側へ飛ばないように) */
+export const TEAM_TURN_RATE = 4;
+
+/** サブの速さ (= メインの速さ × (1 + 離れたぶんの上乗せ)) */
+export function subSpeed(mainSpeed, distHome) {
+  const k = Math.max(0, Math.min(1, (distHome - CATCHUP_FROM) / CATCHUP_SPAN));
+  return mainSpeed * SUB_SPEED_MUL * (1 + CATCHUP_MAX * k);
+}
+
+/** 隊列の向きを target へ少しずつ回す (= dt 秒ぶん、 rate ラジアン / 秒まで)。 単位ベクトルを返す */
+export function turnDir(cur, target, dt, rate = TEAM_TURN_RATE) {
+  const a = Math.atan2(cur.y, cur.x), b = Math.atan2(target.y, target.x);
+  let d = b - a;
+  while (d > Math.PI) d -= Math.PI * 2;
+  while (d < -Math.PI) d += Math.PI * 2;
+  const step = Math.max(-rate * dt, Math.min(rate * dt, d));
+  return { x: Math.cos(a + step), y: Math.sin(a + step) };
+}
 
 /** 狙う敵 (= メインから leash 以内。 ザコ: 体力の少ない順 → 近い順、 強敵: ボス → 体力の多い順 → 近い順)。 exclude はもう 1 人が狙っている敵 */
 export function pickTarget(enemies, px, py, mode, { leash = TACTIC_LEASH, exclude = null } = {}) {

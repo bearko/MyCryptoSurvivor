@@ -10,7 +10,7 @@
 // pauseFlags のチェックは呼出側 (= _loop) が行う。 ここでは tick 内で random / 状態変更は許容。
 
 import { state } from "../state.js";
-import { weaponOrigin } from "./team-battle.js";   // SPEC-166: 武器を撃つ位置 (= 持ち主)
+import { weaponOrigin, weaponKey } from "./team-battle.js";   // SPEC-166: 武器を撃つ位置 (= 持ち主)
 import { hitEnemy, weaponSrc } from "./damage.js";   // SPEC-148: weaponSrc
 import { getObstacleRects } from "./field.js";
 import { clipRayLength } from "./field-geom.js";
@@ -101,7 +101,7 @@ function _nearestDir(px, py, range) {
 // ============================================================
 
 export function fireRadial(w, dmgMul, bulletBonus) {
-  const { x: px, y: py } = weaponOrigin(w.extId);   // SPEC-166: サブの武器はサブの位置から
+  const { x: px, y: py } = weaponOrigin(w);   // SPEC-166: サブの武器はサブの位置から
   const rangeMul = state.buffs?.rangeMul ?? 1;
   const dir = _nearestDir(px, py, w.range * rangeMul);
   if (!dir) return;
@@ -134,7 +134,7 @@ export function fireRadial(w, dmgMul, bulletBonus) {
 // ============================================================
 
 export function fireBigHoming(w, dmgMul, bulletBonus) {
-  const { x: px, y: py } = weaponOrigin(w.extId);   // SPEC-166: サブの武器はサブの位置から
+  const { x: px, y: py } = weaponOrigin(w);   // SPEC-166: サブの武器はサブの位置から
   const total = (w.bullets ?? 1) + bulletBonus;
   const size = w.params?.size ?? 14;
   const rangeMul = state.buffs?.rangeMul ?? 1;
@@ -173,7 +173,7 @@ export function fireBigHoming(w, dmgMul, bulletBonus) {
 export function fireDropTarget(w, dmgMul, bulletBonus) {
   // SPEC-053: 敵がいれば敵を狙う。 2026-10-22: 近く (= PROP_AIM_R) の壺・宝箱も候補に (= 敵がいる限り壊せなかった)
   const all = state.battle.enemies;
-  const { x: ppx, y: ppy } = weaponOrigin(w.extId);   // SPEC-166
+  const { x: ppx, y: ppy } = weaponOrigin(w);   // SPEC-166
   const foes = all.filter(e => !e.isProp);
   const nearProps = all.filter(e => e.isProp && Math.hypot(e.x - ppx, e.y - ppy) <= PROP_AIM_R);
   const enemies = foes.length ? [...nearProps, ...foes] : all;
@@ -209,7 +209,7 @@ export function fireDropTarget(w, dmgMul, bulletBonus) {
 // ============================================================
 
 export function fireStack(w, dmgMul, bulletBonus) {
-  const { x: px, y: py } = weaponOrigin(w.extId);   // SPEC-166: サブの武器はサブの位置から
+  const { x: px, y: py } = weaponOrigin(w);   // SPEC-166: サブの武器はサブの位置から
   const rangeMul = state.buffs?.rangeMul ?? 1;
   const dir = _nearestDir(px, py, w.range * rangeMul);
   if (!dir) return;
@@ -244,7 +244,7 @@ export function fireStack(w, dmgMul, bulletBonus) {
 // ============================================================
 
 export function fireBeam(w, dmgMul, bulletBonus) {
-  const { x: px, y: py } = weaponOrigin(w.extId);   // SPEC-166: サブの武器はサブの位置から
+  const { x: px, y: py } = weaponOrigin(w);   // SPEC-166: サブの武器はサブの位置から
   const rangeMul = state.buffs?.rangeMul ?? 1;
   const dir = _nearestDir(px, py, w.range * rangeMul);
   if (!dir) return;
@@ -266,6 +266,7 @@ export function fireBeam(w, dmgMul, bulletBonus) {
       age: 0, life: dur,
       dmgPerSec, color: w.color,
       weaponExtId: w.extId,
+      weaponKey: weaponKey(w),   // SPEC-168: 持ち主 (= サブのレーザーはサブから)
       // SPEC-031: 敵ごとに dmg を実数で蓄積し 250ms 毎に整数化して dispatch (= 高 fps での丸め損 0 化)
       dmgAccum: {},     // { [enemyId]: float }
       lastHitMs: {},    // { [enemyId]: number }
@@ -278,7 +279,7 @@ export function fireBeam(w, dmgMul, bulletBonus) {
 // ============================================================
 
 export function fireDiagonal(w, dmgMul, bulletBonus) {
-  const { x: px, y: py } = weaponOrigin(w.extId);   // SPEC-166: サブの武器はサブの位置から
+  const { x: px, y: py } = weaponOrigin(w);   // SPEC-166: サブの武器はサブの位置から
   const total = (w.bullets ?? 4) + bulletBonus;
   const speed = w.speedPx;
   const offset = Math.PI / 4;
@@ -304,7 +305,7 @@ export function fireDiagonal(w, dmgMul, bulletBonus) {
 // ============================================================
 
 export function fireRandomRadial(w, dmgMul, bulletBonus) {
-  const { x: px, y: py } = weaponOrigin(w.extId);   // SPEC-166: サブの武器はサブの位置から
+  const { x: px, y: py } = weaponOrigin(w);   // SPEC-166: サブの武器はサブの位置から
   const total = (w.bullets ?? 2) + bulletBonus;
   const speed = w.speedPx;
   const projIcon = (w.projectileIconId !== undefined) ? w.projectileIconId : w.iconId;
@@ -328,7 +329,7 @@ export function fireRandomRadial(w, dmgMul, bulletBonus) {
 // ============================================================
 
 export function firePlaceBomb(w, dmgMul, bulletBonus) {
-  const { x: px, y: py } = weaponOrigin(w.extId);   // SPEC-166: サブの武器はサブの位置から
+  const { x: px, y: py } = weaponOrigin(w);   // SPEC-166: サブの武器はサブの位置から
   const total  = (w.bullets ?? 1) + bulletBonus;
   const fuseMs = w.params?.fuseMs ?? 1000;
   const rangeMul = state.buffs?.rangeMul ?? 1;
@@ -357,7 +358,7 @@ export function firePlaceBomb(w, dmgMul, bulletBonus) {
 // ============================================================
 
 export function fireHoming(w, dmgMul) {
-  const { x: px, y: py } = weaponOrigin(w.extId);   // SPEC-166: サブの武器はサブの位置から
+  const { x: px, y: py } = weaponOrigin(w);   // SPEC-166: サブの武器はサブの位置から
   const rangeMul = state.buffs?.rangeMul ?? 1;
   const dir = _nearestDir(px, py, w.range * rangeMul);
   if (!dir) return;
@@ -396,7 +397,7 @@ export function ensureOrbits(w, dmgMul, bulletBonus) {
   // 既存 orbit に半径 / 武器レベル由来パラメータ / 現 tier icon を毎 frame 反映
   // (= レベルアップ即時に icon / 当たり / dmg / radius が切り替わる)
   for (const o of orbits) {
-    if (String(o.weaponExtId) !== String(w.extId)) continue;
+    if (o.weaponKey !== weaponKey(w)) continue;
     o.r        = r;
     o.radius   = hitR;
     o.iconId   = w.iconId;
@@ -406,7 +407,7 @@ export function ensureOrbits(w, dmgMul, bulletBonus) {
   }
 
   // 個数調整
-  let owned = orbits.filter(o => String(o.weaponExtId) === String(w.extId));
+  let owned = orbits.filter(o => o.weaponKey === weaponKey(w));
   if (owned.length === desired) return;
 
   // anchor: 既存先頭の角度を維持して再配置 (= 回転は smooth に継続)
@@ -417,6 +418,7 @@ export function ensureOrbits(w, dmgMul, bulletBonus) {
       orbits.push({
         id: state.battle.nextEntityId++,
         weaponExtId: w.extId,
+        weaponKey: weaponKey(w),   // SPEC-168: 持ち主 (= メインとサブが同じ武器でも別の刃)
         angle: 0,            // 後段で redistribute
         r, dmg,
         color: w.color,
@@ -431,7 +433,7 @@ export function ensureOrbits(w, dmgMul, bulletBonus) {
     // 過剰分 (= lv down シナリオ) を末尾から削除
     let toRemove = owned.length - desired;
     for (let i = orbits.length - 1; i >= 0 && toRemove > 0; i--) {
-      if (String(orbits[i].weaponExtId) === String(w.extId)) {
+      if (orbits[i].weaponKey === weaponKey(w)) {
         orbits.splice(i, 1);
         toRemove--;
       }
@@ -439,7 +441,7 @@ export function ensureOrbits(w, dmgMul, bulletBonus) {
   }
 
   // SPEC-028: 既存 + 新規を等間隔に再配置 (= 2→180° / 3→120° / 4→90° / N→360/N°)
-  owned = orbits.filter(o => String(o.weaponExtId) === String(w.extId));
+  owned = orbits.filter(o => o.weaponKey === weaponKey(w));
   const step = (Math.PI * 2) / Math.max(1, desired);
   for (let i = 0; i < owned.length; i++) {
     owned[i].angle = baseAng + step * i;
@@ -457,7 +459,7 @@ export function tickOrbits(dt, nowMs) {
   for (const o of orbits) {
     const w = (o.kind === "orbitClose") ? ORBIT_CLOSE_ANG_SPEED : ORBIT_ANGULAR_SPEED;
     o.angle += w * dt;
-    const c = weaponOrigin(o.weaponExtId);   // SPEC-166: サブのブレードはサブの周り
+    const c = weaponOrigin(o.weaponKey ?? o.weaponExtId);   // SPEC-166: サブのブレードはサブの周り
     const ox = c.x + Math.cos(o.angle) * o.r;
     const oy = c.y + Math.sin(o.angle) * o.r;
     o.x = ox; o.y = oy;
@@ -495,7 +497,7 @@ export function tickBeams(dt, nowMs) {
     b.age += dms;
     if (b.age >= b.life) { beams.splice(i, 1); continue; }
     // origin は毎フレーム player に置き直す (= ヒーロー中心)
-    const c = weaponOrigin(b.weaponExtId);   // SPEC-166
+    const c = weaponOrigin(b.weaponKey ?? b.weaponExtId);   // SPEC-166
     b.x = c.x; b.y = c.y;
     // SPEC-053: レーザーは建物で止まる (= 長さを最初に当たる建物の手前までに)
     b.hitLen = rects.length ? clipRayLength(b.x, b.y, b.dirX, b.dirY, b.len, rects) : b.len;

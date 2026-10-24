@@ -24,6 +24,10 @@ import { heroImg } from "../heroes.js";
 import { naviFrameUrl, NAVI_POSES } from "../navi.js";
 import { playVoice } from "../voice.js";
 import { hitEnemy } from "./damage.js";
+import { levelUpSub } from "./team-battle.js";   // SPEC-168: サブの武器の段
+import { rebuildWeaponsFromOwned } from "./extensions-as-weapons.js";
+import { levelParams, rankOf } from "../ext-level.js";
+import { EXT_MAX_LEVEL } from "../constants.js";
 
 import {
   MERCHANTS, OPENING_MERCHANT, isShopMode, shopTimesMs, shopPrice, giftable, giftCost, isGiftFirst, setGiftFirst, pickMerchant, rerollCost, canBan, nextShopSec,
@@ -355,6 +359,27 @@ export function buySigUp() {
   return true;
 }
 
+/** SPEC-168: サブ i の武器の次の段の値段 (= 店でそのランクアップを買うときと同じ。 黒髭の 2 割引も効く)。 もう上がらなければ null */
+export function subUpPrice(i) {
+  const sub = state.battle?.subs?.[i];
+  if (!sub || sub.level >= EXT_MAX_LEVEL) return null;
+  return shopPrice({ nextLevel: sub.level + 1 }, state.currentStageIdx ?? 0, _merchant.quirk);
+}
+
+/** SPEC-168: サブ i の武器を 1 段上げる (= 店の 3 列。 枠には数えない) */
+export function buySubUp(i) {
+  const s = state.shop;
+  const price = subUpPrice(i);
+  if (!s || price == null || price > s.ce) return false;
+  if (!levelUpSub(i)) return false;
+  s.ce -= price;
+  _boughtHere += 1;
+  rebuildWeaponsFromOwned();
+  playSe(SFX.PICK_WEAPON, 100, 0.55);
+  renderShop();
+  return true;
+}
+
 /**
  * SPEC-128: ステージの終わり (= stage-transition.js)。 残った CE を固有スキルへ振り、 財布を空にする。
  * ギフト券は持ち越す。 結果の画面に出すために、 振る前と後を返す
@@ -412,6 +437,8 @@ function _renderSig() {
   const lang = getLang();
   const lv = s.sigLevel;
   const price = sigUpRest(s);   // SPEC-128: 積み立てを引いた残り
+  const subs = state.battle?.subs ?? [];
+  el.classList.toggle("shop-sig--team", subs.length > 0);   // SPEC-168: メインの固有スキル・サブ 1 の武器・サブ 2 の武器の 3 列
   const now = sigParams(kind, lv);
   const next = price == null ? null : sigParams(kind, lv + 1);
   el.innerHTML = "";
@@ -465,7 +492,84 @@ function _renderSig() {
   const note = document.createElement("p");
   note.className = "shop-sig__note";
   note.textContent = t("shop.sig.note", "ステージをまたいで残る。残った CE はステージの終わりにここへ");
-  el.append(head, rows, btn, note);
+  if (!subs.length) { el.append(head, rows, btn, note); return; }
+  // SPEC-168: 3 列 (= 1 列目がメインの固有スキル、 2・3 列目がサブの武器)
+  const cell = document.createElement("div");
+  cell.className = "shop-sig__cell";
+  cell.append(head, rows, btn);
+  el.append(cell, ...subs.map((sub, i) => _subCell(sub, i, lang)));
+}
+
+/** SPEC-168: サブの武器の札 (= 顔・武器・段・威力の伸び・上げるボタン) */
+function _subCell(sub, i, lang) {
+  const ext = getExt(sub.extId);
+  const cell = document.createElement("div");
+  cell.className = "shop-sig__cell shop-sig__cell--sub";
+  const head = document.createElement("div");
+  head.className = "shop-sig__head";
+  const face = document.createElement("span");
+  face.className = "shop-sig__subface";
+  const hero = document.createElement("img");
+  hero.className = "shop-sig__face";
+  hero.src = heroImg(sub.heroId);
+  hero.alt = "";
+  face.appendChild(hero);
+  if (ext) {
+    const w = document.createElement("img");
+    w.className = "shop-sig__weapon";
+    w.src = extTierImg(ext, sub.level);
+    w.alt = "";
+    face.appendChild(w);
+  }
+  const title = document.createElement("div");
+  title.className = "shop-sig__title";
+  const kicker = document.createElement("span");
+  kicker.className = "shop-sig__kicker";
+  kicker.textContent = `SUB ${i + 1}`;
+  const name = document.createElement("b");
+  name.className = "shop-sig__name";
+  name.textContent = ext ? getSeriesName(ext, lang) : "";
+  const lvEl = document.createElement("span");
+  lvEl.className = "shop-sig__lv num";
+  lvEl.textContent = `Lv ${sub.level} / ${EXT_MAX_LEVEL}`;
+  title.append(kicker, name, lvEl);
+  head.append(face, title);
+  const price = subUpPrice(i);
+  const rows = document.createElement("ul");
+  rows.className = "shop-sig__rows";
+  const now = levelParams(ext, sub.level), next = price == null ? null : levelParams(ext, sub.level + 1);
+  for (const [key, label] of [["dmg", t("shop.sub.dmg", "威力")], ["bullets", t("shop.sub.bullets", "数")]]) {
+    if (now[key] == null || (key === "bullets" && next?.[key] === now[key])) continue;
+    const li = document.createElement("li");
+    const a = document.createElement("span");
+    a.textContent = label;
+    const v = document.createElement("span");
+    v.className = "num";
+    const changed = next && next[key] !== now[key];
+    v.textContent = changed ? `${now[key]} → ${next[key]}` : String(now[key]);
+    if (changed) li.classList.add("is-up");
+    li.append(a, v);
+    rows.appendChild(li);
+  }
+  if (next && rankOf(sub.level + 1) > rankOf(sub.level)) {   // ランクアップ (= 絵が変わる)
+    const li = document.createElement("li");
+    li.className = "is-up";
+    li.textContent = t("shop.sub.rankUp", "ランクアップ");
+    rows.appendChild(li);
+  }
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "shop-sig__buy";
+  if (price == null) {
+    btn.disabled = true;
+    btn.textContent = t("shop.sig.max", "最大まで強化した");
+  } else {
+    btn.disabled = price > state.shop.ce;
+    btn.textContent = tpl(t("shop.sig.buy", "Lv {n} へ ◆ {p}"), { n: String(sub.level + 1), p: String(price) });
+    btn.addEventListener("click", () => buySubUp(i));
+  }
+  cell.append(head, rows, btn);
+  return cell;
 }
 
 export function toggleLock(extId) {

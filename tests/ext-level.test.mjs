@@ -75,7 +75,7 @@ test("絵と名前は 3 段ごと、 説明の数値はその段のもの。 LL 
 
 test("装備と CE はステージをまたいで残る (= つなぎ)", () => {
   const idx = read("../js/battle/index.js");
-  assert.match(idx, /export function carryOwnedExtensions\(idx\) \{[\s\S]*if \(idx === 0\) state\.ownedExtensions = \[\];[\s\S]*else if \(at && at\.idx === idx\) state\.ownedExtensions = at\.owned\.map/);
+  assert.match(idx, /export function carryOwnedExtensions\(idx\) \{[\s\S]*if \(idx === 0\) \{ state\.ownedExtensions = \[\];[\s\S]*else if \(at && at\.idx === idx\) \{ state\.ownedExtensions = at\.owned\.map/);
   assert.match(idx, /carryOwnedExtensions\(state\.currentStageIdx \?\? 0\);/);
   assert.match(idx, /if \(!state\.ownedExtensions\.some\(\(o\) => String\(o\.extId\) === String\(starterId\)\)\)/, "初期武器は無いときだけ");
   assert.match(idx, /if \(getCategory\(getExt\(o\.extId\)\) === "buff"\) applyBuff\(o\.extId, o\.level\);/, "強化は掛け直す");

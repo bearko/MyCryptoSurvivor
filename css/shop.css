@@ -431,3 +431,42 @@
 
 /* 空いた枠 (= お断りした・並べる品が尽きた。 作者 2026-10-24: 枠の数を見えるままにする) */
 .shop-offer--empty .shop-offer__soldcard { opacity: 0.7; font-weight: 600; }
+
+/* ============================================================
+   SPEC-168: チームの 3 列 (= メインの固有スキル・サブ 1 の武器・サブ 2 の武器)。 横いっぱいに、 品の上
+   ============================================================ */
+.shop-body:has(.shop-sig--team) { grid-template-columns: minmax(0, 1fr); }
+.shop-body:has(.shop-sig--team) > .shop-grid { grid-row: 2; }
+.shop-sig.shop-sig--team {
+  grid-column: 1; grid-row: 1;
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.4rem; align-items: stretch;
+  padding: 0.4rem;
+  margin-bottom: 0.5rem;   /* 下の札の角のボタン (= 取り置き・お断り) が上にはみ出すぶん */
+}
+.shop-sig--team .shop-sig__cell {
+  display: flex; flex-direction: column; gap: 0.3rem; min-width: 0;
+  padding: 0.35rem 0.4rem;
+  border-radius: 8px;
+  background: rgba(20, 16, 30, 0.55);
+  border: 1px solid rgba(187, 134, 252, 0.35);
+}
+.shop-sig--team .shop-sig__cell--sub { border-color: rgba(255, 92, 92, 0.45); }
+.shop-sig--team .shop-sig__head { align-items: flex-start; gap: 0.3rem; }
+.shop-sig--team .shop-sig__face { width: 36px; height: 36px; }
+.shop-sig__subface { position: relative; flex: 0 0 auto; display: inline-block; margin-right: 8px; }
+.shop-sig__weapon { position: absolute; right: -9px; bottom: -3px; width: 18px; height: 18px; image-rendering: pixelated; filter: drop-shadow(0 0 2px #000); }
+.shop-sig--team .shop-sig__title { flex-direction: column; flex-wrap: nowrap; align-items: flex-start; }
+.shop-sig--team .shop-sig__kicker { display: block; font-size: 0.55rem; letter-spacing: 0.1em; }
+.shop-sig--team .shop-sig__cell--sub .shop-sig__kicker { color: #ff8a8a; }
+.shop-sig--team .shop-sig__name { font-size: 0.72rem; line-height: 1.2; overflow-wrap: anywhere; }
+.shop-sig--team .shop-sig__lv { font-size: 0.66rem; }
+.shop-sig--team .shop-sig__rows { flex: 1 1 auto; gap: 0.1rem; }
+.shop-sig--team .shop-sig__rows li { font-size: 0.6rem; gap: 0.2rem; }
+.shop-sig--team .shop-sig__buy { padding: 0.3rem 0.15rem; font-size: 0.7rem; white-space: nowrap; }
+.shop-sig--team .shop-sig__note { display: none; }
+@media (max-width: 640px) {
+  .shop-sig.shop-sig--team { grid-template-columns: repeat(3, minmax(0, 1fr)); padding: 0.3rem; gap: 0.3rem; }
+  .shop-sig--team .shop-sig__head, .shop-sig--team .shop-sig__rows, .shop-sig--team .shop-sig__buy { grid-column: auto; grid-row: auto; }
+  .shop-sig--team .shop-sig__face { width: 30px; height: 30px; }
+  .shop-sig--team .shop-sig__title { flex-direction: column; }
+}

@@ -418,12 +418,9 @@ function _teamOn(unlocked = getUnlockedHeroes()) {
 function _teamWeapons(ids) {
   const attrs = poolAttrs();
   const mainW = ids[0] != null ? (HERO_STARTING_WEAPON[ids[0]] ?? HERO_STARTING_WEAPON_DEFAULT) : null;
-  const used = new Set(mainW != null ? [mainW] : []);
   const out = [mainW];
-  for (const id of ids.slice(1)) {
-    if (id == null) { out.push(null); continue; }
-    const w = subWeaponFor(poolHero(id), { starter: HERO_STARTING_WEAPON[id] ?? null, used, attrs });
-    used.add(w); out.push(w);
+  for (const id of ids.slice(1)) {   // SPEC-168: サブの武器はメインの枠と別なので、 メインと同じ武器でもよい (= team-battle.js と同じ)
+    out.push(id == null ? null : subWeaponFor(poolHero(id), { starter: HERO_STARTING_WEAPON[id] ?? null, attrs }));
   }
   return out;
 }
