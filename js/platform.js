@@ -171,6 +171,15 @@ export function reportStoryAllClear(progress, allCleared) {
   unlockAchievements(achievementIdsForStory(progress, allCleared));
 }
 
+/**
+ * SPEC-174: チュートリアル (= ストーリー) の段 (= 共通基盤の tutorialStep。 SDK 1.12.0)。 step と id は story.js の tutorialStepOf。
+ * 同じ段はサーバーが最初の 1 回だけ残す。 テスト用のサイトと ?test=1 では送らない
+ */
+export function reportTutorialStep(t) {
+  if (!t) return;
+  try { _sdkSend()?.tutorialStep?.(t.step, t.id)?.catch?.(() => {}); } catch (_) { /* 送れなくても遊べる */ }
+}
+
 /** 宝箱を開けたとき (= SPEC-096: その場で) */
 export function reportChestOpened() {
   unlockAchievements(["survivor.chest"]);

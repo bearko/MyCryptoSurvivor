@@ -1,0 +1,1 @@
+- **チュートリアル（ストーリー）の段を共通基盤へ**（`js/story.js` + `js/platform.js` + `js/battle/index.js` + `js/battle/stage-transition.js`）: 始めた・プロローグ・25 ステージのクリア（最後は done）を `BearkoGames.tutorialStep` で送る。 管理画面の「チュートリアル」タブで離脱が見える

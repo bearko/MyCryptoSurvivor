@@ -15,7 +15,7 @@ import { playSe } from "../audio.js";   // SPEC-158: 勝利の SE
 import { triggerGameOver } from "./gameover.js";
 import { triggerActivityReport } from "./activity-report.js";
 import { t, tpl, onLangChange, getLang } from "../i18n.js";
-import { reportStageEnd, reportRtaStageEnd, reportStoryAllClear } from "../platform.js";
+import { reportStageEnd, reportRtaStageEnd, reportStoryAllClear, reportTutorialStep } from "../platform.js";
 import { formatElapsed } from "../survival.js";
 import { countUp, revealIn } from "../reveal.js";
 import { presentResult } from "../result-telop.js";
@@ -29,7 +29,7 @@ import { loadShare, shouldOfferShare, openSharePrompt, closeSharePrompt } from "
 import { isEasy, stageCount } from "../easy.js";   // SPEC-147 / SPEC-154
 import { stopVoice } from "../voice.js";   // SPEC-149: 説明の途中でボスを倒したら、 ボイスを切ってクリアの SE
 import { startConfetti, removeConfetti } from "../confetti.js";   // SPEC-149
-import { isStory, storyStage, landOf, markStoryCleared, markStoryLoadout, STORY_HERO, nextStoryId, storyRecipe, storyAllows, nextInSameLand, storyAllCleared } from "../story.js";   // SPEC-165
+import { isStory, storyStage, landOf, markStoryCleared, markStoryLoadout, STORY_HERO, nextStoryId, storyRecipe, storyAllows, nextInSameLand, storyAllCleared, tutorialStepOf } from "../story.js";   // SPEC-165
 import { naviSay, naviLines } from "../navi.js";   // SPEC-165
 
 let _wired = false;
@@ -164,6 +164,7 @@ function _storyClear() {
   const r = storyStage();
   const snap = state.run.stages.find((s) => s.idx === (state.currentStageIdx ?? 0));
   const progress = markStoryCleared(r.id, { sec: Math.round((snap?.elapsedMs ?? state.battle.stageElapsedMs ?? 0) / 1000), kills: snap?.kills ?? state.killCount });
+  reportTutorialStep(tutorialStepOf(r.id));   // SPEC-174: チュートリアルの段 (= そのステージをクリア。 5-5 が "done")
   reportStoryAllClear(progress, storyAllCleared);   // SPEC-165: 全クリアで共通基盤のアチーブメント survivor.story (= 25 のときだけ中身がある)
   // 作者 2026-10-22: 持ち物 (= ヒーロー・装備・CE・固有スキルの段) はストーリーのあいだ残る。 タイトルに戻っても、 次のステージはここから
   markStoryLoadout({ hero: state.ownedHero?.heroId ?? STORY_HERO, owned: (state.ownedExtensions ?? []).map((o) => ({ extId: o.extId, level: o.level })), ce: state.shop?.ce ?? 0, sigLevel: state.shop?.sigLevel ?? 1, sigCe: state.shop?.sigCe ?? 0 });
