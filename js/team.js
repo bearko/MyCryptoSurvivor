@@ -154,11 +154,22 @@ export function roamPoint(px, py, rnd = Math.random) {
 
 // ---- 下半分: localStorage と戦闘の状態 ----
 
+/**
+ * 保存した編成と作戦。 作戦はサブごと (= tactics[0] がサブ 1、 [1] がサブ 2。 作者 2026-10-24 SPEC-169)。
+ * 前の形 (= tactic 1 つ) は 2 人ぶんに読み替える
+ */
 export function loadTeam(storage = globalThis.localStorage) {
-  try { const v = JSON.parse(storage?.getItem(LS_TEAM) ?? "null"); return { subs: Array.isArray(v?.subs) ? v.subs.map(Number) : [], tactic: TACTICS.includes(v?.tactic) ? v.tactic : "follow" }; } catch (_) { return { subs: [], tactic: "follow" }; }
+  try {
+    const v = JSON.parse(storage?.getItem(LS_TEAM) ?? "null");
+    const one = TACTICS.includes(v?.tactic) ? v.tactic : "follow";
+    const tactics = Array.from({ length: TEAM_MAX_SUBS }, (_, i) => TACTICS.includes(v?.tactics?.[i]) ? v.tactics[i] : one);
+    return { subs: Array.isArray(v?.subs) ? v.subs.map(Number) : [], tactics };
+  } catch (_) { return { subs: [], tactics: Array(TEAM_MAX_SUBS).fill("follow") }; }
 }
 
+/** team: { subs?, tactics? } (= 渡したものだけ書き換える) */
 export function saveTeam(team, storage = globalThis.localStorage) {
   const prev = loadTeam(storage);
-  try { storage?.setItem(LS_TEAM, JSON.stringify({ subs: team.subs ?? prev.subs, tactic: TACTICS.includes(team.tactic) ? team.tactic : prev.tactic })); } catch (_) { /* 保存できなくても遊べる */ }
+  const tactics = prev.tactics.map((t, i) => TACTICS.includes(team.tactics?.[i]) ? team.tactics[i] : t);
+  try { storage?.setItem(LS_TEAM, JSON.stringify({ subs: team.subs ?? prev.subs, tactics })); } catch (_) { /* 保存できなくても遊べる */ }
 }
