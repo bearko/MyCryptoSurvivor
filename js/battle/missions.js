@@ -18,7 +18,6 @@ import { state, pauseTime, resumeTime } from "../state.js";
 import { img, SFX, BOSS_SPAWN_AT_MS, BOSS_WARNING_LEAD_MS } from "../constants.js";
 import { shopTimesMs } from "./shop-logic.js";
 import { shopAtStart } from "../perks.js";   // SPEC-152
-import { bondedGivers } from "../bonds.js";   // SPEC-165
 import { t, tpl, onLangChange } from "../i18n.js";
 import { playSe, setMissionSilence } from "../audio.js";
 import { applyItem, healBy } from "./field.js";
@@ -97,17 +96,14 @@ export function modsOf(mission, star = 1) {
   return { ...NO_MODS, ...(mission ? tierOf(mission, star).mods : {}) };
 }
 
-/** 持ちかける人を選ぶ (= 同じ人が続けて来ない・プレイ中のヒーローと同じ人は出さない) */
-export function pickMission({ prevId = null, heroId = null, rnd = Math.random, bonded = null } = {}) {
+/**
+ * 持ちかける人を選ぶ (= 同じ人が続けて来ない・プレイ中のヒーローと同じ人は出さない)。
+ * SPEC-175: 全員が同じ割合 (= 作者 2026-10-24。 SPEC-165 §6.3 の「絆のある出し手を 3 倍」はやめた。 ストーリーの進みに関わらず、 だれのミッションも同じように来る)
+ */
+export function pickMission({ prevId = null, heroId = null, rnd = Math.random } = {}) {
   const pool = MISSIONS.filter((m) => m.id !== prevId && (m.heroId == null || m.heroId !== heroId));
-  // SPEC-165 §6.3: 絆のある出し手を優先 (= 3 倍の重み。 「試練を越えた相手が、 のちに依頼をくれる」が遊びの中で分かる)
-  const w = pool.map((m) => (bonded?.has(m.id) ? BONDED_GIVER_WEIGHT : 1));
-  let r = rnd() * w.reduce((a, b) => a + b, 0);
-  for (let i = 0; i < pool.length; i++) { r -= w[i]; if (r < 0) return pool[i]; }
-  return pool[pool.length - 1];
+  return pool[Math.min(pool.length - 1, Math.floor(rnd() * pool.length))];
 }
-/** 絆のある出し手の重み (= 無い人の何倍出やすいか) */
-export const BONDED_GIVER_WEIGHT = 3;
 
 /**
  * そのウェーブで持ちかける時刻 (= ステージの経過 ms)。 持ちかけないなら null
@@ -266,7 +262,7 @@ export function tickMissions() {
   // 新しいウェーブ (= 店を出た) になったら、 このウェーブで持ちかけるかを決める
   if (m.wave !== s.nextIdx) {
     m.wave = s.nextIdx;
-    const pick = pickMission({ prevId: m.prevId, heroId: state.ownedHero?.heroId, bonded: bondedGivers() });   // SPEC-165: 絆のある人を優先
+    const pick = pickMission({ prevId: m.prevId, heroId: state.ownedHero?.heroId });   // SPEC-175: ストーリーの進み (= 絆) に関わらず全員が同じ割合
     m.planId = pick?.id ?? null;
     m.planAt = pick ? planOffer({ stageIdx, waveIdx: s.nextIdx, durS: maxDurS(pick), count: m.count }) : null;
   }
