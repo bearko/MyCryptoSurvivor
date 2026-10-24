@@ -4,6 +4,8 @@
 //
 // サブはメインの左後ろ・右後ろについて回り (= 当たり判定なし・倒れない)、 自分の武器を自分の位置から撃つ。
 // サブは本作の 10 人に限らず MCH のどのヒーローでもよい。 武器は初期武器があればそれ、 なければアトリビュートから (= jin.js)。
+// SPEC-168: サブの武器はメインの装備の枠に入れない (= 別の枠。 店で同じ武器を買えばメインも撃てる)。 段は店の 3 列で上げる。
+//   強化エクステ (= リンゴ・ホースなど) は全員に効く (= weapons.js が同じ倍率を掛ける)
 // 必殺技: 撃破でチームゲージが溜まり、 ボタンで撃つ (= 作者 2026-10-23 J4=B)。 JIN が成立していれば JIN の技になる
 //   - 単発の JIN: 画面の敵全体へ大ダメージ。 専用背景は攻撃の演出のあいだだけ
 //   - 強化の JIN: 一定時間、 武器の威力と間隔が伸びる。 専用背景は強化のあいだずっと
@@ -12,9 +14,8 @@
 import { state } from "../state.js";
 import { getHero, heroImg } from "../heroes.js";
 import { getHeroSprite, drawSprite } from "./sprites.js";
-import { HERO_STARTING_WEAPON, CHAR_SPRITE_RATIO, STOCK_LIMIT_WEAPON } from "../constants.js";
-import { getExt, getCategory } from "../extensions.js";
-import { subTarget, followStep, TACTICS, TACTIC_LEASH, ROAM_EVERY, HUNT_KEEP, SUB_SPEED_MUL, pickTarget, moveToward, roamPoint, loadTeam, saveTeam } from "../team.js";
+import { HERO_STARTING_WEAPON, CHAR_SPRITE_RATIO, EXT_MAX_LEVEL } from "../constants.js";
+import { subTarget, subSpeed, turnDir, TACTICS, TACTIC_LEASH, ROAM_EVERY, HUNT_KEEP, pickTarget, moveToward, roamPoint, loadTeam, saveTeam } from "../team.js";
 import { computeJin, subWeaponFor, jinBackground, BUFF_SEC } from "../jin.js";
 import { poolHero, poolAttrs, poolHeroName } from "../hero-pool.js";
 import { hitEnemy } from "./damage.js";
@@ -50,22 +51,13 @@ export function setupTeamBattle(subIds = []) {
   const p = b.player;
   b.teamDir = { x: 0, y: -1 };   // 最初は上を向いている (= サブは下の左右)
   const attrs = poolAttrs();
-  const used = new Set([Number(b.starterExtId)]);
-  b.subs = subIds.map((id, i) => {
-    const ph = poolHero(id);
-    if (!ph) return null;
-    const extId = subWeaponFor(ph, { starter: HERO_STARTING_WEAPON[id] ?? null, used, attrs });
-    used.add(extId);
+  const lv = state.run?.subLv ?? [];   // SPEC-168: サブの武器の段 (= 挑戦のあいだ残る。 carryOwnedExtensions)
+  // SPEC-168: サブの武器はメインの枠と別なので、 メインと同じ武器でもよい (= 本作の 10 人はいつも自分の初期武器)
+  b.subs = subIds.map((id) => poolHero(id) ? id : null).filter((id) => id != null).map((id, i) => {
+    const extId = subWeaponFor(poolHero(id), { starter: HERO_STARTING_WEAPON[id] ?? null, attrs });
     const t = subTarget(p.x, p.y, b.teamDir, i);
-    return { heroId: Number(id), extId, x: t.x, y: t.y, face: 0, walkT: 0, sprite: getHeroSprite(getHero(id) ?? { heroId: Number(id) }) };
-  }).filter(Boolean);
-  // サブの武器を武器の枠に (= まだ持っていなければ Lv.1。 枠が埋まっていれば入れない)
-  for (const s of b.subs) {
-    if (state.ownedExtensions.some((o) => String(o.extId) === String(s.extId))) continue;
-    const weapons = state.ownedExtensions.filter((o) => getCategory(getExt(o.extId)) === "weapon").length;
-    if (weapons >= STOCK_LIMIT_WEAPON) continue;
-    state.ownedExtensions.push({ extId: s.extId, level: 1 });
-  }
+    return { heroId: Number(id), extId, level: Math.max(1, Math.min(EXT_MAX_LEVEL, lv[i] ?? 1)), x: t.x, y: t.y, face: 0, walkT: 0, sprite: getHeroSprite(getHero(id) ?? { heroId: Number(id) }) };
+  });
   // JIN (= メイン ＋ サブ)。 ゲージはステージをまたいで残す (= 溜めた分を次で撃てる)
   const main = poolHero(state.ownedHero?.heroId);
   b.jin = b.subs.length ? computeJin([main, ...b.subs.map((s) => poolHero(s.heroId))], attrs) : { full: null, pairs: [], pairBonus: 0 };
@@ -74,14 +66,27 @@ export function setupTeamBattle(subIds = []) {
   _renderHud(true);
 }
 
-/** その武器を撃つ位置 (= サブの武器ならそのサブ、 ほかはメイン) */
-export function weaponOrigin(extId) {
+/** 武器の持ち主の鍵 (= メインは extId、 サブは "s<i>:<extId>"。 同じ武器をメインとサブが持っても別の武器) */
+export function weaponKey(w) {
+  return w?.owner == null ? String(w?.extId) : `s${w.owner}:${w.extId}`;
+}
+
+/** その武器を撃つ位置 (= サブの武器ならそのサブ、 ほかはメイン)。 武器か、 弾・刃に残した鍵を渡す */
+export function weaponOrigin(w) {
   const b = state.battle;
-  const subs = b?.subs;
-  if (subs && subs.length) {
-    for (const s of subs) if (String(s.extId) === String(extId)) return s;
-  }
-  return b.player;
+  const owner = typeof w === "object" && w ? w.owner : (/^s(\d+):/.exec(String(w ?? ""))?.[1] ?? null);
+  return (owner != null && b?.subs?.[Number(owner)]) || b.player;
+}
+
+/** SPEC-168: サブ i の武器を 1 段上げる (= 店の 3 列。 段は挑戦のあいだ残る) */
+export function levelUpSub(i) {
+  const b = state.battle;
+  const s = b?.subs?.[i];
+  if (!s || s.level >= EXT_MAX_LEVEL) return false;
+  s.level += 1;
+  state.run.subLv ??= [];
+  state.run.subLv[i] = s.level;
+  return true;
 }
 
 /** 武器の威力の倍率 (= 2 人そろいの補正 × 強化の JIN) */
@@ -169,29 +174,31 @@ export function tickTeam(dt, input) {
     if (t.pending && t.t >= t.pending.at) { t.pending = null; _applyStrike(); }
     if (t.buff && t.t >= t.buffUntil) t.buff = null;
   }
-  if (Math.hypot(input?.x ?? 0, input?.y ?? 0) > 0.2) b.teamDir = { x: input.x, y: input.y };
+  // 隊列の向きは少しずつ回す (= 作者 2026-10-24: 向きを変えた瞬間にサブが反対側へ飛んで、 機敏すぎた)
+  if (Math.hypot(input?.x ?? 0, input?.y ?? 0) > 0.2) b.teamDir = turnDir(b.teamDir, input, dt);
   const p = b.player;
   const tactic = t?.tactic ?? "follow";
-  const speed = (p.speed ?? 180) * SUB_SPEED_MUL;
+  const mainSpeed = (p.speed ?? 180) * (state.buffs?.speedMul ?? 1);   // メインのいまの速さ (= ホースの強化も)
   b.subs.forEach((s, i) => {
     const before = { x: s.x, y: s.y };
     const home = subTarget(p.x, p.y, b.teamDir, i);
     const far = Math.hypot(s.x - p.x, s.y - p.y) > TACTIC_LEASH;
+    const speed = subSpeed(mainSpeed, Math.hypot(home.x - s.x, home.y - s.y));   // メインと同じ速さ (= 離れたぶんだけ少し速く追いつく)
     let n;
     if (tactic === "follow" || far) {
       s.target = null; s.roam = null;
-      n = far ? moveToward(s, home, speed * 1.4, dt) : followStep(s, home, dt);   // 離れすぎたら急いで戻る
+      n = moveToward(s, home, speed, dt);   // 離れすぎたら、 まず立ち位置へ戻る
     } else if (tactic === "roam") {
       s.roamT = (s.roamT ?? 0) - dt;
       if (!s.roam || s.roamT <= 0 || Math.hypot(s.roam.x - s.x, s.roam.y - s.y) < 8) {
         s.roam = roamPoint(p.x, p.y);
         s.roamT = ROAM_EVERY[0] + Math.random() * (ROAM_EVERY[1] - ROAM_EVERY[0]);
       }
-      n = moveToward(s, s.roam, speed * 0.85, dt);
+      n = moveToward(s, s.roam, mainSpeed * 0.85, dt);
     } else {   // weak / strong: 狙った敵へ (= 倒れたり離れたりしたら選び直す。 2 人は別の敵を狙う)
       const alive = s.target && s.target.hp > 0 && b.enemies.includes(s.target) && Math.hypot(s.target.x - p.x, s.target.y - p.y) <= TACTIC_LEASH;
       if (!alive) s.target = pickTarget(b.enemies, p.x, p.y, tactic, { exclude: b.subs[1 - i]?.target ?? null });
-      n = s.target ? moveToward(s, s.target, speed, dt, HUNT_KEEP[tactic] ?? 40) : followStep(s, home, dt);
+      n = s.target ? moveToward(s, s.target, mainSpeed, dt, HUNT_KEEP[tactic] ?? 40) : moveToward(s, home, speed, dt);
     }
     s.x = n.x; s.y = n.y;
     const vx = (s.x - before.x) / Math.max(dt, 1e-3);

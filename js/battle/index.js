@@ -82,9 +82,9 @@ let _installed = false;
  */
 export function carryOwnedExtensions(idx) {
   const at = state.run.ownedAtStage;
-  if (idx === 0) state.ownedExtensions = [];
-  else if (at && at.idx === idx) state.ownedExtensions = at.owned.map((o) => ({ ...o }));
-  state.run.ownedAtStage = { idx, owned: state.ownedExtensions.map((o) => ({ extId: o.extId, level: o.level })) };
+  if (idx === 0) { state.ownedExtensions = []; state.run.subLv = []; }   // SPEC-168: サブの武器の段も
+  else if (at && at.idx === idx) { state.ownedExtensions = at.owned.map((o) => ({ ...o })); state.run.subLv = [...(at.subLv ?? [])]; }
+  state.run.ownedAtStage = { idx, owned: state.ownedExtensions.map((o) => ({ extId: o.extId, level: o.level })), subLv: [...(state.run.subLv ?? [])] };
 }
 
 export function startBattle(hero) {
@@ -222,7 +222,7 @@ export function startBattle(hero) {
     if (!state.ownedExtensions.some((o) => String(o.extId) === String(starterId))) {
       state.ownedExtensions.push({ extId: starterId, level: Math.min(EXT_MAX_LEVEL, 1 + startLevelBonus(starterId)) });   // SPEC-139: 仕込み
     }
-    // SPEC-166: サブ 2 人 (= テスト用のホストだけ。 ストーリーと RTA はソロ)。 サブの初期武器も武器の枠に
+    // SPEC-166: サブ 2 人 (= テスト用のホストだけ。 ストーリーと RTA はソロ)。 SPEC-168: サブの武器はメインの枠と別
     setupTeamBattle(isTestHost() && !isStory() && !state.rtaMode ? (state.teamSubs ?? []) : []);
     // SPEC-162: 引き継いだ強化の効き目を掛け直す (= 武器は組み直し)
     for (const o of state.ownedExtensions) if (getCategory(getExt(o.extId)) === "buff") applyBuff(o.extId, o.level);

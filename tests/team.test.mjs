@@ -40,12 +40,13 @@ test("サブはメインの後ろの左右に立ち、 追いかけて寄る", (
   assert.deepEqual(followStep({ x: 5, y: 5 }, { x: 5, y: 5 }, 1), { x: 5, y: 5 });
 });
 
-test("配線: 武器は持ち主の位置から・サブの初期武器は武器の枠に・テスト用サイトは送らない", () => {
+test("配線: 武器は持ち主の位置から・サブの武器はメインの枠と別 (= SPEC-168)・テスト用サイトは送らない", () => {
   const arch = read("../js/battle/archetypes.js");
   assert.ok(!/const px = state\.battle\.player\.x;/.test(arch), "撃つ位置はすべて weaponOrigin");
-  assert.match(arch, /weaponOrigin\(o\.weaponExtId\)/, "ブレードはサブの周り");
-  assert.match(arch, /weaponOrigin\(b\.weaponExtId\)/, "レーザーはサブから");
-  assert.match(read("../js/battle/team-battle.js"), /STOCK_LIMIT_WEAPON/, "枠が埋まっていればサブの武器は入れない");
+  assert.ok(!/weaponOrigin\(w\.extId\)/.test(arch), "持ち主は武器から (= extId だとメインとサブの同じ武器が区別できない)");
+  assert.match(arch, /weaponOrigin\(o\.weaponKey \?\? o\.weaponExtId\)/, "ブレードはサブの周り");
+  assert.match(arch, /weaponOrigin\(b\.weaponKey \?\? b\.weaponExtId\)/, "レーザーはサブから");
+  assert.ok(!/ownedExtensions\.push/.test(read("../js/battle/team-battle.js")), "サブの武器はメインの枠に入れない");
   assert.match(read("../js/battle/index.js"), /setupTeamBattle\(isTestHost\(\) && !isStory\(\) && !state\.rtaMode/);
   assert.match(read("../js/platform.js"), /!isTestSite\(\) \? window\.BearkoGames/);
   assert.match(read("../js/hero-unlock.js"), /if \(isTestSite\(\)\) return new Set/);
@@ -165,4 +166,54 @@ test("サブの作戦: 4 つ。 ザコは体力の少ない順、 強敵はボ�
   assert.match(css, /\.team-strike \{\s*top: 8px; right: 8px; bottom: auto;[^}]*opacity: 0\.6/, "右上・溜まるまで 60%");
   assert.match(css, /\.team-strike\.is-ready, \.team-strike\.is-buff, \.team-strike\.is-menu \{ opacity: 1; \}/);
   assert.match(read("../js/main.js"), /if \(cur\[i\] != null\) \{ cur\.splice\(i, 1\)/, "選んである枠を押すと 1 人だけ外す");
+});
+
+// ---- SPEC-168: サブの武器は別の枠・店の 3 列・速さはメインと同じ ----
+import { subSpeed, turnDir, CATCHUP_MAX } from "../js/team.js";
+test("SPEC-168: サブの速さはメインと同じ (= 立ち位置から離れたぶんだけ最大 +35%)。 隊列の向きは少しずつ回る", () => {
+  assert.equal(subSpeed(200, 0), 200);
+  assert.equal(subSpeed(200, 50), 200);
+  assert.equal(subSpeed(200, 10000), 200 * (1 + CATCHUP_MAX));
+  const d = turnDir({ x: 0, y: -1 }, { x: 0, y: 1 }, 0.1);   // 反対向きへ: 0.1 秒では 0.4 ラジアンだけ
+  assert.ok(Math.abs(Math.hypot(d.x, d.y) - 1) < 1e-9);
+  assert.ok(Math.abs(Math.acos(-d.y) - 0.4) < 1e-6);
+  const e = turnDir({ x: 1, y: 0 }, { x: 1, y: 0.01 }, 1);
+  assert.ok(Math.abs(Math.atan2(e.y, e.x) - Math.atan2(0.01, 1)) < 1e-9, "近ければそのまま向く");
+});
+
+test("SPEC-168: サブの武器は持ち主つきで別の武器 (= メインと同じ手裏剣でも 2 本)。 段は店で上げ、 ステージをまたいで残る", async () => {
+  const { EXT_ROSTER, EXT_DEFS } = await import("../js/extensions.js");
+  const { state } = await import("../js/state.js");
+  const { weaponKey, weaponOrigin, levelUpSub } = await import("../js/battle/team-battle.js");
+  const { rebuildWeaponsFromOwned } = await import("../js/battle/extensions-as-weapons.js");
+  const { subUpPrice } = await import("../js/battle/shop.js");
+  const EXT = JSON.parse(read("../data/extensions.json")).extensions;
+  EXT_ROSTER.length = 0;
+  for (const e of EXT) { EXT_ROSTER.push(e); EXT_DEFS[String(e.extId)] = e; }
+  const SHURIKEN = EXT.find((e) => e.series === "Shuriken").extId;
+  const BOOK = EXT.find((e) => e.series === "Book").extId;
+  state.ownedExtensions = [{ extId: SHURIKEN, level: 3 }];
+  state.run = { ...(state.run ?? {}), subLv: [] };
+  state.currentStageIdx = 0;
+  state.battle = { ...(state.battle ?? {}), weapons: [], player: { x: 0, y: 0 }, subs: [{ heroId: 1, extId: SHURIKEN, level: 1, x: 50, y: 60 }, { heroId: 2, extId: BOOK, level: 2, x: -40, y: 10 }] };
+  rebuildWeaponsFromOwned();
+  const ws = state.battle.weapons;
+  assert.equal(ws.length, 3, "メインの手裏剣・サブ 1 の手裏剣・サブ 2 の本");
+  assert.deepEqual(ws.map(weaponKey), [String(SHURIKEN), `s0:${SHURIKEN}`, `s1:${BOOK}`]);
+  assert.deepEqual(ws.map((w) => w.level), [3, 1, 2]);
+  assert.equal(state.ownedExtensions.length, 1, "メインの枠には入らない");
+  assert.equal(weaponOrigin(ws[0]), state.battle.player);
+  assert.equal(weaponOrigin(ws[1]), state.battle.subs[0]);
+  assert.equal(weaponOrigin(`s1:${BOOK}`), state.battle.subs[1], "刃・レーザーに残した鍵からも");
+  assert.equal(weaponOrigin(String(BOOK)), state.battle.player);
+  ws[1].lastFireMs = 1234;
+  assert.equal(levelUpSub(0), true);
+  rebuildWeaponsFromOwned();
+  assert.equal(state.battle.weapons[1].level, 2);
+  assert.equal(state.battle.weapons[1].lastFireMs, 1234, "撃った時刻は持ち主ごとに残す");
+  assert.deepEqual(state.run.subLv, [2], "段は挑戦のあいだ残す");
+  assert.equal(typeof subUpPrice(0), "number");
+  state.battle.subs[0].level = 15;
+  assert.equal(subUpPrice(0), null, "Lv.15 で止まる (= サブは LL にならない)");
+  assert.equal(levelUpSub(0), false);
 });
