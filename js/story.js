@@ -418,6 +418,33 @@ export function tutorialStepOf(storyId) {
   if (i < 0) return null;
   return { step: i + 2, id: i === ids.length - 1 ? "done" : `s${ids[i]}` };
 }
+/**
+ * SPEC-180: 区切りで「次」を見せる。 ランドを取り戻したとき、 次のランドで開くもの 1 つ (= 絵・名前・ひとこと)。
+ * hint は story.land.<id>.hint (= ワールドマップの札と同じ予告)
+ */
+export const LAND_NEXT = Object.freeze({
+  strawberry: { icon: "Image/Enemies/463.png", key: "shadow" },   // 影のヒーロー (= 2-4 アレキサンダー)
+  tangerine:  { icon: "Image/Extensions/5033.png", key: "tree" },  // スキルツリー (= 3-1。 いまの GUM も出す)
+  lime:       { icon: "Image/Enemies/519.png", key: "mission" },   // ミッション (= 4-3。 武田信玄)
+  grape:      { icon: `Image/Enemies/${FINAL_BOSS_ID}.png`, key: "zeus" },   // 天候操作装置ゼウス (= 5-5 で NORMAL が開く)
+});
+
+/**
+ * SPEC-180: ストーリーのクリアで見せる「あと◯」 (= 純関数)。 id = いまクリアしたステージ
+ * @returns {{ done, total, left, bonds, bondTotal, nextLand: object|null }}
+ */
+export function storyNextInfo(id, progress = { cleared: [], bonds: [] }) {
+  const ids = allStoryIds();
+  const cleared = new Set(progress.cleared ?? []);
+  const done = ids.filter((x) => cleared.has(x)).length;
+  const bondWho = new Set(STORY_STAGES.filter((r) => r.bond?.who).map((r) => r.bond.who));
+  const bonds = (progress.bonds ?? []).filter((b) => bondWho.has(b)).length;
+  const nid = nextStoryId(id);
+  const landEnd = !!nid && !nextInSameLand(id);
+  const nextLand = landEnd ? landOf(nid) : null;
+  return { done, total: ids.length, left: ids.length - done, bonds, bondTotal: bondWho.size, nextLand: nextLand && LAND_NEXT[nextLand.id] ? { ...nextLand, ...LAND_NEXT[nextLand.id] } : null };
+}
+
 export function landOf(id) {
   const w = Number(String(id).split("-")[0]);
   return LANDS.find((l) => l.w === w) ?? LANDS[0];

@@ -10,7 +10,7 @@
 
 import { addRewards } from "../meta.js";   // SPEC-165: 絆の報酬ラッシュの GUM
 import { state, pauseTime, resumeTime } from "../state.js";
-import { STAGE_TABLE, SFX } from "../constants.js";
+import { STAGE_TABLE, SFX, img } from "../constants.js";
 import { playSe } from "../audio.js";   // SPEC-158: 勝利の SE
 import { triggerGameOver } from "./gameover.js";
 import { triggerActivityReport } from "./activity-report.js";
@@ -30,7 +30,7 @@ import { isEasy, stageCount } from "../easy.js";   // SPEC-147 / SPEC-154
 import { stopVoice } from "../voice.js";   // SPEC-149: 説明の途中でボスを倒したら、 ボイスを切ってクリアの SE
 import { startConfetti, removeConfetti } from "../confetti.js";   // SPEC-149
 import { shouldShowPostStory } from "../post-story.js";   // SPEC-177
-import { isStory, storyStage, landOf, markStoryCleared, markStoryLoadout, STORY_HERO, nextStoryId, storyRecipe, storyAllows, nextInSameLand, storyAllCleared, tutorialStepOf } from "../story.js";   // SPEC-165
+import { isStory, storyStage, landOf, markStoryCleared, markStoryLoadout, STORY_HERO, nextStoryId, storyRecipe, storyAllows, nextInSameLand, storyAllCleared, tutorialStepOf, storyNextInfo, loadStory, PROLOGUE } from "../story.js";   // SPEC-165
 import { naviSay, naviLines } from "../navi.js";   // SPEC-165
 
 let _wired = false;
@@ -259,6 +259,33 @@ function _wireOnce() {
   });
 }
 
+/**
+ * SPEC-180: 区切りで「次」を見せる。 どのクリアでも「NORMAL まで あと◯」と絆の数、
+ * ランドを取り戻したとき (= x-5) は次のランドで開くもの 1 つと予告のひとこと
+ */
+function _renderStoryNext(story) {
+  const el = document.getElementById("stageTransitionNext");
+  if (!el) return;
+  const info = story.id === PROLOGUE.id || story.unlock === "mode:NORMAL" ? null : storyNextInfo(story.id, loadStory());
+  el.classList.toggle("hidden", !info);
+  if (!info) return;
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const pct = Math.round((info.done / info.total) * 100);
+  let html = `<div class="story-next__bar" style="--p:${pct}%"><span class="story-next__fill"></span></div>
+    <div class="story-next__row"><span class="num">STORY ${info.done}/${info.total}</span><b>${esc(tpl(t("storyNext.left", "NORMAL まで あと {n}"), { n: info.left }))}</b><span>${esc(tpl(t("storyNext.bonds", "絆 {b}/{n}"), { b: info.bonds, n: info.bondTotal }))}</span></div>`;
+  const L = info.nextLand;
+  if (L) {
+    const sub = tpl(t(`storyNext.${L.key}.sub`, ""), { gum: (getMeta().gum | 0).toLocaleString() });
+    html += `<div class="story-next__card" style="--land:${esc(L.color)}">
+      <span class="story-next__kicker">${esc(tpl(t("storyNext.kicker", "{land} で開く"), { land: t(`story.land.${L.id}`, L.id) }))}</span>
+      <div class="story-next__main"><img src="${esc(img(L.icon))}" alt="" draggable="false" onerror="this.style.visibility='hidden'" />
+        <div><b>${esc(t(`storyNext.${L.key}`, L.key))}</b><span>${esc(sub)}</span></div></div>
+      <p class="story-next__hint">${esc(t(`story.land.${L.id}.hint`, ""))}</p>
+    </div>`;
+  }
+  el.innerHTML = html;
+}
+
 function _renderTransitionModal() {
   const titleEl   = document.getElementById("stageTransitionTitle");
   const subEl     = document.getElementById("stageTransitionSub");
@@ -291,8 +318,10 @@ function _renderTransitionModal() {
     document.getElementById("stageTransitionPips")?.replaceChildren();   // ステージの点は 1 つだけなので出さない
     document.getElementById("stageTransitionMoreBody")?.classList.add("hidden");
     document.getElementById("stageTransitionSig")?.classList.add("hidden");
+    _renderStoryNext(story);   // SPEC-180
     return;
   }
+  document.getElementById("stageTransitionNext")?.classList.add("hidden");
   const next      = idx + 1 < stageCount() ? STAGE_TABLE[idx + 1] : null;   // SPEC-154
   const cur       = STAGE_TABLE[idx];
   proceedEl?.classList.remove("hidden");

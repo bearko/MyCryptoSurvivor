@@ -383,3 +383,21 @@ body.is-rift #app { animation: story-warp 2.6s ease-in forwards; }
 .install-sheet__later { padding: 8px; font-size: 13px; }
 @keyframes install-up { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: none; } }
 :root[data-reduce-fx] .install-sheet__card { animation: none; }
+
+/* ---------- SPEC-180: ストーリーの区切りで「次」 (= あと◯ と、 次のランドで開くもの) ---------- */
+.story-next { display: flex; flex-direction: column; gap: 8px; width: 100%; text-align: left; }
+.story-next.hidden { display: none; }
+.story-next__bar { position: relative; height: 6px; border-radius: 999px; background: rgba(255, 255, 255, 0.12); overflow: hidden; }
+.story-next__fill { position: absolute; inset: 0 auto 0 0; width: var(--p, 0%); border-radius: inherit; background: linear-gradient(90deg, #3aa0e8, #ffd36b); }
+.story-next__row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; font-size: 12px; opacity: 0.9; }
+.story-next__row b { font-size: 13px; color: #ffd36b; }
+.story-next__card { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border-radius: 12px; background: color-mix(in srgb, var(--land, #3aa0e8) 14%, rgba(8, 6, 18, 0.9)); border: 1.5px solid var(--land, #3aa0e8); box-shadow: 0 0 16px color-mix(in srgb, var(--land, #3aa0e8) 35%, transparent); animation: story-next-in 0.5s 0.6s ease both; }
+.story-next__kicker { font-size: 10px; letter-spacing: 3px; color: var(--land, #3aa0e8); font-weight: 700; }
+.story-next__main { display: flex; align-items: center; gap: 10px; }
+.story-next__main img { width: 56px; height: 56px; flex: none; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.7)); }
+.story-next__main div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.story-next__main b { font-size: 15px; }
+.story-next__main span { font-size: 12px; opacity: 0.85; line-height: 1.5; }
+.story-next__hint { margin: 0; font-size: 12px; line-height: 1.6; opacity: 0.8; font-style: italic; }
+@keyframes story-next-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+:root[data-reduce-fx] .story-next__card { animation: none; }
