@@ -2,7 +2,7 @@
 id: SPEC-180
 title: Show "What's Next" at Story Breakpoints — Every Story Clear Shows Progress Toward NORMAL and Bonds, and Each Land Clear Shows the One Thing the Next Land Opens (Skill Tree After W2) With Its Teaser
 status: Approved
-pr: TBD
+pr: 257
 phase: v2.0 Retention
 kind: Added
 ---
