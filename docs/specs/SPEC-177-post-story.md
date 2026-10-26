@@ -2,7 +2,7 @@
 id: SPEC-177
 title: After the Story — a "This Is Where It Begins" Screen That Shows the NORMAL Bosses, What Opens Next and the Run → GUM → Skill Tree Loop, With One Button Straight Into NORMAL (and Tutorial Steps 27/28 to Measure It)
 status: Approved
-pr: TBD
+pr: 254
 phase: v2.0 Retention
 kind: Added
 ---
