@@ -2,7 +2,7 @@
 id: SPEC-179
 title: Maskable App Icons — Separate Full-Bleed Icons With the Art Inside the Safe Zone So Round, Rounded-Square and Squircle Home-Screen Masks Never Show a White Frame or Clip the Art
 status: Approved
-pr: TBD
+pr: 256
 phase: v2.0 Retention
 kind: Fixed
 ---
