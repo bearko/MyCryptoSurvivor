@@ -20,6 +20,7 @@ import { playWipe } from "./transition.js";
 import { naviTitle } from "./navi.js";
 import { startTitleBgm } from "./ui-sound.js";
 import { hasPlayed, isModeLocked } from "./played.js";
+import { maybeOfferInstall } from "./install-prompt.js";   // SPEC-178
 import { hasClearedEasy } from "./easy.js";   // SPEC-165: チュートリアル (= ストーリー 5-5) を終えた印
 import { enterStory } from "./story-map.js";   // SPEC-165
 import { loadStory, allStoryIds, storyAllCleared } from "./story.js";   // SPEC-165
@@ -45,6 +46,7 @@ export function showModeSelect() {
   _$("gameModeSelectScreen")?.classList.remove("hidden");
   _renderLabels();
   _renderMul();
+  maybeOfferInstall({ played: hasPlayed() });   // SPEC-178: NORMAL を 1 回遊び終えたら、 スマホに 1 回だけ「ホーム画面に追加」
 }
 
 /** SPEC-088: ロックの札。 カードは見せたまま薄くし、 ボタン・スライダー・リンクを押せなくして、 開く条件を 1 行 */

@@ -258,6 +258,23 @@
     </div>
   </section>
 
+  <!-- SPEC-178: ホーム画面に追加の案内 (= スマホに 1 回だけ) -->
+  <div id="installSheet" class="install-sheet hidden" role="dialog" aria-modal="true" aria-labelledby="installTitle">
+    <div class="install-sheet__dim" id="installDim"></div>
+    <div class="install-sheet__card">
+      <div class="install-sheet__top">
+        <img class="install-sheet__face" id="installFace" alt="" draggable="false" />
+        <div>
+          <h2 class="install-sheet__title" id="installTitle" data-i18n="install.title">ホーム画面に置いておこう</h2>
+          <p class="install-sheet__say" data-i18n="install.say">ホーム画面に置いておくと、 次からワンタップで来られるよ！ アプリみたいに全画面で遊べる。</p>
+        </div>
+      </div>
+      <ol class="install-sheet__steps" id="installSteps"></ol>
+      <button type="button" class="btn install-sheet__add hidden" id="installAdd" data-i18n="install.add">ホーム画面に追加</button>
+      <button type="button" class="btn btn--ghost install-sheet__later" id="installLater" data-i18n="install.later">あとで</button>
+    </div>
+  </div>
+
   <div id="storyStageModal" class="story-stage-modal hidden" role="dialog" aria-modal="true">
     <div class="story-stage-modal__dim" id="storyStageDim"></div>
     <div class="story-stage-modal__card" id="storyStageCard"></div>
