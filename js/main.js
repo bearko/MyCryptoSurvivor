@@ -14,6 +14,7 @@ import { installSettingsUI } from "./settings-ui.js";
 import { installRankingUI } from "./ranking-ui.js";
 import { installModeSelect, showModeSelect, pickNormal } from "./mode-select.js";
 import { shouldShowPostStory, showPostStory } from "./post-story.js";   // SPEC-177
+import { installInstallPrompt, reportHomeLaunch } from "./install-prompt.js";   // SPEC-178
 import { isStory } from "./story.js";   // SPEC-165
 import { installStoryMap } from "./story-map.js";   // SPEC-165
 import {
@@ -98,6 +99,7 @@ async function init() {
   installAutoPause();   // SPEC-044: タブを離れたら一時停止
   installUiSound();   // SPEC-060: ボタンの音。 SPEC-069: 止められた BGM を次の操作で鳴らし直す
   installReduceFxAttr(); // SPEC-055: 「演出を減らす」で CSS の常に動く演出も止める
+  installInstallPrompt();   // SPEC-178: Android の追加の合図を取っておく
   // SPEC-037: タイトル → モード選択 → ヒーロー選択 の順
   installStoryMap({ onBack: () => showModeSelect() });   // SPEC-165
   installModeSelect(() => {
@@ -1008,6 +1010,7 @@ window.addEventListener("DOMContentLoaded", () => {
   // SPEC-096: セーブ (= mcs.meta.v1) から判定できるアチーブメントは、 起動時と、 セーブが変わるたび
   // (= スキルツリーの解放・ボスのゴールドダスト・挑戦の終わり) に、 いま満たしているものを送る
   reportMetaAchievements(getMeta());
+  reportHomeLaunch();   // SPEC-178: ホーム画面から開いた (= 段 30)
   onMetaChange((m) => { if (!isStory()) reportMetaAchievements(m); });   // チュートリアル (= ストーリー) では送らない。 NORMAL で木を触ったときに届く
   init().catch((e) => console.error("init failed", e));
 });
