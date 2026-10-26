@@ -12,7 +12,8 @@ import { initI18n, setLang, getLang, t, tpl, onLangChange } from "./i18n.js";
 import { installMenu, openMenu } from "./menu.js";
 import { installSettingsUI } from "./settings-ui.js";
 import { installRankingUI } from "./ranking-ui.js";
-import { installModeSelect, showModeSelect } from "./mode-select.js";
+import { installModeSelect, showModeSelect, pickNormal } from "./mode-select.js";
+import { shouldShowPostStory, showPostStory } from "./post-story.js";   // SPEC-177
 import { isStory } from "./story.js";   // SPEC-165
 import { installStoryMap } from "./story-map.js";   // SPEC-165
 import {
@@ -184,6 +185,8 @@ function dismissTitle() {
   // SPEC-037: タイトル → モード選択画面 (= 旧来は直接 hero 選択モーダルだった)
   // SPEC-055: ワイプで切り替える
   playWipe(() => {
+    // SPEC-177: ストーリーを終えたのに NORMAL をまだ遊び終えていない人 (= この版より前に終えた人) にも 1 回だけ「ここからが本番」
+    if (hasClearedEasy() && !hasPlayed() && shouldShowPostStory()) { showPostStory({ onGo: () => pickNormal() }); return; }
     showModeSelect();
     naviSay(naviLines("mode", { first: !hasPlayed() && !hasClearedEasy() }), { place: "mode" });   // SPEC-059: 画面の下の通信の帯。 SPEC-147: 初めては EASY をすすめる
   }, { label: "NODE // CONNECT" });

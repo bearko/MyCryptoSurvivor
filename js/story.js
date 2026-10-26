@@ -403,11 +403,14 @@ export function allStoryIds() {
 }
 /**
  * SPEC-174: チュートリアル (= ストーリー) の段 (= 共通基盤の tutorialStep。 管理画面の「チュートリアル」タブで離脱を見る)。
- * 0 = 始めた (= どれかのステージを初めて始めた)、 1 = プロローグ (1-0) をクリア、 2〜26 = 1-1〜5-5 をクリア (= 最後は id "done")
+ * 0 = 始めた (= どれかのステージを初めて始めた)、 1 = プロローグ (1-0) をクリア、 2〜26 = 1-1〜5-5 をクリア (= 最後は id "done")。
+ * SPEC-177: 27 = 「ここからが本番」の画面、 28 = NORMAL を始めた
  * @returns {{ step: number, id: string } | null}
  */
 export function tutorialStepOf(storyId) {
   if (storyId === "start") return { step: 0, id: "start" };
+  if (storyId === "next") return { step: 27, id: "next" };       // SPEC-177: 「ここからが本番」の画面を出した
+  if (storyId === "normal") return { step: 28, id: "normal" };   // SPEC-177: NORMAL の挑戦を始めた
   if (storyId === PROLOGUE.id) return { step: 1, id: "s1-0" };
   const ids = allStoryIds(), i = ids.indexOf(String(storyId));
   if (i < 0) return null;

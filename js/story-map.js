@@ -25,6 +25,7 @@ import { owns } from "./skill-logic.js";
 import { ROOT_ID } from "./skill-data.js";
 import { getMeta } from "./meta.js";
 import { newRunStats } from "./battle/run-stats.js";
+import { shouldShowPostStory, showPostStory } from "./post-story.js";   // SPEC-177
 
 let _wired = false;
 let _onBack = null;
@@ -409,10 +410,16 @@ export function backToStoryMap() {
   const land = id && id !== PROLOGUE.id && nextInSameLand(id) ? landOf(id) : null;
   // 作者 2026-10-22: 5-5 (= NORMAL が開いた) のあとは地図ではなくモード選択へ (= 開いた NORMAL をすぐ選べる)
   const toModes = r?.unlock === "mode:NORMAL";
-  const go = () => { if (toModes) { hideStoryWorld(); hideStoryMap(); naviHide(); _onBack?.(); } else if (land) showStoryWorld(land.id); else showStoryMap(); };
+  const go = () => { if (toModes) { hideStoryWorld(); hideStoryMap(); naviHide(); _toModesOrPostStory(); } else if (land) showStoryWorld(land.id); else showStoryMap(); };
   if (r?.scene && !_sceneShown.has(r.scene)) { showScene(r.scene, go); return; }   // プロローグ (= 裂け目のあと)
   if (r?.sceneAfter && loadStory().cleared.includes(id)) { showScene(r.sceneAfter, go, { once: true }); return; }   // エンディング
   go();
+}
+
+/** SPEC-177: 初めて 5-5 を終えたときは、 モード選択の代わりに「ここからが本番」 (= 押すと NORMAL のヒーロー選択へ) */
+function _toModesOrPostStory() {
+  if (!shouldShowPostStory()) { _onBack?.(); return; }
+  showPostStory({ onGo: () => import("./mode-select.js").then((M) => M.pickNormal()) });
 }
 
 // ---------------- シーン (= マインちゃんの台詞を 1 つずつ。 押すと次。 最後は「ワールドマップへ」) ----------------
