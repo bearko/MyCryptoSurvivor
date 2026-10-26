@@ -2,7 +2,7 @@
 id: SPEC-178
 title: Add-to-Home-Screen Prompt — After the First NORMAL Run, Phones Get One Gentle Sheet (Install Button on Android, Share-Menu Steps on iOS), Shown Once, With Steps 29/30 to Measure It
 status: Approved
-pr: TBD
+pr: 255
 phase: v2.0 Retention
 kind: Added
 ---
