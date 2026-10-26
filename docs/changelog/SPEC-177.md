@@ -1,0 +1,1 @@
+- **ストーリーを終えたら「ここからが本番」**（`js/post-story.js` + `js/story-map.js` + `js/mode-select.js`）: 初めて 5-5 を終えたとき、 NORMAL のボス 3 体・開いたもの（ランキング・チーム編成・ABSOLUTE/RTA）・挑む → GUM → スキルツリーの輪を 1 枚で見せ、 ボタン 1 つで NORMAL のヒーロー選択へ。 チュートリアルの段に 27 next（この画面）と 28 normal（NORMAL を始めた）を足した

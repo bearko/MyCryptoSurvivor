@@ -114,6 +114,9 @@ function _wireOnce() {
   });
 }
 
+/** SPEC-177: 「ここからが本番」の画面から NORMAL へ (= モード選択の NORMAL のボタンと同じ道) */
+export function pickNormal() { _pick(REGULATION_NORMAL); }
+
 function _pick(regulation, { rta = false, absolute = null } = {}) {
   // SPEC-088: 初プレイは NORMAL だけ (= ボタンは disabled にしてあるが、 ここでも止める)。 SPEC-165: NORMAL はストーリーのあと
   if (isModeLocked(rta ? "RTA" : regulation, hasPlayed() || isTestSite(), tutorialDone())) return;
@@ -131,6 +134,7 @@ function _pick(regulation, { rta = false, absolute = null } = {}) {
   // SPEC-055: ワイプで覆ったところでヒーロー選択へ
   playWipe(() => {
     hideModeSelect();
+    _$("postStoryScreen")?.classList.add("hidden");   // SPEC-177: 「ここからが本番」から来たとき
     if (typeof _onPick === "function") _onPick(regulation);
   }, { label: "SELECT // HERO" });
 }

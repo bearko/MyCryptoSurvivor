@@ -234,6 +234,30 @@
     </div>
   </section>
 
+  <!-- SPEC-177: ストーリーを終えたら「ここからが本番」 (= 初めての 1 回だけ) -->
+  <section id="postStoryScreen" class="title-screen post-story hidden" aria-labelledby="postStoryTitle">
+    <div class="story-scene__bg" aria-hidden="true"></div>
+    <div class="post-story__body">
+      <p class="post-story__kicker">STORY CLEAR</p>
+      <h2 class="post-story__title" id="postStoryTitle" data-i18n="postStory.title">ここからが本番</h2>
+      <div class="post-story__mine">
+        <img class="post-story__face" id="postStoryFace" alt="" draggable="false" />
+        <p class="post-story__say" data-i18n="postStory.say">ストーリーはチュートリアル。 ここからは、 きみの腕前で どこまで行けるかだよ！</p>
+      </div>
+      <h3 class="post-story__head"><span class="post-story__mode">NORMAL</span><span data-i18n="postStory.bossesSub">3 つのノードを、 ボスを倒しながら駆け抜ける</span></h3>
+      <ul class="post-story__bosses" id="postStoryBosses"></ul>
+      <h3 class="post-story__head" data-i18n="postStory.opened">開いたもの</h3>
+      <ul class="post-story__opens">
+        <li><b data-i18n="postStory.open.rank">ランキング</b><span data-i18n="postStory.open.rankSub">スコアが bearko.games の総合スコアに載る</span></li>
+        <li><b data-i18n="postStory.open.team">チーム編成</b><span data-i18n="postStory.open.teamSub">ヒーローを仲間にすると、 2 人までサブに連れていける</span></li>
+        <li><b data-i18n="postStory.open.abs">ABSOLUTE・RTA</b><span data-i18n="postStory.open.absSub">NORMAL を 1 回遊ぶと開く（難しさを自分で決める・タイムを競う）</span></li>
+      </ul>
+      <h3 class="post-story__head" data-i18n="postStory.loopHead">遊び方は、 この輪</h3>
+      <ol class="post-story__loop" id="postStoryLoop"></ol>
+      <button type="button" class="btn post-story__go" id="postStoryGo" data-i18n="postStory.go">NORMAL に挑む ▶</button>
+    </div>
+  </section>
+
   <div id="storyStageModal" class="story-stage-modal hidden" role="dialog" aria-modal="true">
     <div class="story-stage-modal__dim" id="storyStageDim"></div>
     <div class="story-stage-modal__card" id="storyStageCard"></div>

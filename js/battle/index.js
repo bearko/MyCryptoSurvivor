@@ -251,6 +251,7 @@ export function startBattle(hero) {
   }
   resetMissionsForStage(!!state.shop);   // SPEC-112: ミッションはショップで遊ぶときだけ
   if (isStory()) reportTutorialStep(tutorialStepOf("start"));   // SPEC-174: チュートリアルを始めた (= どれかのステージを初めて始めた。 2 回目からはサーバーが無視する)
+  else if (!state.rtaMode && state.regulation === REGULATION_NORMAL && (state.currentStageIdx ?? 0) === 0) reportTutorialStep(tutorialStepOf("normal"));   // SPEC-177: NORMAL を始めた (= ストーリーのあとに来たか)
 
   resizeCanvas();
   centerCameraOnPlayer();   // SPEC-155: 最初のコマから自分を真ん中に (= 止めたまま降りこむ復活で、 ステージの外が映っていた)

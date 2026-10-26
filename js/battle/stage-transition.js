@@ -29,6 +29,7 @@ import { loadShare, shouldOfferShare, openSharePrompt, closeSharePrompt } from "
 import { isEasy, stageCount } from "../easy.js";   // SPEC-147 / SPEC-154
 import { stopVoice } from "../voice.js";   // SPEC-149: 説明の途中でボスを倒したら、 ボイスを切ってクリアの SE
 import { startConfetti, removeConfetti } from "../confetti.js";   // SPEC-149
+import { shouldShowPostStory } from "../post-story.js";   // SPEC-177
 import { isStory, storyStage, landOf, markStoryCleared, markStoryLoadout, STORY_HERO, nextStoryId, storyRecipe, storyAllows, nextInSameLand, storyAllCleared, tutorialStepOf } from "../story.js";   // SPEC-165
 import { naviSay, naviLines } from "../navi.js";   // SPEC-165
 
@@ -281,7 +282,7 @@ function _renderTransitionModal() {
     const sameLand = !!(nextId && storyRecipe(nextId)) && nextInSameLand(story.id);
     if (subEl) subEl.textContent = sameLand ? tpl(t("stage.proceedNext", "次は {next}"), { next: nextId }) : (nextId && storyRecipe(nextId) ? t("story.clear.landDone", "ランドを取り戻した！ マップへ戻ろう") : (story.unlock === "mode:NORMAL" ? t("story.clear.allDone", "ストーリー全クリア！ NORMAL が開いた") : t("story.clear.done", "ここまで！ つづきは準備中")));
     if (proceedEl) { proceedEl.textContent = t("story.map.next", "次のステージへ ▶"); proceedEl.classList.toggle("hidden", !sameLand); }   // ランドの最後は「マップへ」だけ
-    const mapBtn = document.getElementById("stageTransitionMap"); if (mapBtn) mapBtn.textContent = story.unlock === "mode:NORMAL" ? t("story.clear.toModes", "モード選択へ ▶") : t("story.map.toMap", "マップへ");
+    const mapBtn = document.getElementById("stageTransitionMap"); if (mapBtn) mapBtn.textContent = story.unlock === "mode:NORMAL" ? (shouldShowPostStory() ? t("story.clear.toNext", "つづきへ ▶") : t("story.clear.toModes", "モード選択へ ▶")) : t("story.map.toMap", "マップへ");
     const snapS = state.run.stages.find((s) => s.idx === idx);
     const setS = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
     setS("stageTransitionElapsed", formatElapsed(Math.round((snapS?.elapsedMs ?? 0) / 1000)));
