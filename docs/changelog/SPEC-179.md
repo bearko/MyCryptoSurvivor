@@ -1,0 +1,1 @@
+- **ホーム画面のアイコンを丸型・角丸に合わせる**（`assets/icons/icon-maskable-*.png` + `manifest.json`）: Android の切り抜き用アイコンを別に作った（背景を端まで塗り、 絵を安全域の内側へ）。 白枠が出ず、 絵も欠けない
